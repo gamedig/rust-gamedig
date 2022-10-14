@@ -1,5 +1,5 @@
 [package]
-name = "rust-gamedig"
+name = "gamedig"
 version = "0.1.0"
 edition = "2021"
 authors = ["CosminPerRam [cosmin.p@live.com]", "mmorrisontx [https://github.com/mmorrisontx]"]
