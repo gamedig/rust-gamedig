@@ -9,6 +9,6 @@ homepage = "https://github.com/CosminPerRam/rust-gamedig"
 documentation = "https://github.com/CosminPerRam/rust-gamedig"
 repository = "https://github.com/CosminPerRam/rust-gamedig"
 readme = "README.md"
-keywords = ["server", "valve", "games", "pinger", "checker", "status"]
+keywords = ["server", "valve", "games", "checker", "status"]
 
 [dependencies]
