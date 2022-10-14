@@ -1,0 +1,14 @@
+[package]
+name = "rust-gamedig"
+version = "0.1.0"
+edition = "2021"
+authors = ["CosminPerRam [cosmin.p@live.com]", "mmorrisontx [https://github.com/mmorrisontx]"]
+license-file = "LICENSE.md"
+description = "Check out servers with this."
+homepage = "https://github.com/CosminPerRam/rust-gamedig"
+documentation = "https://github.com/CosminPerRam/rust-gamedig"
+repository = "https://github.com/CosminPerRam/rust-gamedig"
+readme = "README.md"
+keywords = ["server", "valve", "games", "pinger", "checker", "status"]
+
+[dependencies]
