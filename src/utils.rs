@@ -16,5 +16,13 @@ pub fn complete_address(address: &str, port: u16) -> String {
 }
 
 pub fn combine_two_u8(high: u8, low: u8) -> u16 {
-    ((high as u16) << 8) | low as u16
+    u16::from_be_bytes([high, low])
+}
+
+pub fn combine_eight_u8(a: u8, b: u8, c: u8, d: u8, e: u8, f: u8, g: u8, h: u8) -> u64 {
+    u64::from_be_bytes([a, b, c, d, e, f, g, h])
+}
+
+pub fn get_u64_from_buf(buf: &[u8]) -> u64 {
+    combine_eight_u8(buf[7], buf[6], buf[5], buf[4], buf[3], buf[2], buf[1], buf[0])
 }
