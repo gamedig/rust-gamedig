@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 use crate::errors::GDError;
-use crate::utils::{combine_two_u8, complete_address, concat_u8, find_null_in_array, get_u64_from_buf};
+use crate::utils::{combine_two_u8, complete_address, concat_u8, find_first_string, get_u64_from_buf};
 
 #[derive(Debug)]
 pub enum Server {
@@ -108,55 +108,62 @@ impl ValveProtocol {
 
         client.do_request(Request::A2sInfo(None), None);
         let mut buf = client.receive(DEFAULT_PACKET_SIZE);
+        let mut pos = 5;
 
         if buf[4] == 0x41 {
-            client.do_request(Request::A2sInfo(Some([buf[5], buf[6], buf[7], buf[8]])), None);
+            client.do_request(Request::A2sInfo(Some([buf[pos], buf[pos + 1], buf[pos + 2], buf[pos + 3]])), None);
             buf = client.receive(DEFAULT_PACKET_SIZE);
         }
 
-        println!("{:x?}", &buf);
+        let protocol = buf[5]; pos = pos + 1;
 
-        let name_null_pos = find_null_in_array(&mut buf);
-        let map_null_pos = name_null_pos + 1 + find_null_in_array(&mut buf[name_null_pos + 1..]);
-        let folder_null_pos = map_null_pos + 1 + find_null_in_array(&mut buf[map_null_pos + 1..]);
-        let game_null_pos = folder_null_pos + 1 + find_null_in_array(&mut buf[folder_null_pos + 1..]);
+        let name = find_first_string(&buf[pos..]); pos = pos + name.len() + 1;
+        let map = find_first_string(&buf[pos..]); pos = pos + map.len() + 1;
+        let folder = find_first_string(&buf[pos..]); pos = pos + folder.len() + 1;
+        let game = find_first_string(&buf[pos..]); pos = pos + game.len() + 1;
 
-        let server_type = match buf[game_null_pos + 6] as char {
+        let id = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
+        let players = buf[pos]; pos = pos + 1;
+        let max_players = buf[pos]; pos = pos + 1;
+        let bots = buf[pos]; pos = pos + 1;
+
+        let server_type = match buf[pos] as char {
             'd' => Server::Dedicated,
             'l' => Server::NonDedicated,
             _ => Server::SourceTV
-        };
+        }; pos = pos + 1;
 
-        let environment_type = match buf[game_null_pos + 7] as char {
+        let environment_type = match buf[pos] as char {
             'l' => Environment::Linux,
             'w' => Environment::Windows,
             _ => Environment::Mac
-        };
+        }; pos = pos + 1;
 
-        let mut the_ship_index = game_null_pos + 10;
+        let has_password = buf[pos] == 1; pos = pos + 1;
+        let vac_secured = buf[pos] == 1; pos = pos + 1;
+
         let the_ship = match has_the_ship {
             false => None,
             true => {
                 let ship = TheShip {
-                    mode: buf[the_ship_index],
-                    witnesses: buf[the_ship_index + 1],
-                    duration: buf[the_ship_index + 2]
-                };
-                the_ship_index = the_ship_index + 3;
+                    mode: buf[pos],
+                    witnesses: buf[pos + 1],
+                    duration: buf[pos + 2]
+                }; pos = pos + 3;
                 Some(ship)
             }
         };
 
-        let version_null_pos = the_ship_index + find_null_in_array(&mut buf[the_ship_index..]);
-        let extra_data = match buf.get(version_null_pos + 1) {
+        let version = find_first_string(&buf[pos..]); pos = pos + version.len() + 1;
+
+        pos = pos + 1; //look ahead
+        let extra_data = match buf.get(pos - 1) {
             None => None,
             Some(value) => {
-                let mut last_edf_position = version_null_pos + 2;
                 let edf_port = match (value & 0x80) > 0 {
                     false => None,
                     true => {
-                        let p = combine_two_u8(buf[last_edf_position + 1], buf[last_edf_position]);
-                        last_edf_position = last_edf_position + 2;
+                        let p = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
                         Some(p)
                     }
                 };
@@ -164,8 +171,7 @@ impl ValveProtocol {
                 let steam_id = match (value & 0x10) > 0 {
                     false => None,
                     true => {
-                        let p = get_u64_from_buf(&buf[last_edf_position..]);
-                        last_edf_position = last_edf_position + 8;
+                        let p = get_u64_from_buf(&buf[pos..]); pos = pos + 8;
                         Some(p)
                     }
                 };
@@ -173,28 +179,26 @@ impl ValveProtocol {
                 let (tv_port, tv_name) = match (value & 0x40) > 0 {
                     false => (None, None),
                     true => {
-                        let port = combine_two_u8(buf[last_edf_position + 1], buf[last_edf_position]);
-                        last_edf_position = last_edf_position + 2;
-                        let tv_name_null_pos = last_edf_position + find_null_in_array(&buf[last_edf_position..]);
-                        let tv_name = String::from_utf8(Vec::from(&buf[last_edf_position..tv_name_null_pos])).expect("cacat");
-                        last_edf_position = tv_name_null_pos + 1;
-                        (Some(port), Some(tv_name))
+                        let tv_port = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
+                        let tv_name = find_first_string(&buf[pos..]); pos = pos + tv_name.len() + 1;
+                        (Some(tv_port), Some(tv_name))
                     }
                 };
 
                 let keywords = match (value & 0x20) > 0 {
                     false => None,
                     true => {
-                        let kws_null_pos = last_edf_position + find_null_in_array(&buf[last_edf_position..]);
-                        let kws = String::from_utf8(Vec::from(&buf[last_edf_position..kws_null_pos])).expect("cacat");
-                        last_edf_position = kws_null_pos + 1;
-                        Some(kws)
+                        let keywords = find_first_string(&buf[pos..]); pos = pos + keywords.len() + 1;
+                        Some(keywords)
                     }
                 };
 
                 let game_id = match (value & 0x01) > 0 {
                     false => None,
-                    true => Some(get_u64_from_buf(&buf[last_edf_position..]))
+                    true => {
+                        let game_id = get_u64_from_buf(&buf[pos..]); pos = pos + 8;
+                        Some(game_id)
+                    }
                 };
 
                 Some(ExtraData {
@@ -209,21 +213,21 @@ impl ValveProtocol {
         };
 
         Ok(Response {
-            protocol: buf[5],
-            name: String::from_utf8(Vec::from(&mut buf[6..name_null_pos])).expect("cacat"),
-            map: String::from_utf8(Vec::from(&mut buf[name_null_pos + 1..map_null_pos])).expect("cacat"),
-            folder: String::from_utf8(Vec::from(&mut buf[map_null_pos + 1..folder_null_pos])).expect("cacat"),
-            game: String::from_utf8(Vec::from(&mut buf[folder_null_pos + 1..game_null_pos])).expect("cacat"),
-            id: combine_two_u8(buf[game_null_pos + 2], buf[game_null_pos + 1]),
-            players: buf[game_null_pos + 3],
-            max_players: buf[game_null_pos + 4],
-            bots: buf[game_null_pos + 5],
+            protocol,
+            name,
+            map,
+            folder,
+            game,
+            id,
+            players,
+            max_players,
+            bots,
             server_type,
             environment_type,
-            has_password: buf[game_null_pos + 8] == 1,
-            vac_secured: buf[game_null_pos + 9] != 0,
+            has_password,
+            vac_secured,
             the_ship,
-            version: String::from_utf8(Vec::from(&mut buf[the_ship_index..version_null_pos])).expect("cacat"),
+            version,
             extra_data
         })
     }
