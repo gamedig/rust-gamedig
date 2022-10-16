@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 use crate::errors::GDError;
-use crate::utils::{combine_two_u8, complete_address, concat_u8, find_first_string, get_u64_from_buf};
+use crate::utils::{buffer, complete_address, concat_u8};
 
 #[derive(Debug)]
 pub enum Server {
@@ -108,127 +108,73 @@ impl ValveProtocol {
 
         client.do_request(Request::A2sInfo(None), None);
         let mut buf = client.receive(DEFAULT_PACKET_SIZE);
-        let mut pos = 5;
+        let mut pos = 4;
 
-        if buf[4] == 0x41 {
+        if buffer::get_u8(&buf, &mut pos)? == 0x41 {
             client.do_request(Request::A2sInfo(Some([buf[pos], buf[pos + 1], buf[pos + 2], buf[pos + 3]])), None);
             buf = client.receive(DEFAULT_PACKET_SIZE);
         }
 
-        let protocol = buf[5]; pos = pos + 1;
-
-        let name = find_first_string(&buf[pos..]); pos = pos + name.len() + 1;
-        let map = find_first_string(&buf[pos..]); pos = pos + map.len() + 1;
-        let folder = find_first_string(&buf[pos..]); pos = pos + folder.len() + 1;
-        let game = find_first_string(&buf[pos..]); pos = pos + game.len() + 1;
-
-        let id = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
-        let players = buf[pos]; pos = pos + 1;
-        let max_players = buf[pos]; pos = pos + 1;
-        let bots = buf[pos]; pos = pos + 1;
-
-        let server_type = match buf[pos] as char {
-            'd' => Server::Dedicated,
-            'l' => Server::NonDedicated,
-            _ => Server::SourceTV
-        }; pos = pos + 1;
-
-        let environment_type = match buf[pos] as char {
-            'l' => Environment::Linux,
-            'w' => Environment::Windows,
-            _ => Environment::Mac
-        }; pos = pos + 1;
-
-        let has_password = buf[pos] == 1; pos = pos + 1;
-        let vac_secured = buf[pos] == 1; pos = pos + 1;
-
-        let the_ship = match has_the_ship {
-            false => None,
-            true => {
-                let ship = TheShip {
-                    mode: buf[pos],
-                    witnesses: buf[pos + 1],
-                    duration: buf[pos + 2]
-                }; pos = pos + 3;
-                Some(ship)
-            }
-        };
-
-        let version = find_first_string(&buf[pos..]); pos = pos + version.len() + 1;
-
-        pos = pos + 1; //look ahead
-        let extra_data = match buf.get(pos - 1) {
-            None => None,
-            Some(value) => {
-                let edf_port = match (value & 0x80) > 0 {
-                    false => None,
-                    true => {
-                        let p = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
-                        Some(p)
+        Ok(Response {
+            protocol: buffer::get_u8(&buf, &mut pos)?,
+            name: buffer::get_string(&buf, &mut pos),
+            map: buffer::get_string(&buf, &mut pos),
+            folder: buffer::get_string(&buf, &mut pos),
+            game: buffer::get_string(&buf, &mut pos),
+            id: buffer::get_u16(&buf, &mut pos),
+            players: buffer::get_u8(&buf, &mut pos)?,
+            max_players: buffer::get_u8(&buf, &mut pos)?,
+            bots: buffer::get_u8(&buf, &mut pos)?,
+            server_type: match buffer::get_u8(&buf, &mut pos)? as char {
+                'd' => Server::Dedicated,
+                'l' => Server::NonDedicated,
+                _ => Server::SourceTV
+            },
+            environment_type: match buffer::get_u8(&buf, &mut pos)? as char {
+                'l' => Environment::Linux,
+                'w' => Environment::Windows,
+                _ => Environment::Mac
+            },
+            has_password: buffer::get_u8(&buf, &mut pos)? == 1,
+            vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
+            the_ship: match has_the_ship {
+                false => None,
+                true => Some(TheShip {
+                    mode: buffer::get_u8(&buf, &mut pos)?,
+                    witnesses: buffer::get_u8(&buf, &mut pos)?,
+                    duration: buffer::get_u8(&buf, &mut pos)?
+                })
+            },
+            version: buffer::get_string(&buf, &mut pos),
+            extra_data: match buffer::get_u8(&buf, &mut pos) {
+                Err(_) => None,
+                Ok(value) => Some(ExtraData {
+                    port: match (value & 0x80) > 0 {
+                        false => None,
+                        true => Some(buffer::get_u16(&buf, &mut pos))
+                    },
+                    steam_id: match (value & 0x10) > 0 {
+                        false => None,
+                        true => Some(buffer::get_u64(&buf, &mut pos))
+                    },
+                    tv_port: match (value & 0x40) > 0 {
+                        false => None,
+                        true => Some(buffer::get_u16(&buf, &mut pos))
+                    },
+                    tv_name: match (value & 0x40) > 0 {
+                        false => None,
+                        true => Some(buffer::get_string(&buf, &mut pos))
+                    },
+                    keywords: match (value & 0x20) > 0 {
+                        false => None,
+                        true => Some(buffer::get_string(&buf, &mut pos))
+                    },
+                    game_id: match (value & 0x01) > 0 {
+                        false => None,
+                        true => Some(buffer::get_u64(&buf, &mut pos))
                     }
-                };
-
-                let steam_id = match (value & 0x10) > 0 {
-                    false => None,
-                    true => {
-                        let p = get_u64_from_buf(&buf[pos..]); pos = pos + 8;
-                        Some(p)
-                    }
-                };
-
-                let (tv_port, tv_name) = match (value & 0x40) > 0 {
-                    false => (None, None),
-                    true => {
-                        let tv_port = combine_two_u8(buf[pos + 1], buf[pos]); pos = pos + 2;
-                        let tv_name = find_first_string(&buf[pos..]); pos = pos + tv_name.len() + 1;
-                        (Some(tv_port), Some(tv_name))
-                    }
-                };
-
-                let keywords = match (value & 0x20) > 0 {
-                    false => None,
-                    true => {
-                        let keywords = find_first_string(&buf[pos..]); pos = pos + keywords.len() + 1;
-                        Some(keywords)
-                    }
-                };
-
-                let game_id = match (value & 0x01) > 0 {
-                    false => None,
-                    true => {
-                        let game_id = get_u64_from_buf(&buf[pos..]); pos = pos + 8;
-                        Some(game_id)
-                    }
-                };
-
-                Some(ExtraData {
-                    port: edf_port,
-                    steam_id,
-                    tv_port,
-                    tv_name,
-                    keywords,
-                    game_id
                 })
             }
-        };
-
-        Ok(Response {
-            protocol,
-            name,
-            map,
-            folder,
-            game,
-            id,
-            players,
-            max_players,
-            bots,
-            server_type,
-            environment_type,
-            has_password,
-            vac_secured,
-            the_ship,
-            version,
-            extra_data
         })
     }
 }
