@@ -2,13 +2,16 @@
 name = "gamedig"
 version = "0.0.0"
 edition = "2021"
-authors = ["CosminPerRam [cosmin.p@live.com]", "mmorrisontx [https://github.com/mmorrisontx]"]
+authors = ["CosminPerRam [cosmin.p@live.com]", "node-GameDig [https://github.com/gamedig/node-gamedig]"]
 license-file = "LICENSE.md"
 description = "Check out servers with this."
 homepage = "https://github.com/CosminPerRam/rust-gamedig"
-documentation = "https://github.com/CosminPerRam/rust-gamedig"
+documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/CosminPerRam/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "valve", "games", "checker", "status"]
+
+[package.metadata]
+msrv = "1.58.1"
 
 [dependencies]

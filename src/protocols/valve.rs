@@ -62,7 +62,7 @@ pub struct ValveProtocol {
     complete_address: String
 }
 
-static default_packet_size: usize = 256;
+static DEFAULT_PACKET_SIZE: usize = 256;
 
 impl ValveProtocol {
     fn new(address: &str, port: u16) -> Self {
@@ -95,11 +95,7 @@ impl ValveProtocol {
         }
     }
 
-    pub fn receive(&self) -> Vec<u8> {
-        self.receive_with_size(64)
-    }
-
-    pub fn receive_with_size(&self, buffer_size: usize) -> Vec<u8> {
+    pub fn receive(&self, buffer_size: usize) -> Vec<u8> {
         let mut buffer: Vec<u8> = vec![0; buffer_size];
         let (amt, _) = self.socket.recv_from(&mut buffer.as_mut_slice()).unwrap();
         buffer[..amt].to_vec()
@@ -111,11 +107,11 @@ impl ValveProtocol {
         let client = ValveProtocol::new(address, port);
 
         client.do_request(Request::A2sInfo(None), None);
-        let mut buf = client.receive_with_size(default_packet_size);
+        let mut buf = client.receive(DEFAULT_PACKET_SIZE);
 
         if buf[4] == 0x41 {
             client.do_request(Request::A2sInfo(Some([buf[5], buf[6], buf[7], buf[8]])), None);
-            buf = client.receive_with_size(default_packet_size);
+            buf = client.receive(DEFAULT_PACKET_SIZE);
         }
 
         println!("{:x?}", &buf);

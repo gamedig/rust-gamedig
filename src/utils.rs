@@ -26,3 +26,32 @@ pub fn combine_eight_u8(a: u8, b: u8, c: u8, d: u8, e: u8, f: u8, g: u8, h: u8) 
 pub fn get_u64_from_buf(buf: &[u8]) -> u64 {
     combine_eight_u8(buf[7], buf[6], buf[5], buf[4], buf[3], buf[2], buf[1], buf[0])
 }
+
+#[cfg(test)]
+mod utils {
+    use super::*;
+
+    #[test]
+    fn concat_u8_test() {
+        let a: [u8; 2] = [1, 2];
+        let b: [u8; 2] = [3, 4];
+        let combined = concat_u8(&a, &b);
+        assert_eq!(a[0], combined[0]);
+        assert_eq!(a[1], combined[1]);
+        assert_eq!(b[0], combined[2]);
+        assert_eq!(b[1], combined[3]);
+    }
+
+    #[test]
+    fn find_null_in_array_test() {
+        let arr: [u8; 4] = [0x64, 0x32, 0x00, 0x20];
+        assert_eq!(2, find_null_in_array(&arr));
+    }
+
+    #[test]
+    fn complete_address_test() {
+        let address = "192.168.0.1";
+        let port = 27015;
+        assert_eq!(complete_address(address, port), "192.168.0.1:27015");
+    }
+}
