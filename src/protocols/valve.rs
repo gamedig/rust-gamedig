@@ -161,7 +161,7 @@ impl ValveProtocol {
                     }
                 };
 
-                let steam_id = match (value & 0x10) > 0 { //doesnt work?
+                let steam_id = match (value & 0x10) > 0 {
                     false => None,
                     true => {
                         let p = get_u64_from_buf(&buf[last_edf_position..]);
