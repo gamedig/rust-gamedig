@@ -25,7 +25,7 @@ To see more examples, see the [examples](examples) folder.
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).
 
 # Games List
-To see the supported games, see [GAMES](GAMES.md).
+To see the supported (or the planned to support) games, see [GAMES](GAMES.md).
 
 # Contributing
 If you want see your favorite game/service being supported here, open an issue (or do a pull request if you want to implement it yourself)!
