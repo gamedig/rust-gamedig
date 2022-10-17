@@ -8,6 +8,6 @@ impl TF2 {
         ValveProtocol::query(App::TF2, address, match port {
             None => 27015,
             Some(port) => port
-        })
+        }, true, true)
     }
 }

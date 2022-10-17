@@ -3,13 +3,21 @@ use std::fmt::Formatter;
 
 #[derive(Debug, Clone)]
 pub enum GDError {
-    PacketOverflow
+    PacketOverflow(String),
+    PacketUnderflow(String),
+    PacketBad(String),
+    PacketSend(String),
+    PacketReceive(String)
 }
 
 impl fmt::Display for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            GDError::PacketOverflow => write!(f, "Packet overflow!")
+            GDError::PacketOverflow(details) => write!(f, "Packet overflow: {details}"),
+            GDError::PacketUnderflow(details) => write!(f, "Packet underflow: {details}"),
+            GDError::PacketBad(details) => write!(f, "Packet bad: {details}"),
+            GDError::PacketSend(details) => write!(f, "Couldn't send a packet: {details}"),
+            GDError::PacketReceive(details) => write!(f, "Couldn't receive a packet: {details}")
         }
     }
 }

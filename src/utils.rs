@@ -22,7 +22,7 @@ pub mod buffer {
 
     pub fn get_u8(buf: &[u8], pos: &mut usize) -> Result<u8, GDError> {
         if buf.len() <= *pos {
-            return Err(GDError::PacketOverflow);
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
 
         let value = buf[*pos];
@@ -32,7 +32,7 @@ pub mod buffer {
 
     pub fn get_u16_le(buf: &[u8], pos: &mut usize) -> Result<u16, GDError> {
         if buf.len() <= *pos + 1 {
-            return Err(GDError::PacketOverflow);
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
 
         let value = combine_two_u8_le(buf[*pos + 1], buf[*pos]);
@@ -42,7 +42,7 @@ pub mod buffer {
 
     pub fn get_u64_le(buf: &[u8], pos: &mut usize) -> Result<u64, GDError> {
         if buf.len() <= *pos + 7 {
-            return Err(GDError::PacketOverflow);
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
 
         let value = combine_eight_u8_le(buf[*pos + 7], buf[*pos + 6], buf[*pos + 5], buf[*pos + 4], buf[*pos + 3], buf[*pos + 2], buf[*pos + 1], buf[*pos]);
@@ -52,7 +52,7 @@ pub mod buffer {
 
     pub fn get_string(buf: &[u8], pos: &mut usize) -> Result<String, GDError> {
         let sub_buf = &buf[*pos..];
-        let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(GDError::PacketOverflow)?;
+        let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_string()))?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position]).unwrap().to_string();
         *pos += value.len() + 1;
         Ok(value)
