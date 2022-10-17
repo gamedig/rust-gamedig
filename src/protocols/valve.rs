@@ -18,6 +18,13 @@ pub enum Environment {
 
 #[derive(Debug)]
 pub struct Response {
+    pub info: Option<ServerInfo>,
+    pub players: Option<ServerPlayers>,
+    pub rules: Option<ServerRules>
+}
+
+#[derive(Debug)]
+pub struct ServerInfo {
     pub protocol: u8,
     pub map: String,
     pub name: String,
@@ -37,6 +44,33 @@ pub struct Response {
 }
 
 #[derive(Debug)]
+pub struct ServerPlayers {
+    pub count: u8,
+    pub players: Vec<Player>
+}
+
+#[derive(Debug)]
+pub struct Player {
+    pub name: String,
+    pub score: u32,
+    pub duration: f32,
+    pub deaths: Option<u32>, //the_ship
+    pub money: Option<u32>, //the_ship
+}
+
+#[derive(Debug)]
+pub struct ServerRules {
+    pub count: u16,
+    pub rules: Vec<Rule>
+}
+
+#[derive(Debug)]
+pub struct Rule {
+    pub name: String,
+    pub value: String
+}
+
+#[derive(Debug)]
 pub struct TheShip {
     pub mode: u8,
     pub witnesses: u8,
@@ -53,16 +87,24 @@ pub struct ExtraData {
     pub game_id: Option<u64>
 }
 
+#[derive(PartialEq)]
 pub enum Request {
     INFO,
-    PLAYER,
+    PLAYERS,
     RULES
 }
 
 #[derive(PartialEq)]
 pub enum App {
     TF2 = 440,
+    CSGO = 730,
     TheShip = 2400
+}
+
+pub struct GatheringSettings {
+    pub info: bool,
+    pub players: bool,
+    pub rules: bool
 }
 
 pub struct ValveProtocol {
@@ -70,7 +112,7 @@ pub struct ValveProtocol {
     complete_address: String
 }
 
-static DEFAULT_PACKET_SIZE: usize = 256;
+static DEFAULT_PACKET_SIZE: usize = 2048;
 
 impl ValveProtocol {
     fn new(address: &str, port: u16) -> Self {
@@ -91,45 +133,52 @@ impl ValveProtocol {
         Ok(buffer[..amt].to_vec())
     }
 
-    pub fn do_request(&self, kind: Request) -> Result<Vec<u8>, GDError> {
+    pub fn get_request_data(&self, kind: Request) -> Result<Vec<u8>, GDError> {
         let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
-        let player_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55];
-        let rules_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56];
-
-        let no_challenge: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFF];
+        let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
+        let rules_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
 
         let request_initial_packet = match kind {
             Request::INFO => info_initial_packet,
-            Request::PLAYER => concat_u8_arrays(&player_initial_packet, &no_challenge),
-            Request::RULES => concat_u8_arrays(&rules_initial_packet, &no_challenge)
+            Request::PLAYERS => players_initial_packet,
+            Request::RULES => rules_initial_packet
         };
 
         self.send(&request_initial_packet)?;
-        let buffer = self.receive(DEFAULT_PACKET_SIZE)?;
+        let mut initial_receive = self.receive(DEFAULT_PACKET_SIZE)?;
 
-        if buffer.len() < 9 {
+        if initial_receive.len() < 9 {
             return Err(GDError::PacketOverflow("Any Valve Protocol response can't be under 9 bytes long.".to_string()));
         }
 
-        if buffer[4] != 41 { //'A'
-            return Ok(buffer);
+        if initial_receive[4] != 0x41 { //'A'
+            return Ok(initial_receive.drain(5..).collect());
         }
 
-        let challenge: [u8; 4] = [buffer[5], buffer[6], buffer[7], buffer[8]];
-        self.send(&concat_u8_arrays(&request_initial_packet, &challenge))?;
+        let challenge: [u8; 4] = [initial_receive[5], initial_receive[6], initial_receive[7], initial_receive[8]];
+        let challenge_packet = match kind {
+            Request::INFO => concat_u8_arrays(&request_initial_packet, &challenge),
+            Request::PLAYERS => vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, challenge[0], challenge[1], challenge[2], challenge[3]],
+            Request::RULES => vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, challenge[0], challenge[1], challenge[2], challenge[3]]
+        };
 
-        Ok(self.receive(DEFAULT_PACKET_SIZE)?)
+        self.send(&challenge_packet)?;
+
+        let mut after_challenge_receive = self.receive(DEFAULT_PACKET_SIZE)?;
+
+        if kind == Request::RULES && after_challenge_receive[0] == 0xFE {
+            Ok(after_challenge_receive.drain(17..).collect())
+        }
+        else {
+            Ok(after_challenge_receive.drain(5..).collect())
+        }
     }
-}
 
-impl ValveProtocol {
-    pub(crate) fn query(app: App, address: &str, port: u16, gather_players: bool, gather_rules: bool) -> Result<Response, GDError> {
-        let client = ValveProtocol::new(address, port);
+    fn get_server_info(&self, app: &App) -> Result<ServerInfo, GDError> {
+        let buf = self.get_request_data(Request::INFO)?;
+        let mut pos = 0;
 
-        let buf = client.do_request(Request::INFO)?;
-        let mut pos = 4;
-
-        Ok(Response {
+        Ok(ServerInfo {
             protocol: buffer::get_u8(&buf, &mut pos)?,
             name: buffer::get_string(&buf, &mut pos)?,
             map: buffer::get_string(&buf, &mut pos)?,
@@ -151,7 +200,7 @@ impl ValveProtocol {
             },
             has_password: buffer::get_u8(&buf, &mut pos)? == 1,
             vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
-            the_ship: match app == App::TheShip {
+            the_ship: match *app == App::TheShip {
                 false => None,
                 true => Some(TheShip {
                     mode: buffer::get_u8(&buf, &mut pos)?,
@@ -188,6 +237,82 @@ impl ValveProtocol {
                         true => Some(buffer::get_u64_le(&buf, &mut pos)?)
                     }
                 })
+            }
+        })
+    }
+
+    fn get_server_players(&self, app: &App) -> Result<ServerPlayers, GDError> {
+        let buf = self.get_request_data(Request::PLAYERS)?;
+        let mut pos = 0;
+
+        println!("{:x?}", buf);
+
+        let count = buffer::get_u8(&buf, &mut pos)?;
+        let mut players: Vec<Player> = Vec::new();
+
+        for _ in 0..count {
+            pos += 1; //skip the index byte
+            players.push(Player {
+                name: buffer::get_string(&buf, &mut pos)?,
+                score: buffer::get_u32_le(&buf, &mut pos)?,
+                duration: buffer::get_f32_le(&buf, &mut pos)?,
+                deaths: match *app == App::TheShip {
+                    false => None,
+                    true => Some(buffer::get_u32_le(&buf, &mut pos)?)
+                },
+                money: match *app == App::TheShip {
+                    false => None,
+                    true => Some(buffer::get_u32_le(&buf, &mut pos)?)
+                }
+            });
+        }
+
+        Ok(ServerPlayers {
+            count,
+            players
+        })
+    }
+
+    fn get_server_rules(&self, app: &App) -> Result<ServerRules, GDError> {
+        let buf = self.get_request_data(Request::RULES)?;
+        let mut pos = 0;
+
+        println!("{:x?}", buf);
+
+        let count = buffer::get_u16_le(&buf, &mut pos)?;
+        let mut rules: Vec<Rule> = Vec::new();
+
+        for _ in 0..count {
+            rules.push(Rule {
+                name: buffer::get_string(&buf, &mut pos)?, //might be truncated!
+                value: buffer::get_string(&buf, &mut pos)?
+            });
+            println!("{} = {}", rules[rules.len() - 1].name, rules[rules.len() - 1].value);
+        }
+
+        println!("{} {}", buf.len(), pos);
+
+        Ok(ServerRules {
+            count,
+            rules
+        })
+    }
+
+    pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
+        let client = ValveProtocol::new(address, port);
+
+        Ok(Response {
+            info: match gather.info {
+                false => None,
+                true => Some(client.get_server_info(&app)?)
+            },
+            players: match gather.players {
+                false => None,
+                true => Some(client.get_server_players(&app)?)
+            },
+            rules: match gather.rules {
+                false => None,
+                true => Some(client.get_server_rules(&app)?)
             }
         })
     }

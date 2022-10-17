@@ -9,14 +9,6 @@ pub fn complete_address(address: &str, port: u16) -> String {
     String::from(address.to_owned() + ":").add(&*port.to_string())
 }
 
-pub fn combine_two_u8_le(high: u8, low: u8) -> u16 {
-    u16::from_be_bytes([high, low])
-}
-
-pub fn combine_eight_u8_le(a: u8, b: u8, c: u8, d: u8, e: u8, f: u8, g: u8, h: u8) -> u64 {
-    u64::from_be_bytes([a, b, c, d, e, f, g, h])
-}
-
 pub mod buffer {
     use super::*;
 
@@ -35,8 +27,28 @@ pub mod buffer {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
 
-        let value = combine_two_u8_le(buf[*pos + 1], buf[*pos]);
+        let value = u16::from_le_bytes([buf[*pos], buf[*pos + 1]]);
         *pos += 2;
+        Ok(value)
+    }
+
+    pub fn get_u32_le(buf: &[u8], pos: &mut usize) -> Result<u32, GDError> {
+        if buf.len() <= *pos + 3 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
+        }
+
+        let value = u32::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3]]);
+        *pos += 4;
+        Ok(value)
+    }
+
+    pub fn get_f32_le(buf: &[u8], pos: &mut usize) -> Result<f32, GDError> {
+        if buf.len() <= *pos + 3 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
+        }
+
+        let value = f32::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3]]);
+        *pos += 4;
         Ok(value)
     }
 
@@ -45,7 +57,7 @@ pub mod buffer {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
 
-        let value = combine_eight_u8_le(buf[*pos + 7], buf[*pos + 6], buf[*pos + 5], buf[*pos + 4], buf[*pos + 3], buf[*pos + 2], buf[*pos + 1], buf[*pos]);
+        let value = u64::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3], buf[*pos + 4], buf[*pos + 5], buf[*pos + 6], buf[*pos + 7]]);
         *pos += 8;
         Ok(value)
     }
@@ -82,16 +94,6 @@ mod tests {
     }
 
     #[test]
-    fn combine_two_u8_le_test() {
-        assert_eq!(combine_two_u8_le(49, 123), 12667);
-    }
-
-    #[test]
-    fn combine_eight_u8_le_test() {
-        assert_eq!(combine_eight_u8_le(49, 123, 44, 52, 3, 250, 22, 0), 3565492131910522368);
-    }
-
-    #[test]
     fn get_u8_test() {
         let data = [72];
         let mut pos = 0;
@@ -109,6 +111,26 @@ mod tests {
         assert_eq!(pos, 2);
         assert!(buffer::get_u16_le(&data, &mut pos).is_err());
         assert_eq!(pos, 2);
+    }
+
+    #[test]
+    fn get_u32_le_test() {
+        let data = [72, 29, 128, 100];
+        let mut pos = 0;
+        assert_eq!(buffer::get_u32_le(&data, &mut pos).unwrap(), 1686117704);
+        assert_eq!(pos, 4);
+        assert!(buffer::get_u32_le(&data, &mut pos).is_err());
+        assert_eq!(pos, 4);
+    }
+
+    #[test]
+    fn get_f32_le_test() {
+        let data = [72, 29, 128, 100];
+        let mut pos = 0;
+        assert_eq!(buffer::get_f32_le(&data, &mut pos).unwrap(), 1.8906345e22);
+        assert_eq!(pos, 4);
+        assert!(buffer::get_f32_le(&data, &mut pos).is_err());
+        assert_eq!(pos, 4);
     }
 
     #[test]
