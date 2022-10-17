@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 use crate::errors::GDError;
-use crate::utils::{buffer, complete_address, concat_u8};
+use crate::utils::{buffer, complete_address, concat_u8_arrays};
 
 #[derive(Debug)]
 pub enum Server {
@@ -57,6 +57,12 @@ pub enum Request {
     A2sInfo(Option<[u8; 4]>)
 }
 
+#[derive(PartialEq)]
+pub enum App {
+    TF2 = 440,
+    TheShip = 2400
+}
+
 pub struct ValveProtocol {
     socket: UdpSocket,
     complete_address: String
@@ -79,7 +85,7 @@ impl ValveProtocol {
         let request_kind_packet = match kind {
             Request::A2sInfo(challenge) => match challenge {
                 None => default,
-                Some(value) => concat_u8(&default, &value)
+                Some(value) => concat_u8_arrays(&default, &value)
             }
         };
 
@@ -103,7 +109,7 @@ impl ValveProtocol {
 }
 
 impl ValveProtocol {
-    pub(crate) fn query(address: &str, port: u16, has_the_ship: bool) -> Result<Response, GDError> {
+    pub(crate) fn query(app: App, address: &str, port: u16) -> Result<Response, GDError> {
         let client = ValveProtocol::new(address, port);
 
         client.do_request(Request::A2sInfo(None), None);
@@ -117,11 +123,11 @@ impl ValveProtocol {
 
         Ok(Response {
             protocol: buffer::get_u8(&buf, &mut pos)?,
-            name: buffer::get_string(&buf, &mut pos),
-            map: buffer::get_string(&buf, &mut pos),
-            folder: buffer::get_string(&buf, &mut pos),
-            game: buffer::get_string(&buf, &mut pos),
-            id: buffer::get_u16(&buf, &mut pos),
+            name: buffer::get_string(&buf, &mut pos)?,
+            map: buffer::get_string(&buf, &mut pos)?,
+            folder: buffer::get_string(&buf, &mut pos)?,
+            game: buffer::get_string(&buf, &mut pos)?,
+            id: buffer::get_u16_le(&buf, &mut pos)?,
             players: buffer::get_u8(&buf, &mut pos)?,
             max_players: buffer::get_u8(&buf, &mut pos)?,
             bots: buffer::get_u8(&buf, &mut pos)?,
@@ -137,7 +143,7 @@ impl ValveProtocol {
             },
             has_password: buffer::get_u8(&buf, &mut pos)? == 1,
             vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
-            the_ship: match has_the_ship {
+            the_ship: match app == App::TheShip {
                 false => None,
                 true => Some(TheShip {
                     mode: buffer::get_u8(&buf, &mut pos)?,
@@ -145,33 +151,33 @@ impl ValveProtocol {
                     duration: buffer::get_u8(&buf, &mut pos)?
                 })
             },
-            version: buffer::get_string(&buf, &mut pos),
+            version: buffer::get_string(&buf, &mut pos)?,
             extra_data: match buffer::get_u8(&buf, &mut pos) {
                 Err(_) => None,
                 Ok(value) => Some(ExtraData {
                     port: match (value & 0x80) > 0 {
                         false => None,
-                        true => Some(buffer::get_u16(&buf, &mut pos))
+                        true => Some(buffer::get_u16_le(&buf, &mut pos)?)
                     },
                     steam_id: match (value & 0x10) > 0 {
                         false => None,
-                        true => Some(buffer::get_u64(&buf, &mut pos))
+                        true => Some(buffer::get_u64_le(&buf, &mut pos)?)
                     },
                     tv_port: match (value & 0x40) > 0 {
                         false => None,
-                        true => Some(buffer::get_u16(&buf, &mut pos))
+                        true => Some(buffer::get_u16_le(&buf, &mut pos)?)
                     },
                     tv_name: match (value & 0x40) > 0 {
                         false => None,
-                        true => Some(buffer::get_string(&buf, &mut pos))
+                        true => Some(buffer::get_string(&buf, &mut pos)?)
                     },
                     keywords: match (value & 0x20) > 0 {
                         false => None,
-                        true => Some(buffer::get_string(&buf, &mut pos))
+                        true => Some(buffer::get_string(&buf, &mut pos)?)
                     },
                     game_id: match (value & 0x01) > 0 {
                         false => None,
-                        true => Some(buffer::get_u64(&buf, &mut pos))
+                        true => Some(buffer::get_u64_le(&buf, &mut pos)?)
                     }
                 })
             }
