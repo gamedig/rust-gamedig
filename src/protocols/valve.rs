@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::net::UdpSocket;
 use crate::errors::GDError;
 use crate::utils::{buffer, complete_address, concat_u8_arrays};
@@ -61,13 +62,7 @@ pub struct Player {
 #[derive(Debug)]
 pub struct ServerRules {
     pub count: u16,
-    pub rules: Vec<Rule>
-}
-
-#[derive(Debug)]
-pub struct Rule {
-    pub name: String,
-    pub value: String
+    pub rules: HashMap<String, String>
 }
 
 #[derive(Debug)]
@@ -133,6 +128,18 @@ impl ValveProtocol {
         Ok(buffer[..amt].to_vec())
     }
 
+    fn receive_truncated(&self, initial_packet: &[u8]) -> Result<Vec<u8>, GDError> {
+        let count = initial_packet[8] - 1;
+        let mut final_packet: Vec<u8> = initial_packet.to_vec().drain(17..).collect::<Vec<u8>>();
+
+        for _ in 0..count {
+            let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
+            final_packet.append(&mut packet.drain(13..).collect::<Vec<u8>>());
+        }
+
+        Ok(final_packet)
+    }
+
     pub fn get_request_data(&self, kind: Request) -> Result<Vec<u8>, GDError> {
         let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
         let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
@@ -164,13 +171,11 @@ impl ValveProtocol {
 
         self.send(&challenge_packet)?;
 
-        let mut after_challenge_receive = self.receive(DEFAULT_PACKET_SIZE)?;
-
-        if kind == Request::RULES && after_challenge_receive[0] == 0xFE {
-            Ok(after_challenge_receive.drain(17..).collect())
-        }
-        else {
-            Ok(after_challenge_receive.drain(5..).collect())
+        let packet = self.receive(DEFAULT_PACKET_SIZE)?;
+        if packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45) { //'E'
+            self.receive_truncated(&packet)
+        } else {
+            Ok(packet)
         }
     }
 
@@ -245,8 +250,6 @@ impl ValveProtocol {
         let buf = self.get_request_data(Request::PLAYERS)?;
         let mut pos = 0;
 
-        println!("{:x?}", buf);
-
         let count = buffer::get_u8(&buf, &mut pos)?;
         let mut players: Vec<Player> = Vec::new();
 
@@ -277,20 +280,13 @@ impl ValveProtocol {
         let buf = self.get_request_data(Request::RULES)?;
         let mut pos = 0;
 
-        println!("{:x?}", buf);
-
         let count = buffer::get_u16_le(&buf, &mut pos)?;
-        let mut rules: Vec<Rule> = Vec::new();
+        let mut rules: HashMap<String, String> = HashMap::new();
 
         for _ in 0..count {
-            rules.push(Rule {
-                name: buffer::get_string(&buf, &mut pos)?, //might be truncated!
-                value: buffer::get_string(&buf, &mut pos)?
-            });
-            println!("{} = {}", rules[rules.len() - 1].name, rules[rules.len() - 1].value);
+            rules.insert(buffer::get_string(&buf, &mut pos)?,   //name
+                         buffer::get_string(&buf, &mut pos)?);  //value
         }
-
-        println!("{} {}", buf.len(), pos);
 
         Ok(ServerRules {
             count,
