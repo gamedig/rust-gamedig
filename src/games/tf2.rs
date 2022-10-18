@@ -1,5 +1,5 @@
 use crate::errors::GDError;
-use crate::valve::{Response, ValveProtocol, App, GatheringSettings};
+use crate::valve::{ValveProtocol, App, GatheringSettings, Response};
 
 pub struct TF2;
 
@@ -9,8 +9,7 @@ impl TF2 {
             None => 27015,
             Some(port) => port
         }, GatheringSettings {
-            info: false,
-            players: false,
+            players: true,
             rules: true
         })
     }

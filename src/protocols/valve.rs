@@ -19,7 +19,7 @@ pub enum Environment {
 
 #[derive(Debug)]
 pub struct Response {
-    pub info: Option<ServerInfo>,
+    pub info: ServerInfo,
     pub players: Option<ServerPlayers>,
     pub rules: Option<ServerRules>
 }
@@ -62,7 +62,7 @@ pub struct Player {
 #[derive(Debug)]
 pub struct ServerRules {
     pub count: u16,
-    pub rules: HashMap<String, String>
+    pub map: HashMap<String, String>
 }
 
 #[derive(Debug)]
@@ -96,8 +96,20 @@ pub enum App {
     TheShip = 2400
 }
 
+impl TryFrom<u16> for App {
+    type Error = GDError;
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        match value {
+            x if x == App::TF2 as u16 => Ok(App::TF2),
+            x if x == App::TF2 as u16 => Ok(App::CSGO),
+            x if x == App::TF2 as u16 => Ok(App::TheShip),
+            _ => Err(GDError::UnknownEnumCast),
+        }
+    }
+}
+
 pub struct GatheringSettings {
-    pub info: bool,
     pub players: bool,
     pub rules: bool
 }
@@ -171,11 +183,11 @@ impl ValveProtocol {
 
         self.send(&challenge_packet)?;
 
-        let packet = self.receive(DEFAULT_PACKET_SIZE)?;
+        let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
         if packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45) { //'E'
             self.receive_truncated(&packet)
         } else {
-            Ok(packet)
+            Ok(packet.drain(5..).collect::<Vec<u8>>())
         }
     }
 
@@ -276,7 +288,7 @@ impl ValveProtocol {
         })
     }
 
-    fn get_server_rules(&self, app: &App) -> Result<ServerRules, GDError> {
+    fn get_server_rules(&self) -> Result<ServerRules, GDError> {
         let buf = self.get_request_data(Request::RULES)?;
         let mut pos = 0;
 
@@ -290,25 +302,26 @@ impl ValveProtocol {
 
         Ok(ServerRules {
             count,
-            rules
+            map: rules
         })
     }
 
     pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
         let client = ValveProtocol::new(address, port);
 
+        let info = client.get_server_info(&app)?;
+
+        App::try_from(info.id).map_err(|_| GDError::BadGame(format!("Found {} instead!", info.id)))?;
+
         Ok(Response {
-            info: match gather.info {
-                false => None,
-                true => Some(client.get_server_info(&app)?)
-            },
+            info,
             players: match gather.players {
                 false => None,
                 true => Some(client.get_server_players(&app)?)
             },
             rules: match gather.rules {
                 false => None,
-                true => Some(client.get_server_rules(&app)?)
+                true => Some(client.get_server_rules()?)
             }
         })
     }
