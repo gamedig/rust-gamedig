@@ -152,7 +152,7 @@ impl ValveProtocol {
         Ok(final_packet)
     }
 
-    pub fn get_request_data(&self, kind: Request) -> Result<Vec<u8>, GDError> {
+    pub fn get_request_data(&self, app: &App, kind: Request) -> Result<Vec<u8>, GDError> {
         let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
         let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
         let rules_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
@@ -184,7 +184,7 @@ impl ValveProtocol {
         self.send(&challenge_packet)?;
 
         let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
-        if packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45) { //'E'
+        if (packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45)) && (*app != App::TheShip) { //'E'
             self.receive_truncated(&packet)
         } else {
             Ok(packet.drain(5..).collect::<Vec<u8>>())
@@ -192,7 +192,7 @@ impl ValveProtocol {
     }
 
     fn get_server_info(&self, app: &App) -> Result<ServerInfo, GDError> {
-        let buf = self.get_request_data(Request::INFO)?;
+        let buf = self.get_request_data(app, Request::INFO)?;
         let mut pos = 0;
 
         Ok(ServerInfo {
@@ -259,7 +259,7 @@ impl ValveProtocol {
     }
 
     fn get_server_players(&self, app: &App) -> Result<ServerPlayers, GDError> {
-        let buf = self.get_request_data(Request::PLAYERS)?;
+        let buf = self.get_request_data(app, Request::PLAYERS)?;
         let mut pos = 0;
 
         let count = buffer::get_u8(&buf, &mut pos)?;
@@ -288,8 +288,8 @@ impl ValveProtocol {
         })
     }
 
-    fn get_server_rules(&self) -> Result<ServerRules, GDError> {
-        let buf = self.get_request_data(Request::RULES)?;
+    fn get_server_rules(&self, app: &App) -> Result<ServerRules, GDError> {
+        let buf = self.get_request_data(app, Request::RULES)?;
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
@@ -321,7 +321,7 @@ impl ValveProtocol {
             },
             rules: match gather.rules {
                 false => None,
-                true => Some(client.get_server_rules()?)
+                true => Some(client.get_server_rules(&app)?)
             }
         })
     }

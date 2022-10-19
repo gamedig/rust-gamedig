@@ -9,8 +9,8 @@ impl TheShip {
             None => 27015,
             Some(port) => port
         }, GatheringSettings {
-            players: false,
-            rules: false
+            players: true,
+            rules: true
         })
     }
 }
