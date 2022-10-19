@@ -208,12 +208,14 @@ impl ValveProtocol {
             server_type: match buffer::get_u8(&buf, &mut pos)? {
                 100 => Server::Dedicated, //'d'
                 108 => Server::NonDedicated, //'l'
-                _ => Server::SourceTV //'p'
+                112 => Server::SourceTV, //'p'
+                _ => Err(GDError::UnknownEnumCast)?
             },
             environment_type: match buffer::get_u8(&buf, &mut pos)? {
-                100 => Environment::Linux, //'l'
+                108 => Environment::Linux, //'l'
                 119 => Environment::Windows, //'w'
-                _ => Environment::Mac //'m' or 'o'
+                109 | 111 => Environment::Mac, //'m' or 'o'
+                _ => Err(GDError::UnknownEnumCast)?
             },
             has_password: buffer::get_u8(&buf, &mut pos)? == 1,
             vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
