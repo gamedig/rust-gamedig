@@ -102,8 +102,8 @@ impl TryFrom<u16> for App {
     fn try_from(value: u16) -> Result<Self, Self::Error> {
         match value {
             x if x == App::TF2 as u16 => Ok(App::TF2),
-            x if x == App::TF2 as u16 => Ok(App::CSGO),
-            x if x == App::TF2 as u16 => Ok(App::TheShip),
+            x if x == App::CSGO as u16 => Ok(App::CSGO),
+            x if x == App::TheShip as u16 => Ok(App::TheShip),
             _ => Err(GDError::UnknownEnumCast),
         }
     }
