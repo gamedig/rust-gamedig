@@ -1,5 +1,5 @@
 use std::ops::Add;
-use crate::GDError;
+use crate::{GDResult, GDError};
 
 pub fn concat_u8_arrays(first: &[u8], second: &[u8]) -> Vec<u8> {
     [first, second].concat()
@@ -12,7 +12,7 @@ pub fn complete_address(address: &str, port: u16) -> String {
 pub mod buffer {
     use super::*;
 
-    pub fn get_u8(buf: &[u8], pos: &mut usize) -> Result<u8, GDError> {
+    pub fn get_u8(buf: &[u8], pos: &mut usize) -> GDResult<u8> {
         if buf.len() <= *pos {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
@@ -22,7 +22,7 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_u16_le(buf: &[u8], pos: &mut usize) -> Result<u16, GDError> {
+    pub fn get_u16_le(buf: &[u8], pos: &mut usize) -> GDResult<u16> {
         if buf.len() <= *pos + 1 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
@@ -32,7 +32,7 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_u32_le(buf: &[u8], pos: &mut usize) -> Result<u32, GDError> {
+    pub fn get_u32_le(buf: &[u8], pos: &mut usize) -> GDResult<u32> {
         if buf.len() <= *pos + 3 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
@@ -42,7 +42,7 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_f32_le(buf: &[u8], pos: &mut usize) -> Result<f32, GDError> {
+    pub fn get_f32_le(buf: &[u8], pos: &mut usize) -> GDResult<f32> {
         if buf.len() <= *pos + 3 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
@@ -52,7 +52,7 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_u64_le(buf: &[u8], pos: &mut usize) -> Result<u64, GDError> {
+    pub fn get_u64_le(buf: &[u8], pos: &mut usize) -> GDResult<u64> {
         if buf.len() <= *pos + 7 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
         }
@@ -62,7 +62,7 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_string(buf: &[u8], pos: &mut usize) -> Result<String, GDError> {
+    pub fn get_string(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
         let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_string()))?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position]).unwrap().to_string();

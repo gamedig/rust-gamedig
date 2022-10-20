@@ -1,5 +1,5 @@
 use std::net::UdpSocket;
-use crate::errors::GDError;
+use crate::{GDError, GDResult};
 use crate::utils::{buffer, complete_address, concat_u8_arrays};
 
 /// The type of the server.
@@ -132,7 +132,7 @@ pub enum App {
 impl TryFrom<u16> for App {
     type Error = GDError;
 
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
+    fn try_from(value: u16) -> GDResult<Self> {
         match value {
             x if x == App::TF2 as u16 => Ok(App::TF2),
             x if x == App::CSGO as u16 => Ok(App::CSGO),
@@ -163,18 +163,18 @@ impl ValveProtocol {
         }
     }
 
-    fn send(&self, data: &[u8]) -> Result<(), GDError> {
+    fn send(&self, data: &[u8]) -> GDResult<()> {
         self.socket.send_to(&data, &self.complete_address).map_err(|e| GDError::PacketSend(e.to_string()))?;
         Ok(())
     }
 
-    fn receive(&self, buffer_size: usize) -> Result<Vec<u8>, GDError> {
+    fn receive(&self, buffer_size: usize) -> GDResult<Vec<u8>> {
         let mut buffer: Vec<u8> = vec![0; buffer_size];
         let (amt, _) = self.socket.recv_from(&mut buffer.as_mut_slice()).map_err(|e| GDError::PacketReceive(e.to_string()))?;
         Ok(buffer[..amt].to_vec())
     }
 
-    fn receive_truncated(&self, initial_packet: &[u8]) -> Result<Vec<u8>, GDError> {
+    fn receive_truncated(&self, initial_packet: &[u8]) -> GDResult<Vec<u8>> {
         let count = initial_packet[8] - 1;
         let mut final_packet: Vec<u8> = initial_packet.to_vec().drain(17..).collect::<Vec<u8>>();
 
@@ -187,7 +187,7 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    pub fn get_request_data(&self, app: &App, kind: Request) -> Result<Vec<u8>, GDError> {
+    pub fn get_request_data(&self, app: &App, kind: Request) -> GDResult<Vec<u8>> {
         let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
         let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
         let rules_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
@@ -227,7 +227,7 @@ impl ValveProtocol {
     }
 
     /// Get the server information's.
-    pub fn get_server_info(&self, app: &App) -> Result<ServerInfo, GDError> {
+    pub fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
         let buf = self.get_request_data(app, Request::INFO)?;
         let mut pos = 0;
 
@@ -297,7 +297,7 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    pub fn get_server_players(&self, app: &App) -> Result<Vec<ServerPlayer>, GDError> {
+    pub fn get_server_players(&self, app: &App) -> GDResult<Vec<ServerPlayer>> {
         let buf = self.get_request_data(app, Request::PLAYERS)?;
         let mut pos = 0;
 
@@ -325,7 +325,7 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    pub fn get_server_rules(&self, app: &App) -> Result<Option<Vec<ServerRule>>, GDError> {
+    pub fn get_server_rules(&self, app: &App) -> GDResult<Option<Vec<ServerRule>>> {
         if *app == App::CSGO { //cause csgo response here is broken after feb 21 2014
             return Ok(None);
         }

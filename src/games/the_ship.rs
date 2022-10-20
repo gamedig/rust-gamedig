@@ -1,5 +1,4 @@
-use crate::errors::GDError;
-use crate::valve;
+use crate::{GDResult, valve};
 use crate::valve::{ValveProtocol, App, GatheringSettings, ServerPlayer, Server, ServerRule};
 
 #[derive(Debug)]
@@ -83,7 +82,7 @@ impl Response {
     }
 }
 
-pub fn query(address: &str, port: Option<u16>) -> Result<Response, GDError> {
+pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = ValveProtocol::query(App::TheShip, address, match port {
         None => 27015,
         Some(port) => port
