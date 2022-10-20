@@ -3,8 +3,8 @@ rust-GameDig is a game server/services query library, capable of querying the st
 
 MSRV is `1.58.1` and the code is cross-platform.
 
-# Example
-Basic usage of the library is:
+## Usage
+Just pick a game, provide the ip and the port (can be optional) then query on it.
 ```rust
 use gamedig::games::tf2;
 
@@ -18,12 +18,12 @@ fn main() {
 ```
 To see more examples, see the [examples](examples) folder.
 
-# Documentation
+## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
 Curious about the history and what changed between versions? you can see just that in the [CHANGELOG](CHANGELOG.md) file.
 
-# Games List
+## Games List
 To see the supported (or the planned to support) games, see [GAMES](GAMES.md).
 
-# Contributing
+## Contributing
 If you want see your favorite game/service being supported here, open an issue and I'll prioritize it! (or do a pull request if you want to implement it yourself)
