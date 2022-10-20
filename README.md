@@ -1,13 +1,13 @@
 # rust-gamedig
-rust-GameDig is a game server/services query library, capable of querying the status of many games/services, this library brings what [node-GameDig](https://github.com/gamedig/node-gamedig) does, to pure Rust!  
+**rust-GameDig** is a games/services server query library that can fetch the availability and/or details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
 MSRV is `1.58.1` and the code is cross-platform.
 
-## Games/Protocols List
-To see the supported (or the planned to support) games/protocols, see [GAMES](GAMES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
+## Games/Services/Protocols List
+To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
 ## Usage
-Just pick a game, provide the ip and the port (can be optional) then query on it.
+Just pick a game/service, provide the ip and the port (can be optional) then query on it.
 ```rust
 use gamedig::games::tf2;
 
