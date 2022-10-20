@@ -6,13 +6,10 @@ MSRV is `1.58.1` and the code is cross-platform.
 # Example
 Basic usage of the library is:
 ```rust
-use gamedig::TF2;
+use gamedig::games::tf2;
 
 fn main() {
-    let response = TF2::query("91.216.250.10", None);
-    //query your favorite game/protocol/service, some might come with different parameters
-    //here its just the IP and the port (if None, its gonna be the default from the protocol)
-    
+    let response = tf2::query("91.216.250.10", None); //or Some(27015), None is the default protocol port
     match response {
         Err(error) => println!("Couldn't query, error: {error}"),
         Ok(r) => println!("{:?}", r)
@@ -29,4 +26,4 @@ Curious about the history and what changed between versions? you can see just th
 To see the supported (or the planned to support) games, see [GAMES](GAMES.md).
 
 # Contributing
-If you want see your favorite game/service being supported here, open an issue (or do a pull request if you want to implement it yourself)!
+If you want see your favorite game/service being supported here, open an issue and I'll prioritize it! (or do a pull request if you want to implement it yourself)

@@ -1,14 +1,22 @@
 use core::fmt;
 use std::fmt::Formatter;
 
+/// GameDigError, every error you can encounter using the library.
 #[derive(Debug, Clone)]
 pub enum GDError {
+    /// The received packet was bigger than the buffer size.
     PacketOverflow(String),
+    /// The received packet was shorter than the expected one.
     PacketUnderflow(String),
+    /// The received packet was badly formatted.
     PacketBad(String),
+    /// Couldn't send the packet.
     PacketSend(String),
+    /// Couldn't send the receive.
     PacketReceive(String),
+    /// Unknown cast while translating a value to an enum
     UnknownEnumCast,
+    /// The server queried is not from the queried game.
     BadGame(String)
 }
 

@@ -3,6 +3,7 @@ use std::net::UdpSocket;
 use crate::errors::GDError;
 use crate::utils::{buffer, complete_address, concat_u8_arrays};
 
+/// The type of the server.
 #[derive(Debug)]
 pub enum Server {
     Dedicated,
@@ -10,6 +11,7 @@ pub enum Server {
     SourceTV
 }
 
+/// The Operating System that the server is on.
 #[derive(Debug)]
 pub enum Environment {
     Linux,
@@ -17,6 +19,7 @@ pub enum Environment {
     Mac
 }
 
+/// A query response.
 #[derive(Debug)]
 pub struct Response {
     pub info: ServerInfo,
@@ -24,47 +27,73 @@ pub struct Response {
     pub rules: Option<ServerRules>
 }
 
+/// General server information's.
 #[derive(Debug)]
 pub struct ServerInfo {
+    /// Protocol used by the server.
     pub protocol: u8,
-    pub map: String,
+    /// Name of the server.
     pub name: String,
+    /// Map name.
+    pub map: String,
+    /// Name of the folder containing the game files.
     pub folder: String,
+    /// Full name of the game.
     pub game: String,
+    /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
     pub id: u16,
+    /// Number of players on the server.
     pub players: u8,
+    /// Maximum number of players the server reports it can hold.
     pub max_players: u8,
+    /// Number of bots on the server.
     pub bots: u8,
+    /// Dedicated, NonDedicated or SourceTV
     pub server_type: Server,
+    /// The Operating System that the server is on.
     pub environment_type: Environment,
+    /// Indicated whether the server requires a password.
     pub has_password: bool,
+    /// Indicated whether the server uses VAC.
     pub vac_secured: bool,
+    /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
     pub the_ship: Option<TheShip>,
+    /// Version of the game installed on the server.
     pub version: String,
+    /// Some extra data that the server might provide or not.
     pub extra_data: Option<ExtraData>
 }
 
+/// Server's players.
 #[derive(Debug)]
 pub struct ServerPlayers {
     pub count: u8,
     pub players: Vec<Player>
 }
 
+/// Data about a player
 #[derive(Debug)]
 pub struct Player {
+    /// Player's name.
     pub name: String,
+    /// General score.
     pub score: u32,
+    /// How long they've been on the server for.
     pub duration: f32,
+    /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): deaths count
     pub deaths: Option<u32>, //the_ship
+    /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): money amount
     pub money: Option<u32>, //the_ship
 }
 
+/// Server's rules.
 #[derive(Debug)]
 pub struct ServerRules {
     pub count: u16,
     pub map: HashMap<String, String>
 }
 
+/// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
 #[derive(Debug)]
 pub struct TheShip {
     pub mode: u8,
@@ -72,23 +101,35 @@ pub struct TheShip {
     pub duration: u8
 }
 
+/// Some extra data that the server might provide or not.
 #[derive(Debug)]
 pub struct ExtraData {
+    /// The server's game port number.
     pub port: Option<u16>,
+    /// Server's SteamID.
     pub steam_id: Option<u64>,
+    /// Spectator port number for SourceTV.
     pub tv_port: Option<u16>,
+    /// Name of the spectator server for SourceTV.
     pub tv_name: Option<String>,
+    /// Tags that describe the game according to the server.
     pub keywords: Option<String>,
+    /// The server's 64-bit GameID.
     pub game_id: Option<u64>
 }
 
+/// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
 #[derive(PartialEq)]
 pub enum Request {
+    /// Known as `A2S_INFO`
     INFO,
+    /// Known as `A2S_PLAYERS`
     PLAYERS,
+    /// Known as `A2S_RULES`
     RULES
 }
 
+/// Supported app id's
 #[derive(PartialEq)]
 pub enum App {
     TF2 = 440,
@@ -109,6 +150,7 @@ impl TryFrom<u16> for App {
     }
 }
 
+/// What data to gather, purely used only with the query function.
 pub struct GatheringSettings {
     pub players: bool,
     pub rules: bool
@@ -152,6 +194,7 @@ impl ValveProtocol {
         Ok(final_packet)
     }
 
+    /// Ask for a specific request only.
     pub fn get_request_data(&self, app: &App, kind: Request) -> Result<Vec<u8>, GDError> {
         let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
         let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
@@ -191,7 +234,8 @@ impl ValveProtocol {
         }
     }
 
-    fn get_server_info(&self, app: &App) -> Result<ServerInfo, GDError> {
+    /// Get the server information's.
+    pub fn get_server_info(&self, app: &App) -> Result<ServerInfo, GDError> {
         let buf = self.get_request_data(app, Request::INFO)?;
         let mut pos = 0;
 
@@ -260,7 +304,8 @@ impl ValveProtocol {
         })
     }
 
-    fn get_server_players(&self, app: &App) -> Result<ServerPlayers, GDError> {
+    /// Get the server player's.
+    pub fn get_server_players(&self, app: &App) -> Result<ServerPlayers, GDError> {
         let buf = self.get_request_data(app, Request::PLAYERS)?;
         let mut pos = 0;
 
@@ -290,7 +335,8 @@ impl ValveProtocol {
         })
     }
 
-    fn get_server_rules(&self, app: &App) -> Result<Option<ServerRules>, GDError> {
+    /// Get the server rules's.
+    pub fn get_server_rules(&self, app: &App) -> Result<Option<ServerRules>, GDError> {
         if *app == App::CSGO { //cause csgo response here is broken after feb 21 2014
             return Ok(None);
         }
