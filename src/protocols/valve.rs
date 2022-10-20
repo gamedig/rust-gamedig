@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::net::UdpSocket;
 use crate::errors::GDError;
 use crate::utils::{buffer, complete_address, concat_u8_arrays};
@@ -23,8 +22,8 @@ pub enum Environment {
 #[derive(Debug)]
 pub struct Response {
     pub info: ServerInfo,
-    pub players: Option<ServerPlayers>,
-    pub rules: Option<ServerRules>
+    pub players: Option<Vec<ServerPlayer>>,
+    pub rules: Option<Vec<ServerRule>>
 }
 
 /// General server information's.
@@ -64,16 +63,9 @@ pub struct ServerInfo {
     pub extra_data: Option<ExtraData>
 }
 
-/// Server's players.
+/// A server player.
 #[derive(Debug)]
-pub struct ServerPlayers {
-    pub count: u8,
-    pub players: Vec<Player>
-}
-
-/// Data about a player
-#[derive(Debug)]
-pub struct Player {
+pub struct ServerPlayer {
     /// Player's name.
     pub name: String,
     /// General score.
@@ -86,11 +78,11 @@ pub struct Player {
     pub money: Option<u32>, //the_ship
 }
 
-/// Server's rules.
+/// A server rule.
 #[derive(Debug)]
-pub struct ServerRules {
-    pub count: u16,
-    pub map: HashMap<String, String>
+pub struct ServerRule {
+    pub name: String,
+    pub value: String
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
@@ -305,16 +297,16 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    pub fn get_server_players(&self, app: &App) -> Result<ServerPlayers, GDError> {
+    pub fn get_server_players(&self, app: &App) -> Result<Vec<ServerPlayer>, GDError> {
         let buf = self.get_request_data(app, Request::PLAYERS)?;
         let mut pos = 0;
 
         let count = buffer::get_u8(&buf, &mut pos)?;
-        let mut players: Vec<Player> = Vec::new();
+        let mut players: Vec<ServerPlayer> = Vec::new();
 
         for _ in 0..count {
             pos += 1; //skip the index byte
-            players.push(Player {
+            players.push(ServerPlayer {
                 name: buffer::get_string(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
@@ -329,14 +321,11 @@ impl ValveProtocol {
             });
         }
 
-        Ok(ServerPlayers {
-            count,
-            players
-        })
+        Ok(players)
     }
 
     /// Get the server rules's.
-    pub fn get_server_rules(&self, app: &App) -> Result<Option<ServerRules>, GDError> {
+    pub fn get_server_rules(&self, app: &App) -> Result<Option<Vec<ServerRule>>, GDError> {
         if *app == App::CSGO { //cause csgo response here is broken after feb 21 2014
             return Ok(None);
         }
@@ -345,17 +334,16 @@ impl ValveProtocol {
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
-        let mut rules: HashMap<String, String> = HashMap::new();
+        let mut rules: Vec<ServerRule> = Vec::new();
 
         for _ in 0..count {
-            rules.insert(buffer::get_string(&buf, &mut pos)?,   //name
-                         buffer::get_string(&buf, &mut pos)?);  //value
+            rules.push(ServerRule {
+                name: buffer::get_string(&buf, &mut pos)?,
+                value: buffer::get_string(&buf, &mut pos)?
+            })
         }
 
-        Ok(Some(ServerRules {
-            count,
-            map: rules
-        }))
+        Ok(Some(rules))
     }
 
     pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
