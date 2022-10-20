@@ -290,7 +290,11 @@ impl ValveProtocol {
         })
     }
 
-    fn get_server_rules(&self, app: &App) -> Result<ServerRules, GDError> {
+    fn get_server_rules(&self, app: &App) -> Result<Option<ServerRules>, GDError> {
+        if *app == App::CSGO { //cause csgo response here is broken after feb 21 2014
+            return Ok(None);
+        }
+
         let buf = self.get_request_data(app, Request::RULES)?;
         let mut pos = 0;
 
@@ -302,10 +306,10 @@ impl ValveProtocol {
                          buffer::get_string(&buf, &mut pos)?);  //value
         }
 
-        Ok(ServerRules {
+        Ok(Some(ServerRules {
             count,
             map: rules
-        })
+        }))
     }
 
     pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
@@ -323,7 +327,7 @@ impl ValveProtocol {
             },
             rules: match gather.rules {
                 false => None,
-                true => Some(client.get_server_rules(&app)?)
+                true => client.get_server_rules(&app)?
             }
         })
     }
