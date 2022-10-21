@@ -125,9 +125,10 @@ pub enum Request {
 #[derive(PartialEq)]
 pub enum App {
     CSS = 240,
+    DODS = 300,
     TF2 = 440,
     CSGO = 730,
-    TheShip = 2400
+    TS = 2400
 }
 
 impl TryFrom<u16> for App {
@@ -136,9 +137,10 @@ impl TryFrom<u16> for App {
     fn try_from(value: u16) -> GDResult<Self> {
         match value {
             x if x == App::CSS as u16 => Ok(App::CSS),
+            x if x == App::DODS as u16 => Ok(App::DODS),
             x if x == App::TF2 as u16 => Ok(App::TF2),
             x if x == App::CSGO as u16 => Ok(App::CSGO),
-            x if x == App::TheShip as u16 => Ok(App::TheShip),
+            x if x == App::TS as u16 => Ok(App::TS),
             _ => Err(GDError::UnknownEnumCast),
         }
     }
@@ -221,7 +223,7 @@ impl ValveProtocol {
         self.send(&challenge_packet)?;
 
         let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
-        if (packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45)) && (*app != App::TheShip) { //'E'
+        if (packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45)) && (*app != App::TS) { //'E'
             self.receive_truncated(&packet)
         } else {
             Ok(packet.drain(5..).collect::<Vec<u8>>())
@@ -257,7 +259,7 @@ impl ValveProtocol {
             },
             has_password: buffer::get_u8(&buf, &mut pos)? == 1,
             vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
-            the_ship: match *app == App::TheShip {
+            the_ship: match *app == App::TS {
                 false => None,
                 true => Some(TheShip {
                     mode: buffer::get_u8(&buf, &mut pos)?,
@@ -312,11 +314,11 @@ impl ValveProtocol {
                 name: buffer::get_string(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
-                deaths: match *app == App::TheShip {
+                deaths: match *app == App::TS {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 },
-                money: match *app == App::TheShip {
+                money: match *app == App::TS {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 }
