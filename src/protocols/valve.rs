@@ -130,6 +130,10 @@ pub enum App {
     DODS = 300,
     /// Team Fortress 2
     TF2 = 440,
+    /// Left 4 Dead
+    L4D = 500,
+    /// Left 4 Dead
+    L4D2 = 550,
     /// Counter-Strike: Global Offensive
     CSGO = 730,
     /// The Ship
@@ -146,6 +150,8 @@ impl TryFrom<u16> for App {
             x if x == App::CSS as u16 => Ok(App::CSS),
             x if x == App::DODS as u16 => Ok(App::DODS),
             x if x == App::TF2 as u16 => Ok(App::TF2),
+            x if x == App::L4D as u16 => Ok(App::L4D),
+            x if x == App::L4D2 as u16 => Ok(App::L4D2),
             x if x == App::CSGO as u16 => Ok(App::CSGO),
             x if x == App::TS as u16 => Ok(App::TS),
             x if x == App::GM as u16 => Ok(App::GM),
