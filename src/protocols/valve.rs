@@ -222,26 +222,24 @@ impl Packet {
     }
 
     fn to_bytes(&self) -> Vec<u8> {
-        let mut buf = Vec::new();
+        let mut buf = Vec::from(self.header.to_be_bytes());
 
-        buf.extend(&self.header.to_be_bytes());
         buf.push(self.kind);
         buf.extend(&self.payload);
-
-        println!("{:x?}", buf);
 
         buf
     }
 }
 
 #[derive(Debug)]
+#[allow(dead_code)] //remove this later on
 struct SplitPacketInfo {
     pub header: u32,
     pub id: u32,
     pub total: u8,
     pub number: u8,
     pub size: Option<u16>,
-    pub packet: Packet
+    pub payload: Vec<u8>
 }
 
 impl SplitPacketInfo {
@@ -253,29 +251,31 @@ impl SplitPacketInfo {
         let total = buffer::get_u8(&buf, &mut pos)?;
         let number = buffer::get_u8(&buf, &mut pos)?;
         let size = match *app {
-            App::CSS | App::TF2 => Some(buffer::get_u16_le(&buf, &mut pos)?),
-            _ => None
+            App::CSS => None, // when protocol = 7
+            _ => Some(buffer::get_u16_le(&buf, &mut pos)?)
         };
 
-        let packet = match ((id >> 31) & 1) == 1 {
-            false => Packet::new(&buf[pos..])?,
+        let payload = match ((id >> 31) & 1) == 1 {
+            false => buf[pos..].to_vec(),
             true => {
-                let compressed_size = buffer::get_u32_le(&buf, &mut pos)?;
-                let compressed_crc32 = buffer::get_u32_le(&buf, &mut pos)?;
+                let _decompressed_size = buffer::get_u32_le(&buf, &mut pos)?;
+                let _uncompressed_crc32 = buffer::get_u32_le(&buf, &mut pos)?;
 
                 //decompress...
-                Packet::new(&buf[pos..])?
+                vec![]
             }
         };
 
-        Ok(Self {
+        let t = Self {
             header,
             id,
             total,
             number,
             size,
-            packet
-        })
+            payload
+        };
+        println!("{:?}", t);
+        Ok(t)
     }
 }
 
@@ -308,12 +308,12 @@ impl ValveProtocol {
 
         if buf[0] == 0xFE { //the packet is split
             let initial_split_packet_info = SplitPacketInfo::new(app, &buf)?;
-            let mut final_packet = initial_split_packet_info.packet.clone();
+            let mut final_packet = Packet::new(&initial_split_packet_info.payload)?;
 
             for _ in 1..initial_split_packet_info.total {
                 buf = self.receive_raw(buffer_size)?;
                 let split_packet_info = SplitPacketInfo::new(app, &buf)?;
-                final_packet.payload.extend(&split_packet_info.packet.payload);
+                final_packet.payload.extend(split_packet_info.payload);
             }
 
             Ok(final_packet)
@@ -441,19 +441,17 @@ impl ValveProtocol {
 
     /// Get the server rules's.
     pub fn get_server_rules(&self, app: &App) -> GDResult<Option<Vec<ServerRule>>> {
-        if *app == App::CSGO { //cause csgo response here is broken after feb 21 2014
+        if *app == App::CSGO { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
 
         let buf = self.get_request_data(app, Request::RULES)?;
-        println!("{:02X?}", &buf);
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
         let mut rules: Vec<ServerRule> = Vec::new();
 
-        for i in 0..count - 1 {
-            println!("{i}/{count}");
+        for _ in 0..count {
             rules.push(ServerRule {
                 name: buffer::get_string(&buf, &mut pos)?,
                 value: buffer::get_string(&buf, &mut pos)?

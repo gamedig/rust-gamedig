@@ -1,10 +1,6 @@
 use std::ops::Add;
 use crate::{GDResult, GDError};
 
-pub fn concat_u8_arrays(first: &[u8], second: &[u8]) -> Vec<u8> {
-    [first, second].concat()
-}
-
 pub fn complete_address(address: &str, port: u16) -> String {
     String::from(address.to_owned() + ":").add(&*port.to_string())
 }
@@ -74,17 +70,6 @@ pub mod buffer {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn concat_u8_arrays_test() {
-        let a: [u8; 2] = [1, 2];
-        let b: [u8; 2] = [3, 4];
-        let combined = concat_u8_arrays(&a, &b);
-        assert_eq!(combined[0], a[0]);
-        assert_eq!(combined[1], a[1]);
-        assert_eq!(combined[2], b[0]);
-        assert_eq!(combined[3], b[1]);
-    }
 
     #[test]
     fn complete_address_test() {
