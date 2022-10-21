@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 use crate::{GDError, GDResult};
-use crate::utils::{buffer, complete_address, concat_u8_arrays};
+use crate::utils::{buffer, complete_address};
 
 /// The type of the server.
 #[derive(Debug)]
@@ -111,14 +111,15 @@ pub struct ExtraData {
 }
 
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
+#[repr(u8)]
 pub enum Request {
     /// Known as `A2S_INFO`
-    INFO,
+    INFO = 0x54,
     /// Known as `A2S_PLAYERS`
-    PLAYERS,
+    PLAYERS = 0x55,
     /// Known as `A2S_RULES`
-    RULES
+    RULES = 0x56
 }
 
 /// Supported app id's
@@ -176,6 +177,108 @@ pub struct ValveProtocol {
 
 static DEFAULT_PACKET_SIZE: usize = 2048;
 
+#[derive(Debug, Clone)]
+struct Packet {
+    pub header: u32,
+    pub kind: u8,
+    pub payload: Vec<u8>
+}
+
+impl Packet {
+    fn new(buf: &[u8]) -> GDResult<Self> {
+        let mut pos = 0;
+        Ok(Self {
+            header: buffer::get_u32_le(&buf, &mut pos)?,
+            kind: buffer::get_u8(&buf, &mut pos)?,
+            payload: buf[pos..].to_vec()
+        })
+    }
+
+    fn challenge(kind: Request, challenge: Vec<u8>) -> Self {
+        let mut initial = Packet::initial(kind);
+
+        Self {
+            header: initial.header,
+            kind: initial.kind,
+            payload: match initial.kind {
+                0x54 => {
+                    initial.payload.extend(challenge);
+                    initial.payload
+                },
+                _ => challenge
+            }
+        }
+    }
+
+    fn initial(kind: Request) -> Self {
+        Self {
+            header: 4294967295, //FF FF FF FF
+            kind: kind as u8,
+            payload: match kind {
+                Request::INFO => String::from("Source Engine Query.\0").into_bytes(),
+                _ => vec![0xFF, 0xFF, 0xFF, 0xFF]
+            }
+        }
+    }
+
+    fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+
+        buf.extend(&self.header.to_be_bytes());
+        buf.push(self.kind);
+        buf.extend(&self.payload);
+
+        println!("{:x?}", buf);
+
+        buf
+    }
+}
+
+#[derive(Debug)]
+struct SplitPacketInfo {
+    pub header: u32,
+    pub id: u32,
+    pub total: u8,
+    pub number: u8,
+    pub size: Option<u16>,
+    pub packet: Packet
+}
+
+impl SplitPacketInfo {
+    fn new(app: &App, buf: &[u8]) -> GDResult<Self> {
+        let mut pos = 0;
+
+        let header = buffer::get_u32_le(&buf, &mut pos)?;
+        let id = buffer::get_u32_le(&buf, &mut pos)?;
+        let total = buffer::get_u8(&buf, &mut pos)?;
+        let number = buffer::get_u8(&buf, &mut pos)?;
+        let size = match *app {
+            App::CSS | App::TF2 => Some(buffer::get_u16_le(&buf, &mut pos)?),
+            _ => None
+        };
+
+        let packet = match ((id >> 31) & 1) == 1 {
+            false => Packet::new(&buf[pos..])?,
+            true => {
+                let compressed_size = buffer::get_u32_le(&buf, &mut pos)?;
+                let compressed_crc32 = buffer::get_u32_le(&buf, &mut pos)?;
+
+                //decompress...
+                Packet::new(&buf[pos..])?
+            }
+        };
+
+        Ok(Self {
+            header,
+            id,
+            total,
+            number,
+            size,
+            packet
+        })
+    }
+}
+
 impl ValveProtocol {
     fn new(address: &str, port: u16) -> Self {
         Self {
@@ -189,62 +292,53 @@ impl ValveProtocol {
         Ok(())
     }
 
-    fn receive(&self, buffer_size: usize) -> GDResult<Vec<u8>> {
-        let mut buffer: Vec<u8> = vec![0; buffer_size];
-        let (amt, _) = self.socket.recv_from(&mut buffer.as_mut_slice()).map_err(|e| GDError::PacketReceive(e.to_string()))?;
-        Ok(buffer[..amt].to_vec())
-    }
+    fn receive_raw(&self, buffer_size: usize) -> GDResult<Vec<u8>> {
+        let mut buf: Vec<u8> = vec![0; buffer_size];
+        let (amt, _) = self.socket.recv_from(&mut buf.as_mut_slice()).map_err(|e| GDError::PacketReceive(e.to_string()))?;
 
-    fn receive_truncated(&self, initial_packet: &[u8]) -> GDResult<Vec<u8>> {
-        let count = initial_packet[8] - 1;
-        let mut final_packet: Vec<u8> = initial_packet.to_vec().drain(17..).collect::<Vec<u8>>();
-
-        for _ in 0..count {
-            let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
-            final_packet.append(&mut packet.drain(13..).collect::<Vec<u8>>());
+        if amt < 9 {
+            return Err(GDError::PacketUnderflow("Any Valve Protocol response can't be under 9 bytes long.".to_string()));
         }
 
-        Ok(final_packet)
+        Ok(buf[..amt].to_vec())
+    }
+
+    fn receive(&self, app: &App, buffer_size: usize) -> GDResult<Packet> {
+        let mut buf = self.receive_raw(buffer_size)?;
+
+        if buf[0] == 0xFE { //the packet is split
+            let initial_split_packet_info = SplitPacketInfo::new(app, &buf)?;
+            let mut final_packet = initial_split_packet_info.packet.clone();
+
+            for _ in 1..initial_split_packet_info.total {
+                buf = self.receive_raw(buffer_size)?;
+                let split_packet_info = SplitPacketInfo::new(app, &buf)?;
+                final_packet.payload.extend(&split_packet_info.packet.payload);
+            }
+
+            Ok(final_packet)
+        }
+        else {
+            Packet::new(&buf)
+        }
     }
 
     /// Ask for a specific request only.
     pub fn get_request_data(&self, app: &App, kind: Request) -> GDResult<Vec<u8>> {
-        let info_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00];
-        let players_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, 0xFF, 0xFF, 0xFF, 0xFF];
-        let rules_initial_packet = vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF];
-
-        let request_initial_packet = match kind {
-            Request::INFO => info_initial_packet,
-            Request::PLAYERS => players_initial_packet,
-            Request::RULES => rules_initial_packet
-        };
+        let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
-        let mut initial_receive = self.receive(DEFAULT_PACKET_SIZE)?;
+        let packet = self.receive(app, DEFAULT_PACKET_SIZE)?;
 
-        if initial_receive.len() < 9 {
-            return Err(GDError::PacketOverflow("Any Valve Protocol response can't be under 9 bytes long.".to_string()));
+        if packet.kind != 0x41 { //'A'
+            return Ok(packet.payload.clone());
         }
 
-        if initial_receive[4] != 0x41 { //'A'
-            return Ok(initial_receive.drain(5..).collect());
-        }
-
-        let challenge: [u8; 4] = [initial_receive[5], initial_receive[6], initial_receive[7], initial_receive[8]];
-        let challenge_packet = match kind {
-            Request::INFO => concat_u8_arrays(&request_initial_packet, &challenge),
-            Request::PLAYERS => vec![0xFF, 0xFF, 0xFF, 0xFF, 0x55, challenge[0], challenge[1], challenge[2], challenge[3]],
-            Request::RULES => vec![0xFF, 0xFF, 0xFF, 0xFF, 0x56, challenge[0], challenge[1], challenge[2], challenge[3]]
-        };
+        let challenge = packet.payload;
+        let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.send(&challenge_packet)?;
-
-        let mut packet = self.receive(DEFAULT_PACKET_SIZE)?;
-        if (packet[0] == 0xFE || (packet[0] == 0xFF && packet[4] == 0x45)) && (*app != App::TS) { //'E'
-            self.receive_truncated(&packet)
-        } else {
-            Ok(packet.drain(5..).collect::<Vec<u8>>())
-        }
+        Ok(self.receive(app, DEFAULT_PACKET_SIZE)?.payload)
     }
 
     /// Get the server information's.
@@ -352,12 +446,14 @@ impl ValveProtocol {
         }
 
         let buf = self.get_request_data(app, Request::RULES)?;
+        println!("{:02X?}", &buf);
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
         let mut rules: Vec<ServerRule> = Vec::new();
 
-        for _ in 0..count {
+        for i in 0..count - 1 {
+            println!("{i}/{count}");
             rules.push(ServerRule {
                 name: buffer::get_string(&buf, &mut pos)?,
                 value: buffer::get_string(&buf, &mut pos)?
