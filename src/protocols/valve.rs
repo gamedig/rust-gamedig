@@ -215,7 +215,7 @@ impl Packet {
             header: 4294967295, //FF FF FF FF
             kind: kind as u8,
             payload: match kind {
-                Request::INFO => String::from("Source Engine Query.\0").into_bytes(),
+                Request::INFO => String::from("Source Engine Query\0").into_bytes(),
                 _ => vec![0xFF, 0xFF, 0xFF, 0xFF]
             }
         }
@@ -238,22 +238,19 @@ struct SplitPacketInfo {
     pub id: u32,
     pub total: u8,
     pub number: u8,
-    pub size: Option<u16>,
+    pub size: u16,
     pub payload: Vec<u8>
 }
 
 impl SplitPacketInfo {
-    fn new(app: &App, buf: &[u8]) -> GDResult<Self> {
+    fn new(_app: &App, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
         let header = buffer::get_u32_le(&buf, &mut pos)?;
         let id = buffer::get_u32_le(&buf, &mut pos)?;
         let total = buffer::get_u8(&buf, &mut pos)?;
         let number = buffer::get_u8(&buf, &mut pos)?;
-        let size = match *app {
-            App::CSS => None, // when protocol = 7
-            _ => Some(buffer::get_u16_le(&buf, &mut pos)?)
-        };
+        let size = buffer::get_u16_le(&buf, &mut pos)?;
 
         let payload = match ((id >> 31) & 1) == 1 {
             false => buf[pos..].to_vec(),
@@ -266,16 +263,14 @@ impl SplitPacketInfo {
             }
         };
 
-        let t = Self {
+        Ok(Self {
             header,
             id,
             total,
             number,
             size,
             payload
-        };
-        println!("{:?}", t);
-        Ok(t)
+        })
     }
 }
 
