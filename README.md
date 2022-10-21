@@ -7,7 +7,7 @@ MSRV is `1.58.1` and the code is cross-platform.
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
 ## Usage
-Just pick a game/service, provide the ip and the port (can be optional) then query on it.
+Just pick a game/service/protocol, provide the ip and the port (can be optional) then query on it.
 ```rust
 use gamedig::games::tf2;
 
@@ -26,4 +26,4 @@ The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamed
 Curious about the history and what changed between versions? you can see just that in the [CHANGELOG](CHANGELOG.md) file.
 
 ## Contributing
-If you want see your favorite game/service being supported here, open an issue and I'll prioritize it! (or do a pull request if you want to implement it yourself)
+If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it! (or do a pull request if you want to implement it yourself)

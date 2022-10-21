@@ -128,7 +128,7 @@ pub enum Request {
 pub enum App {
     /// Counter-Strike: Source
     CSS = 240,
-    /// Day of Defeat: Sourcec
+    /// Day of Defeat: Source
     DODS = 300,
     /// Half-Life 2 Deathmatch
     HL2DM = 320,
@@ -254,7 +254,7 @@ impl SplitPacket {
         let id = buffer::get_u32_le(&buf, &mut pos)?;
         let total = buffer::get_u8(&buf, &mut pos)?;
         let number = buffer::get_u8(&buf, &mut pos)?;
-        let size = buffer::get_u16_le(&buf, &mut pos)?;
+        let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
         let compressed = ((id >> 31) & 1) == 1;
         let (decompressed_size, uncompressed_crc32) = match compressed {
             false => (None, None),
