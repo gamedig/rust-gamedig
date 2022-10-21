@@ -128,6 +128,8 @@ pub enum App {
     CSS = 240,
     /// Day of Defeat: Sourcec
     DODS = 300,
+    /// Half-Life 2 Deathmatch
+    HL2DM = 320,
     /// Team Fortress 2
     TF2 = 440,
     /// Left 4 Dead
@@ -148,6 +150,7 @@ impl TryFrom<u16> for App {
     fn try_from(value: u16) -> GDResult<Self> {
         match value {
             x if x == App::CSS as u16 => Ok(App::CSS),
+            x if x == App::HL2DM as u16 => Ok(App::HL2DM),
             x if x == App::DODS as u16 => Ok(App::DODS),
             x if x == App::TF2 as u16 => Ok(App::TF2),
             x if x == App::L4D as u16 => Ok(App::L4D),

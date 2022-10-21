@@ -9,3 +9,4 @@ pub mod dods;
 pub mod gm;
 pub mod l4d;
 pub mod l4d2;
+pub mod hl2dm;
