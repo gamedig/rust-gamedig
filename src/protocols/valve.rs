@@ -124,11 +124,18 @@ pub enum Request {
 /// Supported app id's
 #[derive(PartialEq)]
 pub enum App {
+    /// Counter-Strike: Source
     CSS = 240,
+    /// Day of Defeat: Sourcec
     DODS = 300,
+    /// Team Fortress 2
     TF2 = 440,
+    /// Counter-Strike: Global Offensive
     CSGO = 730,
-    TS = 2400
+    /// The Ship
+    TS = 2400,
+    /// Garry's Mod
+    GM = 4000,
 }
 
 impl TryFrom<u16> for App {
@@ -141,6 +148,7 @@ impl TryFrom<u16> for App {
             x if x == App::TF2 as u16 => Ok(App::TF2),
             x if x == App::CSGO as u16 => Ok(App::CSGO),
             x if x == App::TS as u16 => Ok(App::TS),
+            x if x == App::GM as u16 => Ok(App::GM),
             _ => Err(GDError::UnknownEnumCast),
         }
     }

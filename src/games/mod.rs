@@ -6,3 +6,4 @@ pub mod ts;
 pub mod csgo;
 pub mod css;
 pub mod dods;
+pub mod gm;
