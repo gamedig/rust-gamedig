@@ -124,6 +124,7 @@ pub enum Request {
 /// Supported app id's
 #[derive(PartialEq)]
 pub enum App {
+    CSS = 240,
     TF2 = 440,
     CSGO = 730,
     TheShip = 2400
@@ -134,6 +135,7 @@ impl TryFrom<u16> for App {
 
     fn try_from(value: u16) -> GDResult<Self> {
         match value {
+            x if x == App::CSS as u16 => Ok(App::CSS),
             x if x == App::TF2 as u16 => Ok(App::TF2),
             x if x == App::CSGO as u16 => Ok(App::CSGO),
             x if x == App::TheShip as u16 => Ok(App::TheShip),
