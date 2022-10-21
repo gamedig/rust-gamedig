@@ -1,4 +1,5 @@
 use std::net::UdpSocket;
+use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
 use crate::utils::{buffer, complete_address};
 
@@ -233,16 +234,19 @@ impl Packet {
 
 #[derive(Debug)]
 #[allow(dead_code)] //remove this later on
-struct SplitPacketInfo {
+struct SplitPacket {
     pub header: u32,
     pub id: u32,
     pub total: u8,
     pub number: u8,
     pub size: u16,
-    pub payload: Vec<u8>
+    pub compressed: bool,
+    pub decompressed_size: Option<u32>,
+    pub uncompressed_crc32: Option<u32>,
+    payload: Vec<u8>
 }
 
-impl SplitPacketInfo {
+impl SplitPacket {
     fn new(_app: &App, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
@@ -251,16 +255,10 @@ impl SplitPacketInfo {
         let total = buffer::get_u8(&buf, &mut pos)?;
         let number = buffer::get_u8(&buf, &mut pos)?;
         let size = buffer::get_u16_le(&buf, &mut pos)?;
-
-        let payload = match ((id >> 31) & 1) == 1 {
-            false => buf[pos..].to_vec(),
-            true => {
-                let _decompressed_size = buffer::get_u32_le(&buf, &mut pos)?;
-                let _uncompressed_crc32 = buffer::get_u32_le(&buf, &mut pos)?;
-
-                //decompress...
-                vec![]
-            }
+        let compressed = ((id >> 31) & 1) == 1;
+        let (decompressed_size, uncompressed_crc32) = match compressed {
+            false => (None, None),
+            true => (Some(buffer::get_u32_le(&buf, &mut pos)?), Some(buffer::get_u32_le(&buf, &mut pos)?))
         };
 
         Ok(Self {
@@ -269,8 +267,43 @@ impl SplitPacketInfo {
             total,
             number,
             size,
-            payload
+            compressed,
+            decompressed_size,
+            uncompressed_crc32,
+            payload: buf[pos..].to_vec()
         })
+    }
+
+    fn decompress(&self) -> GDResult<Vec<u8>> {
+        if !self.compressed {
+            let mut decoder = Decoder::new();
+            decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+
+            let decompressed_size = self.decompressed_size.unwrap() as usize;
+
+            let mut decompressed_payload = Vec::with_capacity(decompressed_size);
+            decoder.read(&mut decompressed_payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+
+            if decompressed_payload.len() != decompressed_size {
+                Err(GDError::Decompress("Valve Protocol: The decompressed payload size doesn't match the expected one.".to_string()))
+            }
+            else if crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap() {
+                Err(GDError::Decompress("Valve Protocol: The decompressed crc32 hash does not match the expected one.".to_string()))
+            }
+            else {
+                Ok(decompressed_payload)
+            }
+        } else { //already decompressed
+            Ok(self.payload.clone())
+        }
+    }
+
+    fn get_payload(&self) -> GDResult<Vec<u8>> {
+        if self.compressed {
+            Ok(self.decompress()?)
+        } else {
+            Ok(self.payload.clone())
+        }
     }
 }
 
@@ -302,16 +335,15 @@ impl ValveProtocol {
         let mut buf = self.receive_raw(buffer_size)?;
 
         if buf[0] == 0xFE { //the packet is split
-            let initial_split_packet_info = SplitPacketInfo::new(app, &buf)?;
-            let mut final_packet = Packet::new(&initial_split_packet_info.payload)?;
+            let mut main_packet = SplitPacket::new(app, &buf)?;
 
-            for _ in 1..initial_split_packet_info.total {
+            for _ in 1..main_packet.total {
                 buf = self.receive_raw(buffer_size)?;
-                let split_packet_info = SplitPacketInfo::new(app, &buf)?;
-                final_packet.payload.extend(split_packet_info.payload);
+                let chunk_packet = SplitPacket::new(app, &buf)?;
+                main_packet.payload.extend(chunk_packet.payload);
             }
 
-            Ok(final_packet)
+            Ok(Packet::new(&main_packet.get_payload()?)?)
         }
         else {
             Packet::new(&buf)
