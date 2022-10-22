@@ -22,11 +22,13 @@ pub enum GDError {
     /// Unknown cast while translating a value to an enum.
     UnknownEnumCast,
     /// The server queried is not from the queried game.
-    BadGame(String)
+    BadGame(String),
+    /// Problems occurred while dns resolving.
+    DnsResolve(String),
 }
 
 impl fmt::Display for GDError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             GDError::PacketOverflow(details) => write!(f, "Packet overflow: {details}"),
             GDError::PacketUnderflow(details) => write!(f, "Packet underflow: {details}"),
@@ -36,6 +38,7 @@ impl fmt::Display for GDError {
             GDError::Decompress(details) => write!(f, "Couldn't decompress data: {details}"),
             GDError::UnknownEnumCast => write!(f, "Unknown enum cast encountered."),
             GDError::BadGame(details) => write!(f, "Queried another game that the supposed one: {details}"),
+            GDError::DnsResolve(details) => write!(f, "DNS Resolve: {details}"),
         }
     }
 }
