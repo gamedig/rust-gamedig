@@ -72,10 +72,10 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = ValveProtocol::query(App::CSGO, address, match port {
         None => 27015,
         Some(port) => port
-    }, GatheringSettings {
+    }, Some(GatheringSettings {
         players: true,
         rules: false // cause csgo doesnt reply with rules anymore
-    })?;
+    }))?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }

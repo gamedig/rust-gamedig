@@ -499,7 +499,8 @@ impl ValveProtocol {
         Ok(Some(rules))
     }
 
-    pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
+    /// Query any app.
+    pub fn query(app: App, address: &str, port: u16, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
         let client = ValveProtocol::new(address, port)?;
 
         let info = client.get_server_info(&app)?;
@@ -509,13 +510,21 @@ impl ValveProtocol {
             return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
         }
 
+        let (gather_players, gather_rules) = match gather_settings.is_some() {
+            false => (true, true),
+            true => {
+                let settings = gather_settings.unwrap();
+                (settings.players, settings.rules)
+            }
+        };
+
         Ok(Response {
             info,
-            players: match gather.players {
+            players: match gather_players {
                 false => None,
                 true => Some(client.get_server_players(&app)?)
             },
-            rules: match gather.rules {
+            rules: match gather_rules {
                 false => None,
                 true => client.get_server_rules(&app)?
             }
