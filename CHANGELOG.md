@@ -1,6 +1,11 @@
 
 Who knows what the future holds...
 
+# 0.0.4 - ??/??/????
+Queries now support DNS resolve.  
+[Alien Swarm](https://store.steampowered.com/app/630/Alien_Swarm/) implementation.  
+[Alien Swarm: Reactive Drop](https://store.steampowered.com/app/563560/Alien_Swarm_Reactive_Drop/) implementation.  
+
 # 0.0.3 - 22/10/2022
 Valve protocol now properly supports multi-packet responses (compressed ones not tested).  
 CSGO, TF2 and TS now have independent Responses, if you want a generic one, query the protocol.  
