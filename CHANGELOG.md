@@ -5,6 +5,8 @@ Who knows what the future holds...
 Queries now support DNS resolve.  
 [Alien Swarm](https://store.steampowered.com/app/630/Alien_Swarm/) implementation.  
 [Alien Swarm: Reactive Drop](https://store.steampowered.com/app/563560/Alien_Swarm_Reactive_Drop/) implementation.  
+[Insurgency](https://store.steampowered.com/app/222880/Insurgency/) implementation.  
+[Insurgency: Sandstorm](https://store.steampowered.com/app/581320/Insurgency_Sandstorm/) implementation.  
 
 # 0.0.3 - 22/10/2022
 Valve protocol now properly supports multi-packet responses (compressed ones not tested).  

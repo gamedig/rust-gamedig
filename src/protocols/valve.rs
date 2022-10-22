@@ -146,6 +146,10 @@ pub enum App {
     TS = 2400,
     /// Garry's Mod
     GM = 4000,
+    /// Insurgency
+    INS = 222880,
+    /// Insurgency: Sandstorm
+    INSS = 581320,
     /// Alien Swarm: Reactive Drop
     ASRD = 563560,
 }

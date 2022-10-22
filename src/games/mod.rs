@@ -23,3 +23,7 @@ pub mod hl2dm;
 pub mod aliens;
 /// Alien Swarm: Reactive Drop
 pub mod asrd;
+/// Insurgency
+pub mod ins;
+/// Insurgency: Sandstorm
+pub mod inss;
