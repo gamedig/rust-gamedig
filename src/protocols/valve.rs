@@ -308,11 +308,11 @@ impl SplitPacket {
 }
 
 impl ValveProtocol {
-    fn new(address: &str, port: u16) -> Self {
-        Self {
+    fn new(address: &str, port: u16) -> GDResult<Self> {
+        Ok(Self {
             socket: UdpSocket::bind("0.0.0.0:0").unwrap(),
-            complete_address: complete_address(address, port)
-        }
+            complete_address: complete_address(address, port)?
+        })
     }
 
     fn send(&self, data: &[u8]) -> GDResult<()> {
@@ -324,8 +324,8 @@ impl ValveProtocol {
         let mut buf: Vec<u8> = vec![0; buffer_size];
         let (amt, _) = self.socket.recv_from(&mut buf.as_mut_slice()).map_err(|e| GDError::PacketReceive(e.to_string()))?;
 
-        if amt < 9 {
-            return Err(GDError::PacketUnderflow("Any Valve Protocol response can't be under 9 bytes long.".to_string()));
+        if amt < 6 {
+            return Err(GDError::PacketUnderflow("Any Valve Protocol response can't be under 6 bytes long.".to_string()));
         }
 
         Ok(buf[..amt].to_vec())
@@ -489,7 +489,7 @@ impl ValveProtocol {
     }
 
     pub(crate) fn query(app: App, address: &str, port: u16, gather: GatheringSettings) -> Result<Response, GDError> {
-        let client = ValveProtocol::new(address, port);
+        let client = ValveProtocol::new(address, port)?;
 
         let info = client.get_server_info(&app)?;
 
