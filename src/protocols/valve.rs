@@ -41,7 +41,7 @@ pub struct ServerInfo {
     /// Full name of the game.
     pub game: String,
     /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
-    pub id: u16,
+    pub appid: u32,
     /// Number of players on the server.
     pub players: u8,
     /// Maximum number of players the server reports it can hold.
@@ -124,7 +124,7 @@ pub enum Request {
 }
 
 /// Supported app id's
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum App {
     /// Counter-Strike: Source
     CSS = 240,
@@ -138,31 +138,16 @@ pub enum App {
     L4D = 500,
     /// Left 4 Dead
     L4D2 = 550,
+    /// Alien Swarm
+    ALIENS = 630,
     /// Counter-Strike: Global Offensive
     CSGO = 730,
     /// The Ship
     TS = 2400,
     /// Garry's Mod
     GM = 4000,
-}
-
-impl TryFrom<u16> for App {
-    type Error = GDError;
-
-    fn try_from(value: u16) -> GDResult<Self> {
-        match value {
-            x if x == App::CSS as u16 => Ok(App::CSS),
-            x if x == App::HL2DM as u16 => Ok(App::HL2DM),
-            x if x == App::DODS as u16 => Ok(App::DODS),
-            x if x == App::TF2 as u16 => Ok(App::TF2),
-            x if x == App::L4D as u16 => Ok(App::L4D),
-            x if x == App::L4D2 as u16 => Ok(App::L4D2),
-            x if x == App::CSGO as u16 => Ok(App::CSGO),
-            x if x == App::TS as u16 => Ok(App::TS),
-            x if x == App::GM as u16 => Ok(App::GM),
-            _ => Err(GDError::UnknownEnumCast),
-        }
-    }
+    /// Alien Swarm: Reactive Drop
+    ASRD = 563560,
 }
 
 /// What data to gather, purely used only with the query function.
@@ -373,68 +358,90 @@ impl ValveProtocol {
         let buf = self.get_request_data(app, Request::INFO)?;
         let mut pos = 0;
 
-        Ok(ServerInfo {
-            protocol: buffer::get_u8(&buf, &mut pos)?,
-            name: buffer::get_string(&buf, &mut pos)?,
-            map: buffer::get_string(&buf, &mut pos)?,
-            folder: buffer::get_string(&buf, &mut pos)?,
-            game: buffer::get_string(&buf, &mut pos)?,
-            id: buffer::get_u16_le(&buf, &mut pos)?,
-            players: buffer::get_u8(&buf, &mut pos)?,
-            max_players: buffer::get_u8(&buf, &mut pos)?,
-            bots: buffer::get_u8(&buf, &mut pos)?,
-            server_type: match buffer::get_u8(&buf, &mut pos)? {
-                100 => Server::Dedicated, //'d'
-                108 => Server::NonDedicated, //'l'
-                112 => Server::SourceTV, //'p'
-                _ => Err(GDError::UnknownEnumCast)?
-            },
-            environment_type: match buffer::get_u8(&buf, &mut pos)? {
-                108 => Environment::Linux, //'l'
-                119 => Environment::Windows, //'w'
-                109 | 111 => Environment::Mac, //'m' or 'o'
-                _ => Err(GDError::UnknownEnumCast)?
-            },
-            has_password: buffer::get_u8(&buf, &mut pos)? == 1,
-            vac_secured: buffer::get_u8(&buf, &mut pos)? == 1,
-            the_ship: match *app == App::TS {
-                false => None,
-                true => Some(TheShip {
-                    mode: buffer::get_u8(&buf, &mut pos)?,
-                    witnesses: buffer::get_u8(&buf, &mut pos)?,
-                    duration: buffer::get_u8(&buf, &mut pos)?
-                })
-            },
-            version: buffer::get_string(&buf, &mut pos)?,
-            extra_data: match buffer::get_u8(&buf, &mut pos) {
-                Err(_) => None,
-                Ok(value) => Some(ExtraData {
-                    port: match (value & 0x80) > 0 {
-                        false => None,
-                        true => Some(buffer::get_u16_le(&buf, &mut pos)?)
-                    },
-                    steam_id: match (value & 0x10) > 0 {
-                        false => None,
-                        true => Some(buffer::get_u64_le(&buf, &mut pos)?)
-                    },
-                    tv_port: match (value & 0x40) > 0 {
-                        false => None,
-                        true => Some(buffer::get_u16_le(&buf, &mut pos)?)
-                    },
-                    tv_name: match (value & 0x40) > 0 {
-                        false => None,
-                        true => Some(buffer::get_string(&buf, &mut pos)?)
-                    },
-                    keywords: match (value & 0x20) > 0 {
-                        false => None,
-                        true => Some(buffer::get_string(&buf, &mut pos)?)
-                    },
-                    game_id: match (value & 0x01) > 0 {
-                        false => None,
-                        true => Some(buffer::get_u64_le(&buf, &mut pos)?)
+        let protocol = buffer::get_u8(&buf, &mut pos)?;
+        let name = buffer::get_string(&buf, &mut pos)?;
+        let map = buffer::get_string(&buf, &mut pos)?;
+        let folder = buffer::get_string(&buf, &mut pos)?;
+        let game = buffer::get_string(&buf, &mut pos)?;
+        let mut appid = buffer::get_u16_le(&buf, &mut pos)? as u32;
+        let players = buffer::get_u8(&buf, &mut pos)?;
+        let max_players = buffer::get_u8(&buf, &mut pos)?;
+        let bots = buffer::get_u8(&buf, &mut pos)?;
+        let server_type = match buffer::get_u8(&buf, &mut pos)? {
+            100 => Server::Dedicated, //'d'
+            108 => Server::NonDedicated, //'l'
+            112 => Server::SourceTV, //'p'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let environment_type = match buffer::get_u8(&buf, &mut pos)? {
+            108 => Environment::Linux, //'l'
+            119 => Environment::Windows, //'w'
+            109 | 111 => Environment::Mac, //'m' or 'o'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
+        let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
+        let the_ship = match *app == App::TS {
+            false => None,
+            true => Some(TheShip {
+                mode: buffer::get_u8(&buf, &mut pos)?,
+                witnesses: buffer::get_u8(&buf, &mut pos)?,
+                duration: buffer::get_u8(&buf, &mut pos)?
+            })
+        };
+        let version = buffer::get_string(&buf, &mut pos)?;
+        let extra_data = match buffer::get_u8(&buf, &mut pos) {
+            Err(_) => None,
+            Ok(value) => Some(ExtraData {
+                port: match (value & 0x80) > 0 {
+                    false => None,
+                    true => Some(buffer::get_u16_le(&buf, &mut pos)?)
+                },
+                steam_id: match (value & 0x10) > 0 {
+                    false => None,
+                    true => Some(buffer::get_u64_le(&buf, &mut pos)?)
+                },
+                tv_port: match (value & 0x40) > 0 {
+                    false => None,
+                    true => Some(buffer::get_u16_le(&buf, &mut pos)?)
+                },
+                tv_name: match (value & 0x40) > 0 {
+                    false => None,
+                    true => Some(buffer::get_string(&buf, &mut pos)?)
+                },
+                keywords: match (value & 0x20) > 0 {
+                    false => None,
+                    true => Some(buffer::get_string(&buf, &mut pos)?)
+                },
+                game_id: match (value & 0x01) > 0 {
+                    false => None,
+                    true => {
+                        let gid = buffer::get_u64_le(&buf, &mut pos)?;
+                        appid = (gid & ((1 << 24) - 1)) as u32;
+
+                        Some(gid)
                     }
-                })
-            }
+                }
+            })
+        };
+
+        Ok(ServerInfo {
+            protocol,
+            name,
+            map,
+            folder,
+            game,
+            appid,
+            players,
+            max_players,
+            bots,
+            server_type,
+            environment_type,
+            has_password,
+            vac_secured,
+            the_ship,
+            version,
+            extra_data
         })
     }
 
@@ -493,7 +500,10 @@ impl ValveProtocol {
 
         let info = client.get_server_info(&app)?;
 
-        App::try_from(info.id).map_err(|_| GDError::BadGame(format!("Found {} instead!", info.id)))?;
+        let query_app_id = app.clone() as u32;
+        if info.appid != query_app_id {
+            return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
+        }
 
         Ok(Response {
             info,
