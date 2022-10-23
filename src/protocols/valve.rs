@@ -162,13 +162,6 @@ pub struct GatheringSettings {
     pub rules: bool
 }
 
-pub struct ValveProtocol {
-    socket: UdpSocket,
-    complete_address: String
-}
-
-static DEFAULT_PACKET_SIZE: usize = 2048;
-
 #[derive(Debug, Clone)]
 struct Packet {
     pub header: u32,
@@ -298,6 +291,13 @@ impl SplitPacket {
     }
 }
 
+struct ValveProtocol {
+    socket: UdpSocket,
+    complete_address: String
+}
+
+static DEFAULT_PACKET_SIZE: usize = 2048;
+
 impl ValveProtocol {
     fn new(address: &str, port: u16) -> GDResult<Self> {
         Ok(Self {
@@ -342,7 +342,7 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    pub fn get_request_data(&self, appid: u32, kind: Request) -> GDResult<Vec<u8>> {
+    fn get_request_data(&self, appid: u32, kind: Request) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
@@ -360,7 +360,7 @@ impl ValveProtocol {
     }
 
     /// Get the server information's.
-    pub fn get_server_info(&self, initial_appid: u32) -> GDResult<ServerInfo> {
+    fn get_server_info(&self, initial_appid: u32) -> GDResult<ServerInfo> {
         let buf = self.get_request_data(initial_appid, Request::INFO)?;
         let mut pos = 0;
 
@@ -452,7 +452,7 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    pub fn get_server_players(&self, appid: u32) -> GDResult<Vec<ServerPlayer>> {
+    fn get_server_players(&self, appid: u32) -> GDResult<Vec<ServerPlayer>> {
         let buf = self.get_request_data(appid, Request::PLAYERS)?;
         let mut pos = 0;
 
@@ -480,7 +480,7 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    pub fn get_server_rules(&self, appid: u32) -> GDResult<Option<Vec<ServerRule>>> {
+    fn get_server_rules(&self, appid: u32) -> GDResult<Option<Vec<ServerRule>>> {
         if appid == App::CSGO as u32 { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
@@ -500,44 +500,46 @@ impl ValveProtocol {
 
         Ok(Some(rules))
     }
+}
 
-    /// Query any app.
-    pub fn query(address: &str, port: u16, app: Option<App>, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
-        let client = ValveProtocol::new(address, port)?;
+/// Query a server, you need to provide the address, the port and optionally, the app and the
+/// gather settings, the app being *None* means to anonymously query the server, and the gather
+/// settings being *None* means to get the players and the rules.
+pub fn query(address: &str, port: u16, app: Option<App>, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
+    let client = ValveProtocol::new(address, port)?;
 
-        let mut query_app_id = match app {
-            None => 0,
-            Some(app) => app as u32
-        };
+    let mut query_app_id = match app {
+        None => 0,
+        Some(app) => app as u32
+    };
 
-        let info = client.get_server_info(query_app_id)?;
+    let info = client.get_server_info(query_app_id)?;
 
-        if query_app_id != 0 {
-            if info.appid != query_app_id {
-                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
-            }
-        } else {
-            query_app_id = info.appid;
+    if query_app_id != 0 {
+        if info.appid != query_app_id {
+            return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
         }
-
-        let (gather_players, gather_rules) = match gather_settings.is_some() {
-            false => (true, true),
-            true => {
-                let settings = gather_settings.unwrap();
-                (settings.players, settings.rules)
-            }
-        };
-
-        Ok(Response {
-            info,
-            players: match gather_players {
-                false => None,
-                true => Some(client.get_server_players(query_app_id)?)
-            },
-            rules: match gather_rules {
-                false => None,
-                true => client.get_server_rules(query_app_id)?
-            }
-        })
+    } else {
+        query_app_id = info.appid;
     }
+
+    let (gather_players, gather_rules) = match gather_settings.is_some() {
+        false => (true, true),
+        true => {
+            let settings = gather_settings.unwrap();
+            (settings.players, settings.rules)
+        }
+    };
+
+    Ok(Response {
+        info,
+        players: match gather_players {
+            false => None,
+            true => Some(client.get_server_players(query_app_id)?)
+        },
+        rules: match gather_rules {
+            false => None,
+            true => client.get_server_rules(query_app_id)?
+        }
+    })
 }

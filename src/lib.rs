@@ -21,5 +21,4 @@ pub mod games;
 mod utils;
 
 pub use errors::*;
-pub use protocols::*;
 pub use games::*;

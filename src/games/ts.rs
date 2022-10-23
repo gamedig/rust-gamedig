@@ -1,5 +1,6 @@
-use crate::{GDResult, valve};
-use crate::valve::{ValveProtocol, App, ServerPlayer, Server, ServerRule};
+use crate::GDResult;
+use crate::protocols::valve;
+use crate::protocols::valve::{App, Server, ServerRule, ServerPlayer};
 
 #[derive(Debug)]
 pub struct Player {
@@ -83,7 +84,7 @@ impl Response {
 }
 
 pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
-    let valve_response = ValveProtocol::query(address, match port {
+    let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
     }, Some(App::TS), None)?;

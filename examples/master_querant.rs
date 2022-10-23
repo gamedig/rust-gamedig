@@ -1,7 +1,7 @@
 
 use std::env;
 use gamedig::{aliens, asrd, csgo, css, dods, gm, hl2dm, ins, insmic, inss, l4d, l4d2, tf2, ts};
-use gamedig::valve::ValveProtocol;
+use gamedig::protocols::valve;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -38,7 +38,7 @@ fn main() {
         "l4d" => println!("{:?}", l4d::query(ip, port)),
         "l4d2" => println!("{:?}", l4d2::query(ip, port)),
         "ts" => println!("{:?}", ts::query(ip, port)),
-        "_" => println!("{:?}", ValveProtocol::query(ip, 27015, None, None)),
+        "_" => println!("{:?}", valve::query(ip, 27015, None, None)),
         _ => panic!("Undefined game: {}", args[1])
     };
 }

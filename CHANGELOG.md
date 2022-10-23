@@ -3,7 +3,8 @@ Who knows what the future holds...
 
 # 0.0.4 - ??/??/????
 Queries now support DNS resolve.  
-Changed Valve Protocol parameters to (ip, port, app, gather_settings), changes include:
+Changed uses a bit, from `use gamedig::valve::ValveProtocol::query` to `use gamedig::protocols::valve::query`.  
+Changed Valve Protocol Query parameters to (ip, port, app, gather_settings), changes include:
 - the app is now optional, being None means to anonymously query the server.
 - gather_settings is now also an optional, being None means all query settings.  
 
