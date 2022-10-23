@@ -1,6 +1,6 @@
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{App, Server, ServerPlayer, GatheringSettings};
+use crate::protocols::valve::{App, Server, GatheringSettings, get_optional_extracted_data};
 use crate::protocols::valve::game::Player;
 
 #[derive(Debug)]
@@ -26,10 +26,7 @@ pub struct Response {
 
 impl Response {
     pub fn new_from_valve_response(response: valve::Response) -> Self {
-        let (port, steam_id, tv_port, tv_name, keywords) = match response.info.extra_data {
-            None => (None, None, None, None, None),
-            Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
-        };
+        let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
         Self {
             protocol: response.info.protocol,

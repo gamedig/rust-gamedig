@@ -1,7 +1,27 @@
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{App, Server, ServerRule, ServerPlayer};
-use crate::protocols::valve::game::Player;
+use crate::protocols::valve::{App, Server, ServerRule, ServerPlayer, get_optional_extracted_data};
+
+#[derive(Debug)]
+pub struct TheShipPlayer {
+    pub name: String,
+    pub score: u32,
+    pub duration: f32,
+    pub deaths: u32,
+    pub money: u32
+}
+
+impl TheShipPlayer {
+    pub fn new_from_valve_player(player: &ServerPlayer) -> Self {
+        Self {
+            name: player.name.clone(),
+            score: player.score,
+            duration: player.duration,
+            deaths: player.deaths.unwrap(),
+            money: player.money.unwrap()
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Response {
@@ -10,7 +30,7 @@ pub struct Response {
     pub map: String,
     pub game: String,
     pub players: u8,
-    pub players_details: Vec<Player>,
+    pub players_details: Vec<TheShipPlayer>,
     pub max_players: u8,
     pub bots: u8,
     pub server_type: Server,
@@ -30,10 +50,7 @@ pub struct Response {
 
 impl Response {
     pub fn new_from_valve_response(response: valve::Response) -> Self {
-        let (port, steam_id, tv_port, tv_name, keywords) = match response.info.extra_data {
-            None => (None, None, None, None, None),
-            Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
-        };
+        let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
         let the_unwrapped_ship = response.info.the_ship.unwrap();
 
@@ -43,7 +60,7 @@ impl Response {
             map: response.info.map,
             game: response.info.game,
             players: response.info.players,
-            players_details: response.players.unwrap().iter().map(|p| Player::from_valve_response(p)).collect(),
+            players_details: response.players.unwrap().iter().map(|p| TheShipPlayer::new_from_valve_player(p)).collect(),
             max_players: response.info.max_players,
             bots: response.info.bots,
             server_type: response.info.server_type,

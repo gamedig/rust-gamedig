@@ -1,4 +1,6 @@
 
+//! All types used by the Valve protocol
+
 /// The type of the server.
 #[derive(Debug)]
 pub enum Server {
@@ -107,6 +109,13 @@ pub struct ExtraData {
     pub game_id: Option<u64>
 }
 
+pub fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
+    match data {
+        None => (None, None, None, None, None),
+        Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
+    }
+}
+
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
 #[derive(PartialEq, Clone)]
 #[repr(u8)]
@@ -158,7 +167,10 @@ pub struct GatheringSettings {
     pub rules: bool
 }
 
+/// Generic response types that are used by many games, they are the protocol ones, but without the
+/// unnecessary bits (example: the **The Ship**-only fields)
 pub mod game {
+    use crate::protocols::valve::types::get_optional_extracted_data;
     use super::{Server, ServerRule, ServerPlayer};
 
     #[derive(Debug)]
@@ -202,10 +214,7 @@ pub mod game {
 
     impl Response {
         pub fn new_from_valve_response(response: super::Response) -> Self {
-            let (port, steam_id, tv_port, tv_name, keywords) = match response.info.extra_data {
-                None => (None, None, None, None, None),
-                Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
-            };
+            let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
             Self {
                 protocol: response.info.protocol,
