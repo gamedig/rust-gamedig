@@ -1,7 +1,7 @@
 
 Who knows what the future holds...
 
-# 0.0.4 - ??/??/????
+# 0.0.4 - 23/10/2022
 Queries now support DNS resolve.  
 Changed uses a bit, from `use gamedig::valve::ValveProtocol::query` to `use gamedig::protocols::valve::query`.  
 Changed Valve Protocol Query parameters to (ip, port, app, gather_settings), changes include:
