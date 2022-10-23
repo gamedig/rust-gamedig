@@ -1,23 +1,7 @@
 use crate::GDResult;
 use crate::protocols::valve;
 use crate::protocols::valve::{App, Server, ServerPlayer, GatheringSettings};
-
-#[derive(Debug)]
-pub struct Player {
-    pub name: String,
-    pub score: u32,
-    pub duration: f32
-}
-
-impl Player {
-    fn from_valve_response(player: &ServerPlayer) -> Self {
-        Self {
-            name: player.name.clone(),
-            score: player.score,
-            duration: player.duration
-        }
-    }
-}
+use crate::protocols::valve::game::Player;
 
 #[derive(Debug)]
 pub struct Response {
