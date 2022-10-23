@@ -238,7 +238,7 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(_app: &App, buf: &[u8]) -> GDResult<Self> {
+    fn new(_appid: u32, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
         let header = buffer::get_u32_le(&buf, &mut pos)?;
@@ -322,15 +322,15 @@ impl ValveProtocol {
         Ok(buf[..amt].to_vec())
     }
 
-    fn receive(&self, app: &App, buffer_size: usize) -> GDResult<Packet> {
+    fn receive(&self, appid: u32, buffer_size: usize) -> GDResult<Packet> {
         let mut buf = self.receive_raw(buffer_size)?;
 
         if buf[0] == 0xFE { //the packet is split
-            let mut main_packet = SplitPacket::new(app, &buf)?;
+            let mut main_packet = SplitPacket::new(appid, &buf)?;
 
             for _ in 1..main_packet.total {
                 buf = self.receive_raw(buffer_size)?;
-                let chunk_packet = SplitPacket::new(app, &buf)?;
+                let chunk_packet = SplitPacket::new(appid, &buf)?;
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
@@ -342,11 +342,11 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    pub fn get_request_data(&self, app: &App, kind: Request) -> GDResult<Vec<u8>> {
+    pub fn get_request_data(&self, appid: u32, kind: Request) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
-        let packet = self.receive(app, DEFAULT_PACKET_SIZE)?;
+        let packet = self.receive(appid, DEFAULT_PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
             return Ok(packet.payload.clone());
@@ -356,12 +356,12 @@ impl ValveProtocol {
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.send(&challenge_packet)?;
-        Ok(self.receive(app, DEFAULT_PACKET_SIZE)?.payload)
+        Ok(self.receive(appid, DEFAULT_PACKET_SIZE)?.payload)
     }
 
     /// Get the server information's.
-    pub fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
-        let buf = self.get_request_data(app, Request::INFO)?;
+    pub fn get_server_info(&self, initial_appid: u32) -> GDResult<ServerInfo> {
+        let buf = self.get_request_data(initial_appid, Request::INFO)?;
         let mut pos = 0;
 
         let protocol = buffer::get_u8(&buf, &mut pos)?;
@@ -387,7 +387,7 @@ impl ValveProtocol {
         };
         let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
         let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
-        let the_ship = match *app == App::TS {
+        let the_ship = match appid == App::TS as u32 {
             false => None,
             true => Some(TheShip {
                 mode: buffer::get_u8(&buf, &mut pos)?,
@@ -452,8 +452,8 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    pub fn get_server_players(&self, app: &App) -> GDResult<Vec<ServerPlayer>> {
-        let buf = self.get_request_data(app, Request::PLAYERS)?;
+    pub fn get_server_players(&self, appid: u32) -> GDResult<Vec<ServerPlayer>> {
+        let buf = self.get_request_data(appid, Request::PLAYERS)?;
         let mut pos = 0;
 
         let count = buffer::get_u8(&buf, &mut pos)?;
@@ -465,11 +465,11 @@ impl ValveProtocol {
                 name: buffer::get_string(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
-                deaths: match *app == App::TS {
+                deaths: match appid == App::TS as u32 {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 },
-                money: match *app == App::TS {
+                money: match appid == App::TS as u32 {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 }
@@ -480,12 +480,12 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    pub fn get_server_rules(&self, app: &App) -> GDResult<Option<Vec<ServerRule>>> {
-        if *app == App::CSGO { //cause csgo wont respond to this since feb 21 2014 update
+    pub fn get_server_rules(&self, appid: u32) -> GDResult<Option<Vec<ServerRule>>> {
+        if appid == App::CSGO as u32 { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
 
-        let buf = self.get_request_data(app, Request::RULES)?;
+        let buf = self.get_request_data(appid, Request::RULES)?;
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
@@ -502,14 +502,22 @@ impl ValveProtocol {
     }
 
     /// Query any app.
-    pub fn query(app: App, address: &str, port: u16, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
+    pub fn query(address: &str, port: u16, app: Option<App>, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
         let client = ValveProtocol::new(address, port)?;
 
-        let info = client.get_server_info(&app)?;
+        let mut query_app_id = match app {
+            None => 0,
+            Some(app) => app as u32
+        };
 
-        let query_app_id = app.clone() as u32;
-        if info.appid != query_app_id {
-            return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
+        let info = client.get_server_info(query_app_id)?;
+
+        if query_app_id != 0 {
+            if info.appid != query_app_id {
+                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
+            }
+        } else {
+            query_app_id = info.appid;
         }
 
         let (gather_players, gather_rules) = match gather_settings.is_some() {
@@ -524,11 +532,11 @@ impl ValveProtocol {
             info,
             players: match gather_players {
                 false => None,
-                true => Some(client.get_server_players(&app)?)
+                true => Some(client.get_server_players(query_app_id)?)
             },
             rules: match gather_rules {
                 false => None,
-                true => client.get_server_rules(&app)?
+                true => client.get_server_rules(query_app_id)?
             }
         })
     }

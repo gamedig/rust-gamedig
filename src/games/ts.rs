@@ -83,10 +83,10 @@ impl Response {
 }
 
 pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
-    let valve_response = ValveProtocol::query(App::TS, address, match port {
+    let valve_response = ValveProtocol::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, None)?;
+    }, Some(App::TS), None)?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }

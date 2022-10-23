@@ -3,8 +3,12 @@ Who knows what the future holds...
 
 # 0.0.4 - ??/??/????
 Queries now support DNS resolve.  
-Changed Valve Protocol 3rd argument to Option<GatherSettings>, being None means everything should be gathered.  
-Better appid unknown cast error.  
+Changed Valve Protocol parameters to (ip, port, app, gather_settings), changes include:
+- the app is now optional, being None means to anonymously query the server.
+- gather_settings is now also an optional, being None means all query settings.  
+
+Valve Protocol now supports querying anonymous apps (see previous lines).  
+Better bad game error.  
 [Alien Swarm](https://store.steampowered.com/app/630/Alien_Swarm/) implementation (not tested).  
 [Alien Swarm: Reactive Drop](https://store.steampowered.com/app/563560/Alien_Swarm_Reactive_Drop/) implementation.  
 [Insurgency](https://store.steampowered.com/app/222880/Insurgency/) implementation.  
