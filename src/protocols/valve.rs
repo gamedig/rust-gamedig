@@ -146,6 +146,8 @@ pub enum App {
     TS = 2400,
     /// Garry's Mod
     GM = 4000,
+    /// Insurgency: Modern Infantry Combat
+    INSMIC = 17700,
     /// Insurgency
     INS = 222880,
     /// Insurgency: Sandstorm

@@ -27,3 +27,5 @@ pub mod asrd;
 pub mod ins;
 /// Insurgency: Sandstorm
 pub mod inss;
+/// Insurgency: Modern Infantry Combat
+pub mod insmic;

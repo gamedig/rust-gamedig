@@ -1,6 +1,6 @@
 
 use std::env;
-use gamedig::{aliens, asrd, csgo, css, dods, gm, hl2dm, ins, inss, l4d, l4d2, tf2, ts};
+use gamedig::{aliens, asrd, csgo, css, dods, gm, hl2dm, ins, insmic, inss, l4d, l4d2, tf2, ts};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -31,6 +31,7 @@ fn main() {
         "gm" => println!("{:?}", gm::query(ip, port)),
         "hl2dm" => println!("{:?}", hl2dm::query(ip, port)),
         "tf2" => println!("{:?}", tf2::query(ip, port)),
+        "insmic" => println!("{:?}", insmic::query(ip, port)),
         "ins" => println!("{:?}", ins::query(ip, port)),
         "inss" => println!("{:?}", inss::query(ip, port)),
         "l4d" => println!("{:?}", l4d::query(ip, port)),
