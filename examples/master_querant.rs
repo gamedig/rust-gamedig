@@ -41,7 +41,8 @@ fn main() {
         "ts" => println!("{:?}", ts::query(ip, port)),
         "cscz" => println!("{:?}", cscz::query(ip, port)),
         "_src" => println!("{:?}", valve::query(ip, 27015, App::Source(None), None)),
-        "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc, None)),
+        "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(false), None)),
+        "_gld_f" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(true), None)),
         _ => panic!("Undefined game: {}", args[1])
     };
 }

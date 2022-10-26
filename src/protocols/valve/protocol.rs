@@ -1,7 +1,7 @@
 use std::net::UdpSocket;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
-use crate::protocols::valve::{App, SteamID};
+use crate::protocols::valve::{App, ModData, SteamID};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
 use crate::utils::{buffer, complete_address, u8_lower_upper};
 
@@ -203,9 +203,76 @@ impl ValveProtocol {
         Ok(self.receive(app, DEFAULT_PACKET_SIZE)?.payload)
     }
 
+    fn get_goldsrc_server_info(buf: &[u8]) -> GDResult<ServerInfo> {
+        let mut pos = 0;
+
+        buffer::get_u8(&buf, &mut pos)?; //get the header (useless info)
+        buffer::get_string(&buf, &mut pos)?; //get the server address (useless info)
+        let name = buffer::get_string(&buf, &mut pos)?;
+        let map = buffer::get_string(&buf, &mut pos)?;
+        let folder = buffer::get_string(&buf, &mut pos)?;
+        let game = buffer::get_string(&buf, &mut pos)?;
+        let players = buffer::get_u8(&buf, &mut pos)?;
+        let max_players = buffer::get_u8(&buf, &mut pos)?;
+        let protocol = buffer::get_u8(&buf, &mut pos)?;
+        let server_type = match buffer::get_u8(&buf, &mut pos)? {
+            68 => Server::Dedicated, //'D'
+            76 => Server::NonDedicated, //'L'
+            80 => Server::TV, //'P'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let environment_type = match buffer::get_u8(&buf, &mut pos)? {
+            76 => Environment::Linux, //'L'
+            87 => Environment::Windows, //'W'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
+        let is_mod = buffer::get_u8(&buf, &mut pos)? == 1;
+        let mod_data = match is_mod {
+            false => None,
+            true => Some(ModData {
+                link: buffer::get_string(&buf, &mut pos)?,
+                download_link: buffer::get_string(&buf, &mut pos)?,
+                version: buffer::get_u32_le(&buf, &mut pos)?,
+                size: buffer::get_u32_le(&buf, &mut pos)?,
+                multiplayer_only: buffer::get_u8(&buf, &mut pos)? == 1,
+                has_own_dll: buffer::get_u8(&buf, &mut pos)? == 1
+            })
+        };
+        let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
+        let bots = buffer::get_u8(&buf, &mut pos)?;
+
+        Ok(ServerInfo {
+            protocol,
+            name,
+            map,
+            folder,
+            game,
+            appid: 0, //not present in the obsolete response
+            players,
+            max_players,
+            bots,
+            server_type,
+            environment_type,
+            has_password,
+            vac_secured,
+            the_ship: None,
+            version: "".to_string(), //a version field only for the mod
+            extra_data: None,
+            is_mod,
+            mod_data
+        })
+    }
+
     /// Get the server information's.
     fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
         let buf = self.get_request_data(&app, Request::INFO)?;
+        if let App::GoldSrc(force) = app {
+            if *force {
+                return ValveProtocol::get_goldsrc_server_info(&buf);
+            }
+        }
+
         let mut pos = 0;
 
         let protocol = buffer::get_u8(&buf, &mut pos)?;
@@ -220,7 +287,7 @@ impl ValveProtocol {
         let server_type = match buffer::get_u8(&buf, &mut pos)? {
             100 => Server::Dedicated, //'d'
             108 => Server::NonDedicated, //'l'
-            112 => Server::SourceTV, //'p'
+            112 => Server::TV, //'p'
             _ => Err(GDError::UnknownEnumCast)?
         };
         let environment_type = match buffer::get_u8(&buf, &mut pos)? {
@@ -291,7 +358,9 @@ impl ValveProtocol {
             vac_secured,
             the_ship,
             version,
-            extra_data
+            extra_data,
+            is_mod: false,
+            mod_data: None
         })
     }
 

@@ -48,16 +48,20 @@ pub struct ServerInfo {
     pub server_type: Server,
     /// The Operating System that the server is on.
     pub environment_type: Environment,
-    /// Indicated whether the server requires a password.
+    /// Indicates whether the server requires a password.
     pub has_password: bool,
-    /// Indicated whether the server uses VAC.
+    /// Indicates whether the server uses VAC.
     pub vac_secured: bool,
     /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
     pub the_ship: Option<TheShip>,
     /// Version of the game installed on the server.
     pub version: String,
     /// Some extra data that the server might provide or not.
-    pub extra_data: Option<ExtraData>
+    pub extra_data: Option<ExtraData>,
+    /// GoldSrc only: Indicates whether the hosted game is a mod.
+    pub is_mod: bool,
+    /// GoldSrc only: If the game is a mod, provide additional data.
+    pub mod_data: Option<ModData>
 }
 
 /// A server player.
@@ -105,6 +109,16 @@ pub struct ExtraData {
     pub keywords: Option<String>,
     /// The server's 64-bit GameID.
     pub game_id: Option<u64>
+}
+
+#[derive(Debug)]
+pub struct ModData {
+    pub link: String,
+    pub download_link: String,
+    pub version: u32,
+    pub size: u32,
+    pub multiplayer_only: bool,
+    pub has_own_dll: bool
 }
 
 pub fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
