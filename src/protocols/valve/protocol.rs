@@ -1,8 +1,9 @@
 use std::net::UdpSocket;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
-use crate::protocols::valve::types::{App, Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
-use crate::utils::{buffer, complete_address};
+use crate::protocols::valve::{App, ModData, SteamID};
+use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
+use crate::utils::{buffer, complete_address, u8_lower_upper};
 
 #[derive(Debug, Clone)]
 struct Packet {
@@ -73,18 +74,27 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(_appid: u32, buf: &[u8]) -> GDResult<Self> {
+    fn new(app: &App, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
         let header = buffer::get_u32_le(&buf, &mut pos)?;
         let id = buffer::get_u32_le(&buf, &mut pos)?;
-        let total = buffer::get_u8(&buf, &mut pos)?;
-        let number = buffer::get_u8(&buf, &mut pos)?;
-        let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
-        let compressed = ((id >> 31) & 1) == 1;
-        let (decompressed_size, uncompressed_crc32) = match compressed {
-            false => (None, None),
-            true => (Some(buffer::get_u32_le(&buf, &mut pos)?), Some(buffer::get_u32_le(&buf, &mut pos)?))
+        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match app {
+            App::GoldSrc(_) => {
+                let (lower, upper) = u8_lower_upper(buffer::get_u8(&buf, &mut pos)?);
+                (lower, upper, 0, false, None, None)
+            }
+            App::Source(_) => {
+                let total = buffer::get_u8(&buf, &mut pos)?;
+                let number = buffer::get_u8(&buf, &mut pos)?;
+                let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
+                let compressed = ((id >> 31) & 1) == 1;
+                let (decompressed_size, uncompressed_crc32) = match compressed {
+                    false => (None, None),
+                    true => (Some(buffer::get_u32_le(&buf, &mut pos)?), Some(buffer::get_u32_le(&buf, &mut pos)?))
+                };
+                (total, number, size, compressed, decompressed_size, uncompressed_crc32)
+            }
         };
 
         Ok(Self {
@@ -100,8 +110,8 @@ impl SplitPacket {
         })
     }
 
-    fn decompress(&self) -> GDResult<Vec<u8>> {
-        if !self.compressed {
+    fn get_payload(&self) -> GDResult<Vec<u8>> {
+        if self.compressed {
             let mut decoder = Decoder::new();
             decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string()))?;
 
@@ -119,14 +129,6 @@ impl SplitPacket {
             else {
                 Ok(decompressed_payload)
             }
-        } else { //already decompressed
-            Ok(self.payload.clone())
-        }
-    }
-
-    fn get_payload(&self) -> GDResult<Vec<u8>> {
-        if self.compressed {
-            Ok(self.decompress()?)
         } else {
             Ok(self.payload.clone())
         }
@@ -164,15 +166,15 @@ impl ValveProtocol {
         Ok(buf[..amt].to_vec())
     }
 
-    fn receive(&self, appid: u32, buffer_size: usize) -> GDResult<Packet> {
+    fn receive(&self, app: &App, buffer_size: usize) -> GDResult<Packet> {
         let mut buf = self.receive_raw(buffer_size)?;
 
         if buf[0] == 0xFE { //the packet is split
-            let mut main_packet = SplitPacket::new(appid, &buf)?;
+            let mut main_packet = SplitPacket::new(&app, &buf)?;
 
             for _ in 1..main_packet.total {
                 buf = self.receive_raw(buffer_size)?;
-                let chunk_packet = SplitPacket::new(appid, &buf)?;
+                let chunk_packet = SplitPacket::new(&app, &buf)?;
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
@@ -184,11 +186,11 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(&self, appid: u32, kind: Request) -> GDResult<Vec<u8>> {
+    fn get_request_data(&self, app: &App, kind: Request) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
-        let packet = self.receive(appid, DEFAULT_PACKET_SIZE)?;
+        let packet = self.receive(app, DEFAULT_PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
             return Ok(packet.payload.clone());
@@ -198,12 +200,79 @@ impl ValveProtocol {
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.send(&challenge_packet)?;
-        Ok(self.receive(appid, DEFAULT_PACKET_SIZE)?.payload)
+        Ok(self.receive(app, DEFAULT_PACKET_SIZE)?.payload)
+    }
+
+    fn get_goldsrc_server_info(buf: &[u8]) -> GDResult<ServerInfo> {
+        let mut pos = 0;
+
+        buffer::get_u8(&buf, &mut pos)?; //get the header (useless info)
+        buffer::get_string(&buf, &mut pos)?; //get the server address (useless info)
+        let name = buffer::get_string(&buf, &mut pos)?;
+        let map = buffer::get_string(&buf, &mut pos)?;
+        let folder = buffer::get_string(&buf, &mut pos)?;
+        let game = buffer::get_string(&buf, &mut pos)?;
+        let players = buffer::get_u8(&buf, &mut pos)?;
+        let max_players = buffer::get_u8(&buf, &mut pos)?;
+        let protocol = buffer::get_u8(&buf, &mut pos)?;
+        let server_type = match buffer::get_u8(&buf, &mut pos)? {
+            68 => Server::Dedicated, //'D'
+            76 => Server::NonDedicated, //'L'
+            80 => Server::TV, //'P'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let environment_type = match buffer::get_u8(&buf, &mut pos)? {
+            76 => Environment::Linux, //'L'
+            87 => Environment::Windows, //'W'
+            _ => Err(GDError::UnknownEnumCast)?
+        };
+        let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
+        let is_mod = buffer::get_u8(&buf, &mut pos)? == 1;
+        let mod_data = match is_mod {
+            false => None,
+            true => Some(ModData {
+                link: buffer::get_string(&buf, &mut pos)?,
+                download_link: buffer::get_string(&buf, &mut pos)?,
+                version: buffer::get_u32_le(&buf, &mut pos)?,
+                size: buffer::get_u32_le(&buf, &mut pos)?,
+                multiplayer_only: buffer::get_u8(&buf, &mut pos)? == 1,
+                has_own_dll: buffer::get_u8(&buf, &mut pos)? == 1
+            })
+        };
+        let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
+        let bots = buffer::get_u8(&buf, &mut pos)?;
+
+        Ok(ServerInfo {
+            protocol,
+            name,
+            map,
+            folder,
+            game,
+            appid: 0, //not present in the obsolete response
+            players,
+            max_players,
+            bots,
+            server_type,
+            environment_type,
+            has_password,
+            vac_secured,
+            the_ship: None,
+            version: "".to_string(), //a version field only for the mod
+            extra_data: None,
+            is_mod,
+            mod_data
+        })
     }
 
     /// Get the server information's.
-    fn get_server_info(&self, initial_appid: u32) -> GDResult<ServerInfo> {
-        let buf = self.get_request_data(initial_appid, Request::INFO)?;
+    fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
+        let buf = self.get_request_data(&app, Request::INFO)?;
+        if let App::GoldSrc(force) = app {
+            if *force {
+                return ValveProtocol::get_goldsrc_server_info(&buf);
+            }
+        }
+
         let mut pos = 0;
 
         let protocol = buffer::get_u8(&buf, &mut pos)?;
@@ -218,7 +287,7 @@ impl ValveProtocol {
         let server_type = match buffer::get_u8(&buf, &mut pos)? {
             100 => Server::Dedicated, //'d'
             108 => Server::NonDedicated, //'l'
-            112 => Server::SourceTV, //'p'
+            112 => Server::TV, //'p'
             _ => Err(GDError::UnknownEnumCast)?
         };
         let environment_type = match buffer::get_u8(&buf, &mut pos)? {
@@ -229,7 +298,7 @@ impl ValveProtocol {
         };
         let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
         let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
-        let the_ship = match appid == App::TS as u32 {
+        let the_ship = match *app == SteamID::TS.app() {
             false => None,
             true => Some(TheShip {
                 mode: buffer::get_u8(&buf, &mut pos)?,
@@ -289,13 +358,15 @@ impl ValveProtocol {
             vac_secured,
             the_ship,
             version,
-            extra_data
+            extra_data,
+            is_mod: false,
+            mod_data: None
         })
     }
 
     /// Get the server player's.
-    fn get_server_players(&self, appid: u32) -> GDResult<Vec<ServerPlayer>> {
-        let buf = self.get_request_data(appid, Request::PLAYERS)?;
+    fn get_server_players(&self, app: &App) -> GDResult<Vec<ServerPlayer>> {
+        let buf = self.get_request_data(&app, Request::PLAYERS)?;
         let mut pos = 0;
 
         let count = buffer::get_u8(&buf, &mut pos)?;
@@ -307,11 +378,11 @@ impl ValveProtocol {
                 name: buffer::get_string(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
-                deaths: match appid == App::TS as u32 {
+                deaths: match *app == SteamID::TS.app() {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 },
-                money: match appid == App::TS as u32 {
+                money: match *app == SteamID::TS.app() {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 }
@@ -322,12 +393,12 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    fn get_server_rules(&self, appid: u32) -> GDResult<Option<Vec<ServerRule>>> {
-        if appid == App::CSGO as u32 { //cause csgo wont respond to this since feb 21 2014 update
+    fn get_server_rules(&self, app: &App) -> GDResult<Option<Vec<ServerRule>>> {
+        if *app == SteamID::CSGO.app() { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
 
-        let buf = self.get_request_data(appid, Request::RULES)?;
+        let buf = self.get_request_data(&app, Request::RULES)?;
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
@@ -344,25 +415,19 @@ impl ValveProtocol {
     }
 }
 
-/// Query a server, you need to provide the address, the port and optionally, the app and the
-/// gather settings, the app being *None* means to anonymously query the server, and the gather
-/// settings being *None* means to get the players and the rules.
-pub fn query(address: &str, port: u16, app: Option<App>, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
+/// Query a server by providing the address, the port, the app and the gather settings, the settings
+/// being *None* means to also get the players and the rules.
+pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>) -> GDResult<Response> {
     let client = ValveProtocol::new(address, port)?;
 
-    let mut query_app_id = match app {
-        None => 0,
-        Some(app) => app as u32
-    };
+    let info = client.get_server_info(&app)?;
 
-    let info = client.get_server_info(query_app_id)?;
-
-    if query_app_id != 0 {
-        if info.appid != query_app_id {
-            return Err(GDError::BadGame(format!("Expected {}, found {} instead!", query_app_id, info.appid)));
+    if let App::Source(x) = &app {
+        if let Some(appid) = x {
+            if *appid != info.appid {
+                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", *appid, info.appid)));
+            }
         }
-    } else {
-        query_app_id = info.appid;
     }
 
     let (gather_players, gather_rules) = match gather_settings.is_some() {
@@ -377,11 +442,11 @@ pub fn query(address: &str, port: u16, app: Option<App>, gather_settings: Option
         info,
         players: match gather_players {
             false => None,
-            true => Some(client.get_server_players(query_app_id)?)
+            true => Some(client.get_server_players(&app)?)
         },
         rules: match gather_rules {
             false => None,
-            true => client.get_server_rules(query_app_id)?
+            true => client.get_server_rules(&app)?
         }
     })
 }

@@ -13,8 +13,10 @@
 | ALIENS | Alien Swarm                        | Valve Protocol | Not tested.                                                                  |
 | ASRD   | Alien Swarm: Reactive Drop         | Valve Protocol |                                                                              |
 | INS    | Insurgency                         | Valve Protocol |                                                                              |
-| INSS   | Insurgency: Sandstorm              | Valve Protocol | Here you need to use the query port, not the server port.                    |
+| INSS   | Insurgency: Sandstorm              | Valve Protocol | Use the query port, not the server port.                                     |
 | INSMIC | Insurgency: Modern Infantry Combat | Valve Protocol | Not tested.                                                                  |
+| CSCZ   | Counter-Strike: Condition Zero     | Valve Protocol |                                                                              |
+| DOD    | Day of Defeat                      | Valve Protocol |                                                                              |
 
 ## Planned to add support:
 All Valve titles.  

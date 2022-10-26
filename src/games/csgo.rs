@@ -1,6 +1,6 @@
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{App, Server, GatheringSettings, get_optional_extracted_data};
+use crate::protocols::valve::{Server, GatheringSettings, get_optional_extracted_data, SteamID};
 use crate::protocols::valve::game::Player;
 
 #[derive(Debug)]
@@ -54,7 +54,7 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, Some(App::CSGO), Some(GatheringSettings {
+    }, SteamID::CSGO.app(), Some(GatheringSettings {
         players: true,
         rules: false // cause csgo doesnt reply with rules anymore
     }))?;

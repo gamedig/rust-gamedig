@@ -1,9 +1,10 @@
 
 use std::env;
-use gamedig::{aliens, asrd, csgo, css, dods, gm, hl2dm, ins, insmic, inss, l4d, l4d2, tf2, ts};
+use gamedig::{aliens, asrd, cscz, csgo, css, dod, dods, GDResult, gm, hl2dm, ins, insmic, inss, l4d, l4d2, tf2, ts};
 use gamedig::protocols::valve;
+use gamedig::protocols::valve::App;
 
-fn main() {
+fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() == 1 || args[1] == "help".to_string() {
@@ -11,10 +12,10 @@ fn main() {
         println!("       <game> - any game, example: tf2");
         println!("       <ip> - an ip, example: 192.168.0.0");
         println!("       <port> - an port, optional, example: 27015");
-        return;
+        return Ok(());
     } else if args.len() < 3 {
         println!("Minimum number of arguments: 3, try 'help' to see the details.");
-        return;
+        return Ok(());
     }
 
     let ip = args[2].as_str();
@@ -24,21 +25,27 @@ fn main() {
     };
 
     match args[1].as_str() {
-        "aliens" => println!("{:?}", aliens::query(ip, port)),
-        "asrd" => println!("{:?}", asrd::query(ip, port)),
-        "csgo" => println!("{:?}", csgo::query(ip, port)),
-        "css" => println!("{:?}", css::query(ip, port)),
-        "dods" => println!("{:?}", dods::query(ip, port)),
-        "gm" => println!("{:?}", gm::query(ip, port)),
-        "hl2dm" => println!("{:?}", hl2dm::query(ip, port)),
-        "tf2" => println!("{:?}", tf2::query(ip, port)),
-        "insmic" => println!("{:?}", insmic::query(ip, port)),
-        "ins" => println!("{:?}", ins::query(ip, port)),
-        "inss" => println!("{:?}", inss::query(ip, port)),
-        "l4d" => println!("{:?}", l4d::query(ip, port)),
-        "l4d2" => println!("{:?}", l4d2::query(ip, port)),
-        "ts" => println!("{:?}", ts::query(ip, port)),
-        "_" => println!("{:?}", valve::query(ip, 27015, None, None)),
+        "aliens" => println!("{:?}", aliens::query(ip, port)?),
+        "asrd" => println!("{:?}", asrd::query(ip, port)?),
+        "csgo" => println!("{:?}", csgo::query(ip, port)?),
+        "css" => println!("{:?}", css::query(ip, port)?),
+        "dods" => println!("{:?}", dods::query(ip, port)?),
+        "gm" => println!("{:?}", gm::query(ip, port)?),
+        "hl2dm" => println!("{:?}", hl2dm::query(ip, port)?),
+        "tf2" => println!("{:?}", tf2::query(ip, port)?),
+        "insmic" => println!("{:?}", insmic::query(ip, port)?),
+        "ins" => println!("{:?}", ins::query(ip, port)?),
+        "inss" => println!("{:?}", inss::query(ip, port)?),
+        "l4d" => println!("{:?}", l4d::query(ip, port)?),
+        "l4d2" => println!("{:?}", l4d2::query(ip, port)?),
+        "ts" => println!("{:?}", ts::query(ip, port)?),
+        "cscz" => println!("{:?}", cscz::query(ip, port)?),
+        "dod" => println!("{:?}", dod::query(ip, port)?),
+        "_src" => println!("{:?}", valve::query(ip, 27015, App::Source(None), None)?),
+        "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(false), None)?),
+        "_gld_f" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(true), None)?),
         _ => panic!("Undefined game: {}", args[1])
     };
+
+    Ok(())
 }

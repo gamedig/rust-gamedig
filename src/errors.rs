@@ -1,10 +1,13 @@
+
+//! The library's possible errors.
+
 use core::fmt;
 use std::fmt::Formatter;
 
 /// Result of Type and GDError.
 pub type GDResult<T> = Result<T, GDError>;
 
-/// GameDigError, every error you can encounter using the library.
+/// GameDigError.
 #[derive(Debug, Clone)]
 pub enum GDError {
     /// The received packet was bigger than the buffer size.

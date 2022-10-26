@@ -1,12 +1,10 @@
 
-//! All types used by the Valve protocol
-
 /// The type of the server.
 #[derive(Debug)]
 pub enum Server {
     Dedicated,
     NonDedicated,
-    SourceTV
+    TV
 }
 
 /// The Operating System that the server is on.
@@ -50,16 +48,20 @@ pub struct ServerInfo {
     pub server_type: Server,
     /// The Operating System that the server is on.
     pub environment_type: Environment,
-    /// Indicated whether the server requires a password.
+    /// Indicates whether the server requires a password.
     pub has_password: bool,
-    /// Indicated whether the server uses VAC.
+    /// Indicates whether the server uses VAC.
     pub vac_secured: bool,
     /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
     pub the_ship: Option<TheShip>,
     /// Version of the game installed on the server.
     pub version: String,
     /// Some extra data that the server might provide or not.
-    pub extra_data: Option<ExtraData>
+    pub extra_data: Option<ExtraData>,
+    /// GoldSrc only: Indicates whether the hosted game is a mod.
+    pub is_mod: bool,
+    /// GoldSrc only: If the game is a mod, provide additional data.
+    pub mod_data: Option<ModData>
 }
 
 /// A server player.
@@ -109,6 +111,16 @@ pub struct ExtraData {
     pub game_id: Option<u64>
 }
 
+#[derive(Debug)]
+pub struct ModData {
+    pub link: String,
+    pub download_link: String,
+    pub version: u32,
+    pub size: u32,
+    pub multiplayer_only: bool,
+    pub has_own_dll: bool
+}
+
 pub fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
     match data {
         None => (None, None, None, None, None),
@@ -128,9 +140,13 @@ pub enum Request {
     RULES = 0x56
 }
 
-/// Supported app id's
+/// Supported steam apps id's
 #[derive(PartialEq, Clone)]
-pub enum App {
+pub enum SteamID {
+    /// Day of Defeat
+    DOD = 30,
+    /// Counter-Strike: Condition Zero
+    CSCZ = 80,
     /// Counter-Strike: Source
     CSS = 240,
     /// Day of Defeat: Source
@@ -159,6 +175,27 @@ pub enum App {
     INSS = 581320,
     /// Alien Swarm: Reactive Drop
     ASRD = 563560,
+}
+
+impl SteamID {
+    pub fn app(self) -> App {
+        match self {
+            SteamID::CSCZ | SteamID::DOD => App::GoldSrc(false),
+            x => App::Source(Some(x as u32))
+        }
+    }
+}
+
+/// App type
+#[derive(PartialEq, Clone)]
+pub enum App {
+    /// A Source game, the argument represents the wanted response steam app id, if its **None**,
+    /// let the query find it, if its **Some**, the query fails if the response id is not the
+    /// specified one.
+    Source(Option<u32>),
+    /// A GoldSrc game, the argument indicates whether to enforce getting the obsolete A2S_INFO
+    /// goldsrc response or not.
+    GoldSrc(bool)
 }
 
 /// What data to gather, purely used only with the query function.
