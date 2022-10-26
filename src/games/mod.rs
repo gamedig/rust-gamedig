@@ -31,3 +31,5 @@ pub mod inss;
 pub mod insmic;
 /// Counter Strike: Condition Zero
 pub mod cscz;
+/// Day of Defeat
+pub mod dod;

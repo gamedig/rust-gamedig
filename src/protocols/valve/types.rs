@@ -143,6 +143,8 @@ pub enum Request {
 /// Supported steam apps id's
 #[derive(PartialEq, Clone)]
 pub enum SteamID {
+    /// Day of Defeat
+    DOD = 30,
     /// Counter-Strike: Condition Zero
     CSCZ = 80,
     /// Counter-Strike: Source
@@ -178,7 +180,7 @@ pub enum SteamID {
 impl SteamID {
     pub fn app(self) -> App {
         match self {
-            SteamID::CSCZ => App::GoldSrc(false),
+            SteamID::CSCZ | SteamID::DOD => App::GoldSrc(false),
             x => App::Source(Some(x as u32))
         }
     }

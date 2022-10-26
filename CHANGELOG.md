@@ -2,13 +2,15 @@
 Who knows what the future holds...
 
 # 0.0.5 - ??/??/2022
+Support for GoldSrc split packets and obsolete A2S_INFO response.  
 Changed the Valve Protocol app parameter to represent the engine responses.
 It is now an enum of:
-- `Source(Option<u32>)` - A Source response with optionally, the id
+- `Source(Option<u32>)` - A Source response with optionally, the id (if the id is present and the response id is not the same, the query fails)
 - `GoldSrc(bool)` - A GoldSrc response with the option to enforce the obsolete A2S_INFO response.
 
 [Counter-Strike: Condition Zero](https://store.steampowered.com/app/80/CounterStrike_Condition_Zero/) implementation.  
-Games besides CSGO, TS and CSS now have the same response structure.
+[Day of Defeat](https://store.steampowered.com/app/30/Day_of_Defeat/) implementation.  
+Games besides CSGO and TS now have the same response structure.
 
 # 0.0.4 - 23/10/2022
 Queries now support DNS resolve.  
