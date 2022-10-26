@@ -130,7 +130,7 @@ pub enum Request {
 
 /// Supported app id's
 #[derive(PartialEq, Clone)]
-pub enum App {
+pub enum SteamID {
     /// Counter-Strike: Source
     CSS = 240,
     /// Day of Defeat: Source
@@ -159,6 +159,20 @@ pub enum App {
     INSS = 581320,
     /// Alien Swarm: Reactive Drop
     ASRD = 563560,
+}
+
+impl SteamID {
+    pub fn app(self) -> App {
+        match self {
+            x => App::Source(Some(x as u32))
+        }
+    }
+}
+
+#[derive(PartialEq, Clone)]
+pub enum App {
+    Source(Option<u32>),
+    GoldSrc
 }
 
 /// What data to gather, purely used only with the query function.
