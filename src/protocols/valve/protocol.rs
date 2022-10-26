@@ -3,7 +3,7 @@ use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
 use crate::protocols::valve::{App, SteamID};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
-use crate::utils::{buffer, complete_address};
+use crate::utils::{buffer, complete_address, u8_lower_upper};
 
 #[derive(Debug, Clone)]
 struct Packet {
@@ -74,18 +74,27 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(_app: &App, buf: &[u8]) -> GDResult<Self> {
+    fn new(app: &App, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
         let header = buffer::get_u32_le(&buf, &mut pos)?;
         let id = buffer::get_u32_le(&buf, &mut pos)?;
-        let total = buffer::get_u8(&buf, &mut pos)?;
-        let number = buffer::get_u8(&buf, &mut pos)?;
-        let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
-        let compressed = ((id >> 31) & 1) == 1;
-        let (decompressed_size, uncompressed_crc32) = match compressed {
-            false => (None, None),
-            true => (Some(buffer::get_u32_le(&buf, &mut pos)?), Some(buffer::get_u32_le(&buf, &mut pos)?))
+        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match app {
+            App::GoldSrc => {
+                let (lower, upper) = u8_lower_upper(buffer::get_u8(&buf, &mut pos)?);
+                (lower, upper, 0, false, None, None)
+            }
+            App::Source(_) => {
+                let total = buffer::get_u8(&buf, &mut pos)?;
+                let number = buffer::get_u8(&buf, &mut pos)?;
+                let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
+                let compressed = ((id >> 31) & 1) == 1;
+                let (decompressed_size, uncompressed_crc32) = match compressed {
+                    false => (None, None),
+                    true => (Some(buffer::get_u32_le(&buf, &mut pos)?), Some(buffer::get_u32_le(&buf, &mut pos)?))
+                };
+                (total, number, size, compressed, decompressed_size, uncompressed_crc32)
+            }
         };
 
         Ok(Self {
@@ -101,8 +110,8 @@ impl SplitPacket {
         })
     }
 
-    fn decompress(&self) -> GDResult<Vec<u8>> {
-        if !self.compressed {
+    fn get_payload(&self) -> GDResult<Vec<u8>> {
+        if self.compressed {
             let mut decoder = Decoder::new();
             decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string()))?;
 
@@ -120,14 +129,6 @@ impl SplitPacket {
             else {
                 Ok(decompressed_payload)
             }
-        } else { //already decompressed
-            Ok(self.payload.clone())
-        }
-    }
-
-    fn get_payload(&self) -> GDResult<Vec<u8>> {
-        if self.compressed {
-            Ok(self.decompress()?)
         } else {
             Ok(self.payload.clone())
         }

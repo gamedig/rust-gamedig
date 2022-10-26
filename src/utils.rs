@@ -16,6 +16,10 @@ pub fn complete_address(address: &str, port: u16) -> GDResult<String> {
     Ok(resolve_dns(address)? + ":" + &*port.to_string())
 }
 
+pub fn u8_lower_upper(n: u8) -> (u8, u8) {
+    (n & 15, n >> 4)
+}
+
 pub mod buffer {
     use super::*;
 
