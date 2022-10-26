@@ -29,3 +29,5 @@ pub mod ins;
 pub mod inss;
 /// Insurgency: Modern Infantry Combat
 pub mod insmic;
+/// Counter Strike: Condition Zero
+pub mod cscz;

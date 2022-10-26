@@ -1,6 +1,9 @@
 
 Who knows what the future holds...
 
+# 0.0.5 - ??/??/2022
+[Counter-Strike: Condition Zero](https://store.steampowered.com/app/80/CounterStrike_Condition_Zero/) implementation.
+
 # 0.0.4 - 23/10/2022
 Queries now support DNS resolve.  
 Changed uses a bit, example: from `use gamedig::valve::ValveProtocol::query` to `use gamedig::protocols::valve::query`.  

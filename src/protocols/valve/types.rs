@@ -131,6 +131,8 @@ pub enum Request {
 /// Supported app id's
 #[derive(PartialEq, Clone)]
 pub enum SteamID {
+    /// Counter-Strike: Condition Zero
+    CSCZ = 80,
     /// Counter-Strike: Source
     CSS = 240,
     /// Day of Defeat: Source
@@ -164,6 +166,7 @@ pub enum SteamID {
 impl SteamID {
     pub fn app(self) -> App {
         match self {
+            SteamID::CSCZ => App::GoldSrc,
             x => App::Source(Some(x as u32))
         }
     }
