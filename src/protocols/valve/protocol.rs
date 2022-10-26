@@ -80,7 +80,7 @@ impl SplitPacket {
         let header = buffer::get_u32_le(&buf, &mut pos)?;
         let id = buffer::get_u32_le(&buf, &mut pos)?;
         let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match app {
-            App::GoldSrc => {
+            App::GoldSrc(_) => {
                 let (lower, upper) = u8_lower_upper(buffer::get_u8(&buf, &mut pos)?);
                 (lower, upper, 0, false, None, None)
             }
@@ -346,10 +346,9 @@ impl ValveProtocol {
     }
 }
 
-/// Query a server, you need to provide the address, the port and optionally, the app and the
-/// gather settings, the app being *None* means to anonymously query the server, and the gather
-/// settings being *None* means to get the players and the rules.
-pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>) -> Result<Response, GDError> {
+/// Query a server by providing the address, the port, the app and the gather settings, the settings
+/// being *None* means to also get the players and the rules.
+pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>) -> GDResult<Response> {
     let client = ValveProtocol::new(address, port)?;
 
     let info = client.get_server_info(&app)?;

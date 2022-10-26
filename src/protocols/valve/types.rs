@@ -1,12 +1,10 @@
 
-//! All types used by the Valve protocol
-
 /// The type of the server.
 #[derive(Debug)]
 pub enum Server {
     Dedicated,
     NonDedicated,
-    SourceTV
+    TV
 }
 
 /// The Operating System that the server is on.
@@ -128,7 +126,7 @@ pub enum Request {
     RULES = 0x56
 }
 
-/// Supported app id's
+/// Supported steam apps id's
 #[derive(PartialEq, Clone)]
 pub enum SteamID {
     /// Counter-Strike: Condition Zero
@@ -166,16 +164,22 @@ pub enum SteamID {
 impl SteamID {
     pub fn app(self) -> App {
         match self {
-            SteamID::CSCZ => App::GoldSrc,
+            SteamID::CSCZ => App::GoldSrc(false),
             x => App::Source(Some(x as u32))
         }
     }
 }
 
+/// App type
 #[derive(PartialEq, Clone)]
 pub enum App {
+    /// A Source game, the argument represents the wanted response steam app id, if its **None**,
+    /// let the query find it, if its **Some**, the query fails if the response id is not the
+    /// specified one.
     Source(Option<u32>),
-    GoldSrc
+    /// A GoldSrc game, the argument indicates whether to enforce getting the obsolete A2S_INFO
+    /// goldsrc response or not.
+    GoldSrc(bool)
 }
 
 /// What data to gather, purely used only with the query function.
