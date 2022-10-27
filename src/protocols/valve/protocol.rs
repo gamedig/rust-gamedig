@@ -74,7 +74,7 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(app: &App, buf: &[u8]) -> GDResult<Self> {
+    fn new(app: &App, protocol: u8, buf: &[u8]) -> GDResult<Self> {
         let mut pos = 0;
 
         let header = buffer::get_u32_le(&buf, &mut pos)?;
@@ -87,7 +87,10 @@ impl SplitPacket {
             App::Source(_) => {
                 let total = buffer::get_u8(&buf, &mut pos)?;
                 let number = buffer::get_u8(&buf, &mut pos)?;
-                let size = buffer::get_u16_le(&buf, &mut pos)?; //if game is CSS and if protocol is 7, queries with multi-packet responses will crash
+                let size = match protocol == 7 && (*app == SteamID::CSS.app()) { //certain apps with protocol = 7 doesnt have this field
+                    false => buffer::get_u16_le(&buf, &mut pos)?,
+                    true => 1248
+                };
                 let compressed = ((id >> 31) & 1) == 1;
                 let (decompressed_size, uncompressed_crc32) = match compressed {
                     false => (None, None),
@@ -166,15 +169,15 @@ impl ValveProtocol {
         Ok(buf[..amt].to_vec())
     }
 
-    fn receive(&self, app: &App, buffer_size: usize) -> GDResult<Packet> {
+    fn receive(&self, app: &App, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
         let mut buf = self.receive_raw(buffer_size)?;
 
         if buf[0] == 0xFE { //the packet is split
-            let mut main_packet = SplitPacket::new(&app, &buf)?;
+            let mut main_packet = SplitPacket::new(&app, protocol, &buf)?;
 
             for _ in 1..main_packet.total {
                 buf = self.receive_raw(buffer_size)?;
-                let chunk_packet = SplitPacket::new(&app, &buf)?;
+                let chunk_packet = SplitPacket::new(&app, protocol, &buf)?;
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
@@ -186,11 +189,11 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(&self, app: &App, kind: Request) -> GDResult<Vec<u8>> {
+    fn get_request_data(&self, app: &App, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
-        let packet = self.receive(app, DEFAULT_PACKET_SIZE)?;
+        let packet = self.receive(app, protocol, DEFAULT_PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
             return Ok(packet.payload.clone());
@@ -200,7 +203,7 @@ impl ValveProtocol {
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.send(&challenge_packet)?;
-        Ok(self.receive(app, DEFAULT_PACKET_SIZE)?.payload)
+        Ok(self.receive(app, protocol, DEFAULT_PACKET_SIZE)?.payload)
     }
 
     fn get_goldsrc_server_info(buf: &[u8]) -> GDResult<ServerInfo> {
@@ -266,7 +269,7 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
-        let buf = self.get_request_data(&app, Request::INFO)?;
+        let buf = self.get_request_data(&app, 0, Request::INFO)?;
         if let App::GoldSrc(force) = app {
             if *force {
                 return ValveProtocol::get_goldsrc_server_info(&buf);
@@ -365,8 +368,8 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    fn get_server_players(&self, app: &App) -> GDResult<Vec<ServerPlayer>> {
-        let buf = self.get_request_data(&app, Request::PLAYERS)?;
+    fn get_server_players(&self, app: &App, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
+        let buf = self.get_request_data(&app, protocol, Request::PLAYERS)?;
         let mut pos = 0;
 
         let count = buffer::get_u8(&buf, &mut pos)?;
@@ -393,12 +396,12 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    fn get_server_rules(&self, app: &App) -> GDResult<Option<Vec<ServerRule>>> {
+    fn get_server_rules(&self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
         if *app == SteamID::CSGO.app() { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
 
-        let buf = self.get_request_data(&app, Request::RULES)?;
+        let buf = self.get_request_data(&app, protocol, Request::RULES)?;
         let mut pos = 0;
 
         let count = buffer::get_u16_le(&buf, &mut pos)?;
@@ -421,6 +424,7 @@ pub fn query(address: &str, port: u16, app: App, gather_settings: Option<Gatheri
     let client = ValveProtocol::new(address, port)?;
 
     let info = client.get_server_info(&app)?;
+    let protocol = info.protocol;
 
     if let App::Source(x) = &app {
         if let Some(appid) = x {
@@ -442,11 +446,11 @@ pub fn query(address: &str, port: u16, app: App, gather_settings: Option<Gatheri
         info,
         players: match gather_players {
             false => None,
-            true => Some(client.get_server_players(&app)?)
+            true => Some(client.get_server_players(&app, protocol)?)
         },
         rules: match gather_rules {
             false => None,
-            true => client.get_server_rules(&app)?
+            true => client.get_server_rules(&app, protocol)?
         }
     })
 }

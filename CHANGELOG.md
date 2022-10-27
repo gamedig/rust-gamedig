@@ -10,7 +10,8 @@ It is now an enum of:
 
 [Counter-Strike: Condition Zero](https://store.steampowered.com/app/80/CounterStrike_Condition_Zero/) implementation.  
 [Day of Defeat](https://store.steampowered.com/app/30/Day_of_Defeat/) implementation.  
-Games besides CSGO and TS now have the same response structure.
+Games besides CSGO and TS now have the same response structure.  
+Fixed Source multipacket response crash due to when a certain app with a certain protocol doesnt have the Size field.
 
 # 0.0.4 - 23/10/2022
 Queries now support DNS resolve.  
