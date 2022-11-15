@@ -41,9 +41,9 @@ fn main() -> GDResult<()> {
         "ts" => println!("{:?}", ts::query(ip, port)?),
         "cscz" => println!("{:?}", cscz::query(ip, port)?),
         "dod" => println!("{:?}", dod::query(ip, port)?),
-        "_src" => println!("{:?}", valve::query(ip, 27015, App::Source(None), None)?),
-        "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(false), None)?),
-        "_gld_f" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(true), None)?),
+        "_src" => println!("{:?}", valve::query(ip, 27015, App::Source(None), None, None)?),
+        "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(false), None, None)?),
+        "_gld_f" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(true), None, None)?),
         _ => panic!("Undefined game: {}", args[1])
     };
 

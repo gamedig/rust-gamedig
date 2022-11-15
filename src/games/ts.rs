@@ -84,7 +84,7 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, SteamID::TS.app(), None)?;
+    }, SteamID::TS.as_app(), None, None)?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }

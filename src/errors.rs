@@ -28,6 +28,10 @@ pub enum GDError {
     BadGame(String),
     /// Problems occurred while dns resolving.
     DnsResolve(String),
+    /// Couldn't bind a socket.
+    SocketBind(String),
+    /// Invalid input.
+    InvalidInput(String),
 }
 
 impl fmt::Display for GDError {
@@ -42,6 +46,8 @@ impl fmt::Display for GDError {
             GDError::UnknownEnumCast => write!(f, "Unknown enum cast encountered."),
             GDError::BadGame(details) => write!(f, "Queried another game that the supposed one: {details}"),
             GDError::DnsResolve(details) => write!(f, "DNS Resolve: {details}"),
+            GDError::SocketBind(details) => write!(f, "Socket bind: {details}"),
+            GDError::InvalidInput(details) => write!(f, "Invalid input: {details}"),
         }
     }
 }

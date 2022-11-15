@@ -1,3 +1,5 @@
+use std::time::Duration;
+use crate::{GDError, GDResult};
 
 /// The type of the server.
 #[derive(Debug)]
@@ -111,6 +113,7 @@ pub struct ExtraData {
     pub game_id: Option<u64>
 }
 
+/// Data related to GoldSrc Mod response.
 #[derive(Debug)]
 pub struct ModData {
     pub link: String,
@@ -141,6 +144,7 @@ pub enum Request {
 }
 
 /// Supported steam apps id's
+#[repr(u32)]
 #[derive(PartialEq, Clone)]
 pub enum SteamID {
     /// Day of Defeat
@@ -178,10 +182,11 @@ pub enum SteamID {
 }
 
 impl SteamID {
-    pub fn app(self) -> App {
+    /// Get ID as App (the engine is specified).
+    pub fn as_app(&self) -> App {
         match self {
             SteamID::CSCZ | SteamID::DOD => App::GoldSrc(false),
-            x => App::Source(Some(x as u32))
+            x => App::Source(Some(x.clone() as u32))
         }
     }
 }
@@ -202,6 +207,64 @@ pub enum App {
 pub struct GatheringSettings {
     pub players: bool,
     pub rules: bool
+}
+
+impl Default for GatheringSettings {
+    /// Default values are true for both the players and the rules.
+    fn default() -> Self {
+        Self {
+            players: true,
+            rules: true
+        }
+    }
+}
+
+/// Timeout settings for socket operations
+pub struct TimeoutSettings {
+    read: Option<Duration>,
+    write: Option<Duration>
+}
+
+impl TimeoutSettings {
+    /// Construct new settings, passing None will block indefinitely. Passing zero Duration throws GDError::[InvalidInput](GDError::InvalidInput).
+    pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
+        if let Some(read_duration) = read {
+            if read_duration == Duration::new(0, 0) {
+                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_owned()))
+            }
+        }
+
+        if let Some(write_duration) = write {
+            if write_duration == Duration::new(0, 0) {
+                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_owned()))
+            }
+        }
+
+        Ok(Self {
+            read,
+            write
+        })
+    }
+
+    /// Get the read timeout.
+    pub fn get_read(&self) -> Option<Duration> {
+        self.read
+    }
+
+    /// Get the write timeout.
+    pub fn get_write(&self) -> Option<Duration> {
+        self.write
+    }
+}
+
+impl Default for TimeoutSettings {
+    /// Default values are 4 seconds for both read and write.
+    fn default() -> Self {
+        Self {
+            read: Some(Duration::from_secs(4)),
+            write: Some(Duration::from_secs(4))
+        }
+    }
 }
 
 /// Generic response types that are used by many games, they are the protocol ones, but without the

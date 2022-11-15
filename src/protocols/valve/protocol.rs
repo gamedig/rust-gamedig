@@ -1,7 +1,7 @@
 use std::net::UdpSocket;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
-use crate::protocols::valve::{App, ModData, SteamID};
+use crate::protocols::valve::{App, ModData, SteamID, TimeoutSettings};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
 use crate::utils::{buffer, complete_address, u8_lower_upper};
 
@@ -87,7 +87,7 @@ impl SplitPacket {
             App::Source(_) => {
                 let total = buffer::get_u8(&buf, &mut pos)?;
                 let number = buffer::get_u8(&buf, &mut pos)?;
-                let size = match protocol == 7 && (*app == SteamID::CSS.app()) { //certain apps with protocol = 7 doesnt have this field
+                let size = match protocol == 7 && (*app == SteamID::CSS.as_app()) { //certain apps with protocol = 7 doesnt have this field
                     false => buffer::get_u16_le(&buf, &mut pos)?,
                     true => 1248
                 };
@@ -143,12 +143,17 @@ struct ValveProtocol {
     complete_address: String
 }
 
-static DEFAULT_PACKET_SIZE: usize = 1400;
+static PACKET_SIZE: usize = 1400;
 
 impl ValveProtocol {
-    fn new(address: &str, port: u16) -> GDResult<Self> {
+    fn new(address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Self> {
+        let socket = UdpSocket::bind("0.0.0.0:0").map_err(|e| GDError::SocketBind(e.to_string()))?;
+
+        socket.set_read_timeout(timeout_settings.get_read()).unwrap();  //unwrapping because TimeoutSettings::new
+        socket.set_write_timeout(timeout_settings.get_write()).unwrap();//checks if these are 0 and throws an error
+
         Ok(Self {
-            socket: UdpSocket::bind("0.0.0.0:0").unwrap(),
+            socket,
             complete_address: complete_address(address, port)?
         })
     }
@@ -193,7 +198,7 @@ impl ValveProtocol {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.send(&request_initial_packet)?;
-        let packet = self.receive(app, protocol, DEFAULT_PACKET_SIZE)?;
+        let packet = self.receive(app, protocol, PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
             return Ok(packet.payload.clone());
@@ -203,7 +208,7 @@ impl ValveProtocol {
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.send(&challenge_packet)?;
-        Ok(self.receive(app, protocol, DEFAULT_PACKET_SIZE)?.payload)
+        Ok(self.receive(app, protocol, PACKET_SIZE)?.payload)
     }
 
     fn get_goldsrc_server_info(buf: &[u8]) -> GDResult<ServerInfo> {
@@ -301,7 +306,7 @@ impl ValveProtocol {
         };
         let has_password = buffer::get_u8(&buf, &mut pos)? == 1;
         let vac_secured = buffer::get_u8(&buf, &mut pos)? == 1;
-        let the_ship = match *app == SteamID::TS.app() {
+        let the_ship = match *app == SteamID::TS.as_app() {
             false => None,
             true => Some(TheShip {
                 mode: buffer::get_u8(&buf, &mut pos)?,
@@ -381,11 +386,11 @@ impl ValveProtocol {
                 name: buffer::get_string(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
-                deaths: match *app == SteamID::TS.app() {
+                deaths: match *app == SteamID::TS.as_app() {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 },
-                money: match *app == SteamID::TS.app() {
+                money: match *app == SteamID::TS.as_app() {
                     false => None,
                     true => Some(buffer::get_u32_le(&buf, &mut pos)?)
                 }
@@ -397,7 +402,7 @@ impl ValveProtocol {
 
     /// Get the server rules's.
     fn get_server_rules(&self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
-        if *app == SteamID::CSGO.app() { //cause csgo wont respond to this since feb 21 2014 update
+        if *app == SteamID::CSGO.as_app() { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
 
@@ -418,10 +423,16 @@ impl ValveProtocol {
     }
 }
 
-/// Query a server by providing the address, the port, the app and the gather settings, the settings
-/// being *None* means to also get the players and the rules.
-pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>) -> GDResult<Response> {
-    let client = ValveProtocol::new(address, port)?;
+/// Query a server by providing the address, the port, the app, gather and timeout settings.
+/// Providing None to the settings results in using the default values for them (GatherSettings::[default](GatheringSettings::default), TimeoutSettings::[default](TimeoutSettings::default)).
+pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let response_gather_settings = gather_settings.unwrap_or(GatheringSettings::default());
+    let response_timeout_settings = timeout_settings.unwrap_or(TimeoutSettings::default());
+    get_response(address, port, app, response_gather_settings, response_timeout_settings)
+}
+
+fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSettings, timeout_settings: TimeoutSettings) -> GDResult<Response> {
+    let client = ValveProtocol::new(address, port, timeout_settings)?;
 
     let info = client.get_server_info(&app)?;
     let protocol = info.protocol;
@@ -434,21 +445,13 @@ pub fn query(address: &str, port: u16, app: App, gather_settings: Option<Gatheri
         }
     }
 
-    let (gather_players, gather_rules) = match gather_settings.is_some() {
-        false => (true, true),
-        true => {
-            let settings = gather_settings.unwrap();
-            (settings.players, settings.rules)
-        }
-    };
-
     Ok(Response {
         info,
-        players: match gather_players {
+        players: match gather_settings.players {
             false => None,
             true => Some(client.get_server_players(&app, protocol)?)
         },
-        rules: match gather_rules {
+        rules: match gather_settings.rules {
             false => None,
             true => client.get_server_rules(&app, protocol)?
         }

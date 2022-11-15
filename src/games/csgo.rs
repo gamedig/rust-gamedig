@@ -54,10 +54,10 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, SteamID::CSGO.app(), Some(GatheringSettings {
+    }, SteamID::CSGO.as_app(), Some(GatheringSettings {
         players: true,
         rules: false // cause csgo doesnt reply with rules anymore
-    }))?;
+    }), None)?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }

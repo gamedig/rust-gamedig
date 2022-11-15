@@ -2,16 +2,20 @@
 Who knows what the future holds...
 
 # 0.0.5 - ??/??/2022
+Added `SocketBind` error, regarding failing to bind a socket.  
+Socket custom timeout capability (with an error if provided durations are zero).  
+Because of this, a parameter similar to GatherSettings has been added on the Valve Protocol Query.
 Support for GoldSrc split packets and obsolete A2S_INFO response.  
 Changed the Valve Protocol app parameter to represent the engine responses.
 It is now an enum of:
-- `Source(Option<u32>)` - A Source response with optionally, the id (if the id is present and the response id is not the same, the query fails)
+- `Source(Option<u32>)` - A Source response with optionally, the id (if the id is present and the response id is not the same, the query fails), if it isn't provided, find it.
 - `GoldSrc(bool)` - A GoldSrc response with the option to enforce the obsolete A2S_INFO response.
 
+Fixed Source multi-packet response crash due to when a certain app with a certain protocol doesn't have the Size field.  
+Reduced Valve Protocol `PACKET_SIZE` to be as specified from 2048 to 1400.  
 [Counter-Strike: Condition Zero](https://store.steampowered.com/app/80/CounterStrike_Condition_Zero/) implementation.  
 [Day of Defeat](https://store.steampowered.com/app/30/Day_of_Defeat/) implementation.  
 Games besides CSGO and TS now have the same response structure.  
-Fixed Source multipacket response crash due to when a certain app with a certain protocol doesnt have the Size field.
 
 # 0.0.4 - 23/10/2022
 Queries now support DNS resolve.  
