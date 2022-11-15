@@ -1,6 +1,6 @@
 [package]
 name = "gamedig"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
 authors = ["CosminPerRam [cosmin.p@live.com]", "node-GameDig [https://github.com/gamedig/node-gamedig]"]
 license = "MIT"
