@@ -1,7 +1,8 @@
 use std::net::UdpSocket;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
-use crate::protocols::valve::{App, ModData, SteamID, TimeoutSettings};
+use crate::protocols::types::TimeoutSettings;
+use crate::protocols::valve::{App, ModData, SteamID};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
 use crate::utils::{buffer, complete_address, u8_lower_upper};
 

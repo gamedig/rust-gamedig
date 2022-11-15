@@ -6,3 +6,5 @@
 
 /// Reference: [Server Query](https://developer.valvesoftware.com/wiki/Server_queries)
 pub mod valve;
+/// General types that are used by all protocols.
+pub mod types;
