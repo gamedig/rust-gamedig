@@ -143,7 +143,7 @@ struct ValveProtocol {
     complete_address: String
 }
 
-static DEFAULT_PACKET_SIZE: usize = 2048;
+static DEFAULT_PACKET_SIZE: usize = 1400;
 
 impl ValveProtocol {
     fn new(address: &str, port: u16) -> GDResult<Self> {
