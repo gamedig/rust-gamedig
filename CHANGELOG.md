@@ -1,7 +1,7 @@
 
 Who knows what the future holds...
 
-# 0.0.5 - ??/??/2022
+# 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  
 Socket custom timeout capability (with an error if provided durations are zero).  
 Because of this, a parameter similar to GatherSettings has been added on the Valve Protocol Query.
