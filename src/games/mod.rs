@@ -33,3 +33,5 @@ pub mod insmic;
 pub mod cscz;
 /// Day of Defeat
 pub mod dod;
+/// Minecraft
+pub mod minecraft;

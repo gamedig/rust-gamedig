@@ -1,5 +1,3 @@
-use std::time::Duration;
-use crate::{GDError, GDResult};
 
 /// The type of the server.
 #[derive(Debug)]
