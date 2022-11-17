@@ -32,7 +32,7 @@ use crate::{GDError, GDResult};
 use crate::utils::buffer::get_u8;
 
 /// The type of Minecraft Server you want to query
-pub enum Minecraft {
+pub enum Server {
     /// Java Edition
     Java,
     /// Legacy Java Versions

@@ -42,7 +42,7 @@ impl Packet {
     fn initial(kind: Request) -> Self {
         Self {
             header: 4294967295, //FF FF FF FF
-            kind: kind as u8,
+            kind: kind.clone() as u8,
             payload: match kind {
                 Request::INFO => String::from("Source Engine Query\0").into_bytes(),
                 _ => vec![0xFF, 0xFF, 0xFF, 0xFF]
