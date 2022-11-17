@@ -3,7 +3,7 @@ use std::net::TcpStream;
 use serde_json::Value;
 use crate::{GDError, GDResult};
 use crate::GDError::JsonParse;
-use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Player, Response};
+use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Minecraft, Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::utils::complete_address;
 
@@ -130,12 +130,12 @@ impl MinecraftProtocol {
     }
 }
 
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(mc_type: Minecraft, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let response_timeout_settings = timeout_settings.unwrap_or(TimeoutSettings::default());
-    get_response(address, port, response_timeout_settings)
+    get_response(mc_type, address, port, response_timeout_settings)
 }
 
-pub fn get_response(address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Response> {
+pub fn get_response(mc_type: Minecraft, address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Response> {
     let mut client = MinecraftProtocol::new(address, port, timeout_settings)?;
 
     Ok(client.get_info()?)

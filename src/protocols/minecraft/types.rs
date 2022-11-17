@@ -31,6 +31,26 @@ SOFTWARE.
 use crate::{GDError, GDResult};
 use crate::utils::buffer::get_u8;
 
+/// The type of Minecraft Server you want to query
+pub enum Minecraft {
+    /// Java Edition
+    Java,
+    /// Legacy Java Versions
+    Legacy(LegacyVersion),
+    /// Bedrock Edition
+    Bedrock
+}
+
+/// Legacy Java Versions
+pub enum LegacyVersion {
+    /// 1.6
+    V1_6,
+    /// 1.4 - 1.5
+    V1_4,
+    /// Beta 1.8 - 1.3
+    BV1_8
+}
+
 #[derive(Debug)]
 pub struct Player {
     pub name: String,
