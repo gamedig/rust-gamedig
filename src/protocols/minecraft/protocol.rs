@@ -120,7 +120,7 @@ impl MinecraftProtocol {
             sample_players,
             description: value_response["description"].to_string(),
             favicon,
-            previews_chat: value_response["previewsChat"].as_bool().unwrap(),
+            previews_chat: value_response["previewsChat"].as_bool(),
             enforces_secure_chat: value_response["enforcesSecureChat"].as_bool()
         })
     }

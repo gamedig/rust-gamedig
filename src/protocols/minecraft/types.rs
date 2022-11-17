@@ -58,7 +58,7 @@ pub struct Response {
     pub sample_players: Vec<Player>,
     pub description: String,
     pub favicon: Option<String>,
-    pub previews_chat: bool,
+    pub previews_chat: Option<bool>,
     pub enforces_secure_chat: Option<bool>
 }
 
