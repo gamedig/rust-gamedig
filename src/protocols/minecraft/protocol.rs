@@ -3,7 +3,7 @@ use std::net::TcpStream;
 use serde_json::Value;
 use crate::{GDError, GDResult};
 use crate::GDError::JsonParse;
-use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Player, Response, Version};
+use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::utils::complete_address;
 
@@ -95,31 +95,35 @@ impl MinecraftProtocol {
 
         let json_response = get_string(&buf, &mut pos)?;
         let value_response: Value = serde_json::from_str(&json_response)
-            .map_err(|_| JsonParse("Received string is unparsable.".to_owned()))?;
+            .map_err(|e| JsonParse(e.to_string()))?;
 
-        let favicon = match value_response["favicon"].is_null() {
-            true => None,
-            false => Some(value_response["favicon"].as_str().unwrap().to_owned())
-        };
+        let version_name = value_response["version"]["name"].as_str()
+            .ok_or(GDError::PacketBad("Couldn't get expected string.".to_owned()))?.to_string();
+        let version_protocol = value_response["version"]["protocol"].as_i64()
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as i32;
 
+        let max_players = value_response["players"]["max"].as_u64()
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as u32;
+        let online_players = value_response["players"]["online"].as_u64()
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as u32;
         let sample_players: Vec<Player> = match value_response["players"]["sample"].is_null() {
             true => Vec::new(),
-            false => {
-                value_response["players"]["sample"].as_array().clone().unwrap()
-                    .iter().map(|v| Player {
-                    name: v["name"].to_string(),
-                    id: v["id"].to_string()
-                }).collect()
-            }
+            false => value_response["players"]["sample"].as_array()
+                .ok_or(GDError::PacketBad("Couldn't get expected array.".to_owned()))?
+                .iter().map(|v| Player {
+                name: v["name"].as_str().unwrap().to_owned(),
+                id: v["id"].as_str().unwrap().to_owned()
+            }).collect()
         };
 
         Ok(Response {
-            version: Version::V1_19,
-            max_players: value_response["players"]["max"].as_u64().unwrap() as u32,
-            online_players: value_response["players"]["online"].as_u64().unwrap() as u32,
+            version_name,
+            version_protocol,
+            max_players,
+            online_players,
             sample_players,
             description: value_response["description"].to_string(),
-            favicon,
+            favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),
             enforces_secure_chat: value_response["enforcesSecureChat"].as_bool()
         })

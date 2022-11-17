@@ -75,8 +75,11 @@ pub mod buffer {
 
     pub fn get_string(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
-        let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_string()))?;
-        let value = std::str::from_utf8(&sub_buf[..first_null_position]).unwrap().to_string();
+        let first_null_position = sub_buf.iter().position(|&x| x == 0)
+            .ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_owned()))?;
+        let value = std::str::from_utf8(&sub_buf[..first_null_position])
+            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_owned()))?.to_string();
+
         *pos += value.len() + 1;
         Ok(value)
     }

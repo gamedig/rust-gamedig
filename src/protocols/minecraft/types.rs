@@ -32,19 +32,6 @@ use crate::{GDError, GDResult};
 use crate::utils::buffer::get_u8;
 
 #[derive(Debug)]
-pub enum Version {
-    V1_19
-}
-
-impl Version {
-    pub fn protocol(&self) -> u32 {
-        match self {
-            Version::V1_19 => 759
-        }
-    }
-}
-
-#[derive(Debug)]
 pub struct Player {
     pub name: String,
     pub id: String
@@ -52,7 +39,8 @@ pub struct Player {
 
 #[derive(Debug)]
 pub struct Response {
-    pub version: Version,
+    pub version_name: String,
+    pub version_protocol: i32,
     pub max_players: u32,
     pub online_players: u32,
     pub sample_players: Vec<Player>,
