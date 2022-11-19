@@ -1,51 +1,33 @@
-use std::io::{Read, Write};
-use std::net::TcpStream;
 use serde_json::Value;
 use crate::{GDError, GDResult};
-use crate::GDError::JsonParse;
-use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Server, Player, Response};
+use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Server, Player, Response, LegacyVersion};
 use crate::protocols::types::TimeoutSettings;
-use crate::utils::complete_address;
+use crate::socket::{Socket, TcpSocket};
 
-struct MinecraftProtocol {
-    socket: TcpStream
+struct MinecraftProtocolJava {
+    socket: TcpSocket
 }
 
-impl MinecraftProtocol {
-    fn new(address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Self> {
-        let complete_address = complete_address(address, port)?;
-        let socket = TcpStream::connect(complete_address).map_err(|e| GDError::SocketConnect(e.to_string()))?;
-
-        socket.set_read_timeout(timeout_settings.get_read()).unwrap();   //unwrapping because TimeoutSettings::new
-        socket.set_write_timeout(timeout_settings.get_write()).unwrap(); //checks if these are 0 and throws an error
+impl MinecraftProtocolJava {
+    fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = TcpSocket::new(address, port)?;
+        socket.apply_timeout(timeout_settings)?;
 
         Ok(Self {
             socket
         })
     }
 
-    fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.write(&data).map_err(|e| GDError::PacketSend(e.to_string()))?;
-        Ok(())
-    }
-
-    fn send_packet(&mut self, data: Vec<u8>) -> GDResult<()> {
-        self.send(&[as_varint(data.len() as i32), data].concat())
+    fn send(&mut self, data: Vec<u8>) -> GDResult<()> {
+        self.socket.send(&[as_varint(data.len() as i32), data].concat())
     }
 
     fn receive(&mut self) -> GDResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        self.socket.read_to_end(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
-
-        Ok(buf)
-    }
-
-    fn receive_packet(&mut self) -> GDResult<Vec<u8>> {
-        let buf = self.receive()?;
+        let buf = self.socket.receive(None)?;
         let mut pos = 0;
 
         let _packet_length = get_varint(&buf, &mut pos)? as usize;
-        //this declared 'packet length' from within the packet might be wrong, not checking with it...
+        //this declared 'packet length' from within the packet might be wrong (?), not checking with it...
 
         Ok(buf[pos..].to_owned())
     }
@@ -59,7 +41,7 @@ impl MinecraftProtocol {
         buf.extend((0 as u16).to_be_bytes());                  //server port (can be anything)
         buf.extend(as_varint(1));                        //next state (1 for status)
 
-        self.send_packet(buf)?;
+        self.send(buf)?;
 
         Ok(())
     }
@@ -67,7 +49,7 @@ impl MinecraftProtocol {
     fn send_status_request(&mut self) -> GDResult<()> {
         let packet_id_status = as_varint(0);
 
-        self.send_packet(packet_id_status)?;
+        self.send(packet_id_status)?;
 
         Ok(())
     }
@@ -75,7 +57,7 @@ impl MinecraftProtocol {
     fn send_ping_request(&mut self) -> GDResult<()> {
         let packet_id_ping = as_varint(1);
 
-        self.send_packet(packet_id_ping)?;
+        self.send(packet_id_ping)?;
 
         Ok(())
     }
@@ -85,7 +67,7 @@ impl MinecraftProtocol {
         self.send_status_request()?;
         self.send_ping_request()?;
 
-        let buf = self.receive_packet()?;
+        let buf = self.receive()?;
         let mut pos = 0;
 
         let packet_id = get_varint(&buf, &mut pos)?;
@@ -95,7 +77,7 @@ impl MinecraftProtocol {
 
         let json_response = get_string(&buf, &mut pos)?;
         let value_response: Value = serde_json::from_str(&json_response)
-            .map_err(|e| JsonParse(e.to_string()))?;
+            .map_err(|e| GDError::JsonParse(e.to_string()))?;
 
         let version_name = value_response["version"]["name"].as_str()
             .ok_or(GDError::PacketBad("Couldn't get expected string.".to_owned()))?.to_string();
@@ -131,12 +113,13 @@ impl MinecraftProtocol {
 }
 
 pub fn query(mc_type: Server, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let response_timeout_settings = timeout_settings.unwrap_or(TimeoutSettings::default());
-    get_response(mc_type, address, port, response_timeout_settings)
-}
-
-pub fn get_response(mc_type: Server, address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Response> {
-    let mut client = MinecraftProtocol::new(address, port, timeout_settings)?;
-
-    Ok(client.get_info()?)
+    Ok(match mc_type {
+        Server::Java => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
+        Server::Legacy(category) => match category {
+            LegacyVersion::V1_6 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
+            LegacyVersion::V1_4 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
+            LegacyVersion::BV1_8 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
+        },
+        Server::Bedrock => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?
+    })
 }

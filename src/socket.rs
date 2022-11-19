@@ -1,0 +1,88 @@
+use std::io::{Read, Write};
+use std::net;
+use crate::{GDError, GDResult};
+use crate::protocols::types::TimeoutSettings;
+use crate::utils::complete_address;
+
+static DEFAULT_PACKET_SIZE: usize = 1024;
+
+pub trait Socket {
+    fn new(address: &str, port: u16) -> GDResult<Self> where Self: Sized;
+
+    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()>;
+
+    fn send(&mut self, data: &[u8]) -> GDResult<()>;
+    fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>>;
+}
+
+pub struct TcpSocket {
+    socket: net::TcpStream
+}
+
+impl Socket for TcpSocket {
+    fn new(address: &str, port: u16) -> GDResult<Self> {
+        let complete_address = complete_address(address, port)?;
+        let socket = net::TcpStream::connect(complete_address).map_err(|e| GDError::SocketConnect(e.to_string()))?;
+
+        Ok(Self {
+            socket
+        })
+    }
+
+    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
+        let settings = timeout_settings.unwrap_or(TimeoutSettings::default());
+        self.socket.set_read_timeout(settings.get_read()).unwrap();   //unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
+
+        Ok(())
+    }
+
+    fn send(&mut self, data: &[u8]) -> GDResult<()> {
+        self.socket.write(&data).map_err(|e| GDError::PacketSend(e.to_string()))?;
+        Ok(())
+    }
+
+    fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
+        let mut buf = Vec::with_capacity(size.unwrap_or(DEFAULT_PACKET_SIZE));
+        self.socket.read_to_end(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
+
+        Ok(buf)
+    }
+}
+
+pub struct UdpSocket {
+    socket: net::UdpSocket,
+    complete_address: String
+}
+
+impl Socket for UdpSocket {
+    fn new(address: &str, port: u16) -> GDResult<Self> {
+        let complete_address = complete_address(address, port)?;
+        let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| GDError::SocketBind(e.to_string()))?;
+
+        Ok(Self {
+            socket,
+            complete_address
+        })
+    }
+
+    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
+        let settings = timeout_settings.unwrap_or(TimeoutSettings::default());
+        self.socket.set_read_timeout(settings.get_read()).unwrap();   //unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
+
+        Ok(())
+    }
+
+    fn send(&mut self, data: &[u8]) -> GDResult<()> {
+        self.socket.send_to(&data, &self.complete_address).map_err(|e| GDError::PacketSend(e.to_string()))?;
+        Ok(())
+    }
+
+    fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
+        let mut buf: Vec<u8> = vec![0; size.unwrap_or(DEFAULT_PACKET_SIZE)];
+        self.socket.recv_from(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
+
+        Ok(buf)
+    }
+}

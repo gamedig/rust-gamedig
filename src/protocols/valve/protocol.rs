@@ -1,10 +1,10 @@
-use std::net::UdpSocket;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
 use crate::protocols::types::TimeoutSettings;
 use crate::protocols::valve::{App, ModData, SteamID};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
-use crate::utils::{buffer, complete_address, u8_lower_upper};
+use crate::socket::{Socket, UdpSocket};
+use crate::utils::{buffer, u8_lower_upper};
 
 #[derive(Debug, Clone)]
 struct Packet {
@@ -140,49 +140,29 @@ impl SplitPacket {
 }
 
 struct ValveProtocol {
-    socket: UdpSocket,
-    complete_address: String
+    socket: UdpSocket
 }
 
 static PACKET_SIZE: usize = 1400;
 
 impl ValveProtocol {
-    fn new(address: &str, port: u16, timeout_settings: TimeoutSettings) -> GDResult<Self> {
-        let socket = UdpSocket::bind("0.0.0.0:0").map_err(|e| GDError::SocketBind(e.to_string()))?;
-
-        socket.set_read_timeout(timeout_settings.get_read()).unwrap();  //unwrapping because TimeoutSettings::new
-        socket.set_write_timeout(timeout_settings.get_write()).unwrap();//checks if these are 0 and throws an error
+    fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = UdpSocket::new(address, port)?;
+        socket.apply_timeout(timeout_settings)?;
 
         Ok(Self {
-            socket,
-            complete_address: complete_address(address, port)?
+            socket
         })
     }
 
-    fn send(&self, data: &[u8]) -> GDResult<()> {
-        self.socket.send_to(&data, &self.complete_address).map_err(|e| GDError::PacketSend(e.to_string()))?;
-        Ok(())
-    }
-
-    fn receive_raw(&self, buffer_size: usize) -> GDResult<Vec<u8>> {
-        let mut buf: Vec<u8> = vec![0; buffer_size];
-        let (amt, _) = self.socket.recv_from(&mut buf.as_mut_slice()).map_err(|e| GDError::PacketReceive(e.to_string()))?;
-
-        if amt < 6 {
-            return Err(GDError::PacketUnderflow("Any Valve Protocol response can't be under 6 bytes long.".to_string()));
-        }
-
-        Ok(buf[..amt].to_vec())
-    }
-
-    fn receive(&self, app: &App, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
-        let mut buf = self.receive_raw(buffer_size)?;
+    fn receive(&mut self, app: &App, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
+        let mut buf = self.socket.receive(Some(buffer_size))?;
 
         if buf[0] == 0xFE { //the packet is split
             let mut main_packet = SplitPacket::new(&app, protocol, &buf)?;
 
             for _ in 1..main_packet.total {
-                buf = self.receive_raw(buffer_size)?;
+                buf = self.socket.receive(Some(buffer_size))?;
                 let chunk_packet = SplitPacket::new(&app, protocol, &buf)?;
                 main_packet.payload.extend(chunk_packet.payload);
             }
@@ -195,10 +175,10 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(&self, app: &App, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
+    fn get_request_data(&mut self, app: &App, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
-        self.send(&request_initial_packet)?;
+        self.socket.send(&request_initial_packet)?;
         let packet = self.receive(app, protocol, PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
@@ -208,7 +188,7 @@ impl ValveProtocol {
         let challenge = packet.payload;
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
-        self.send(&challenge_packet)?;
+        self.socket.send(&challenge_packet)?;
         Ok(self.receive(app, protocol, PACKET_SIZE)?.payload)
     }
 
@@ -274,7 +254,7 @@ impl ValveProtocol {
     }
 
     /// Get the server information's.
-    fn get_server_info(&self, app: &App) -> GDResult<ServerInfo> {
+    fn get_server_info(&mut self, app: &App) -> GDResult<ServerInfo> {
         let buf = self.get_request_data(&app, 0, Request::INFO)?;
         if let App::GoldSrc(force) = app {
             if *force {
@@ -374,7 +354,7 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    fn get_server_players(&self, app: &App, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
+    fn get_server_players(&mut self, app: &App, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
         let buf = self.get_request_data(&app, protocol, Request::PLAYERS)?;
         let mut pos = 0;
 
@@ -402,7 +382,7 @@ impl ValveProtocol {
     }
 
     /// Get the server rules's.
-    fn get_server_rules(&self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
+    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
         if *app == SteamID::CSGO.as_app() { //cause csgo wont respond to this since feb 21 2014 update
             return Ok(None);
         }
@@ -428,12 +408,11 @@ impl ValveProtocol {
 /// Providing None to the settings results in using the default values for them (GatherSettings::[default](GatheringSettings::default), TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let response_gather_settings = gather_settings.unwrap_or(GatheringSettings::default());
-    let response_timeout_settings = timeout_settings.unwrap_or(TimeoutSettings::default());
-    get_response(address, port, app, response_gather_settings, response_timeout_settings)
+    get_response(address, port, app, response_gather_settings, timeout_settings)
 }
 
-fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSettings, timeout_settings: TimeoutSettings) -> GDResult<Response> {
-    let client = ValveProtocol::new(address, port, timeout_settings)?;
+fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSettings, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let mut client = ValveProtocol::new(address, port, timeout_settings)?;
 
     let info = client.get_server_info(&app)?;
     let protocol = info.protocol;

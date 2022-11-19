@@ -19,6 +19,7 @@ pub mod errors;
 pub mod protocols;
 pub mod games;
 mod utils;
+mod socket;
 
 pub use errors::*;
 pub use games::*;
