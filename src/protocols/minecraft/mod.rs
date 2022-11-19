@@ -6,3 +6,4 @@ pub mod types;
 
 pub use protocol::*;
 pub use types::*;
+pub use protocol::*;

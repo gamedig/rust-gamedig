@@ -1,14 +1,14 @@
 use serde_json::Value;
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Server, Player, Response, LegacyVersion};
+use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 
-struct MinecraftProtocolJava {
+pub struct Java {
     socket: TcpSocket
 }
 
-impl MinecraftProtocolJava {
+impl Java {
     fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TcpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
@@ -110,16 +110,8 @@ impl MinecraftProtocolJava {
             enforces_secure_chat: value_response["enforcesSecureChat"].as_bool()
         })
     }
-}
 
-pub fn query(mc_type: Server, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    Ok(match mc_type {
-        Server::Java => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
-        Server::Legacy(category) => match category {
-            LegacyVersion::V1_6 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
-            LegacyVersion::V1_4 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
-            LegacyVersion::BV1_8 => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?,
-        },
-        Server::Bedrock => MinecraftProtocolJava::new(address, port, timeout_settings)?.get_info()?
-    })
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+        Java::new(address, port, timeout_settings)?.get_info()
+    }
 }

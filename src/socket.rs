@@ -81,8 +81,8 @@ impl Socket for UdpSocket {
 
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
         let mut buf: Vec<u8> = vec![0; size.unwrap_or(DEFAULT_PACKET_SIZE)];
-        self.socket.recv_from(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
+        let (number_of_bytes_received, _) = self.socket.recv_from(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
 
-        Ok(buf)
+        Ok(buf[..number_of_bytes_received].to_vec())
     }
 }
