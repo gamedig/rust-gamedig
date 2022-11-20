@@ -29,7 +29,7 @@ impl Java {
         let _packet_length = get_varint(&buf, &mut pos)? as usize;
         //this declared 'packet length' from within the packet might be wrong (?), not checking with it...
 
-        Ok(buf[pos..].to_owned())
+        Ok(buf[pos..].to_vec())
     }
 
     fn send_handshake(&mut self) -> GDResult<()> {
@@ -37,7 +37,7 @@ impl Java {
         buf.extend(as_varint(0));                       //packet ID
         //packet:
         buf.extend(as_varint(-1));                       //protocol version (-1 to determine version)
-        buf.extend(as_string("gamedig-rs".to_owned()));  //server address (can be anything)
+        buf.extend(as_string("gamedig-rs".to_string()));  //server address (can be anything)
         buf.extend((0 as u16).to_be_bytes());                  //server port (can be anything)
         buf.extend(as_varint(1));                        //next state (1 for status)
 
@@ -72,7 +72,7 @@ impl Java {
 
         let packet_id = get_varint(&buf, &mut pos)?;
         if packet_id != 0 {
-            return Err(GDError::PacketBad("Bad receive packet id.".to_owned()));
+            return Err(GDError::PacketBad("Bad receive packet id.".to_string()));
         }
 
         let json_response = get_string(&buf, &mut pos)?;
@@ -80,21 +80,21 @@ impl Java {
             .map_err(|e| GDError::JsonParse(e.to_string()))?;
 
         let version_name = value_response["version"]["name"].as_str()
-            .ok_or(GDError::PacketBad("Couldn't get expected string.".to_owned()))?.to_string();
+            .ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string();
         let version_protocol = value_response["version"]["protocol"].as_i64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as i32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as i32;
 
         let max_players = value_response["players"]["max"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as u32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
         let online_players = value_response["players"]["online"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_owned()))? as u32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
         let sample_players: Vec<Player> = match value_response["players"]["sample"].is_null() {
             true => Vec::new(),
             false => value_response["players"]["sample"].as_array()
-                .ok_or(GDError::PacketBad("Couldn't get expected array.".to_owned()))?
+                .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?
                 .iter().map(|v| Player {
-                name: v["name"].as_str().unwrap().to_owned(),
-                id: v["id"].as_str().unwrap().to_owned()
+                name: v["name"].as_str().unwrap().to_string(),
+                id: v["id"].as_str().unwrap().to_string()
             }).collect()
         };
 

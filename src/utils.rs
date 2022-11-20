@@ -43,6 +43,16 @@ pub mod buffer {
         Ok(value)
     }
 
+    pub fn get_u16_be(buf: &[u8], pos: &mut usize) -> GDResult<u16> {
+        if buf.len() <= *pos + 1 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
+        }
+
+        let value = u16::from_be_bytes([buf[*pos], buf[*pos + 1]]);
+        *pos += 2;
+        Ok(value)
+    }
+
     pub fn get_u32_le(buf: &[u8], pos: &mut usize) -> GDResult<u32> {
         if buf.len() <= *pos + 3 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()));
@@ -73,12 +83,24 @@ pub mod buffer {
         Ok(value)
     }
 
-    pub fn get_string(buf: &[u8], pos: &mut usize) -> GDResult<String> {
+    pub fn get_string_utf8_le(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
         let first_null_position = sub_buf.iter().position(|&x| x == 0)
-            .ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_owned()))?;
+            .ok_or(GDError::PacketBad("Unexpectedly formatted packet.".to_string()))?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
-            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_owned()))?.to_string();
+            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
+
+        *pos += value.len() + 1;
+        Ok(value)
+    }
+
+    pub fn get_string_utf16_be(buf: &[u8], pos: &mut usize) -> GDResult<String> {
+        let sub_buf = &buf[*pos..];
+        let paired_buf: Vec<u16> = sub_buf.chunks_exact(2)
+            .into_iter().map(|a| u16::from_be_bytes([a[0], a[1]])).collect();
+
+        let value = String::from_utf16(&paired_buf)
+            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
 
         *pos += value.len() + 1;
         Ok(value)
@@ -146,12 +168,12 @@ mod tests {
     }
 
     #[test]
-    fn get_string_test() {
+    fn get_string_utf8_le_test() {
         let data = [72, 101, 108, 108, 111, 0, 72];
         let mut pos = 0;
-        assert_eq!(buffer::get_string(&data, &mut pos).unwrap(), "Hello");
+        assert_eq!(buffer::get_string_utf8_le(&data, &mut pos).unwrap(), "Hello");
         assert_eq!(pos, 6);
-        assert!(buffer::get_string(&data, &mut pos).is_err());
+        assert!(buffer::get_string_utf8_le(&data, &mut pos).is_err());
         assert_eq!(pos, 6);
     }
 }

@@ -196,11 +196,11 @@ impl ValveProtocol {
         let mut pos = 0;
 
         buffer::get_u8(&buf, &mut pos)?; //get the header (useless info)
-        buffer::get_string(&buf, &mut pos)?; //get the server address (useless info)
-        let name = buffer::get_string(&buf, &mut pos)?;
-        let map = buffer::get_string(&buf, &mut pos)?;
-        let folder = buffer::get_string(&buf, &mut pos)?;
-        let game = buffer::get_string(&buf, &mut pos)?;
+        buffer::get_string_utf8_le(&buf, &mut pos)?; //get the server address (useless info)
+        let name = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let map = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let folder = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let game = buffer::get_string_utf8_le(&buf, &mut pos)?;
         let players = buffer::get_u8(&buf, &mut pos)?;
         let max_players = buffer::get_u8(&buf, &mut pos)?;
         let protocol = buffer::get_u8(&buf, &mut pos)?;
@@ -220,8 +220,8 @@ impl ValveProtocol {
         let mod_data = match is_mod {
             false => None,
             true => Some(ModData {
-                link: buffer::get_string(&buf, &mut pos)?,
-                download_link: buffer::get_string(&buf, &mut pos)?,
+                link: buffer::get_string_utf8_le(&buf, &mut pos)?,
+                download_link: buffer::get_string_utf8_le(&buf, &mut pos)?,
                 version: buffer::get_u32_le(&buf, &mut pos)?,
                 size: buffer::get_u32_le(&buf, &mut pos)?,
                 multiplayer_only: buffer::get_u8(&buf, &mut pos)? == 1,
@@ -265,10 +265,10 @@ impl ValveProtocol {
         let mut pos = 0;
 
         let protocol = buffer::get_u8(&buf, &mut pos)?;
-        let name = buffer::get_string(&buf, &mut pos)?;
-        let map = buffer::get_string(&buf, &mut pos)?;
-        let folder = buffer::get_string(&buf, &mut pos)?;
-        let game = buffer::get_string(&buf, &mut pos)?;
+        let name = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let map = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let folder = buffer::get_string_utf8_le(&buf, &mut pos)?;
+        let game = buffer::get_string_utf8_le(&buf, &mut pos)?;
         let mut appid = buffer::get_u16_le(&buf, &mut pos)? as u32;
         let players = buffer::get_u8(&buf, &mut pos)?;
         let max_players = buffer::get_u8(&buf, &mut pos)?;
@@ -295,7 +295,7 @@ impl ValveProtocol {
                 duration: buffer::get_u8(&buf, &mut pos)?
             })
         };
-        let version = buffer::get_string(&buf, &mut pos)?;
+        let version = buffer::get_string_utf8_le(&buf, &mut pos)?;
         let extra_data = match buffer::get_u8(&buf, &mut pos) {
             Err(_) => None,
             Ok(value) => Some(ExtraData {
@@ -313,11 +313,11 @@ impl ValveProtocol {
                 },
                 tv_name: match (value & 0x40) > 0 {
                     false => None,
-                    true => Some(buffer::get_string(&buf, &mut pos)?)
+                    true => Some(buffer::get_string_utf8_le(&buf, &mut pos)?)
                 },
                 keywords: match (value & 0x20) > 0 {
                     false => None,
-                    true => Some(buffer::get_string(&buf, &mut pos)?)
+                    true => Some(buffer::get_string_utf8_le(&buf, &mut pos)?)
                 },
                 game_id: match (value & 0x01) > 0 {
                     false => None,
@@ -364,7 +364,7 @@ impl ValveProtocol {
         for _ in 0..count {
             pos += 1; //skip the index byte
             players.push(ServerPlayer {
-                name: buffer::get_string(&buf, &mut pos)?,
+                name: buffer::get_string_utf8_le(&buf, &mut pos)?,
                 score: buffer::get_u32_le(&buf, &mut pos)?,
                 duration: buffer::get_f32_le(&buf, &mut pos)?,
                 deaths: match *app == SteamID::TS.as_app() {
@@ -395,8 +395,8 @@ impl ValveProtocol {
 
         for _ in 0..count {
             rules.push(ServerRule {
-                name: buffer::get_string(&buf, &mut pos)?,
-                value: buffer::get_string(&buf, &mut pos)?
+                name: buffer::get_string_utf8_le(&buf, &mut pos)?,
+                value: buffer::get_string_utf8_le(&buf, &mut pos)?
             })
         }
 
