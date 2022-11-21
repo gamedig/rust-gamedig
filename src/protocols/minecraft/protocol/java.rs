@@ -103,7 +103,7 @@ impl Java {
             version_protocol,
             max_players,
             online_players,
-            sample_players,
+            sample_players: Some(sample_players),
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),

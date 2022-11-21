@@ -63,7 +63,7 @@ pub struct Response {
     pub version_protocol: i32,
     pub max_players: u32,
     pub online_players: u32,
-    pub sample_players: Vec<Player>,
+    pub sample_players: Option<Vec<Player>>,
     pub description: String,
     pub favicon: Option<String>,
     pub previews_chat: Option<bool>,
