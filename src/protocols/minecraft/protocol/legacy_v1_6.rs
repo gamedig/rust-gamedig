@@ -1,5 +1,5 @@
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{Player, Response};
+use crate::protocols::minecraft::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::buffer::{get_string_utf16_be, get_u16_be, get_u8};
@@ -19,21 +19,17 @@ impl LegacyV1_6 {
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> {
-        //self.socket.send(&[0xFE, 0x01])?;
-        self.socket.send(&[// Packet ID (FE)
+        self.socket.send(&[
+            // Packet ID (FE)
             0xfe,
-
             // Ping payload (01)
             0x01,
-
-            // Packet identifier for plugin message (FA)
+            // Packet identifier for plugin message
             0xfa,
-
-            // Length of 'MC|PingHost' string (11) as unsigned short
-            0x00, 0x0b,
-
-            // 'MC|PingHost' string as UTF-16BE
-            0x00, 0x4d, 0x00, 0x43, 0x00, 0x7c, 0x00, 0x50, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x67, 0x00, 0x48, 0x00, 0x6f, 0x00, 0x73, 0x00, 0x74])?;
+            // Length of 'GameDig' string (7) as unsigned short
+            0x00, 0x07,
+            // 'GameDig' string as UTF-16BE
+            0x00, 0x47, 0x00, 0x61, 0x00, 0x6D, 0x00, 0x65, 0x00, 0x44, 0x00, 0x69, 0x00, 0x67])?;
 
         Ok(())
     }
@@ -51,9 +47,7 @@ impl LegacyV1_6 {
     pub fn get_response(buf: &[u8], pos: &mut usize) -> GDResult<Response> {
         let packet_string = get_string_utf16_be(&buf, pos)?;
 
-        println!("{:02X?}", buf);
         let split: Vec<&str> = packet_string.split("\x00").collect();
-        println!("{}", split.len());
         if split.len() != 5 {
             return Err(GDError::PacketBad("Not right split size".to_string()));
         }
@@ -95,7 +89,7 @@ impl LegacyV1_6 {
             return Err(GDError::PacketBad("Not right size".to_string()));
         }
 
-        if LegacyV1_6::is_protocol(&buf, &mut pos)? {
+        if !LegacyV1_6::is_protocol(&buf, &mut pos)? {
             return Err(GDError::PacketBad("Not good".to_string()));
         }
 

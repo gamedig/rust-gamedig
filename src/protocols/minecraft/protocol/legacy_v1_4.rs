@@ -1,6 +1,6 @@
 
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{Player, Response};
+use crate::protocols::minecraft::Response;
 use crate::protocols::minecraft::protocol::legacy_v1_6::LegacyV1_6;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
@@ -21,9 +21,7 @@ impl LegacyV1_4 {
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> {
-        self.socket.send(&[0xFE, 0x01])?;
-
-        Ok(())
+        self.socket.send(&[0xFE, 0x01])
     }
 
     fn get_info(&mut self) -> GDResult<Response> {
@@ -60,7 +58,7 @@ impl LegacyV1_4 {
 
         Ok(Response {
             version_name: "1.4+".to_string(),
-            version_protocol: 47,
+            version_protocol: -1,
             max_players,
             online_players,
             sample_players: None,

@@ -1,6 +1,6 @@
 use serde_json::Value;
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{as_string, as_varint, get_string, get_varint, Player, Response};
+use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 
@@ -33,31 +33,33 @@ impl Java {
     }
 
     fn send_handshake(&mut self) -> GDResult<()> {
-        let mut buf = Vec::new();
-        buf.extend(as_varint(0));                       //packet ID
-        //packet:
-        buf.extend(as_varint(-1));                       //protocol version (-1 to determine version)
-        buf.extend(as_string("gamedig-rs".to_string()));  //server address (can be anything)
-        buf.extend((0 as u16).to_be_bytes());                  //server port (can be anything)
-        buf.extend(as_varint(1));                        //next state (1 for status)
-
-        self.send(buf)?;
+        self.send([
+            //Packet ID (0)
+            0x00,
+            //Protocol Version (-1 to determine version)
+            0xFF, 0xFF, 0xFF, 0xFF, 0x0F,
+            //Server address (can be anything)
+            0x07, 0x47, 0x61, 0x6D, 0x65, 0x44, 0x69, 0x67,
+            //Server port (can be anything)
+            0x00, 0x00,
+            //Next state (1 for status)
+            0x01].to_vec())?;
 
         Ok(())
     }
 
     fn send_status_request(&mut self) -> GDResult<()> {
-        let packet_id_status = as_varint(0);
-
-        self.send(packet_id_status)?;
+        self.send([
+            //Packet ID (0)
+            0x00].to_vec())?;
 
         Ok(())
     }
 
     fn send_ping_request(&mut self) -> GDResult<()> {
-        let packet_id_ping = as_varint(1);
-
-        self.send(packet_id_ping)?;
+        self.send([
+            //Packet ID (1)
+            0x01].to_vec())?;
 
         Ok(())
     }
@@ -70,8 +72,7 @@ impl Java {
         let buf = self.receive()?;
         let mut pos = 0;
 
-        let packet_id = get_varint(&buf, &mut pos)?;
-        if packet_id != 0 {
+        if get_varint(&buf, &mut pos)? != 0 { //first var int is the packet id
             return Err(GDError::PacketBad("Bad receive packet id.".to_string()));
         }
 
