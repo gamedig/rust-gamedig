@@ -17,7 +17,7 @@
 | INSMIC | Insurgency: Modern Infantry Combat | Valve Protocol | Not tested.                                                                  |
 | CSCZ   | Counter-Strike: Condition Zero     | Valve Protocol |                                                                              |
 | DOD    | Day of Defeat                      | Valve Protocol |                                                                              |
+| MC     | Minecraft                          | Proprietary    | Bedrock not supported yet.                                                   |
 
 ## Planned to add support:
-All Valve titles.  
-Minecraft.
+_
