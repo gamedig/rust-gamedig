@@ -36,6 +36,8 @@ pub enum GDError {
     SocketConnect(String),
     /// Couldn't parse a json string.
     JsonParse(String),
+    /// Couldn't parse a json string.
+    AutoQuery(String),
 }
 
 impl fmt::Display for GDError {
@@ -54,6 +56,7 @@ impl fmt::Display for GDError {
             GDError::InvalidInput(details) => write!(f, "Invalid input: {details}"),
             GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
             GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
+            GDError::AutoQuery(details) => write!(f, "Auto query: {details}"),
         }
     }
 }

@@ -2,6 +2,7 @@ use std::time::Duration;
 use crate::{GDError, GDResult};
 
 /// Timeout settings for socket operations
+#[derive(Clone)]
 pub struct TimeoutSettings {
     read: Option<Duration>,
     write: Option<Duration>
