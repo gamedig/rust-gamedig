@@ -73,33 +73,33 @@ impl Java {
         let mut pos = 0;
 
         if get_varint(&buf, &mut pos)? != 0 { //first var int is the packet id
-            return Err(GDError::PacketBad("Bad receive packet id.".to_string()));
+            return Err(GDError::PacketBad("Bad receive packet id."));
         }
 
         let json_response = get_string(&buf, &mut pos)?;
         let value_response: Value = serde_json::from_str(&json_response)
-            .map_err(|e| GDError::JsonParse(e.to_string()))?;
+            .map_err(|e| GDError::JsonParse(e.to_string().as_str()))?;
 
         let version_name = value_response["version"]["name"].as_str()
-            .ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string();
+            .ok_or(GDError::PacketBad("Couldn't get expected string."))?.to_string();
         let version_protocol = value_response["version"]["protocol"].as_i64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as i32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number."))? as i32;
 
         let max_players = value_response["players"]["max"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number."))? as u32;
         let online_players = value_response["players"]["online"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
+            .ok_or(GDError::PacketBad("Couldn't get expected number."))? as u32;
         let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
             true => None,
             false => Some({
                 let players_values = value_response["players"]["sample"].as_array()
-                    .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?;
+                    .ok_or(GDError::PacketBad("Couldn't get expected array."))?;
 
                 let mut players = Vec::with_capacity(players_values.len());
                 for player in players_values {
                     players.push(Player {
-                        name: player["name"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string(),
-                        id: player["id"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string()
+                        name: player["name"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string."))?.to_string(),
+                        id: player["id"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string."))?.to_string()
                     })
                 }
 

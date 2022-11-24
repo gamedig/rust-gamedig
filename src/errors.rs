@@ -11,33 +11,35 @@ pub type GDResult<T> = Result<T, GDError>;
 #[derive(Debug, Clone)]
 pub enum GDError {
     /// The received packet was bigger than the buffer size.
-    PacketOverflow(String),
+    PacketOverflow(&'static str),
     /// The received packet was shorter than the expected one.
-    PacketUnderflow(String),
+    PacketUnderflow(&'static str),
     /// The received packet was badly formatted.
-    PacketBad(String),
+    PacketBad(&'static str),
     /// Couldn't send the packet.
-    PacketSend(String),
+    PacketSend(&'static str),
     /// Couldn't send the receive.
-    PacketReceive(String),
+    PacketReceive(&'static str),
     /// Couldn't decompress data.
-    Decompress(String),
+    Decompress(&'static str),
     /// Unknown cast while translating a value to an enum.
     UnknownEnumCast,
     /// The server queried is not from the queried game.
-    BadGame(String),
+    BadGame(&'static str),
     /// Problems occurred while dns resolving.
-    DnsResolve(String),
+    DnsResolve(&'static str),
     /// Couldn't bind a socket.
-    SocketBind(String),
+    SocketBind(&'static str),
     /// Invalid input.
-    InvalidInput(String),
+    InvalidInput(&'static str),
     /// Couldn't create a socket connection.
-    SocketConnect(String),
+    SocketConnect(&'static str),
     /// Couldn't parse a json string.
-    JsonParse(String),
-    /// Couldn't parse a json string.
-    AutoQuery(String),
+    JsonParse(&'static str),
+    /// Couldn't automatically query.
+    AutoQuery(&'static str),
+    /// A protocol-defined expected format was not met.
+    ProtocolRule(&'static str),
 }
 
 impl fmt::Display for GDError {
@@ -57,6 +59,7 @@ impl fmt::Display for GDError {
             GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
             GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
             GDError::AutoQuery(details) => write!(f, "Auto query: {details}"),
+            GDError::ProtocolRule(details) => write!(f, "Protocol rule: {details}"),
         }
     }
 }

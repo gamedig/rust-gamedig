@@ -117,18 +117,18 @@ impl SplitPacket {
     fn get_payload(&self) -> GDResult<Vec<u8>> {
         if self.compressed {
             let mut decoder = Decoder::new();
-            decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+            decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string().as_str()))?;
 
             let decompressed_size = self.decompressed_size.unwrap() as usize;
 
             let mut decompressed_payload = Vec::with_capacity(decompressed_size);
-            decoder.read(&mut decompressed_payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+            decoder.read(&mut decompressed_payload).map_err(|e| GDError::Decompress(e.to_string().as_str()))?;
 
             if decompressed_payload.len() != decompressed_size {
-                Err(GDError::Decompress("Valve Protocol: The decompressed payload size doesn't match the expected one.".to_string()))
+                Err(GDError::Decompress("The decompressed payload size doesn't match the expected one."))
             }
             else if crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap() {
-                Err(GDError::Decompress("Valve Protocol: The decompressed crc32 hash does not match the expected one.".to_string()))
+                Err(GDError::Decompress("The decompressed crc32 hash does not match the expected one."))
             }
             else {
                 Ok(decompressed_payload)
@@ -420,7 +420,7 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
     if let App::Source(x) = &app {
         if let Some(appid) = x {
             if *appid != info.appid {
-                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", *appid, info.appid)));
+                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", *appid, info.appid).as_str()));
             }
         }
     }

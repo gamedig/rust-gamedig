@@ -5,6 +5,7 @@ use crate::protocols::minecraft::protocol::legacy_v1_6::LegacyV1_6;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::buffer::{get_string_utf16_be, get_u16_be, get_u8};
+use crate::utils::error_by_expected_size;
 
 pub struct LegacyV1_4 {
     socket: TcpSocket
@@ -31,13 +32,11 @@ impl LegacyV1_4 {
         let mut pos = 0;
 
         if get_u8(&buf, &mut pos)? != 0xFF {
-            return Err(GDError::PacketBad("Expected 0xFF".to_string()));
+            return Err(GDError::ProtocolRule("Expected 0xFF at the begin of the packet."));
         }
 
         let length = get_u16_be(&buf, &mut pos)? * 2;
-        if buf.len() != (length + 3) as usize { //+ 3 because of the first byte and the u16
-            return Err(GDError::PacketBad("Not right size".to_string()));
-        }
+        error_by_expected_size((length + 3) as usize, buf.len())?;
 
         if LegacyV1_6::is_protocol(&buf, &mut pos)? {
             return LegacyV1_6::get_response(&buf, &mut pos);
@@ -46,15 +45,13 @@ impl LegacyV1_4 {
         let packet_string = get_string_utf16_be(&buf, &mut pos)?;
 
         let split: Vec<&str> = packet_string.split("§").collect();
-        if split.len() != 3 {
-            return Err(GDError::PacketBad("Not right size".to_string()));
-        }
+        error_by_expected_size(3, split.len())?;
 
         let description = split[0].to_string();
         let online_players = split[1].parse()
-            .map_err(|_| GDError::PacketBad("Expected int".to_string()))?;
+            .map_err(|_| GDError::PacketBad("Failed to parse to expected int."))?;
         let max_players = split[2].parse()
-            .map_err(|_| GDError::PacketBad("Expected int".to_string()))?;
+            .map_err(|_| GDError::PacketBad("Failed to parse to expected int."))?;
 
         Ok(Response {
             version_name: "1.4+".to_string(),
