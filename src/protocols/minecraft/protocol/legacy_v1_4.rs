@@ -1,6 +1,6 @@
 
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::Response;
+use crate::protocols::minecraft::{LegacyGroup, Response, Server};
 use crate::protocols::minecraft::protocol::legacy_v1_6::LegacyV1_6;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
@@ -65,7 +65,8 @@ impl LegacyV1_4 {
             description,
             favicon: None,
             previews_chat: None,
-            enforces_secure_chat: None
+            enforces_secure_chat: None,
+            server_type: Server::Legacy(LegacyGroup::V1_4)
         })
     }
 

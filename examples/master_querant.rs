@@ -1,6 +1,7 @@
 
 use std::env;
-use gamedig::{aliens, asrd, cscz, csgo, css, dod, dods, GDResult, gm, hl2dm, ins, insmic, inss, l4d, l4d2, tf2, ts};
+use gamedig::{aliens, asrd, cscz, csgo, css, dod, dods, GDResult, gm, hl2dm, ins, insmic, inss, l4d, l4d2, mc, tf2, ts};
+use gamedig::protocols::minecraft::{LegacyGroup, Server};
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::App;
 
@@ -41,6 +42,11 @@ fn main() -> GDResult<()> {
         "ts" => println!("{:?}", ts::query(ip, port)?),
         "cscz" => println!("{:?}", cscz::query(ip, port)?),
         "dod" => println!("{:?}", dod::query(ip, port)?),
+        "mc" => println!("{:?}", mc::query(ip, port)?),
+        "mc_java" => println!("{:?}", mc::query_specific(Server::Java, ip, port)?),
+        "mc_legacy_v1_4" => println!("{:?}", mc::query_specific(Server::Legacy(LegacyGroup::V1_4), ip, port)?),
+        "mc_legacy_v1_6" => println!("{:?}", mc::query_specific(Server::Legacy(LegacyGroup::V1_6), ip, port)?),
+        "mc_legacy_vb1_8" => println!("{:?}", mc::query_specific(Server::Legacy(LegacyGroup::VB1_8), ip, port)?),
         "_src" => println!("{:?}", valve::query(ip, 27015, App::Source(None), None, None)?),
         "_gld" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(false), None, None)?),
         "_gld_f" => println!("{:?}", valve::query(ip, 27015, App::GoldSrc(true), None, None)?),

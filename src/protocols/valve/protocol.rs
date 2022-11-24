@@ -358,8 +358,8 @@ impl ValveProtocol {
         let buf = self.get_request_data(&app, protocol, Request::PLAYERS)?;
         let mut pos = 0;
 
-        let count = buffer::get_u8(&buf, &mut pos)?;
-        let mut players: Vec<ServerPlayer> = Vec::new();
+        let count = buffer::get_u8(&buf, &mut pos)? as usize;
+        let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
 
         for _ in 0..count {
             pos += 1; //skip the index byte
@@ -390,8 +390,8 @@ impl ValveProtocol {
         let buf = self.get_request_data(&app, protocol, Request::RULES)?;
         let mut pos = 0;
 
-        let count = buffer::get_u16_le(&buf, &mut pos)?;
-        let mut rules: Vec<ServerRule> = Vec::new();
+        let count = buffer::get_u16_le(&buf, &mut pos)? as usize;
+        let mut rules: Vec<ServerRule> = Vec::with_capacity(count);
 
         for _ in 0..count {
             rules.push(ServerRule {

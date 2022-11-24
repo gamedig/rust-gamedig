@@ -1,6 +1,6 @@
 use serde_json::Value;
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response};
+use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 
@@ -91,12 +91,20 @@ impl Java {
             .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
         let sample_players: Vec<Player> = match value_response["players"]["sample"].is_null() {
             true => Vec::new(),
-            false => value_response["players"]["sample"].as_array()
-                .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?
-                .iter().map(|v| Player {
-                name: v["name"].as_str().unwrap().to_string(),
-                id: v["id"].as_str().unwrap().to_string()
-            }).collect()
+            false => {
+                let players_values = value_response["players"]["sample"].as_array()
+                    .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?;
+
+                let mut players = Vec::with_capacity(players_values.len());
+                for player in players_values {
+                    players.push(Player {
+                        name: player["name"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string(),
+                        id: player["id"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string()
+                    })
+                }
+
+                players
+            }
         };
 
         Ok(Response {
@@ -108,7 +116,8 @@ impl Java {
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),
-            enforces_secure_chat: value_response["enforcesSecureChat"].as_bool()
+            enforces_secure_chat: value_response["enforcesSecureChat"].as_bool(),
+            server_type: Server::Java
         })
     }
 
