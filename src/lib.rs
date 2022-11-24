@@ -15,8 +15,6 @@
 //! }
 //! ```
 
-extern crate core;
-
 pub mod errors;
 pub mod protocols;
 pub mod games;
