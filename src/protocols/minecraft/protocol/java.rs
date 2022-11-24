@@ -89,9 +89,9 @@ impl Java {
             .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
         let online_players = value_response["players"]["online"].as_u64()
             .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
-        let sample_players: Vec<Player> = match value_response["players"]["sample"].is_null() {
-            true => Vec::new(),
-            false => {
+        let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
+            true => None,
+            false => Some({
                 let players_values = value_response["players"]["sample"].as_array()
                     .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?;
 
@@ -104,7 +104,7 @@ impl Java {
                 }
 
                 players
-            }
+            })
         };
 
         Ok(Response {
@@ -112,7 +112,7 @@ impl Java {
             version_protocol,
             max_players,
             online_players,
-            sample_players: Some(sample_players),
+            sample_players,
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),
