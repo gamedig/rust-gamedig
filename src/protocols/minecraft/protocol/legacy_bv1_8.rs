@@ -31,7 +31,7 @@ impl LegacyBV1_8 {
         let mut pos = 0;
 
         if get_u8(&buf, &mut pos)? != 0xFF {
-            return Err(GDError::ProtocolRule("Expected 0xFF at the begin of the packet."));
+            return Err(GDError::ProtocolFormat("Expected 0xFF at the begin of the packet."));
         }
 
         let length = get_u16_be(&buf, &mut pos)? * 2;

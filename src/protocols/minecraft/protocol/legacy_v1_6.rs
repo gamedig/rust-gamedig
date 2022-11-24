@@ -81,14 +81,14 @@ impl LegacyV1_6 {
         let mut pos = 0;
 
         if get_u8(&buf, &mut pos)? != 0xFF {
-            return Err(GDError::ProtocolRule("Expected a certain byte (0xFF) at the begin of the packet."));
+            return Err(GDError::ProtocolFormat("Expected a certain byte (0xFF) at the begin of the packet."));
         }
 
         let length = get_u16_be(&buf, &mut pos)? * 2;
         error_by_expected_size((length + 3) as usize, buf.len())?;
 
         if !LegacyV1_6::is_protocol(&buf, &mut pos)? {
-            return Err(GDError::ProtocolRule("Expected certain bytes at the beginning of the packet."));
+            return Err(GDError::ProtocolFormat("Expected certain bytes at the beginning of the packet."));
         }
 
         LegacyV1_6::get_response(&buf, &mut pos)

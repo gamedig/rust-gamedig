@@ -39,7 +39,7 @@ pub enum GDError {
     /// Couldn't automatically query.
     AutoQuery(&'static str),
     /// A protocol-defined expected format was not met.
-    ProtocolRule(&'static str),
+    ProtocolFormat(&'static str),
 }
 
 impl fmt::Display for GDError {
@@ -59,7 +59,7 @@ impl fmt::Display for GDError {
             GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
             GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
             GDError::AutoQuery(details) => write!(f, "Auto query: {details}"),
-            GDError::ProtocolRule(details) => write!(f, "Protocol rule: {details}"),
+            GDError::ProtocolFormat(details) => write!(f, "Protocol rule: {details}"),
         }
     }
 }
