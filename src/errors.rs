@@ -32,6 +32,12 @@ pub enum GDError {
     SocketBind(String),
     /// Invalid input.
     InvalidInput(String),
+    /// Couldn't create a socket connection.
+    SocketConnect(String),
+    /// Couldn't parse a json string.
+    JsonParse(String),
+    /// Couldn't parse a json string.
+    AutoQuery(String),
 }
 
 impl fmt::Display for GDError {
@@ -48,6 +54,9 @@ impl fmt::Display for GDError {
             GDError::DnsResolve(details) => write!(f, "DNS Resolve: {details}"),
             GDError::SocketBind(details) => write!(f, "Socket bind: {details}"),
             GDError::InvalidInput(details) => write!(f, "Invalid input: {details}"),
+            GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
+            GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
+            GDError::AutoQuery(details) => write!(f, "Auto query: {details}"),
         }
     }
 }

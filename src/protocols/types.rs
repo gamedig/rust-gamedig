@@ -2,6 +2,7 @@ use std::time::Duration;
 use crate::{GDError, GDResult};
 
 /// Timeout settings for socket operations
+#[derive(Clone)]
 pub struct TimeoutSettings {
     read: Option<Duration>,
     write: Option<Duration>
@@ -12,13 +13,13 @@ impl TimeoutSettings {
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
-                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_owned()))
+                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_string()))
             }
         }
 
         if let Some(write_duration) = write {
             if write_duration == Duration::new(0, 0) {
-                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_owned()))
+                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings".to_string()))
             }
         }
 
