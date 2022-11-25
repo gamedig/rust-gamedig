@@ -175,6 +175,8 @@ pub enum SteamID {
     INS = 222880,
     /// 7 Days To Die
     SDTD = 251570,
+    /// ARK: Survival Evolved
+    ASE = 346110,
     /// Insurgency: Sandstorm
     INSS = 581320,
     /// Alien Swarm: Reactive Drop
