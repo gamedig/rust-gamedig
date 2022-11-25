@@ -1,4 +1,6 @@
 # rust-gamedig
+![Build and Test](https://github.com/cosminperram/rust-gamedig/actions/workflows/build_and_test.yml/badge.svg)
+
 **rust-GameDig** is a games/services server query library that can fetch the availability and/or details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
 MSRV is `1.58.1` and the code is cross-platform.
