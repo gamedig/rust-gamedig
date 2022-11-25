@@ -1,8 +1,8 @@
 # rust-gamedig
 [![CI](https://github.com/cosminperram/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/CosminPerRam/rust-gamedig/actions)
-[![Latest Version](https://img.shields.io/crates/v/gamedig.svg)](https://crates.io/crates/gamedig)
-[![License:MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
-![Lines of code](https://img.shields.io/tokei/lines/github/cosminperram/rust-gamedig)
+[![Latest Version](https://img.shields.io/crates/v/gamedig.svg?color=yellow)](https://crates.io/crates/gamedig)
+![Lines of code](https://img.shields.io/tokei/lines/github/cosminperram/rust-gamedig?color=blue)
+[![License:MIT](https://img.shields.io/github/license/cosminperram/rust-gamedig?color=blue)](LICENSE.md)
 
 **rust-GameDig** is a games/services server query library that can fetch the availability and/or details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
