@@ -2,7 +2,8 @@
 Who knows what the future holds...
 
 # 0.0.6 - ??/??/2022
-[Minecraft](https://www.minecraft.com) implementation (bedrock not supported yet).
+[Minecraft](https://www.minecraft.com) implementation (bedrock not supported yet).  
+[7 Days To Die](https://store.steampowered.com/app/251570/7_Days_to_Die/) implementation.
 
 # 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  

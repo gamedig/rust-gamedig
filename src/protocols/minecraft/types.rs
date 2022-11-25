@@ -31,16 +31,16 @@ SOFTWARE.
 use crate::{GDError, GDResult};
 use crate::utils::buffer::get_u8;
 
-/// The type of Minecraft Server you want to query
+/// The type of Minecraft Server you want to query.
 #[derive(Debug)]
 pub enum Server {
-    /// Java Edition
+    /// Java Edition.
     Java,
-    /// Legacy Java
+    /// Legacy Java.
     Legacy(LegacyGroup)
 }
 
-/// Legacy Java (Versions) Groups
+/// Legacy Java (Versions) Groups.
 #[derive(Debug)]
 pub enum LegacyGroup {
     /// 1.6
@@ -51,35 +51,35 @@ pub enum LegacyGroup {
     VB1_8
 }
 
-/// Information about a player
+/// Information about a player.
 #[derive(Debug)]
 pub struct Player {
     pub name: String,
     pub id: String
 }
 
-/// A query response
+/// A query response.
 #[derive(Debug)]
 pub struct Response {
-    /// Version name, example: "1.19.2"
+    /// Version name, example: "1.19.2".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2)
+    /// Version protocol, example: 760 (for 1.19.2).
     pub version_protocol: i32,
-    /// Number of server capacity
+    /// Number of server capacity.
     pub max_players: u32,
-    /// Number of online players
+    /// Number of online players.
     pub online_players: u32,
-    /// Some online players (can be missing)
+    /// Some online players (can be missing).
     pub sample_players: Option<Vec<Player>>,
-    /// Server's description or MOTD
+    /// Server's description or MOTD.
     pub description: String,
-    /// The favicon (can be missing)
+    /// The favicon (can be missing).
     pub favicon: Option<String>,
-    /// Tells if the chat preview is enabled (can be missing)
+    /// Tells if the chat preview is enabled (can be missing).
     pub previews_chat: Option<bool>,
-    /// Tells if secure chat is enforced (can be missing)
+    /// Tells if secure chat is enforced (can be missing).
     pub enforces_secure_chat: Option<bool>,
-    /// Tell's the server type
+    /// Tell's the server type.
     pub server_type: Server
 }
 

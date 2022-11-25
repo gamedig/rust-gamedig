@@ -1,5 +1,5 @@
 
-# Supported games:
+# Supported services:
 | ID  | Name | Notes |
 |-----|------|-------|
 | --- | ---- | ----- |

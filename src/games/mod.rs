@@ -35,3 +35,5 @@ pub mod cscz;
 pub mod dod;
 /// Minecraft
 pub mod mc;
+/// 7 Days To Die
+pub mod sdtd;

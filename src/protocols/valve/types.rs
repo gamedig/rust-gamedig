@@ -173,6 +173,8 @@ pub enum SteamID {
     INSMIC = 17700,
     /// Insurgency
     INS = 222880,
+    /// 7 Days To Die
+    SDTD = 251570,
     /// Insurgency: Sandstorm
     INSS = 581320,
     /// Alien Swarm: Reactive Drop

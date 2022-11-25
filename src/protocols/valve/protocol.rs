@@ -143,7 +143,7 @@ struct ValveProtocol {
     socket: UdpSocket
 }
 
-static PACKET_SIZE: usize = 1400;
+static PACKET_SIZE: usize = 1600;
 
 impl ValveProtocol {
     fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
