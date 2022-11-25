@@ -7,23 +7,54 @@ MSRV is `1.58.1` and the code is cross-platform.
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
 ## Usage
-Just pick a game/service/protocol, provide the ip and the port (can be optional) then query on it.
+Just pick a game/service/protocol, provide the ip and the port (can be optional) then query on it.  
+Team Fortress 2 query example:
 ```rust
 use gamedig::games::tf2;
 
 fn main() {
-    let response = tf2::query("91.216.250.10", None); //or Some(27015), None is the default protocol port
+    let response = tf2::query("localhost", None); //or Some(27015), None is the default protocol port
     match response {
         Err(error) => println!("Couldn't query, error: {error}"),
-        Ok(r) => println!("{:?}", r)
+        Ok(r) => println!("{:#?}", r)
     }
 }
 ```
+Response:
+```json5
+{
+  protocol: 17,
+  name: "Team Fortress 2 Dedicated Server!",
+  map: "ctf_turbine",
+  game: "tf2",
+  players: 0,
+  players_details: [],
+  max_players: 69,
+  bots: 0,
+  server_type: Dedicated,
+  has_password: false,
+  vac_secured: true,
+  version: "7638371",
+  port: Some(27015),
+  steam_id: Some(69753253289735296),
+  tv_port: None,
+  tv_name: None,
+  keywords: Some("alltalk,arena,nocrits"),
+  rules: [
+    ServerRule {
+      name: "mp_autoteambalance",
+      value: "1",
+    }
+    //....
+  ]
+}
+```
+
 To see more examples, see the [examples](examples) folder.
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
-Curious about the history and what changed between versions? you can see just that in the [CHANGELOG](CHANGELOG.md) file.
+Curious about the history and what changed between versions? Check out the [CHANGELOG](CHANGELOG.md) file.
 
 ## Contributing
-If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it! (or do a pull request if you want to implement it yourself)
+If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
