@@ -29,7 +29,7 @@ Response:
 ```json5
 {
   protocol: 17,
-  name: "Team Fortress 2 Dedicated Server!",
+  name: "Team Fortress 2 Dedicated Server.",
   map: "ctf_turbine",
   game: "tf2",
   players: 0,
@@ -44,7 +44,7 @@ Response:
   steam_id: Some(69753253289735296),
   tv_port: None,
   tv_name: None,
-  keywords: Some("alltalk,arena,nocrits"),
+  keywords: Some("alltalk,nocrits"),
   rules: [
     ServerRule {
       name: "mp_autoteambalance",
