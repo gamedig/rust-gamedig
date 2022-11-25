@@ -29,7 +29,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         return Ok(response);
     }
 
-    Err(GDError::AutoQuery("No protocol returned a response.".to_string()))
+    Err(GDError::AutoQuery)
 }
 
 /// Queries a specific Minecraft Server type.

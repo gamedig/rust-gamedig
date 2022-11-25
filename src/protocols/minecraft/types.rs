@@ -96,7 +96,7 @@ pub fn get_varint(buf: &[u8], pos: &mut usize) -> GDResult<i32> {
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(GDError::PacketBad("VarInt Overflow".to_string()))
+            return Err(GDError::PacketBad("Couldn't parse to VarInt: Overflow.".to_string()))
         }
 
         if (current_byte & msb) == 0 {
@@ -140,7 +140,7 @@ pub fn get_string(buf: &[u8], pos: &mut usize) -> GDResult<String> {
     }
 
     Ok(String::from_utf8(text)
-        .map_err(|_| GDError::PacketBad("Minecraft bad String".to_string()))?)
+        .map_err(|_| GDError::PacketBad("Couldn't parse to a Minecraft String.".to_string()))?)
 }
 
 pub fn as_string(value: String) -> Vec<u8> {

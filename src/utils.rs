@@ -4,20 +4,20 @@ use crate::{GDResult, GDError};
 
 fn resolve_dns(address: &str) -> GDResult<String> {
     let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default())
-        .map_err(|e| GDError::DnsResolve(e.to_string().as_str()))?;
+        .map_err(|e| GDError::DnsResolve(e.to_string()))?;
 
     let response = resolver.lookup_ip(address)
-        .map_err(|e| GDError::DnsResolve(e.to_string().as_str()))?;
+        .map_err(|e| GDError::DnsResolve(e.to_string()))?;
 
-    Ok(response.iter().next().ok_or(GDError::DnsResolve("Couldn't resolve the DNS address."))?.to_string())
+    Ok(response.iter().next().ok_or(GDError::DnsResolve("Couldn't resolve the DNS address.".to_string()))?.to_string())
 }
 
 pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     if size < expected {
-        Err(GDError::PacketUnderflow("Unexpectedly short packet."))
+        Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()))
     }
     else if size > expected {
-        Err(GDError::PacketOverflow("Unexpectedly long packet."))
+        Err(GDError::PacketOverflow("Unexpectedly long packet.".to_string()))
     }
     else {
         Ok(())
@@ -37,7 +37,7 @@ pub mod buffer {
 
     pub fn get_u8(buf: &[u8], pos: &mut usize) -> GDResult<u8> {
         if buf.len() <= *pos {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u8.".to_string()));
         }
 
         let value = buf[*pos];
@@ -47,7 +47,7 @@ pub mod buffer {
 
     pub fn get_u16_le(buf: &[u8], pos: &mut usize) -> GDResult<u16> {
         if buf.len() <= *pos + 1 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u16.".to_string()));
         }
 
         let value = u16::from_le_bytes([buf[*pos], buf[*pos + 1]]);
@@ -57,7 +57,7 @@ pub mod buffer {
 
     pub fn get_u16_be(buf: &[u8], pos: &mut usize) -> GDResult<u16> {
         if buf.len() <= *pos + 1 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u16.".to_string()));
         }
 
         let value = u16::from_be_bytes([buf[*pos], buf[*pos + 1]]);
@@ -67,7 +67,7 @@ pub mod buffer {
 
     pub fn get_u32_le(buf: &[u8], pos: &mut usize) -> GDResult<u32> {
         if buf.len() <= *pos + 3 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u32.".to_string()));
         }
 
         let value = u32::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3]]);
@@ -77,7 +77,7 @@ pub mod buffer {
 
     pub fn get_f32_le(buf: &[u8], pos: &mut usize) -> GDResult<f32> {
         if buf.len() <= *pos + 3 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an f32.".to_string()));
         }
 
         let value = f32::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3]]);
@@ -87,7 +87,7 @@ pub mod buffer {
 
     pub fn get_u64_le(buf: &[u8], pos: &mut usize) -> GDResult<u64> {
         if buf.len() <= *pos + 7 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet."));
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u64.".to_string()));
         }
 
         let value = u64::from_le_bytes([buf[*pos], buf[*pos + 1], buf[*pos + 2], buf[*pos + 3], buf[*pos + 4], buf[*pos + 5], buf[*pos + 6], buf[*pos + 7]]);
@@ -98,9 +98,9 @@ pub mod buffer {
     pub fn get_string_utf8_le(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
         let first_null_position = sub_buf.iter().position(|&x| x == 0)
-            .ok_or(GDError::PacketBad("Unexpectedly formatted packet."))?;
+            .ok_or(GDError::PacketBad("Unexpectedly formatted packet for getting a string.".to_string()))?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
-            .map_err(|_| GDError::PacketBad("Badly formatted string."))?.to_string();
+            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
 
         *pos += value.len() + 1;
         Ok(value)
@@ -112,7 +112,7 @@ pub mod buffer {
             .into_iter().map(|a| u16::from_be_bytes([a[0], a[1]])).collect();
 
         let value = String::from_utf16(&paired_buf)
-            .map_err(|_| GDError::PacketBad("Badly formatted string."))?.to_string();
+            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
 
         *pos += value.len() + 1;
         Ok(value)

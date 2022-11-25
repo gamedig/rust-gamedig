@@ -11,35 +11,35 @@ pub type GDResult<T> = Result<T, GDError>;
 #[derive(Debug, Clone)]
 pub enum GDError {
     /// The received packet was bigger than the buffer size.
-    PacketOverflow(&'static str),
+    PacketOverflow(String),
     /// The received packet was shorter than the expected one.
-    PacketUnderflow(&'static str),
+    PacketUnderflow(String),
     /// The received packet was badly formatted.
-    PacketBad(&'static str),
+    PacketBad(String),
     /// Couldn't send the packet.
-    PacketSend(&'static str),
+    PacketSend(String),
     /// Couldn't send the receive.
-    PacketReceive(&'static str),
+    PacketReceive(String),
     /// Couldn't decompress data.
-    Decompress(&'static str),
+    Decompress(String),
     /// Unknown cast while translating a value to an enum.
     UnknownEnumCast,
     /// The server queried is not from the queried game.
-    BadGame(&'static str),
+    BadGame(String),
     /// Problems occurred while dns resolving.
-    DnsResolve(&'static str),
+    DnsResolve(String),
     /// Couldn't bind a socket.
-    SocketBind(&'static str),
+    SocketBind(String),
     /// Invalid input.
-    InvalidInput(&'static str),
+    InvalidInput(String),
     /// Couldn't create a socket connection.
-    SocketConnect(&'static str),
+    SocketConnect(String),
     /// Couldn't parse a json string.
-    JsonParse(&'static str),
+    JsonParse(String),
     /// Couldn't automatically query.
-    AutoQuery(&'static str),
+    AutoQuery,
     /// A protocol-defined expected format was not met.
-    ProtocolFormat(&'static str),
+    ProtocolFormat(String),
 }
 
 impl fmt::Display for GDError {
@@ -58,7 +58,7 @@ impl fmt::Display for GDError {
             GDError::InvalidInput(details) => write!(f, "Invalid input: {details}"),
             GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
             GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
-            GDError::AutoQuery(details) => write!(f, "Auto query: {details}"),
+            GDError::AutoQuery => write!(f, "Auto query failed."),
             GDError::ProtocolFormat(details) => write!(f, "Protocol rule: {details}"),
         }
     }

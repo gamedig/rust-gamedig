@@ -32,7 +32,7 @@ impl LegacyV1_4 {
         let mut pos = 0;
 
         if get_u8(&buf, &mut pos)? != 0xFF {
-            return Err(GDError::ProtocolFormat("Expected 0xFF at the begin of the packet."));
+            return Err(GDError::ProtocolFormat("Expected 0xFF at the begin of the packet.".to_string()));
         }
 
         let length = get_u16_be(&buf, &mut pos)? * 2;
@@ -49,9 +49,9 @@ impl LegacyV1_4 {
 
         let description = split[0].to_string();
         let online_players = split[1].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int."))?;
+            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
         let max_players = split[2].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int."))?;
+            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
 
         Ok(Response {
             version_name: "1.4+".to_string(),
