@@ -45,3 +45,5 @@ pub mod unturned;
 pub mod tf;
 /// Team Fortress Classic
 pub mod tfc;
+/// Sven Co-op
+pub mod sc;

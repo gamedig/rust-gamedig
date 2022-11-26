@@ -175,6 +175,8 @@ pub enum SteamID {
     INSMIC = 17700,
     /// Insurgency
     INS = 222880,
+    /// Sven Co-op
+    SC = 225840,
     /// The Forrest
     TF = 556450, //this is the id for the dedicated server, for the game its 242760
     /// 7 Days To Die
@@ -193,7 +195,7 @@ impl SteamID {
     /// Get ID as App (the engine is specified).
     pub fn as_app(&self) -> App {
         match self {
-            SteamID::TFC | SteamID::DOD | SteamID::CSCZ => App::GoldSrc(false),
+            SteamID::TFC | SteamID::DOD | SteamID::CSCZ | SteamID::SC => App::GoldSrc(false),
             x => App::Source(Some(x.clone() as u32))
         }
     }

@@ -1,6 +1,6 @@
 
 use std::env;
-use gamedig::{aliens, ase, asrd, cscz, csgo, css, dod, dods, GDResult, gm, hl2dm, ins, insmic, inss, l4d, l4d2, mc, sdtd, tf, tf2, tfc, ts, unturned};
+use gamedig::{aliens, ase, asrd, cscz, csgo, css, dod, dods, GDResult, gm, hl2dm, ins, insmic, inss, l4d, l4d2, mc, sc, sdtd, tf, tf2, tfc, ts, unturned};
 use gamedig::protocols::minecraft::{LegacyGroup, Server};
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::App;
@@ -52,6 +52,7 @@ fn main() -> GDResult<()> {
         "unturned" => println!("{:#?}", unturned::query(ip, port)?),
         "tf" => println!("{:#?}", tf::query(ip, port)?),
         "tfc" => println!("{:#?}", tfc::query(ip, port)?),
+        "sc" => println!("{:#?}", sc::query(ip, port)?),
         "_src" => println!("{:#?}", valve::query(ip, 27015, App::Source(None), None, None)?),
         "_gld" => println!("{:#?}", valve::query(ip, 27015, App::GoldSrc(false), None, None)?),
         "_gld_f" => println!("{:#?}", valve::query(ip, 27015, App::GoldSrc(true), None, None)?),

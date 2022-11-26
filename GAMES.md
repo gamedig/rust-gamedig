@@ -23,6 +23,7 @@
 | UNTURNED | Unturned                           | Valve Protocol |                                                                              |
 | TF       | The Forest                         | Valve Protocol | Use the query port.                                                          |
 | TFC      | Team Fortress Classic              | Valve Protocol |                                                                              |
+| SC       | Sven Co-op                         | Valve Protocol |                                                                              |
 
 ## Planned to add support:
 _
