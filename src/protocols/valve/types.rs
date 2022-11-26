@@ -175,6 +175,8 @@ pub enum SteamID {
     GM = 4000,
     /// Insurgency: Modern Infantry Combat
     INSMIC = 17700,
+    /// ARMA 2: Operation Arrowhead
+    ARMA2OA = 33930,
     /// Insurgency
     INS = 222880,
     /// Sven Co-op

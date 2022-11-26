@@ -26,6 +26,7 @@
 | SC       | Sven Co-op                         | Valve Protocol |                                                                              |
 | RUST     | Rust                               | Valve Protocol |                                                                              |
 | CS       | Counter-Strike                     | Valve Protocol |                                                                              |
+| ARMA2OA  | Arma 2: Operation Arrowhead        | Valve Protocol | Use the query port.                                                          |
 
 ## Planned to add support:
 _

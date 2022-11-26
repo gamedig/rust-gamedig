@@ -9,8 +9,9 @@ Who knows what the future holds...
 [The Forest](https://store.steampowered.com/app/242760/The_Forest/) support.  
 [Team Fortress Classic](https://store.steampowered.com/app/20/Team_Fortress_Classic/) support.  
 [Sven Co-op](https://store.steampowered.com/app/225840/Sven_Coop/) support.  
-[Rust](https://store.steampowered.com/app/252490/Rust/) support.
-[Counter-Strike](https://store.steampowered.com/app/10/CounterStrike/) support.
+[Rust](https://store.steampowered.com/app/252490/Rust/) support.  
+[Counter-Strike](https://store.steampowered.com/app/10/CounterStrike/) support.  
+[Arma 2: Operation Arrowhead](https://store.steampowered.com/app/33930/Arma_2_Operation_Arrowhead/) support.  
 
 # 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  

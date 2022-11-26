@@ -51,3 +51,5 @@ pub mod sc;
 pub mod rust;
 /// Counter-Strike
 pub mod cs;
+/// ARMA 2: Operation Arrowhead
+pub mod arma2oa;
