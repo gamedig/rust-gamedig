@@ -43,3 +43,5 @@ pub mod ase;
 pub mod unturned;
 /// The Forest
 pub mod tf;
+/// Team Fortress Classic
+pub mod tfc;
