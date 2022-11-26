@@ -145,6 +145,8 @@ pub enum Request {
 #[repr(u32)]
 #[derive(PartialEq, Clone)]
 pub enum SteamID {
+    /// Counter-Strike
+    CS = 10,
     /// Team Fortress Classic
     TFC = 20,
     /// Day of Defeat
@@ -197,7 +199,7 @@ impl SteamID {
     /// Get ID as App (the engine is specified).
     pub fn as_app(&self) -> App {
         match self {
-            SteamID::TFC | SteamID::DOD | SteamID::CSCZ | SteamID::SC => App::GoldSrc(false),
+            SteamID::CS | SteamID::TFC | SteamID::DOD | SteamID::CSCZ | SteamID::SC => App::GoldSrc(false),
             x => App::Source(Some(x.clone() as u32))
         }
     }

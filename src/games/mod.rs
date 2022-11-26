@@ -49,3 +49,5 @@ pub mod tfc;
 pub mod sc;
 /// Rust
 pub mod rust;
+/// Counter-Strike
+pub mod cs;

@@ -25,6 +25,7 @@
 | TFC      | Team Fortress Classic              | Valve Protocol |                                                                              |
 | SC       | Sven Co-op                         | Valve Protocol |                                                                              |
 | RUST     | Rust                               | Valve Protocol |                                                                              |
+| CS       | Counter-Strike                     | Valve Protocol |                                                                              |
 
 ## Planned to add support:
 _
