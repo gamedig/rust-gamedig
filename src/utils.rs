@@ -97,10 +97,14 @@ pub mod buffer {
 
     pub fn get_string_utf8_le(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
+        if sub_buf.len() == 0 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 LE string.".to_string()));
+        }
+
         let first_null_position = sub_buf.iter().position(|&x| x == 0)
-            .ok_or(GDError::PacketBad("Unexpectedly formatted packet for getting a string.".to_string()))?;
+            .ok_or(GDError::PacketBad("Unexpectedly formatted packet for getting a utf8 LE string.".to_string()))?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
-            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
+            .map_err(|_| GDError::PacketBad("Badly formatted utf8 LE string.".to_string()))?.to_string();
 
         *pos += value.len() + 1;
         Ok(value)
@@ -108,13 +112,17 @@ pub mod buffer {
 
     pub fn get_string_utf16_be(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
+        if sub_buf.len() == 0 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf16 BE string.".to_string()));
+        }
+
         let paired_buf: Vec<u16> = sub_buf.chunks_exact(2)
             .into_iter().map(|a| u16::from_be_bytes([a[0], a[1]])).collect();
 
         let value = String::from_utf16(&paired_buf)
-            .map_err(|_| GDError::PacketBad("Badly formatted string.".to_string()))?.to_string();
+            .map_err(|_| GDError::PacketBad("Badly formatted utf16 BE string.".to_string()))?.to_string();
 
-        *pos += value.len() + 1;
+        *pos += value.len() * 2;
         Ok(value)
     }
 }
@@ -146,6 +154,16 @@ mod tests {
         assert_eq!(buffer::get_u16_le(&data, &mut pos).unwrap(), 7496);
         assert_eq!(pos, 2);
         assert!(buffer::get_u16_le(&data, &mut pos).is_err());
+        assert_eq!(pos, 2);
+    }
+
+    #[test]
+    fn get_u16_be_test() {
+        let data = [29, 72];
+        let mut pos = 0;
+        assert_eq!(buffer::get_u16_be(&data, &mut pos).unwrap(), 7496);
+        assert_eq!(pos, 2);
+        assert!(buffer::get_u16_be(&data, &mut pos).is_err());
         assert_eq!(pos, 2);
     }
 
@@ -187,5 +205,15 @@ mod tests {
         assert_eq!(pos, 6);
         assert!(buffer::get_string_utf8_le(&data, &mut pos).is_err());
         assert_eq!(pos, 6);
+    }
+
+    #[test]
+    fn get_string_utf16_be_test() {
+        let data = [0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f];
+        let mut pos = 0;
+        assert_eq!(buffer::get_string_utf16_be(&data, &mut pos).unwrap(), "Hello");
+        assert_eq!(pos, 10);
+        assert!(buffer::get_string_utf16_be(&data, &mut pos).is_err());
+        assert_eq!(pos, 10);
     }
 }
