@@ -175,6 +175,8 @@ pub enum SteamID {
     INS = 222880,
     /// 7 Days To Die
     SDTD = 251570,
+    /// Unturned
+    UNTURNED = 304930,
     /// ARK: Survival Evolved
     ASE = 346110,
     /// Insurgency: Sandstorm

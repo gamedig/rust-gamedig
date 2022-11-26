@@ -39,3 +39,5 @@ pub mod mc;
 pub mod sdtd;
 /// ARK: Survival Evolved
 pub mod ase;
+/// Unturned
+pub mod unturned;

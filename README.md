@@ -13,7 +13,7 @@ MSRV is `1.58.1` and the code is cross-platform.
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
 ## Usage
-Just pick a game/service/protocol, provide the ip and the port (can be optional) then query on it.  
+Just pick a game/service/protocol, provide the ip and the port (can be optional) (some use a special query port) then query on it.  
 Team Fortress 2 query example:
 ```rust
 use gamedig::games::tf2;
@@ -26,7 +26,7 @@ fn main() {
     }
 }
 ```
-Response:
+Response (note that some games have a different structure):
 ```json5
 {
   protocol: 17,
