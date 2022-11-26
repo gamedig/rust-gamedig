@@ -1,6 +1,7 @@
 # rust-gamedig
 [![CI](https://github.com/cosminperram/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/CosminPerRam/rust-gamedig/actions)
 [![Latest Version](https://img.shields.io/crates/v/gamedig.svg?color=yellow)](https://crates.io/crates/gamedig)
+[![Crates.io](https://img.shields.io/crates/d/gamedig?color=purple)](https://crates.io/crates/gamedig)
 ![Lines of code](https://img.shields.io/tokei/lines/github/cosminperram/rust-gamedig?color=blue)
 [![License:MIT](https://img.shields.io/github/license/cosminperram/rust-gamedig?color=blue)](LICENSE.md)
 
