@@ -47,3 +47,5 @@ pub mod tf;
 pub mod tfc;
 /// Sven Co-op
 pub mod sc;
+/// Rust
+pub mod rust;

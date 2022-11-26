@@ -24,6 +24,7 @@
 | TF       | The Forest                         | Valve Protocol | Use the query port.                                                          |
 | TFC      | Team Fortress Classic              | Valve Protocol |                                                                              |
 | SC       | Sven Co-op                         | Valve Protocol |                                                                              |
+| RUST     | Rust                               | Valve Protocol |                                                                              |
 
 ## Planned to add support:
 _
