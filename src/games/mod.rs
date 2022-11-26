@@ -41,3 +41,5 @@ pub mod sdtd;
 pub mod ase;
 /// Unturned
 pub mod unturned;
+/// The Forest
+pub mod tf;
