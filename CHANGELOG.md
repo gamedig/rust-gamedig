@@ -4,7 +4,8 @@ Who knows what the future holds...
 # 0.0.6 - ??/??/2022
 [Minecraft](https://www.minecraft.com) implementation (bedrock not supported yet).  
 [7 Days To Die](https://store.steampowered.com/app/251570/7_Days_to_Die/) support.  
-[ARK: Survival Evolved](https://store.steampowered.com/app/346110/ARK_Survival_Evolved/) support.
+[ARK: Survival Evolved](https://store.steampowered.com/app/346110/ARK_Survival_Evolved/) support.  
+[Unturned](https://store.steampowered.com/app/304930/Unturned/) support.
 
 # 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  
