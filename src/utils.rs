@@ -216,4 +216,11 @@ mod tests {
         assert!(buffer::get_string_utf16_be(&data, &mut pos).is_err());
         assert_eq!(pos, 10);
     }
+
+    #[test]
+    fn error_by_expected_size_test() {
+        assert!(error_by_expected_size(69, 69).is_ok());
+        assert!(error_by_expected_size(69, 68).is_err());
+        assert!(error_by_expected_size(69, 70).is_err());
+    }
 }
