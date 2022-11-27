@@ -9,7 +9,7 @@ homepage = "https://github.com/CosminPerRam/rust-gamedig"
 documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/CosminPerRam/rust-gamedig"
 readme = "README.md"
-keywords = ["server", "verify", "game", "check", "status"]
+keywords = ["server", "query", "game", "check", "status"]
 
 [package.metadata]
 msrv = "1.58.1"
