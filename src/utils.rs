@@ -1,16 +1,4 @@
-use trust_dns_resolver::config::{ResolverConfig, ResolverOpts};
-use trust_dns_resolver::Resolver;
 use crate::{GDResult, GDError};
-
-fn resolve_dns(address: &str) -> GDResult<String> {
-    let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default())
-        .map_err(|e| GDError::DnsResolve(e.to_string()))?;
-
-    let response = resolver.lookup_ip(address)
-        .map_err(|e| GDError::DnsResolve(e.to_string()))?;
-
-    Ok(response.iter().next().ok_or(GDError::DnsResolve("Couldn't resolve the DNS address.".to_string()))?.to_string())
-}
 
 pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     if size < expected {
@@ -24,8 +12,8 @@ pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     }
 }
 
-pub fn complete_address(address: &str, port: u16) -> GDResult<String> {
-    Ok(resolve_dns(address)? + ":" + &*port.to_string())
+pub fn address_and_port_as_string(address: &str, port: u16) -> GDResult<String> {
+    Ok(address.to_string() + ":" + &*port.to_string())
 }
 
 pub fn u8_lower_upper(n: u8) -> (u8, u8) {
@@ -132,9 +120,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn complete_address_test() {
-        assert_eq!(complete_address("192.168.0.1", 27015).unwrap(), "192.168.0.1:27015");
-        assert!(complete_address("not_existent_address", 9999).is_err());
+    fn address_and_port_as_string_test() {
+        assert_eq!(address_and_port_as_string("192.168.0.1", 27015).unwrap(), "192.168.0.1:27015");
+        assert!(address_and_port_as_string("not_existent_address", 9999).is_err());
     }
 
     #[test]
