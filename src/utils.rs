@@ -125,6 +125,11 @@ mod tests {
     }
 
     #[test]
+    fn u8_lower_upper_test() {
+        assert_eq!(u8_lower_upper(171), (11, 10));
+    }
+
+    #[test]
     fn get_u8_test() {
         let data = [72];
         let mut pos = 0;
