@@ -12,8 +12,8 @@ pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     }
 }
 
-pub fn address_and_port_as_string(address: &str, port: u16) -> GDResult<String> {
-    Ok(address.to_string() + ":" + &*port.to_string())
+pub fn address_and_port_as_string(address: &str, port: u16) -> String {
+    address.to_string() + ":" + &*port.to_string()
 }
 
 pub fn u8_lower_upper(n: u8) -> (u8, u8) {
@@ -121,8 +121,7 @@ mod tests {
 
     #[test]
     fn address_and_port_as_string_test() {
-        assert_eq!(address_and_port_as_string("192.168.0.1", 27015).unwrap(), "192.168.0.1:27015");
-        assert!(address_and_port_as_string("not_existent_address", 9999).is_err());
+        assert_eq!(address_and_port_as_string("192.168.0.1", 27015), "192.168.0.1:27015");
     }
 
     #[test]

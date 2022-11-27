@@ -26,8 +26,6 @@ pub enum GDError {
     UnknownEnumCast,
     /// The server queried is not from the queried game.
     BadGame(String),
-    /// Problems occurred while dns resolving.
-    DnsResolve(String),
     /// Couldn't bind a socket.
     SocketBind(String),
     /// Invalid input.
@@ -53,7 +51,6 @@ impl fmt::Display for GDError {
             GDError::Decompress(details) => write!(f, "Couldn't decompress data: {details}"),
             GDError::UnknownEnumCast => write!(f, "Unknown enum cast encountered."),
             GDError::BadGame(details) => write!(f, "Queried another game that the supposed one: {details}"),
-            GDError::DnsResolve(details) => write!(f, "DNS Resolve: {details}"),
             GDError::SocketBind(details) => write!(f, "Socket bind: {details}"),
             GDError::InvalidInput(details) => write!(f, "Invalid input: {details}"),
             GDError::SocketConnect(details) => write!(f, "Socket connect: {details}"),
