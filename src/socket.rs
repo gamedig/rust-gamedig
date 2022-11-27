@@ -21,7 +21,7 @@ pub struct TcpSocket {
 
 impl Socket for TcpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
-        let complete_address = address_and_port_as_string(address, port)?;
+        let complete_address = address_and_port_as_string(address, port);
         let socket = net::TcpStream::connect(complete_address).map_err(|e| GDError::SocketConnect(e.to_string()))?;
 
         Ok(Self {
@@ -57,7 +57,7 @@ pub struct UdpSocket {
 
 impl Socket for UdpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
-        let complete_address = address_and_port_as_string(address, port)?;
+        let complete_address = address_and_port_as_string(address, port);
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| GDError::SocketBind(e.to_string()))?;
 
         Ok(Self {
