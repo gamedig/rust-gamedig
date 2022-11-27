@@ -143,7 +143,7 @@ struct ValveProtocol {
     socket: UdpSocket
 }
 
-static PACKET_SIZE: usize = 4096;
+static PACKET_SIZE: usize = 6144;
 
 impl ValveProtocol {
     fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
@@ -383,10 +383,6 @@ impl ValveProtocol {
 
     /// Get the server rules's.
     fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
-        if *app == SteamID::CSGO.as_app() { //cause csgo wont respond to this since feb 21 2014 update
-            return Ok(None);
-        }
-
         let buf = self.get_request_data(&app, protocol, Request::RULES)?;
         let mut pos = 0;
 

@@ -1,63 +1,12 @@
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{Server, GatheringSettings, get_optional_extracted_data, SteamID};
-use crate::protocols::valve::game::Player;
+use crate::protocols::valve::{game, SteamID};
 
-#[derive(Debug)]
-pub struct Response {
-    pub protocol: u8,
-    pub name: String,
-    pub map: String,
-    pub game: String,
-    pub players: u8,
-    pub players_details: Vec<Player>,
-    pub max_players: u8,
-    pub bots: u8,
-    pub server_type: Server,
-    pub has_password: bool,
-    pub vac_secured: bool,
-    pub version: String,
-    pub port: Option<u16>,
-    pub steam_id: Option<u64>,
-    pub tv_port: Option<u16>,
-    pub tv_name: Option<String>,
-    pub keywords: Option<String>
-}
-
-impl Response {
-    pub fn new_from_valve_response(response: valve::Response) -> Self {
-        let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
-
-        Self {
-            protocol: response.info.protocol,
-            name: response.info.name,
-            map: response.info.map,
-            game: response.info.game,
-            players: response.info.players,
-            players_details: response.players.unwrap().iter().map(|p| Player::from_valve_response(p)).collect(),
-            max_players: response.info.max_players,
-            bots: response.info.bots,
-            server_type: response.info.server_type,
-            has_password: response.info.has_password,
-            vac_secured: response.info.vac_secured,
-            version: response.info.version,
-            port,
-            steam_id,
-            tv_port,
-            tv_name,
-            keywords
-        }
-    }
-}
-
-pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query(address: &str, port: Option<u16>) -> GDResult<game::Response> {
     let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, SteamID::CSGO.as_app(), Some(GatheringSettings {
-        players: true,
-        rules: false // cause csgo doesnt reply with rules anymore
-    }), None)?;
+    }, SteamID::CSGO.as_app(), None, None)?;
 
-    Ok(Response::new_from_valve_response(valve_response))
+    Ok(game::Response::new_from_valve_response(valve_response))
 }
