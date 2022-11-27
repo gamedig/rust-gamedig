@@ -60,7 +60,7 @@ impl Response {
             map: response.info.map,
             game: response.info.game,
             players: response.info.players,
-            players_details: response.players.unwrap().iter().map(|p| TheShipPlayer::new_from_valve_player(p)).collect(),
+            players_details: response.players.unwrap().iter().map(TheShipPlayer::new_from_valve_player).collect(),
             max_players: response.info.max_players,
             bots: response.info.bots,
             server_type: response.info.server_type,

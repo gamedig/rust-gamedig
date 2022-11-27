@@ -290,7 +290,7 @@ pub mod game {
                 map: response.info.map,
                 game: response.info.game,
                 players: response.info.players,
-                players_details: response.players.unwrap_or(vec![]).iter().map(|p| Player::from_valve_response(p)).collect(),
+                players_details: response.players.unwrap_or(vec![]).iter().map(Player::from_valve_response).collect(),
                 max_players: response.info.max_players,
                 bots: response.info.bots,
                 server_type: response.info.server_type,
