@@ -12,8 +12,9 @@ Who knows what the future holds...
 [Rust](https://store.steampowered.com/app/252490/Rust/) support.  
 [Counter-Strike](https://store.steampowered.com/app/10/CounterStrike/) support.  
 [Arma 2: Operation Arrowhead](https://store.steampowered.com/app/33930/Arma_2_Operation_Arrowhead/) support.  
-Tested `Alien Swarm` and `Insurgency: Modern Infantry Combat` and they work.
-Increased Valve Protocol `PACKET_SIZE` from 1400 to 6144, some games send larger packets than the specified protocol size.
+Successfully tested `Alien Swarm` and `Insurgency: Modern Infantry Combat`.  
+Restored rules response for `Counter-Strike: Global Offensive` (note: for a full player list response, the cvar `host_players_show` must be set to `2`).  
+Increased Valve Protocol `PACKET_SIZE` from 1400 to 6144 (because some games send larger packets than the specified protocol size).
 
 # 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  
