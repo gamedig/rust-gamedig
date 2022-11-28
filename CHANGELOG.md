@@ -17,7 +17,8 @@ Who knows what the future holds...
 Successfully tested `Alien Swarm` and `Insurgency: Modern Infantry Combat`.  
 Restored rules response for `Counter-Strike: Global Offensive` (note: for a full player list response, the cvar `host_players_show` must be set to `2`).  
 Increased Valve Protocol `PACKET_SIZE` from 1400 to 6144 (because some games send larger packets than the specified protocol size).  
-Removed DNS resolving as it was not needed.
+Removed DNS resolving as it was not needed.  
+Valve Protocol minor optimizations.  
 
 # 0.0.5 - 15/11/2022
 Added `SocketBind` error, regarding failing to bind a socket.  

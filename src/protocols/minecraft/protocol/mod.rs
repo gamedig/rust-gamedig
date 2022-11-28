@@ -11,7 +11,7 @@ mod legacy_v1_4;
 mod legacy_v1_6;
 mod legacy_bv1_8;
 
-/// Queries a Minecraft server.
+/// Queries a Minecraft server with all the protocol variants one by one (Java -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     if let Ok(response) = query_specific(Server::Java, address, port, timeout_settings.clone()) {
         return Ok(response);
