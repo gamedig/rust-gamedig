@@ -21,7 +21,13 @@ fn main() -> GDResult<()> {
 
     let ip = args[2].as_str();
     let port = match args.len() == 4 {
-        false => None,
+        false => {
+            if args[1].starts_with("_") {
+                panic!("The port must be specified with an anonymous query.")
+            }
+
+            None
+        },
         true => Some(args[3].parse::<u16>().expect("Invalid port!"))
     };
 
@@ -57,9 +63,9 @@ fn main() -> GDResult<()> {
         "cs" => println!("{:#?}", cs::query(ip, port)?),
         "arma2oa" => println!("{:#?}", arma2oa::query(ip, port)?),
         "doi" => println!("{:#?}", doi::query(ip, port)?),
-        "_src" => println!("{:#?}", valve::query(ip, 27015, App::Source(None), None, None)?),
-        "_gld" => println!("{:#?}", valve::query(ip, 27015, App::GoldSrc(false), None, None)?),
-        "_gld_f" => println!("{:#?}", valve::query(ip, 27015, App::GoldSrc(true), None, None)?),
+        "_src" => println!("{:#?}", valve::query(ip, port.unwrap(), App::Source(None), None, None)?),
+        "_gld" => println!("{:#?}", valve::query(ip, port.unwrap(), App::GoldSrc(false), None, None)?),
+        "_gld_f" => println!("{:#?}", valve::query(ip, port.unwrap(), App::GoldSrc(true), None, None)?),
         _ => panic!("Undefined game: {}", args[1])
     };
 
