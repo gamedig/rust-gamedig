@@ -53,3 +53,5 @@ pub mod rust;
 pub mod cs;
 /// ARMA 2: Operation Arrowhead
 pub mod arma2oa;
+/// Day of Infamy
+pub mod doi;

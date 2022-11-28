@@ -28,6 +28,7 @@ A supported game is defined as a game that has been successfully tested, other g
 | Rust                               | RUST     | Valve Protocol            |                                                                                           |
 | Counter-Strike                     | CS       | Valve Protocol (GoldSrc)  |                                                                                           |
 | Arma 2: Operation Arrowhead        | ARMA2OA  | Valve Protocol            | Use the query port.                                                                       |
+| Day of Infamy                      | DOI      | Valve Protocol            |                                                                                           |
 
 ## Planned to add support:
 _

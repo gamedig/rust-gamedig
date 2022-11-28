@@ -183,6 +183,8 @@ pub enum SteamID {
     SC = 225840,
     /// Rust
     RUST = 252490,
+    /// Day of Infamy
+    DOI = 447820,
     /// The Forrest
     TF = 556450, //this is the id for the dedicated server, for the game its 242760
     /// 7 Days To Die
