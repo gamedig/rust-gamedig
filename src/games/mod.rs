@@ -55,3 +55,5 @@ pub mod cs;
 pub mod arma2oa;
 /// Day of Infamy
 pub mod doi;
+/// Half-Life Deathmatch: Source
+pub mod hldms;

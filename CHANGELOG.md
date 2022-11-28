@@ -13,6 +13,7 @@ Who knows what the future holds...
 [Counter-Strike](https://store.steampowered.com/app/10/CounterStrike/) support.  
 [Arma 2: Operation Arrowhead](https://store.steampowered.com/app/33930/Arma_2_Operation_Arrowhead/) support.  
 [Day of Infamy](https://store.steampowered.com/app/447820/Day_of_Infamy/) support.  
+[Half-Life Deathmatch: Source](https://store.steampowered.com/app/360/HalfLife_Deathmatch_Source/) support.  
 Successfully tested `Alien Swarm` and `Insurgency: Modern Infantry Combat`.  
 Restored rules response for `Counter-Strike: Global Offensive` (note: for a full player list response, the cvar `host_players_show` must be set to `2`).  
 Increased Valve Protocol `PACKET_SIZE` from 1400 to 6144 (because some games send larger packets than the specified protocol size).  

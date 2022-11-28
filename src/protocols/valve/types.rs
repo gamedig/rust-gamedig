@@ -159,6 +159,8 @@ pub enum SteamID {
     DODS = 300,
     /// Half-Life 2 Deathmatch
     HL2DM = 320,
+    /// Half-Life Deathmatch: Source
+    HLDMS = 360,
     /// Team Fortress 2
     TF2 = 440,
     /// Left 4 Dead
