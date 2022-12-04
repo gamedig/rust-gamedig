@@ -37,7 +37,9 @@ pub enum Server {
     /// Java Edition.
     Java,
     /// Legacy Java.
-    Legacy(LegacyGroup)
+    Legacy(LegacyGroup),
+    /// Bedrock Edition.
+    Bedrock
 }
 
 /// Legacy Java (Versions) Groups.
