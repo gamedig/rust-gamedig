@@ -1,31 +1,8 @@
 
 /*
-
-This file contains lightly modified versions of the original code. (using only the varint parts)
-Code reference: https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
-
-MIT License
-
-Copyright (c) 2021-2022 Jaiden Bernard
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
+Although its a lightly modified version, this file contains code
+by Jaiden Bernard (2021-2022 - MIT) from
+https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 */
 
 use crate::{GDError, GDResult};
@@ -37,7 +14,9 @@ pub enum Server {
     /// Java Edition.
     Java,
     /// Legacy Java.
-    Legacy(LegacyGroup)
+    Legacy(LegacyGroup),
+    /// Bedrock Edition.
+    Bedrock
 }
 
 /// Legacy Java (Versions) Groups.
@@ -81,6 +60,67 @@ pub struct Response {
     pub enforces_secure_chat: Option<bool>,
     /// Tell's the server type.
     pub server_type: Server
+}
+
+/// A Bedrock Edition query response.
+#[derive(Debug)]
+pub struct BedrockResponse {
+    /// Server edition.
+    pub edition: String,
+    /// Server name.
+    pub name: String,
+    /// Version name, example: "1.19.40".
+    pub version_name: String,
+    /// Version protocol, example: 760 (for 1.19.2).
+    pub version_protocol: String,
+    /// Number of server capacity.
+    pub max_players: u32,
+    /// Number of online players.
+    pub online_players: u32,
+    /// Server id.
+    pub id: Option<String>,
+    /// The map.
+    pub map: Option<String>,
+    /// Game mode.
+    pub game_mode: Option<GameMode>,
+    /// Tell's the server type.
+    pub server_type: Server
+}
+
+impl Response {
+    pub fn from_bedrock_response(response: BedrockResponse) -> Self {
+        Self {
+            version_name: response.version_name,
+            version_protocol: 0,
+            max_players: response.max_players,
+            online_players: response.online_players,
+            sample_players: None,
+            description: response.name,
+            favicon: None,
+            previews_chat: None,
+            enforces_secure_chat: None,
+            server_type: Server::Bedrock
+        }
+    }
+}
+
+/// A server's game mode (used only by Bedrock servers).
+#[derive(Debug)]
+pub enum GameMode {
+    Survival, Creative, Hardcore, Spectator, Adventure
+}
+
+impl GameMode {
+    pub fn from_bedrock(value: &&str) -> GDResult<Self> {
+        match *value {
+            "Survival" => Ok(GameMode::Survival),
+            "Creative" => Ok(GameMode::Creative),
+            "Hardcore" => Ok(GameMode::Hardcore),
+            "Spectator" => Ok(GameMode::Spectator),
+            "Adventure" => Ok(GameMode::Adventure),
+            _ => Err(GDError::UnknownEnumCast)
+        }
+    }
 }
 
 pub fn get_varint(buf: &[u8], pos: &mut usize) -> GDResult<i32> {

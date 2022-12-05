@@ -38,6 +38,8 @@ pub enum GDError {
     AutoQuery,
     /// A protocol-defined expected format was not met.
     ProtocolFormat(String),
+    /// Couldn't parse a value.
+    TypeParse(String),
 }
 
 impl fmt::Display for GDError {
@@ -57,6 +59,7 @@ impl fmt::Display for GDError {
             GDError::JsonParse(details) => write!(f, "Json parse: {details}"),
             GDError::AutoQuery => write!(f, "Auto query failed."),
             GDError::ProtocolFormat(details) => write!(f, "Protocol rule: {details}"),
+            GDError::TypeParse(details) => write!(f, "Type parse: {details}"),
         }
     }
 }

@@ -98,6 +98,19 @@ pub mod buffer {
         Ok(value)
     }
 
+    pub fn get_string_utf8_le_unended(buf: &[u8], pos: &mut usize) -> GDResult<String> {
+        let sub_buf = &buf[*pos..];
+        if sub_buf.len() == 0 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 LE string.".to_string()));
+        }
+
+        let value = std::str::from_utf8(&sub_buf)
+            .map_err(|_| GDError::PacketBad("Badly formatted utf8 LE string.".to_string()))?.to_string();
+
+        *pos += value.len();
+        Ok(value)
+    }
+
     pub fn get_string_utf16_be(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
         if sub_buf.len() == 0 {
@@ -197,6 +210,16 @@ mod tests {
         assert_eq!(pos, 6);
         assert!(buffer::get_string_utf8_le(&data, &mut pos).is_err());
         assert_eq!(pos, 6);
+    }
+
+    #[test]
+    fn get_string_utf8_le_unended_test() {
+        let data = [72, 101, 108, 108, 111];
+        let mut pos = 0;
+        assert_eq!(buffer::get_string_utf8_le_unended(&data, &mut pos).unwrap(), "Hello");
+        assert_eq!(pos, 5);
+        assert!(buffer::get_string_utf8_le_unended(&data, &mut pos).is_err());
+        assert_eq!(pos, 5);
     }
 
     #[test]

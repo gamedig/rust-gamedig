@@ -1,7 +1,7 @@
 
 use std::env;
-use gamedig::{aliens, arma2oa, ase, asrd, cs, cscz, csgo, css, dod, dods, doi, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, protocols, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
-use gamedig::protocols::minecraft::{LegacyGroup, Server};
+use gamedig::{aliens, arma2oa, ase, asrd, cs, cscz, csgo, css, dod, dods, doi, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
+use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::App;
 
@@ -53,10 +53,11 @@ fn main() -> GDResult<()> {
         "_gld_f" => println!("{:#?}", valve::query(ip, port.unwrap(), App::GoldSrc(true), None, None)?),
         "mc" => println!("{:#?}", mc::query(ip, port)?),
         "mc_java" => println!("{:#?}", mc::query_java(ip, port)?),
+        "mc_bedrock" => println!("{:#?}", mc::query_bedrock(ip, port)?),
         "mc_legacy" => println!("{:#?}", mc::query_legacy(ip, port)?),
-        "_mc_legacy_vb1_8" => println!("{:#?}", protocols::minecraft::query_specific(Server::Legacy(LegacyGroup::VB1_8), ip, port.unwrap(), None)?),
-        "_mc_legacy_v1_4" => println!("{:#?}", protocols::minecraft::query_specific(Server::Legacy(LegacyGroup::V1_4), ip, port.unwrap(), None)?),
-        "_mc_legacy_v1_6" => println!("{:#?}", protocols::minecraft::query_specific(Server::Legacy(LegacyGroup::V1_6), ip, port.unwrap(), None)?),
+        "mc_legacy_vb1_8" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::VB1_8, ip, port)?),
+        "mc_legacy_v1_4" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::V1_4, ip, port)?),
+        "mc_legacy_v1_6" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::V1_6, ip, port)?),
         "7dtd" => println!("{:#?}", sdtd::query(ip, port)?),
         "ase" => println!("{:#?}", ase::query(ip, port)?),
         "unturned" => println!("{:#?}", unturned::query(ip, port)?),
