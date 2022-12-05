@@ -1,3 +1,9 @@
+
+/*
+This file has code that has been documented by the NodeJS GameDig library (MIT) from
+https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
+*/
+
 use crate::{GDError, GDResult};
 use crate::protocols::minecraft::{BedrockResponse, GameMode, Server};
 use crate::protocols::types::TimeoutSettings;
