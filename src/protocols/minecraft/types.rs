@@ -104,20 +104,6 @@ impl Response {
     }
 }
 
-pub fn port_or_java_default(port: Option<u16>) -> u16 {
-    match port {
-        None => 25565,
-        Some(port) => port
-    }
-}
-
-pub fn port_or_bedrock_default(port: Option<u16>) -> u16 {
-    match port {
-        None => 19132,
-        Some(port) => port
-    }
-}
-
 /// A server's game mode (used only by Bedrock servers).
 #[derive(Debug)]
 pub enum GameMode {
