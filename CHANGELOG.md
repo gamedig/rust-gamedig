@@ -2,6 +2,12 @@
 Who knows what the future holds...
 
 # 0.0.7 - ??/??/2022
+### Changes:
+[Minecraft](https://www.minecraft.com) bedrock edition support.  
+Also added a `query_legacy_specific` method to the mc game queries.
+
+### Breaking:  
+Removed `query_specific` from the mc protocol in favor of `query_java`, `query_legacy` and `query_legacy_specific`.
 
 # 0.0.6 - 28/11/2022
 [Minecraft](https://www.minecraft.com) support (bedrock not supported yet).  

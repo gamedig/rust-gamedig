@@ -18,7 +18,7 @@ Team Fortress 2 query example:
 use gamedig::games::tf2;
 
 fn main() {
-    let response = tf2::query("localhost", None); //or Some(27015), None is the default protocol port
+    let response = tf2::query("127.0.0.1", None); //or Some(27015), None is the default protocol port
     match response {
         Err(error) => println!("Couldn't query, error: {error}"),
         Ok(r) => println!("{:#?}", r)
