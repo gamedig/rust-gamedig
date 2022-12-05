@@ -85,6 +85,80 @@ pub struct Response {
     pub server_type: Server
 }
 
+/// A Bedrock Edition query response.
+#[derive(Debug)]
+pub struct BedrockResponse {
+    /// Server edition.
+    pub edition: String,
+    /// Server name.
+    pub name: String,
+    /// Version name, example: "1.19.40".
+    pub version_name: String,
+    /// Version protocol, example: 760 (for 1.19.2).
+    pub version_protocol: String,
+    /// Number of server capacity.
+    pub max_players: u32,
+    /// Number of online players.
+    pub online_players: u32,
+    /// Server id.
+    pub id: Option<String>,
+    /// The map.
+    pub map: Option<String>,
+    /// Game mode.
+    pub game_mode: Option<GameMode>,
+    /// Tell's the server type.
+    pub server_type: Server
+}
+
+impl Response {
+    pub fn from_bedrock_response(response: BedrockResponse) -> Self {
+        Self {
+            version_name: response.version_name,
+            version_protocol: 0,
+            max_players: response.max_players,
+            online_players: response.online_players,
+            sample_players: None,
+            description: response.name,
+            favicon: None,
+            previews_chat: None,
+            enforces_secure_chat: None,
+            server_type: Server::Bedrock
+        }
+    }
+}
+
+pub fn port_or_java_default(port: Option<u16>) -> u16 {
+    match port {
+        None => 25565,
+        Some(port) => port
+    }
+}
+
+pub fn port_or_bedrock_default(port: Option<u16>) -> u16 {
+    match port {
+        None => 19132,
+        Some(port) => port
+    }
+}
+
+#[derive(Debug)]
+pub enum GameMode {
+    Survival, Creative, Hardcore, Spectator, Adventure
+}
+
+impl GameMode {
+    pub fn from_bedrock(value: &&str) -> GDResult<Self> {
+        match *value {
+            "Survival" => Ok(GameMode::Survival),
+            "Creative" => Ok(GameMode::Creative),
+            "Hardcore" => Ok(GameMode::Hardcore),
+            "Spectator" => Ok(GameMode::Spectator),
+            "Adventure" => Ok(GameMode::Adventure),
+            _ => Err(GDError::UnknownEnumCast)
+        }
+    }
+}
+
 pub fn get_varint(buf: &[u8], pos: &mut usize) -> GDResult<i32> {
     let mut result = 0;
 

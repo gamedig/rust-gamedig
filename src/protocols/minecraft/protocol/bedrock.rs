@@ -1,8 +1,9 @@
-use serde_json::Value;
 use crate::{GDError, GDResult};
-use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response, Server};
+use crate::protocols::minecraft::{BedrockResponse, GameMode, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::buffer::{get_string_utf8_le_unended, get_u16_be, get_u64_le, get_u8};
+use crate::utils::error_by_expected_size;
 
 pub struct Bedrock {
     socket: UdpSocket
@@ -18,110 +19,76 @@ impl Bedrock {
         })
     }
 
-    fn send(&mut self, data: Vec<u8>) -> GDResult<()> {
-        self.socket.send(&[as_varint(data.len() as i32), data].concat())
+    fn send_status_request(&mut self) -> GDResult<()> {
+        self.socket.send(&[
+            // Message ID, ID_UNCONNECTED_PING
+            0x01,
+            // Nonce / timestamp
+            0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+            // Magic
+            0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78,
+            // Client GUID
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+
+        Ok(())
     }
 
-    fn receive(&mut self) -> GDResult<Vec<u8>> {
+    fn get_info(&mut self) -> GDResult<BedrockResponse> {
+        self.send_status_request()?;
+
         let buf = self.socket.receive(None)?;
         let mut pos = 0;
 
-        let _packet_length = get_varint(&buf, &mut pos)? as usize;
-        //this declared 'packet length' from within the packet might be wrong (?), not checking with it...
-
-        Ok(buf[pos..].to_vec())
-    }
-
-    fn send_handshake(&mut self) -> GDResult<()> {
-        self.send([
-            //Packet ID (0)
-            0x00,
-            //Protocol Version (-1 to determine version)
-            0xFF, 0xFF, 0xFF, 0xFF, 0x0F,
-            //Server address (can be anything)
-            0x07, 0x47, 0x61, 0x6D, 0x65, 0x44, 0x69, 0x67,
-            //Server port (can be anything)
-            0x00, 0x00,
-            //Next state (1 for status)
-            0x01].to_vec())?;
-
-        Ok(())
-    }
-
-    fn send_status_request(&mut self) -> GDResult<()> {
-        self.send([
-            //Packet ID (0)
-            0x00].to_vec())?;
-
-        Ok(())
-    }
-
-    fn send_ping_request(&mut self) -> GDResult<()> {
-        self.send([
-            //Packet ID (1)
-            0x01].to_vec())?;
-
-        Ok(())
-    }
-
-    fn get_info(&mut self) -> GDResult<Response> {
-        self.send_handshake()?;
-        self.send_status_request()?;
-        self.send_ping_request()?;
-
-        let buf = self.receive()?;
-        let mut pos = 0;
-
-        if get_varint(&buf, &mut pos)? != 0 { //first var int is the packet id
-            return Err(GDError::PacketBad("Bad receive packet id.".to_string()));
+        if get_u8(&buf, &mut pos)? != 0x1c {
+            return Err(GDError::PacketBad("Invalid message id.".to_string()));
         }
 
-        let json_response = get_string(&buf, &mut pos)?;
-        let value_response: Value = serde_json::from_str(&json_response)
-            .map_err(|e| GDError::JsonParse(e.to_string()))?;
+        // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
+        if get_u64_le(&buf, &mut pos)? != 9833440827789222417 {
+            return Err(GDError::PacketBad("Invalid nonce.".to_string()));
+        }
 
-        let version_name = value_response["version"]["name"].as_str()
-            .ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string();
-        let version_protocol = value_response["version"]["protocol"].as_i64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as i32;
+        // These 8 bytes are identical to the serverId string we receive in decimal below
+        pos += 8;
 
-        let max_players = value_response["players"]["max"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
-        let online_players = value_response["players"]["online"].as_u64()
-            .ok_or(GDError::PacketBad("Couldn't get expected number.".to_string()))? as u32;
-        let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
-            true => None,
-            false => Some({
-                let players_values = value_response["players"]["sample"].as_array()
-                    .ok_or(GDError::PacketBad("Couldn't get expected array.".to_string()))?;
+        // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
+        if get_u64_le(&buf, &mut pos)? != 18374403896610127616 {
+            return Err(GDError::PacketBad("Invalid magic (part 1).".to_string()));
+        }
 
-                let mut players = Vec::with_capacity(players_values.len());
-                for player in players_values {
-                    players.push(Player {
-                        name: player["name"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string(),
-                        id: player["id"].as_str().ok_or(GDError::PacketBad("Couldn't get expected string.".to_string()))?.to_string()
-                    })
-                }
+        if get_u64_le(&buf, &mut pos)? != 8671175388723805693 {
+            return Err(GDError::PacketBad("Invalid magic (part 2).".to_string()));
+        }
 
-                players
-            })
-        };
+        let remaining_length = get_u16_be(&buf, &mut pos)? as usize;
+        error_by_expected_size(remaining_length, buf.len() - pos)?;
 
-        Ok(Response {
-            version_name,
-            version_protocol,
-            max_players,
-            online_players,
-            sample_players,
-            description: value_response["description"].to_string(),
-            favicon: value_response["favicon"].as_str().map(str::to_string),
-            previews_chat: value_response["previewsChat"].as_bool(),
-            enforces_secure_chat: value_response["enforcesSecureChat"].as_bool(),
-            server_type: Server::Java
+        let binding = get_string_utf8_le_unended(&buf, &mut pos)?;
+        let status: Vec<&str> = binding.split(";").collect();
+
+        // We must have at least 6 values
+        if status.len() < 6 {
+            return Err(GDError::PacketBad("Not enough status parts.".to_string()));
+        }
+
+        Ok(BedrockResponse {
+            edition: status[0].to_string(),
+            name: status[1].to_string(),
+            version_name: status[3].to_string(),
+            version_protocol:  status[2].to_string(),
+            max_players: status[5].parse().map_err(|_| GDError::TypeParse("couldn't parse.".to_string()))?,
+            online_players: status[4].parse().map_err(|_| GDError::TypeParse("couldn't parse.".to_string()))?,
+            id: status.get(6).and_then(|v| Some(v.to_string())),
+            map: status.get(7).and_then(|v| Some(v.to_string())),
+            game_mode: match status.get(8) {
+                None => None,
+                Some(v) => Some(GameMode::from_bedrock(v)?)
+            },
+            server_type: Server::Bedrock
         })
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
         Bedrock::new(address, port, timeout_settings)?.get_info()
     }
 }

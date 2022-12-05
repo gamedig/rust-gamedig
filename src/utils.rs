@@ -98,6 +98,19 @@ pub mod buffer {
         Ok(value)
     }
 
+    pub fn get_string_utf8_le_unended(buf: &[u8], pos: &mut usize) -> GDResult<String> {
+        let sub_buf = &buf[*pos..];
+        if sub_buf.len() == 0 {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 LE string.".to_string()));
+        }
+
+        let value = std::str::from_utf8(&sub_buf)
+            .map_err(|_| GDError::PacketBad("Badly formatted utf8 LE string.".to_string()))?.to_string();
+
+        *pos += value.len() + 1;
+        Ok(value)
+    }
+
     pub fn get_string_utf16_be(buf: &[u8], pos: &mut usize) -> GDResult<String> {
         let sub_buf = &buf[*pos..];
         if sub_buf.len() == 0 {
