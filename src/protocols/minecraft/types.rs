@@ -118,6 +118,7 @@ pub fn port_or_bedrock_default(port: Option<u16>) -> u16 {
     }
 }
 
+/// A server's game mode (used only by Bedrock servers).
 #[derive(Debug)]
 pub enum GameMode {
     Survival, Creative, Hardcore, Spectator, Adventure
