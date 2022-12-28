@@ -20,6 +20,7 @@ pub mod protocols;
 pub mod games;
 mod utils;
 mod socket;
+mod bufferer;
 
 pub use errors::*;
 pub use games::*;
