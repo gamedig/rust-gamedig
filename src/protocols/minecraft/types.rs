@@ -6,7 +6,7 @@ https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 */
 
 use crate::{GDError, GDResult};
-use crate::utils::buffer::get_u8;
+use crate::bufferer::Bufferer;
 
 /// The type of Minecraft Server you want to query.
 #[derive(Debug)]
@@ -123,14 +123,14 @@ impl GameMode {
     }
 }
 
-pub fn get_varint(buf: &[u8], pos: &mut usize) -> GDResult<i32> {
+pub fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
     let mut result = 0;
 
     let msb: u8 = 0b10000000;
     let mask: u8 = !msb;
 
     for i in 0..5 {
-        let current_byte = get_u8(buf, pos)?;
+        let current_byte = buffer.get_u8()?;
 
         result |= ((current_byte & mask) as i32) << (7 * i);
 
@@ -171,12 +171,12 @@ pub fn as_varint(value: i32) -> Vec<u8> {
     bytes
 }
 
-pub fn get_string(buf: &[u8], pos: &mut usize) -> GDResult<String> {
-    let length = get_varint(buf, pos)? as usize;
+pub fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
+    let length = get_varint(buffer)? as usize;
     let mut text = vec![0; length];
 
     for i in 0..length {
-        text[i] = get_u8(buf, pos)?;
+        text[i] = buffer.get_u8()?;
     }
 
     Ok(String::from_utf8(text)

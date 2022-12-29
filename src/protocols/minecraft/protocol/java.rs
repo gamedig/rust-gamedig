@@ -1,5 +1,6 @@
 use serde_json::Value;
 use crate::{GDError, GDResult};
+use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
@@ -22,14 +23,13 @@ impl Java {
         self.socket.send(&[as_varint(data.len() as i32), data].concat())
     }
 
-    fn receive(&mut self) -> GDResult<Vec<u8>> {
-        let buf = self.socket.receive(None)?;
-        let mut pos = 0;
+    fn receive(&mut self) -> GDResult<Bufferer> {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
 
-        let _packet_length = get_varint(&buf, &mut pos)? as usize;
+        let _packet_length = get_varint(&mut buffer)? as usize;
         //this declared 'packet length' from within the packet might be wrong (?), not checking with it...
 
-        Ok(buf[pos..].to_vec())
+        Ok(buffer)
     }
 
     fn send_handshake(&mut self) -> GDResult<()> {
@@ -69,14 +69,13 @@ impl Java {
         self.send_status_request()?;
         self.send_ping_request()?;
 
-        let buf = self.receive()?;
-        let mut pos = 0;
+        let mut buffer = self.receive()?;
 
-        if get_varint(&buf, &mut pos)? != 0 { //first var int is the packet id
+        if get_varint(&mut buffer)? != 0 { //first var int is the packet id
             return Err(GDError::PacketBad("Bad receive packet id.".to_string()));
         }
 
-        let json_response = get_string(&buf, &mut pos)?;
+        let json_response = get_string(&mut buffer)?;
         let value_response: Value = serde_json::from_str(&json_response)
             .map_err(|e| GDError::JsonParse(e.to_string()))?;
 

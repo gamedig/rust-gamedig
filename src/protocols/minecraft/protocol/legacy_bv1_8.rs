@@ -1,9 +1,9 @@
 
 use crate::{GDError, GDResult};
+use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::minecraft::{LegacyGroup, Response, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
-use crate::utils::buffer::{get_string_utf16_be, get_u16_be, get_u8};
 use crate::utils::error_by_expected_size;
 
 pub struct LegacyBV1_8 {
@@ -27,17 +27,16 @@ impl LegacyBV1_8 {
     fn get_info(&mut self) -> GDResult<Response> {
         self.send_initial_request()?;
 
-        let buf = self.socket.receive(None)?;
-        let mut pos = 0;
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
 
-        if get_u8(&buf, &mut pos)? != 0xFF {
+        if buffer.get_u8()? != 0xFF {
             return Err(GDError::ProtocolFormat("Expected 0xFF at the begin of the packet.".to_string()));
         }
 
-        let length = get_u16_be(&buf, &mut pos)? * 2;
-        error_by_expected_size((length + 3) as usize, buf.len())?;
+        let length = buffer.get_u16()? * 2;
+        error_by_expected_size((length + 3) as usize, buffer.data_length())?;
 
-        let packet_string = get_string_utf16_be(&buf, &mut pos)?;
+        let packet_string = buffer.get_string_utf16()?;
 
         let split: Vec<&str> = packet_string.split("§").collect();
         error_by_expected_size(3, split.len())?;
