@@ -55,9 +55,9 @@ impl LegacyV1_6 {
             .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
         let version_name = split[1].to_string();
         let description = split[2].to_string();
-        let max_players = split[3].parse()
+        let online_players = split[3].parse()
             .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
-        let online_players = split[4].parse()
+        let max_players = split[4].parse()
             .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
 
         Ok(Response {

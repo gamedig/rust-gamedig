@@ -4,7 +4,8 @@ Who knows what the future holds...
 # 0.0.7 - ??/??/2022
 ### Changes:
 [Minecraft](https://www.minecraft.com) bedrock edition support.  
-Also added a `query_legacy_specific` method to the mc game queries.
+Fix Minecraft legacy v1.6 max/online players count being reversed.  
+Added `query_legacy_specific` method to the Minecraft protocol.
 
 ### Breaking:  
 Removed `query_specific` from the mc protocol in favor of `query_java`, `query_legacy` and `query_legacy_specific`.
