@@ -123,7 +123,7 @@ impl GameMode {
     }
 }
 
-pub fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
+pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
     let mut result = 0;
 
     let msb: u8 = 0b10000000;
@@ -147,7 +147,7 @@ pub fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
     Ok(result)
 }
 
-pub fn as_varint(value: i32) -> Vec<u8> {
+pub(crate) fn as_varint(value: i32) -> Vec<u8> {
     let mut bytes = vec![];
     let mut reading_value = value;
 
@@ -171,7 +171,7 @@ pub fn as_varint(value: i32) -> Vec<u8> {
     bytes
 }
 
-pub fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
+pub(crate) fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
     let length = get_varint(buffer)? as usize;
     let mut text = vec![0; length];
 
@@ -183,7 +183,8 @@ pub fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
         .map_err(|_| GDError::PacketBad("Couldn't parse to a Minecraft String.".to_string()))?)
 }
 
-pub fn as_string(value: String) -> Vec<u8> {
+#[allow(dead_code)]
+pub(crate) fn as_string(value: String) -> Vec<u8> {
     let mut buf = as_varint(value.len() as i32);
     buf.extend(value.as_bytes().to_vec());
 

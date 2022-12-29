@@ -122,7 +122,7 @@ pub struct ModData {
     pub has_own_dll: bool
 }
 
-pub fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
+pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
     match data {
         None => (None, None, None, None, None),
         Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
@@ -132,7 +132,7 @@ pub fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Opt
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
 #[derive(PartialEq, Clone)]
 #[repr(u8)]
-pub enum Request {
+pub(crate) enum Request {
     /// Known as `A2S_INFO`
     INFO = 0x54,
     /// Known as `A2S_PLAYERS`
@@ -211,7 +211,7 @@ impl SteamID {
     }
 }
 
-/// App type
+/// App type.
 #[derive(PartialEq, Clone)]
 pub enum App {
     /// A Source game, the argument represents the wanted response steam app id, if its **None**,
@@ -240,7 +240,7 @@ impl Default for GatheringSettings {
 }
 
 /// Generic response types that are used by many games, they are the protocol ones, but without the
-/// unnecessary bits (example: the **The Ship**-only fields)
+/// unnecessary bits (example: the **The Ship**-only fields).
 pub mod game {
     use crate::protocols::valve::types::get_optional_extracted_data;
     use super::{Server, ServerRule, ServerPlayer};

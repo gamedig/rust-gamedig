@@ -11,10 +11,6 @@ pub struct Bufferer {
 }
 
 impl Bufferer {
-    pub fn new(endianess: Endianess) -> Self {
-        Bufferer::new_with_data(endianess, &[])
-    }
-    
     pub fn new_with_data(endianess: Endianess, data: &[u8]) -> Self {
         Bufferer {
             data: data.to_vec(),

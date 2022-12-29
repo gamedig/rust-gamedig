@@ -8,7 +8,8 @@ Fix Minecraft legacy v1.6 max/online players count being reversed.
 Added `query_legacy_specific` method to the Minecraft protocol.
 
 ### Breaking:  
-Removed `query_specific` from the mc protocol in favor of `query_java`, `query_legacy` and `query_legacy_specific`.
+Removed `query_specific` from the mc protocol in favor of `query_java`, `query_legacy` and `query_legacy_specific`.  
+Some public functions that are meant to be used only internally were made private.
 
 # 0.0.6 - 28/11/2022
 [Minecraft](https://www.minecraft.com) support (bedrock not supported yet).  
