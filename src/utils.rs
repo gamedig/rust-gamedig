@@ -22,22 +22,20 @@ pub fn u8_lower_upper(n: u8) -> (u8, u8) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
-    fn address_and_port_as_string_test() {
-        assert_eq!(address_and_port_as_string("192.168.0.1", 27015), "192.168.0.1:27015");
+    fn address_and_port_as_string() {
+        assert_eq!(super::address_and_port_as_string("192.168.0.1", 27015), "192.168.0.1:27015");
     }
 
     #[test]
-    fn u8_lower_upper_test() {
-        assert_eq!(u8_lower_upper(171), (11, 10));
+    fn u8_lower_upper() {
+        assert_eq!(super::u8_lower_upper(171), (11, 10));
     }
 
     #[test]
-    fn error_by_expected_size_test() {
-        assert!(error_by_expected_size(69, 69).is_ok());
-        assert!(error_by_expected_size(69, 68).is_err());
-        assert!(error_by_expected_size(69, 70).is_err());
+    fn error_by_expected_size() {
+        assert!(super::error_by_expected_size(69, 69).is_ok());
+        assert!(super::error_by_expected_size(69, 68).is_err());
+        assert!(super::error_by_expected_size(69, 70).is_err());
     }
 }

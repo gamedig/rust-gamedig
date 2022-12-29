@@ -76,8 +76,6 @@ struct SplitPacket {
 
 impl SplitPacket {
     fn new(app: &App, protocol: u8, buffer: &mut Bufferer) -> GDResult<Self> {
-        let mut pos = 0;
-
         let header = buffer.get_u32()?;
         let id = buffer.get_u32()?;
         let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match app {

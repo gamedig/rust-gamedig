@@ -7,7 +7,7 @@ pub enum Endianess {
 pub struct Bufferer {
     data: Vec<u8>,
     endianess: Endianess,
-    data_position: usize
+    position: usize
 }
 
 impl Bufferer {
@@ -19,74 +19,90 @@ impl Bufferer {
         Bufferer {
             data: data.to_vec(),
             endianess,
-            data_position: 0
+            position: 0
         }
     }
 
+    fn check_size(&self, by: usize) -> bool {
+        by > self.remaining_length()
+    }
+
     pub fn get_u8(&mut self) -> GDResult<u8> {
-        if self.data.len() <= self.data_position {
+        if self.check_size(1) {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u8.".to_string()));
         }
 
-        let value = self.data[self.data_position];
-        self.data_position += 1;
+        let value = self.data[self.position];
+        self.position += 1;
         Ok(value)
     }
 
     pub fn get_u16(&mut self) -> GDResult<u16> {
-        let source_data: [u8; 2] = (&self.data[self.data_position..self.data_position + 1]).try_into()
-            .map_err(|_| GDError::PacketUnderflow("Unexpectedly short packet for getting an u16.".to_string()))?;
+        if self.check_size(2) {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u16.".to_string()));
+        }
+
+        let source_data: [u8; 2] = (&self.data[self.position..self.position + 2]).try_into().unwrap();
 
         let value = match self.endianess {
             Endianess::Little => u16::from_le_bytes(source_data),
             Endianess::Big => u16::from_be_bytes(source_data)
         };
 
-        self.data_position += 2;
+        self.position += 2;
         Ok(value)
     }
     
     pub fn get_u32(&mut self) -> GDResult<u32> {
-        let source_data: [u8; 4] = (&self.data[self.data_position..self.data_position + 3]).try_into()
-            .map_err(|_| GDError::PacketUnderflow("Unexpectedly short packet for getting an u32.".to_string()))?;
+        if self.check_size(4) {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u32.".to_string()));
+        }
+
+        let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
 
         let value = match self.endianess {
             Endianess::Little => u32::from_le_bytes(source_data),
             Endianess::Big => u32::from_be_bytes(source_data)
         };
 
-        self.data_position += 4;
+        self.position += 4;
         Ok(value)
     }
 
     pub fn get_f32(&mut self) -> GDResult<f32> {
-        let source_data: [u8; 4] = (&self.data[self.data_position..self.data_position + 3]).try_into()
-            .map_err(|_| GDError::PacketUnderflow("Unexpectedly short packet for getting an f32.".to_string()))?;
+        if self.check_size(4) {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an f32.".to_string()));
+        }
+
+        let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
 
         let value = match self.endianess {
             Endianess::Little => f32::from_le_bytes(source_data),
             Endianess::Big => f32::from_be_bytes(source_data)
         };
 
-        self.data_position += 4;
+        self.position += 4;
         Ok(value)
     }
 
     pub fn get_u64(&mut self) -> GDResult<u64> {
-        let source_data: [u8; 8] = (&self.data[self.data_position..self.data_position + 7]).try_into()
-            .map_err(|_| GDError::PacketUnderflow("Unexpectedly short packet for getting an u64.".to_string()))?;
+        if self.check_size(8) {
+            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u64.".to_string()));
+        }
+
+        let source_data: [u8; 8] = (&self.data[self.position..self.position + 8]).try_into().unwrap();
         
         let value = match self.endianess {
             Endianess::Little => u64::from_le_bytes(source_data),
             Endianess::Big => u64::from_be_bytes(source_data)
         };
 
-        self.data_position += 8;
+        self.position += 8;
         Ok(value)
     }
 
     pub fn get_string_utf8(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.data_position..];
+        let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 string.".to_string()));
         }
@@ -96,12 +112,12 @@ impl Bufferer {
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
             .map_err(|_| GDError::PacketBad("Badly formatted utf8 string.".to_string()))?.to_string();
 
-        self.data_position += value.len() + 1;
+        self.position += value.len() + 1;
         Ok(value)
     }
 
     pub fn get_string_utf8_unended(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.data_position..];
+        let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 unended string.".to_string()));
         }
@@ -109,12 +125,12 @@ impl Bufferer {
         let value = std::str::from_utf8(&sub_buf)
             .map_err(|_| GDError::PacketBad("Badly formatted utf8 unended string.".to_string()))?.to_string();
 
-        self.data_position += value.len();
+        self.position += value.len();
         Ok(value)
     }
 
     pub fn get_string_utf16(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.data_position..];
+        let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
             return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf16 string.".to_string()));
         }
@@ -128,134 +144,161 @@ impl Bufferer {
         let value = String::from_utf16(&paired_buf)
             .map_err(|_| GDError::PacketBad("Badly formatted utf16 string.".to_string()))?.to_string();
 
-        self.data_position += value.len() * 2;
+        self.position += value.len() * 2;
         Ok(value)
     }
     
     pub fn move_position_ahead(&mut self, by: usize) {
-        self.data_position += by;
+        self.position += by;
     }
 
     pub fn move_position_backward(&mut self, by: usize) {
-        self.data_position -= by;
+        self.position -= by;
     }
     
     pub fn get_data_in_front_of_position(&self) -> Vec<u8> {
-        self.data[self.data_position..].to_vec()
+        self.data[self.position..].to_vec()
+    }
+
+    pub fn data_length(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn remaining_data(&self) -> &[u8] {
+        &self.data[self.position..]
+    }
+
+    pub fn remaining_length(&self) -> usize {
+        self.data.len() - self.position
+    }
+
+    pub fn as_endianess(&self, endianess: Endianess) -> Self {
+        Bufferer {
+            data: self.data.clone(),
+            endianess,
+            position: self.position,
+        }
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn address_and_port_as_string_test() {
-        assert_eq!(address_and_port_as_string("192.168.0.1", 27015), "192.168.0.1:27015");
+    fn get_u8() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72]);
+
+        assert_eq!(buffer.get_u8().unwrap(), 72);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u8().is_err());
     }
 
     #[test]
-    fn u8_lower_upper_test() {
-        assert_eq!(u8_lower_upper(171), (11, 10));
+    fn get_u16_le() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 79]);
+
+        assert_eq!(buffer.get_u16().unwrap(), 20296);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u16().is_err());
     }
 
     #[test]
-    fn get_u8_test() {
-        let data = [72];
-        let mut pos = 0;
-        assert_eq!(buffer::get_u8(&data, &mut pos).unwrap(), 72);
-        assert_eq!(pos, 1);
-        assert!(buffer::get_u8(&data, &mut pos).is_err());
-        assert_eq!(pos, 1);
+    fn get_u16_be() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[29, 72]);
+
+        assert_eq!(buffer.get_u16().unwrap(), 7496);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u16().is_err());
     }
 
     #[test]
-    fn get_u16_le_test() {
-        let data = [72, 29];
-        let mut pos = 0;
-        assert_eq!(buffer::get_u16_le(&data, &mut pos).unwrap(), 7496);
-        assert_eq!(pos, 2);
-        assert!(buffer::get_u16_le(&data, &mut pos).is_err());
-        assert_eq!(pos, 2);
+    fn get_u32_le() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 100]);
+
+        assert_eq!(buffer.get_u32().unwrap(), 1686117704);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u32().is_err());
     }
 
     #[test]
-    fn get_u16_be_test() {
-        let data = [29, 72];
-        let mut pos = 0;
-        assert_eq!(buffer::get_u16_be(&data, &mut pos).unwrap(), 7496);
-        assert_eq!(pos, 2);
-        assert!(buffer::get_u16_be(&data, &mut pos).is_err());
-        assert_eq!(pos, 2);
+    fn get_u32_be() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[72, 29, 128, 100]);
+
+        assert_eq!(buffer.get_u32().unwrap(), 1209892964);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u32().is_err());
     }
 
     #[test]
-    fn get_u32_le_test() {
-        let data = [72, 29, 128, 100];
-        let mut pos = 0;
-        assert_eq!(buffer::get_u32_le(&data, &mut pos).unwrap(), 1686117704);
-        assert_eq!(pos, 4);
-        assert!(buffer::get_u32_le(&data, &mut pos).is_err());
-        assert_eq!(pos, 4);
+    fn get_f32_le() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 100]);
+
+        assert_eq!(buffer.get_f32().unwrap(), 1.8906345e22);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_f32().is_err());
     }
 
     #[test]
-    fn get_f32_le_test() {
-        let data = [72, 29, 128, 100];
-        let mut pos = 0;
-        assert_eq!(buffer::get_f32_le(&data, &mut pos).unwrap(), 1.8906345e22);
-        assert_eq!(pos, 4);
-        assert!(buffer::get_f32_le(&data, &mut pos).is_err());
-        assert_eq!(pos, 4);
+    fn get_f32_be() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[72, 29, 128, 100]);
+
+        assert_eq!(buffer.get_f32().unwrap(), 161281.56);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_f32().is_err());
     }
 
     #[test]
-    fn get_u64_le_test() {
-        let data = [72, 29, 128, 99, 69, 4, 2, 0];
-        let mut pos = 0;
-        assert_eq!(buffer::get_u64_le(&data, &mut pos).unwrap(), 567646022016328);
-        assert_eq!(pos, 8);
-        assert!(buffer::get_u64_le(&data, &mut pos).is_err());
-        assert_eq!(pos, 8);
+    fn get_u64_le() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 99, 69, 4, 2, 0]);
+
+        assert_eq!(buffer.get_u64().unwrap(), 567646022016328);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u64().is_err());
     }
 
     #[test]
-    fn get_string_utf8_le_test() {
-        let data = [72, 101, 108, 108, 111, 0, 72];
-        let mut pos = 0;
-        assert_eq!(buffer::get_string_utf8_le(&data, &mut pos).unwrap(), "Hello");
-        assert_eq!(pos, 6);
-        assert!(buffer::get_string_utf8_le(&data, &mut pos).is_err());
-        assert_eq!(pos, 6);
+    fn get_u64_be() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[72, 29, 128, 99, 69, 4, 2, 0]);
+
+        assert_eq!(buffer.get_u64().unwrap(), 5196450708903428608);
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_u64().is_err());
     }
 
     #[test]
-    fn get_string_utf8_le_unended_test() {
-        let data = [72, 101, 108, 108, 111];
-        let mut pos = 0;
-        assert_eq!(buffer::get_string_utf8_le_unended(&data, &mut pos).unwrap(), "Hello");
-        assert_eq!(pos, 5);
-        assert!(buffer::get_string_utf8_le_unended(&data, &mut pos).is_err());
-        assert_eq!(pos, 5);
+    fn get_string_utf8() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111, 0, 72]);
+
+        assert_eq!(buffer.get_string_utf8().unwrap(), "Hello");
+        assert_eq!(buffer.remaining_length(), 1);
+        assert!(buffer.get_string_utf8().is_err());
     }
 
     #[test]
-    fn get_string_utf16_be_test() {
-        let data = [0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f];
-        let mut pos = 0;
-        assert_eq!(buffer::get_string_utf16_be(&data, &mut pos).unwrap(), "Hello");
-        assert_eq!(pos, 10);
-        assert!(buffer::get_string_utf16_be(&data, &mut pos).is_err());
-        assert_eq!(pos, 10);
+    fn get_string_utf8_unended() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111]);
+
+        assert_eq!(buffer.get_string_utf8_unended().unwrap(), "Hello");
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_string_utf8_unended().is_err());
     }
 
     #[test]
-    fn error_by_expected_size_test() {
-        assert!(error_by_expected_size(69, 69).is_ok());
-        assert!(error_by_expected_size(69, 68).is_err());
-        assert!(error_by_expected_size(69, 70).is_err());
+    fn get_string_utf16_le() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00]);
+
+        assert_eq!(buffer.get_string_utf16().unwrap(), "Hello");
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_string_utf16().is_err());
+    }
+
+    #[test]
+    fn get_string_utf16_be() {
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f]);
+
+        assert_eq!(buffer.get_string_utf16().unwrap(), "Hello");
+        assert_eq!(buffer.remaining_length(), 0);
+        assert!(buffer.get_string_utf16().is_err());
     }
 }
-
- */

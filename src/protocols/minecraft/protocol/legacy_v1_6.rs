@@ -1,8 +1,8 @@
 use crate::{GDError, GDResult};
+use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::minecraft::{LegacyGroup, Response, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
-use crate::utils::buffer::{get_string_utf16_be, get_u16_be, get_u8};
 use crate::utils::error_by_expected_size;
 
 pub struct LegacyV1_6 {
@@ -35,18 +35,18 @@ impl LegacyV1_6 {
         Ok(())
     }
 
-    pub fn is_protocol(buf: &[u8], pos: &mut usize) -> GDResult<bool> {
-        let state = buf[*pos..].starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
+    pub fn is_protocol(buffer: &mut Bufferer) -> GDResult<bool> {
+        let state = buffer.remaining_data().starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
 
         if state {
-            *pos += 6;
+            buffer.move_position_ahead(6);
         }
 
         Ok(state)
     }
 
-    pub fn get_response(buf: &[u8], pos: &mut usize) -> GDResult<Response> {
-        let packet_string = get_string_utf16_be(&buf, pos)?;
+    pub fn get_response(buffer: &mut Bufferer) -> GDResult<Response> {
+        let packet_string = buffer.get_string_utf16()?;
 
         let split: Vec<&str> = packet_string.split("\x00").collect();
         error_by_expected_size(5, split.len())?;
@@ -77,21 +77,20 @@ impl LegacyV1_6 {
     fn get_info(&mut self) -> GDResult<Response> {
         self.send_initial_request()?;
 
-        let buf = self.socket.receive(None)?;
-        let mut pos = 0;
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
 
-        if get_u8(&buf, &mut pos)? != 0xFF {
+        if buffer.get_u8()? != 0xFF {
             return Err(GDError::ProtocolFormat("Expected a certain byte (0xFF) at the begin of the packet.".to_string()));
         }
 
-        let length = get_u16_be(&buf, &mut pos)? * 2;
-        error_by_expected_size((length + 3) as usize, buf.len())?;
+        let length = buffer.get_u16()? * 2;
+        error_by_expected_size((length + 3) as usize, buffer.data_length())?;
 
-        if !LegacyV1_6::is_protocol(&buf, &mut pos)? {
+        if !LegacyV1_6::is_protocol(&mut buffer)? {
             return Err(GDError::ProtocolFormat("Expected certain bytes at the beginning of the packet.".to_string()));
         }
 
-        LegacyV1_6::get_response(&buf, &mut pos)
+        LegacyV1_6::get_response(&mut buffer)
     }
 
     pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {

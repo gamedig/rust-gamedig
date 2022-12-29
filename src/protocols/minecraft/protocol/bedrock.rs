@@ -5,10 +5,10 @@ https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.j
 */
 
 use crate::{GDError, GDResult};
+use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::minecraft::{BedrockResponse, GameMode, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::utils::buffer::{get_string_utf8_le_unended, get_u16_be, get_u64_le, get_u8};
 use crate::utils::error_by_expected_size;
 
 pub struct Bedrock {
@@ -42,34 +42,34 @@ impl Bedrock {
     fn get_info(&mut self) -> GDResult<BedrockResponse> {
         self.send_status_request()?;
 
-        let buf = self.socket.receive(None)?;
-        let mut pos = 0;
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
 
-        if get_u8(&buf, &mut pos)? != 0x1c {
+        if buffer.get_u8()? != 0x1c {
             return Err(GDError::PacketBad("Invalid message id.".to_string()));
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
-        if get_u64_le(&buf, &mut pos)? != 9833440827789222417 {
+        if buffer.get_u64()? != 9833440827789222417 {
             return Err(GDError::PacketBad("Invalid nonce.".to_string()));
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal below
-        pos += 8;
+        buffer.move_position_ahead(8);
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
-        if get_u64_le(&buf, &mut pos)? != 18374403896610127616 {
+        if buffer.get_u64()? != 18374403896610127616 {
             return Err(GDError::PacketBad("Invalid magic (part 1).".to_string()));
         }
 
-        if get_u64_le(&buf, &mut pos)? != 8671175388723805693 {
+        if buffer.get_u64()? != 8671175388723805693 {
             return Err(GDError::PacketBad("Invalid magic (part 2).".to_string()));
         }
 
-        let remaining_length = get_u16_be(&buf, &mut pos)? as usize;
-        error_by_expected_size(remaining_length, buf.len() - pos)?;
+        let remaining_length = buffer.as_endianess(Endianess::Big).get_u16()? as usize;
+        buffer.move_position_ahead(2);
+        error_by_expected_size(remaining_length, buffer.remaining_length())?;
 
-        let binding = get_string_utf8_le_unended(&buf, &mut pos)?;
+        let binding = buffer.get_string_utf8_unended()?;
         let status: Vec<&str> = binding.split(";").collect();
 
         // We must have at least 6 values
