@@ -383,8 +383,8 @@ impl ValveProtocol {
         Ok(players)
     }
 
-    /// Get the server rules's.
-    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
+    /// Get the server's rules.
+    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Vec<ServerRule>> {
         let mut buffer = self.get_request_data(&app, protocol, Request::RULES)?;
 
         let count = buffer.get_u16()? as usize;
@@ -397,7 +397,7 @@ impl ValveProtocol {
             })
         }
 
-        Ok(Some(rules))
+        Ok(rules)
     }
 }
 
@@ -430,7 +430,7 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
         },
         rules: match gather_settings.rules {
             false => None,
-            true => client.get_server_rules(&app, protocol)?
+            true => Some(client.get_server_rules(&app, protocol)?)
         }
     })
 }
