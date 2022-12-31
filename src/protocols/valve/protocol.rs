@@ -178,21 +178,24 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(&mut self, app: &App, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
+    fn get_request_data(&mut self, app: &App, protocol: u8, kind: Request) -> GDResult<Bufferer> {
         let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
 
         self.socket.send(&request_initial_packet)?;
         let packet = self.receive(app, protocol, PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
-            return Ok(packet.payload.clone());
+            let data = packet.payload.clone();
+            return Ok(Bufferer::new_with_data(Endianess::Little, &data));
         }
 
         let challenge = packet.payload;
         let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
 
         self.socket.send(&challenge_packet)?;
-        Ok(self.receive(app, protocol, PACKET_SIZE)?.payload)
+
+        let data = self.receive(app, protocol, PACKET_SIZE)?.payload;
+        Ok(Bufferer::new_with_data(Endianess::Little, &data))
     }
 
     fn get_goldsrc_server_info(buffer: &mut Bufferer) -> GDResult<ServerInfo> {
@@ -256,8 +259,7 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, app: &App) -> GDResult<ServerInfo> {
-        let data = self.get_request_data(&app, 0, Request::INFO)?;
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &data);
+        let mut buffer = self.get_request_data(&app, 0, Request::INFO)?;
         
         if let App::GoldSrc(force) = app {
             if *force {
@@ -356,8 +358,7 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, app: &App, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let data = self.get_request_data(&app, protocol, Request::PLAYERS)?;
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &data);
+        let mut buffer = self.get_request_data(&app, protocol, Request::PLAYERS)?;
 
         let count = buffer.get_u8()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
@@ -384,8 +385,7 @@ impl ValveProtocol {
 
     /// Get the server rules's.
     fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Option<Vec<ServerRule>>> {
-        let data = self.get_request_data(&app, protocol, Request::RULES)?;
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &data);
+        let mut buffer = self.get_request_data(&app, protocol, Request::RULES)?;
 
         let count = buffer.get_u16()? as usize;
         let mut rules: Vec<ServerRule> = Vec::with_capacity(count);
