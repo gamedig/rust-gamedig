@@ -29,8 +29,8 @@ impl Packet {
         Self {
             header: initial.header,
             kind: initial.kind,
-            payload: match initial.kind {
-                0x54 => {
+            payload: match kind {
+                Request::INFO => {
                     initial.payload.extend(challenge);
                     initial.payload
                 },
@@ -42,7 +42,7 @@ impl Packet {
     fn initial(kind: Request) -> Self {
         Self {
             header: 4294967295, //FF FF FF FF
-            kind: kind.clone() as u8,
+            kind: kind as u8,
             payload: match kind {
                 Request::INFO => String::from("Source Engine Query\0").into_bytes(),
                 _ => vec![0xFF, 0xFF, 0xFF, 0xFF]
@@ -179,7 +179,7 @@ impl ValveProtocol {
 
     /// Ask for a specific request only.
     fn get_request_data(&mut self, app: &App, protocol: u8, kind: Request) -> GDResult<Bufferer> {
-        let request_initial_packet = Packet::initial(kind.clone()).to_bytes();
+        let request_initial_packet = Packet::initial(kind).to_bytes();
 
         self.socket.send(&request_initial_packet)?;
         let packet = self.receive(app, protocol, PACKET_SIZE)?;
@@ -190,7 +190,7 @@ impl ValveProtocol {
         }
 
         let challenge = packet.payload;
-        let challenge_packet = Packet::challenge(kind.clone(), challenge).to_bytes();
+        let challenge_packet = Packet::challenge(kind, challenge).to_bytes();
 
         self.socket.send(&challenge_packet)?;
 

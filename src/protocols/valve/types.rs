@@ -130,7 +130,7 @@ pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u1
 }
 
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Copy, Clone)]
 #[repr(u8)]
 pub(crate) enum Request {
     /// Known as `A2S_INFO`
