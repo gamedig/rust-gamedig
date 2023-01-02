@@ -1,7 +1,7 @@
 
 Who knows what the future holds...
 
-# 0.0.7 - ??/??/2022
+# 0.0.7 - 03/01/2023
 ### Changes:
 [Minecraft](https://www.minecraft.com) bedrock edition support.  
 Fix Minecraft legacy v1.6 max/online players count being reversed.  
