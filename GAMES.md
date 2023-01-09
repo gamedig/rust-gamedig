@@ -30,6 +30,7 @@ A supported game is defined as a game that has been successfully tested, other g
 | Arma 2: Operation Arrowhead        | ARMA2OA  | Valve Protocol            | Use the query port.                                                                                                                                                       |
 | Day of Infamy                      | DOI      | Valve Protocol            |                                                                                                                                                                           |
 | Half-Life Deathmatch: Source       | HLDMS    | Valve Protocol            |                                                                                                                                                                           |
+| Risk of Rain 2                     | ROR2     | Valve Protocol            | Use the query port (by default its 27016 (the game connection port + 1)).                                                                                                 |
 
 ## Planned to add support:
 _

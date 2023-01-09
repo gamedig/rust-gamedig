@@ -199,6 +199,8 @@ pub enum SteamID {
     INSS = 581320,
     /// Alien Swarm: Reactive Drop
     ASRD = 563560,
+    /// Risk of Rain 2
+    ROR2 = 632360,
 }
 
 impl SteamID {

@@ -57,3 +57,5 @@ pub mod arma2oa;
 pub mod doi;
 /// Half-Life Deathmatch: Source
 pub mod hldms;
+/// Risk of Rain 2
+pub mod ror2;

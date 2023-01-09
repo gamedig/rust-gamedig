@@ -1,6 +1,6 @@
 
 use std::env;
-use gamedig::{aliens, arma2oa, ase, asrd, cs, cscz, csgo, css, dod, dods, doi, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
+use gamedig::{aliens, arma2oa, ase, asrd, cs, cscz, csgo, css, dod, dods, doi, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ror2, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::App;
@@ -69,6 +69,7 @@ fn main() -> GDResult<()> {
         "arma2oa" => println!("{:#?}", arma2oa::query(ip, port)?),
         "doi" => println!("{:#?}", doi::query(ip, port)?),
         "hldms" => println!("{:#?}", hldms::query(ip, port)?),
+        "ror2" => println!("{:#?}", ror2::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1])
     };
 
