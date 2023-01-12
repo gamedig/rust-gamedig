@@ -10,9 +10,7 @@ documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/CosminPerRam/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-
-[package.metadata]
-msrv = "1.58.1"
+rust-version = "1.56.1"
 
 [dependencies]
 bzip2-rs = "0.1.2" # for compression

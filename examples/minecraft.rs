@@ -6,7 +6,7 @@ fn main() {
     let response = mc::query("127.0.0.1", None);
 
     match response {
-        Err(error) => println!("Couldn't query, error: {error}"),
+        Err(error) => println!("Couldn't query, error: {}", error),
         Ok(r) => println!("{:#?}", r)
     }
 }
