@@ -42,10 +42,8 @@ Response (note that some games have a different structure):
   tv_name: None,
   keywords: Some("alltalk,nocrits"),
   rules: [
-    ServerRule {
-      name: "mp_autoteambalance",
-      value: "1",
-    }
+    "mp_autoteambalance": "1",
+    "mp_maxrounds": "5",
     //....
   ]
 }
