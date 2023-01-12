@@ -398,6 +398,10 @@ impl ValveProtocol {
             rules.insert(name, value);
         }
 
+        if *app == SteamID::ROR2.as_app() {
+            rules.remove("Test");
+        }
+
         Ok(rules)
     }
 }
