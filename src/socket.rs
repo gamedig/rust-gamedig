@@ -1,6 +1,7 @@
 use std::io::{Read, Write};
 use std::net;
-use crate::{GDError, GDResult};
+use crate::GDResult;
+use crate::GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect};
 use crate::protocols::types::TimeoutSettings;
 use crate::utils::address_and_port_as_string;
 
@@ -22,7 +23,7 @@ pub struct TcpSocket {
 impl Socket for TcpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
-        let socket = net::TcpStream::connect(complete_address).map_err(|e| GDError::SocketConnect(e.to_string()))?;
+        let socket = net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?;
 
         Ok(Self {
             socket
@@ -38,13 +39,13 @@ impl Socket for TcpSocket {
     }
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.write(&data).map_err(|e| GDError::PacketSend(e.to_string()))?;
+        self.socket.write(&data).map_err(|_| PacketSend)?;
         Ok(())
     }
 
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
         let mut buf = Vec::with_capacity(size.unwrap_or(DEFAULT_PACKET_SIZE));
-        self.socket.read_to_end(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
+        self.socket.read_to_end(&mut buf).map_err(|_| PacketReceive)?;
 
         Ok(buf)
     }
@@ -58,7 +59,7 @@ pub struct UdpSocket {
 impl Socket for UdpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
-        let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| GDError::SocketBind(e.to_string()))?;
+        let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|_| SocketBind)?;
 
         Ok(Self {
             socket,
@@ -75,13 +76,13 @@ impl Socket for UdpSocket {
     }
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.send_to(&data, &self.complete_address).map_err(|e| GDError::PacketSend(e.to_string()))?;
+        self.socket.send_to(&data, &self.complete_address).map_err(|_| PacketSend)?;
         Ok(())
     }
 
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
         let mut buf: Vec<u8> = vec![0; size.unwrap_or(DEFAULT_PACKET_SIZE)];
-        let (number_of_bytes_received, _) = self.socket.recv_from(&mut buf).map_err(|e| GDError::PacketReceive(e.to_string()))?;
+        let (number_of_bytes_received, _) = self.socket.recv_from(&mut buf).map_err(|_| PacketReceive)?;
 
         Ok(buf[..number_of_bytes_received].to_vec())
     }

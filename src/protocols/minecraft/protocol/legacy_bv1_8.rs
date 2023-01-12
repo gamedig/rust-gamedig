@@ -1,6 +1,7 @@
 
-use crate::{GDError, GDResult};
+use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
+use crate::GDError::{PacketBad, ProtocolFormat};
 use crate::protocols::minecraft::{LegacyGroup, Response, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
@@ -30,7 +31,7 @@ impl LegacyBV1_8 {
         let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
 
         if buffer.get_u8()? != 0xFF {
-            return Err(GDError::ProtocolFormat("Expected 0xFF at the begin of the packet.".to_string()));
+            return Err(ProtocolFormat);
         }
 
         let length = buffer.get_u16()? * 2;
@@ -43,9 +44,9 @@ impl LegacyBV1_8 {
 
         let description = split[0].to_string();
         let online_players = split[1].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
+            .map_err(|_| PacketBad)?;
         let max_players = split[2].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
+            .map_err(|_| PacketBad)?;
 
         Ok(Response {
             version_name: "Beta 1.8+".to_string(),

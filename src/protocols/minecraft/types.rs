@@ -5,8 +5,9 @@ by Jaiden Bernard (2021-2022 - MIT) from
 https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 */
 
-use crate::{GDError, GDResult};
+use crate::GDResult;
 use crate::bufferer::Bufferer;
+use crate::GDError::{PacketBad, UnknownEnumCast};
 
 /// The type of Minecraft Server you want to query.
 #[derive(Debug)]
@@ -118,7 +119,7 @@ impl GameMode {
             "Hardcore" => Ok(GameMode::Hardcore),
             "Spectator" => Ok(GameMode::Spectator),
             "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(GDError::UnknownEnumCast)
+            _ => Err(UnknownEnumCast)
         }
     }
 }
@@ -136,7 +137,7 @@ pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(GDError::PacketBad("Couldn't parse to VarInt: Overflow.".to_string()))
+            return Err(PacketBad)
         }
 
         if (current_byte & msb) == 0 {
@@ -180,7 +181,7 @@ pub(crate) fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
     }
 
     Ok(String::from_utf8(text)
-        .map_err(|_| GDError::PacketBad("Couldn't parse to a Minecraft String.".to_string()))?)
+        .map_err(|_| PacketBad)?)
 }
 
 #[allow(dead_code)]

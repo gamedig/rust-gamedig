@@ -1,11 +1,12 @@
-use crate::{GDResult, GDError};
+use crate::GDResult;
+use crate::GDError::{PacketOverflow, PacketUnderflow};
 
 pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     if size < expected {
-        Err(GDError::PacketUnderflow("Unexpectedly short packet.".to_string()))
+        Err(PacketUnderflow)
     }
     else if size > expected {
-        Err(GDError::PacketOverflow("Unexpectedly long packet.".to_string()))
+        Err(PacketOverflow)
     }
     else {
         Ok(())

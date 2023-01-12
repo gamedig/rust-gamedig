@@ -1,4 +1,5 @@
-use crate::{GDError, GDResult};
+use crate::GDError::AutoQuery;
+use crate::GDResult;
 use crate::protocols::minecraft::{BedrockResponse, LegacyGroup, Response};
 use crate::protocols::minecraft::protocol::bedrock::Bedrock;
 use crate::protocols::minecraft::protocol::java::Java;
@@ -27,7 +28,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         return Ok(response);
     }
 
-    Err(GDError::AutoQuery)
+    Err(AutoQuery)
 }
 
 /// Query a Java Server.
@@ -49,7 +50,7 @@ pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSe
         return Ok(response);
     }
 
-    Err(GDError::AutoQuery)
+    Err(AutoQuery)
 }
 
 /// Query a specific (Java) Legacy Server.

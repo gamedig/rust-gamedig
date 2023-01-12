@@ -1,5 +1,6 @@
 use std::time::Duration;
-use crate::{GDError, GDResult};
+use crate::GDResult;
+use crate::GDError::InvalidInput;
 
 /// Timeout settings for socket operations
 #[derive(Clone)]
@@ -13,13 +14,13 @@ impl TimeoutSettings {
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
-                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings.".to_string()))
+                return Err(InvalidInput)
             }
         }
 
         if let Some(write_duration) = write {
             if write_duration == Duration::new(0, 0) {
-                return Err(GDError::InvalidInput("Can't pass duration 0 to timeout settings.".to_string()))
+                return Err(InvalidInput)
             }
         }
 

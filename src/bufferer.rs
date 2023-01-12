@@ -1,4 +1,5 @@
-use crate::{GDError, GDResult};
+use crate::GDResult;
+use crate::GDError::{PacketBad, PacketUnderflow};
 
 pub enum Endianess {
     Little, Big
@@ -25,7 +26,7 @@ impl Bufferer {
 
     pub fn get_u8(&mut self) -> GDResult<u8> {
         if self.check_size(1) {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u8.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let value = self.data[self.position];
@@ -35,7 +36,7 @@ impl Bufferer {
 
     pub fn get_u16(&mut self) -> GDResult<u16> {
         if self.check_size(2) {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u16.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let source_data: [u8; 2] = (&self.data[self.position..self.position + 2]).try_into().unwrap();
@@ -51,7 +52,7 @@ impl Bufferer {
     
     pub fn get_u32(&mut self) -> GDResult<u32> {
         if self.check_size(4) {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u32.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
@@ -67,7 +68,7 @@ impl Bufferer {
 
     pub fn get_f32(&mut self) -> GDResult<f32> {
         if self.check_size(4) {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an f32.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
@@ -83,7 +84,7 @@ impl Bufferer {
 
     pub fn get_u64(&mut self) -> GDResult<u64> {
         if self.check_size(8) {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an u64.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let source_data: [u8; 8] = (&self.data[self.position..self.position + 8]).try_into().unwrap();
@@ -100,13 +101,13 @@ impl Bufferer {
     pub fn get_string_utf8(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 string.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let first_null_position = sub_buf.iter().position(|&x| x == 0)
-            .ok_or(GDError::PacketBad("Unexpectedly formatted packet for getting an utf8 string.".to_string()))?;
+            .ok_or(PacketBad)?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
-            .map_err(|_| GDError::PacketBad("Badly formatted utf8 string.".to_string()))?.to_string();
+            .map_err(|_| PacketBad)?.to_string();
 
         self.position += value.len() + 1;
         Ok(value)
@@ -115,11 +116,11 @@ impl Bufferer {
     pub fn get_string_utf8_unended(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf8 unended string.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let value = std::str::from_utf8(&sub_buf)
-            .map_err(|_| GDError::PacketBad("Badly formatted utf8 unended string.".to_string()))?.to_string();
+            .map_err(|_| PacketBad)?.to_string();
 
         self.position += value.len();
         Ok(value)
@@ -128,7 +129,7 @@ impl Bufferer {
     pub fn get_string_utf16(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
         if sub_buf.len() == 0 {
-            return Err(GDError::PacketUnderflow("Unexpectedly short packet for getting an utf16 string.".to_string()));
+            return Err(PacketUnderflow);
         }
 
         let paired_buf: Vec<u16> = sub_buf.chunks_exact(2)
@@ -138,7 +139,7 @@ impl Bufferer {
         }).collect();
 
         let value = String::from_utf16(&paired_buf)
-            .map_err(|_| GDError::PacketBad("Badly formatted utf16 string.".to_string()))?.to_string();
+            .map_err(|_| PacketBad)?.to_string();
 
         self.position += value.len() * 2;
         Ok(value)

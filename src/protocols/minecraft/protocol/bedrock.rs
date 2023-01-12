@@ -4,8 +4,9 @@ This file has code that has been documented by the NodeJS GameDig library (MIT) 
 https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
 */
 
-use crate::{GDError, GDResult};
+use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
+use crate::GDError::{PacketBad, TypeParse};
 use crate::protocols::minecraft::{BedrockResponse, GameMode, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
@@ -45,12 +46,12 @@ impl Bedrock {
         let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
 
         if buffer.get_u8()? != 0x1c {
-            return Err(GDError::PacketBad("Invalid message id.".to_string()));
+            return Err(PacketBad);
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
         if buffer.get_u64()? != 9833440827789222417 {
-            return Err(GDError::PacketBad("Invalid nonce.".to_string()));
+            return Err(PacketBad);
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal below
@@ -58,11 +59,11 @@ impl Bedrock {
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
         if buffer.get_u64()? != 18374403896610127616 {
-            return Err(GDError::PacketBad("Invalid magic (part 1).".to_string()));
+            return Err(PacketBad);
         }
 
         if buffer.get_u64()? != 8671175388723805693 {
-            return Err(GDError::PacketBad("Invalid magic (part 2).".to_string()));
+            return Err(PacketBad);
         }
 
         let remaining_length = buffer.as_endianess(Endianess::Big).get_u16()? as usize;
@@ -74,7 +75,7 @@ impl Bedrock {
 
         // We must have at least 6 values
         if status.len() < 6 {
-            return Err(GDError::PacketBad("Not enough status parts.".to_string()));
+            return Err(PacketBad);
         }
 
         Ok(BedrockResponse {
@@ -82,8 +83,8 @@ impl Bedrock {
             name: status[1].to_string(),
             version_name: status[3].to_string(),
             version_protocol:  status[2].to_string(),
-            max_players: status[5].parse().map_err(|_| GDError::TypeParse("couldn't parse.".to_string()))?,
-            online_players: status[4].parse().map_err(|_| GDError::TypeParse("couldn't parse.".to_string()))?,
+            max_players: status[5].parse().map_err(|_| TypeParse)?,
+            online_players: status[4].parse().map_err(|_| TypeParse)?,
             id: status.get(6).and_then(|v| Some(v.to_string())),
             map: status.get(7).and_then(|v| Some(v.to_string())),
             game_mode: match status.get(8) {

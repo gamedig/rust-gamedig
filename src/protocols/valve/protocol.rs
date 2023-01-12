@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use bzip2_rs::decoder::Decoder;
-use crate::{GDError, GDResult};
+use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
+use crate::GDError::{BadGame, Decompress, UnknownEnumCast};
 use crate::protocols::types::TimeoutSettings;
 use crate::protocols::valve::{App, ModData, SteamID};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, TheShip};
@@ -116,18 +117,18 @@ impl SplitPacket {
     fn get_payload(&self) -> GDResult<Vec<u8>> {
         if self.compressed {
             let mut decoder = Decoder::new();
-            decoder.write(&self.payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+            decoder.write(&self.payload).map_err(|_| Decompress)?;
 
             let decompressed_size = self.decompressed_size.unwrap() as usize;
 
             let mut decompressed_payload = Vec::with_capacity(decompressed_size);
-            decoder.read(&mut decompressed_payload).map_err(|e| GDError::Decompress(e.to_string()))?;
+            decoder.read(&mut decompressed_payload).map_err(|_| Decompress)?;
 
             if decompressed_payload.len() != decompressed_size {
-                Err(GDError::Decompress("The decompressed payload size doesn't match the expected one.".to_string()))
+                Err(Decompress)
             }
             else if crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap() {
-                Err(GDError::Decompress("The decompressed crc32 hash does not match the expected one.".to_string()))
+                Err(Decompress)
             }
             else {
                 Ok(decompressed_payload)
@@ -213,12 +214,12 @@ impl ValveProtocol {
             68 => Server::Dedicated, //'D'
             76 => Server::NonDedicated, //'L'
             80 => Server::TV, //'P'
-            _ => Err(GDError::UnknownEnumCast)?
+            _ => Err(UnknownEnumCast)?
         };
         let environment_type = match buffer.get_u8()? {
             76 => Environment::Linux, //'L'
             87 => Environment::Windows, //'W'
-            _ => Err(GDError::UnknownEnumCast)?
+            _ => Err(UnknownEnumCast)?
         };
         let has_password = buffer.get_u8()? == 1;
         let is_mod = buffer.get_u8()? == 1;
@@ -281,13 +282,13 @@ impl ValveProtocol {
             100 => Server::Dedicated, //'d'
             108 => Server::NonDedicated, //'l'
             112 => Server::TV, //'p'
-            _ => Err(GDError::UnknownEnumCast)?
+            _ => Err(UnknownEnumCast)?
         };
         let environment_type = match buffer.get_u8()? {
             108 => Environment::Linux, //'l'
             119 => Environment::Windows, //'w'
             109 | 111 => Environment::Mac, //'m' or 'o'
-            _ => Err(GDError::UnknownEnumCast)?
+            _ => Err(UnknownEnumCast)?
         };
         let has_password = buffer.get_u8()? == 1;
         let vac_secured = buffer.get_u8()? == 1;
@@ -432,7 +433,7 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
     if let App::Source(x) = &app {
         if let Some(appid) = x {
             if *appid != info.appid {
-                return Err(GDError::BadGame(format!("Expected {}, found {} instead!", *appid, info.appid)));
+                return Err(BadGame);
             }
         }
     }

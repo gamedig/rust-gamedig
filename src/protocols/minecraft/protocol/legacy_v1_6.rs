@@ -1,4 +1,5 @@
-use crate::{GDError, GDResult};
+use crate::GDResult;
+use crate::GDError::{PacketBad, ProtocolFormat};
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::minecraft::{LegacyGroup, Response, Server};
 use crate::protocols::types::TimeoutSettings;
@@ -52,13 +53,13 @@ impl LegacyV1_6 {
         error_by_expected_size(5, split.len())?;
 
         let version_protocol = split[0].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
+            .map_err(|_| PacketBad)?;
         let version_name = split[1].to_string();
         let description = split[2].to_string();
         let online_players = split[3].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
+            .map_err(|_| PacketBad)?;
         let max_players = split[4].parse()
-            .map_err(|_| GDError::PacketBad("Failed to parse to expected int.".to_string()))?;
+            .map_err(|_| PacketBad)?;
 
         Ok(Response {
             version_name,
@@ -80,14 +81,14 @@ impl LegacyV1_6 {
         let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
 
         if buffer.get_u8()? != 0xFF {
-            return Err(GDError::ProtocolFormat("Expected a certain byte (0xFF) at the begin of the packet.".to_string()));
+            return Err(ProtocolFormat);
         }
 
         let length = buffer.get_u16()? * 2;
         error_by_expected_size((length + 3) as usize, buffer.data_length())?;
 
         if !LegacyV1_6::is_protocol(&mut buffer)? {
-            return Err(GDError::ProtocolFormat("Expected certain bytes at the beginning of the packet.".to_string()));
+            return Err(ProtocolFormat);
         }
 
         LegacyV1_6::get_response(&mut buffer)
