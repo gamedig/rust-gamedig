@@ -3,10 +3,11 @@ Who knows what the future holds...
 
 # X - DD/MM/YYYY
 ### Changes:
-[Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.
+Games: [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.  
+Valve Protocol: Players with no name are no more added to the `players_details` field.
 
 ### Breaking:
-Valve Protocol - Rules is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and value fields).  
+Valve Protocol: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).  
 
 # 0.0.7 - 03/01/2023
 ### Changes:
