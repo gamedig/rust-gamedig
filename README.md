@@ -2,7 +2,7 @@
 
 **rust-GameDig** is a games/services server query library that can fetch the availability and/or details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
-MSRV is `1.58.1` and the code is cross-platform.
+MSRV is `1.56.1` and the code is cross-platform.
 
 ## Games/Services/Protocols List
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
