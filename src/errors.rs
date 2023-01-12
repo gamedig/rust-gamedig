@@ -1,10 +1,12 @@
 
 //! The library's possible errors.
+use std::fmt;
+use std::{fmt::Formatter, error::Error};
 
 /// Result of Type and GDError.
 pub type GDResult<T> = Result<T, GDError>;
 
-/// GameDigError.
+/// GameDig Error.
 #[derive(Debug, Clone)]
 pub enum GDError {
     /// The received packet was bigger than the buffer size.
@@ -37,4 +39,12 @@ pub enum GDError {
     JsonParse,
     /// Couldn't parse a value.
     TypeParse,
+}
+
+impl Error for GDError {}
+
+impl fmt::Display for GDError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
