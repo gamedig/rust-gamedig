@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 
 /// The type of the server.
 #[derive(Debug)]
@@ -20,7 +21,7 @@ pub enum Environment {
 pub struct Response {
     pub info: ServerInfo,
     pub players: Option<Vec<ServerPlayer>>,
-    pub rules: Option<Vec<ServerRule>>
+    pub rules: Option<HashMap<String, String>>
 }
 
 /// General server information's.
@@ -77,13 +78,6 @@ pub struct ServerPlayer {
     pub deaths: Option<u32>, //the_ship
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): money amount
     pub money: Option<u32>, //the_ship
-}
-
-/// A server rule.
-#[derive(Debug)]
-pub struct ServerRule {
-    pub name: String,
-    pub value: String
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
@@ -244,8 +238,9 @@ impl Default for GatheringSettings {
 /// Generic response types that are used by many games, they are the protocol ones, but without the
 /// unnecessary bits (example: the **The Ship**-only fields).
 pub mod game {
+    use std::collections::HashMap;
     use crate::protocols::valve::types::get_optional_extracted_data;
-    use super::{Server, ServerRule, ServerPlayer};
+    use super::{Server, ServerPlayer};
 
     #[derive(Debug)]
     pub struct Player {
@@ -283,7 +278,7 @@ pub mod game {
         pub tv_port: Option<u16>,
         pub tv_name: Option<String>,
         pub keywords: Option<String>,
-        pub rules: Vec<ServerRule>
+        pub rules: HashMap<String, String>
     }
 
     impl Response {
@@ -308,9 +303,8 @@ pub mod game {
                 tv_port,
                 tv_name,
                 keywords,
-                rules: response.rules.unwrap_or(vec![])
+                rules: response.rules.unwrap_or(HashMap::new())
             }
         }
     }
 }
-

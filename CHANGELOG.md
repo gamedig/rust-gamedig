@@ -6,7 +6,7 @@ Who knows what the future holds...
 [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.
 
 ### Breaking:
-Nothing (yet).
+Valve Protocol - Rules is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and value fields).  
 
 # 0.0.7 - 03/01/2023
 ### Changes:

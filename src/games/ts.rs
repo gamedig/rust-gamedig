@@ -1,6 +1,7 @@
+use std::collections::HashMap;
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{Server, ServerRule, ServerPlayer, get_optional_extracted_data, SteamID};
+use crate::protocols::valve::{Server, ServerPlayer, get_optional_extracted_data, SteamID};
 
 #[derive(Debug)]
 pub struct TheShipPlayer {
@@ -42,7 +43,7 @@ pub struct Response {
     pub tv_port: Option<u16>,
     pub tv_name: Option<String>,
     pub keywords: Option<String>,
-    pub rules: Vec<ServerRule>,
+    pub rules: HashMap<String, String>,
     pub mode: u8,
     pub witnesses: u8,
     pub duration: u8

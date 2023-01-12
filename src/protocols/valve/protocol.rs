@@ -1,9 +1,10 @@
+use std::collections::HashMap;
 use bzip2_rs::decoder::Decoder;
 use crate::{GDError, GDResult};
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::types::TimeoutSettings;
 use crate::protocols::valve::{App, ModData, SteamID};
-use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, ServerRule, TheShip};
+use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, TheShip};
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::u8_lower_upper;
 
@@ -384,17 +385,17 @@ impl ValveProtocol {
     }
 
     /// Get the server's rules.
-    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<Vec<ServerRule>> {
+    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<HashMap<String, String>> {
         let mut buffer = self.get_request_data(&app, protocol, Request::RULES)?;
 
         let count = buffer.get_u16()? as usize;
-        let mut rules: Vec<ServerRule> = Vec::with_capacity(count);
+        let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
 
         for _ in 0..count {
-            rules.push(ServerRule {
-                name: buffer.get_string_utf8()?,
-                value: buffer.get_string_utf8()?
-            })
+            let name = buffer.get_string_utf8()?;
+            let value = buffer.get_string_utf8()?;
+
+            rules.insert(name, value);
         }
 
         Ok(rules)
