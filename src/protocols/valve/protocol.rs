@@ -430,10 +430,10 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
     let info = client.get_server_info(&app)?;
     let protocol = info.protocol;
 
-    if let App::Source(x) = &app {
-        if let Some(appid) = x {
+    if let App::Source(source_app) = &app {
+        if let Some(appid) = source_app {
             if *appid != info.appid {
-                return Err(BadGame);
+                return Err(BadGame(format!("AppId: {appid}")));
             }
         }
     }

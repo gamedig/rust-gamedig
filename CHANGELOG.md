@@ -8,6 +8,7 @@ Valve Protocol: Players with no name are no more added to the `players_details` 
 
 ### Breaking:
 Valve Protocol: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).  
+Errors: Besides the `BadGame` error, now no other errors returns details about what happened (as it was quite pointless).
 
 # 0.0.7 - 03/01/2023
 ### Changes:

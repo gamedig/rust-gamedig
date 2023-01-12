@@ -19,22 +19,22 @@ pub enum GDError {
     PacketReceive,
     /// Couldn't decompress data.
     Decompress,
-    /// Unknown cast while translating a value to an enum.
-    UnknownEnumCast,
-    /// Invalid input.
-    InvalidInput,
     /// Couldn't create a socket connection.
     SocketConnect,
     /// Couldn't bind a socket.
     SocketBind,
-    /// Couldn't parse a json string.
-    JsonParse,
-    /// The server queried is not from the queried game.
-    BadGame,
+    /// Invalid input.
+    InvalidInput,
+    /// The server queried is not the queried game server.
+    BadGame(String),
     /// Couldn't automatically query.
     AutoQuery,
     /// A protocol-defined expected format was not met.
     ProtocolFormat,
+    /// Couldn't cast a value to an enum.
+    UnknownEnumCast,
+    /// Couldn't parse a json string.
+    JsonParse,
     /// Couldn't parse a value.
     TypeParse,
 }
