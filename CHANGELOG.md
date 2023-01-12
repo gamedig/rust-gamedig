@@ -3,12 +3,24 @@ Who knows what the future holds...
 
 # X - DD/MM/YYYY
 ### Changes:
-Games: [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.  
-Valve Protocol: Players with no name are no more added to the `players_details` field.
+Games: 
+- [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.
+
+Protocols:
+- Valve: Players with no name are no more added to the `players_details` field.
+
+Crate: 
+- `MSRV` is now `1.56.1` (from `1.58.1`)
 
 ### Breaking:
-Valve Protocol: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).  
-Errors: Besides the `BadGame` error, now no other errors returns details about what happened (as it was quite pointless).
+Protocols:
+- Valve: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).
+
+Errors: 
+- Besides the `BadGame` error, now no other errors returns details about what happened (as it was quite pointless).  
+
+Crate: 
+- `package.metadata.msrv` has been replaced with `package.rust-version`
 
 # 0.0.7 - 03/01/2023
 ### Changes:
