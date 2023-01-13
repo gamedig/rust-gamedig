@@ -433,7 +433,7 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
     if let App::Source(source_app) = &app {
         if let Some(appid) = source_app {
             if *appid != info.appid {
-                return Err(BadGame(format!("AppId: {}", appid)));
+                return Err(BadGame(format!("AppId: {}", info.appid)));
             }
         }
     }
