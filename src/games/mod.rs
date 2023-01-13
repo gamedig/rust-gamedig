@@ -59,3 +59,5 @@ pub mod doi;
 pub mod hldms;
 /// Risk of Rain 2
 pub mod ror2;
+/// Battalion 1944
+pub mod bat1944;

@@ -5,6 +5,7 @@ Who knows what the future holds...
 ### Changes:
 Games: 
 - [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.
+- [Battalion 1944](https://store.steampowered.com/app/489940/BATTALION_Legacy/) support.
 
 Protocols:
 - Valve: Players with no name are no more added to the `players_details` field.

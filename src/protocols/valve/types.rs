@@ -189,6 +189,8 @@ pub enum SteamID {
     UNTURNED = 304930,
     /// ARK: Survival Evolved
     ASE = 346110,
+    /// Battalion 1944
+    BAT1944 = 489940,
     /// Insurgency: Sandstorm
     INSS = 581320,
     /// Alien Swarm: Reactive Drop
