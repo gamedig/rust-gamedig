@@ -40,11 +40,11 @@ pub struct ServerInfo {
     /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
     pub appid: u32,
     /// Number of players on the server.
-    pub players: u8,
+    pub players_online: u8,
     /// Maximum number of players the server reports it can hold.
-    pub max_players: u8,
+    pub players_maximum: u8,
     /// Number of bots on the server.
-    pub bots: u8,
+    pub players_bots: u8,
     /// Dedicated, NonDedicated or SourceTV
     pub server_type: Server,
     /// The Operating System that the server is on.
@@ -265,10 +265,10 @@ pub mod game {
         pub name: String,
         pub map: String,
         pub game: String,
-        pub players: u8,
+        pub players_online: u8,
         pub players_details: Vec<Player>,
-        pub max_players: u8,
-        pub bots: u8,
+        pub players_maximum: u8,
+        pub players_bots: u8,
         pub server_type: Server,
         pub has_password: bool,
         pub vac_secured: bool,
@@ -290,10 +290,10 @@ pub mod game {
                 name: response.info.name,
                 map: response.info.map,
                 game: response.info.game,
-                players: response.info.players,
+                players_online: response.info.players_online,
                 players_details: response.players.unwrap_or(vec![]).iter().map(Player::from_valve_response).collect(),
-                max_players: response.info.max_players,
-                bots: response.info.bots,
+                players_maximum: response.info.players_maximum,
+                players_bots: response.info.players_bots,
                 server_type: response.info.server_type,
                 has_password: response.info.has_password,
                 vac_secured: response.info.vac_secured,

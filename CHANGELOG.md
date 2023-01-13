@@ -15,6 +15,8 @@ Crate:
 ### Breaking:
 Protocols:
 - Valve: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).
+- Valve: `ServerInfo`'s `players`, `max_players` and `bots` have been renamed to `players_online`, `players_maximum` and `players_bots` respectively.  
+- Valve: `Response`'s `players`, `max_players` and `bots` have been renamed to `players_online`, `players_maximum` and `players_bots` respectively.
 
 Errors: 
 - Besides the `BadGame` error, now no other errors returns details about what happened (as it was quite pointless).  
