@@ -70,7 +70,7 @@ fn main() -> GDResult<()> {
         "doi" => println!("{:#?}", doi::query(ip, port)?),
         "hldms" => println!("{:#?}", hldms::query(ip, port)?),
         "ror2" => println!("{:#?}", ror2::query(ip, port)?),
-        "bat1944" => println!("{:?}", bat1944::query(ip, port)?),
+        "bat1944" => println!("{:#?}", bat1944::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1])
     };
 
