@@ -7,6 +7,7 @@ Games:
 - [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.
 - [Battalion 1944](https://store.steampowered.com/app/489940/BATTALION_Legacy/) support. 
 - [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/) support.
+- [Project Zomboid](https://store.steampowered.com/app/108600/Project_Zomboid/) support.
 
 Protocols:
 - Valve: Players with no name are no more added to the `players_details` field.

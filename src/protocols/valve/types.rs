@@ -173,6 +173,8 @@ pub enum SteamID {
     INSMIC = 17700,
     /// ARMA 2: Operation Arrowhead
     ARMA2OA = 33930,
+    /// Project Zomboid
+    PZ = 108600,
     /// Insurgency
     INS = 222880,
     /// Sven Co-op

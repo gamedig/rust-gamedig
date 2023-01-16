@@ -63,3 +63,5 @@ pub mod ror2;
 pub mod bat1944;
 /// Black Mesa
 pub mod bm;
+/// Project Zomboid
+pub mod pz;
