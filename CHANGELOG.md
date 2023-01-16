@@ -11,6 +11,7 @@ Games:
 
 Protocols:
 - Valve: Players with no name are no more added to the `players_details` field.
+- Valve: Split packets are now appending in the correct order.
 
 Crate: 
 - `MSRV` is now `1.56.1` (was `1.58.1`)

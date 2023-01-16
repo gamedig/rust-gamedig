@@ -163,11 +163,18 @@ impl ValveProtocol {
         buffer.move_position_backward(1);
         if header == 0xFE { //the packet is split
             let mut main_packet = SplitPacket::new(&app, protocol, &mut buffer)?;
+            let mut chunk_packets = Vec::with_capacity((main_packet.total - 1) as usize);
 
             for _ in 1..main_packet.total {
                 let new_data = self.socket.receive(Some(buffer_size))?;
                 buffer = Bufferer::new_with_data(Endianess::Little, &new_data);
                 let chunk_packet = SplitPacket::new(&app, protocol, &mut buffer)?;
+                chunk_packets.push(chunk_packet);
+            }
+
+            chunk_packets.sort_by(|a, b| a.number.cmp(&b.number));
+
+            for chunk_packet in chunk_packets {
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
