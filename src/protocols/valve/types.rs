@@ -179,6 +179,8 @@ pub enum SteamID {
     SC = 225840,
     /// Rust
     RUST = 252490,
+    /// Black Mesa
+    BM = 362890,
     /// Day of Infamy
     DOI = 447820,
     /// The Forrest

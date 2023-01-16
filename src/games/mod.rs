@@ -61,3 +61,5 @@ pub mod hldms;
 pub mod ror2;
 /// Battalion 1944
 pub mod bat1944;
+/// Black Mesa
+pub mod bm;
