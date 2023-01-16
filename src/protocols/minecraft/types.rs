@@ -43,7 +43,7 @@ pub struct Player {
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2).
+    /// Version protocol, example: 760 (for 1.19.2). Note that for versions below 1.6 this field is always -1.
     pub version_protocol: i32,
     /// Number of server capacity.
     pub players_maximum: u32,
@@ -66,25 +66,25 @@ pub struct JavaResponse {
 /// A Bedrock Edition query response.
 #[derive(Debug)]
 pub struct BedrockResponse {
-    /// Server edition.
+    /// Server's edition.
     pub edition: String,
-    /// Server name.
+    /// Server's name.
     pub name: String,
     /// Version name, example: "1.19.40".
     pub version_name: String,
     /// Version protocol, example: 760 (for 1.19.2).
     pub version_protocol: String,
-    /// Number of server capacity.
+    /// Maximum number of players the server reports it can hold.
     pub players_maximum: u32,
-    /// Number of online players.
+    /// Number of players on the server.
     pub players_online: u32,
     /// Server id.
     pub id: Option<String>,
-    /// The map.
+    /// Currently running map's name.
     pub map: Option<String>,
-    /// Game mode.
+    /// Current game mode.
     pub game_mode: Option<GameMode>,
-    /// Tell's the server type.
+    /// Tells the server type.
     pub server_type: Server
 }
 

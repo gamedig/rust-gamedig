@@ -35,7 +35,7 @@ pub struct ServerInfo {
     pub map: String,
     /// Name of the folder containing the game files.
     pub folder: String,
-    /// Full name of the game.
+    /// The name of the game.
     pub game: String,
     /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
     pub appid: u32,
@@ -72,7 +72,7 @@ pub struct ServerPlayer {
     pub name: String,
     /// General score.
     pub score: u32,
-    /// How long they've been on the server for.
+    /// How long a player has been in the server (seconds).
     pub duration: f32,
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): deaths count
     pub deaths: Option<u32>, //the_ship
@@ -95,11 +95,11 @@ pub struct ExtraData {
     pub port: Option<u16>,
     /// Server's SteamID.
     pub steam_id: Option<u64>,
-    /// Spectator port number for SourceTV.
+    /// SourceTV's port.
     pub tv_port: Option<u16>,
-    /// Name of the spectator server for SourceTV.
+    /// SourceTV's name.
     pub tv_name: Option<String>,
-    /// Tags that describe the game according to the server.
+    /// Keywords that describe the server according to it.
     pub keywords: Option<String>,
     /// The server's 64-bit GameID.
     pub game_id: Option<u64>
@@ -250,10 +250,14 @@ pub mod game {
     use crate::protocols::valve::types::get_optional_extracted_data;
     use super::{Server, ServerPlayer};
 
+    /// A player's details.
     #[derive(Debug)]
     pub struct Player {
+        /// Player's name.
         pub name: String,
+        /// Player's score.
         pub score: u32,
+        /// How long a player has been in the server (seconds).
         pub duration: f32
     }
 
@@ -267,25 +271,44 @@ pub mod game {
         }
     }
 
+    /// The query response.
     #[derive(Debug)]
     pub struct Response {
+        /// Protocol used by the server.
         pub protocol: u8,
+        /// Name of the server.
         pub name: String,
+        /// Map name.
         pub map: String,
+        /// The name of the game.
         pub game: String,
+        /// Number of players on the server.
         pub players_online: u8,
+        /// Details about the server's players (not all players necessarily).
         pub players_details: Vec<Player>,
+        /// Maximum number of players the server reports it can hold.
         pub players_maximum: u8,
+        /// Number of bots on the server.
         pub players_bots: u8,
+        /// Dedicated, NonDedicated or SourceTV
         pub server_type: Server,
+        /// Indicates whether the server requires a password.
         pub has_password: bool,
+        /// Indicated whether the server uses VAC.
         pub vac_secured: bool,
+        /// Version of the game installed on the server.
         pub version: String,
+        /// The server's reported connection port.
         pub port: Option<u16>,
+        /// Server's SteamID.
         pub steam_id: Option<u64>,
+        /// SourceTV's connection port.
         pub tv_port: Option<u16>,
+        /// SourceTV's name.
         pub tv_name: Option<String>,
+        /// Keywords that describe the server according to it.
         pub keywords: Option<String>,
+        /// Server's rules.
         pub rules: HashMap<String, String>
     }
 

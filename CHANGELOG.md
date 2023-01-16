@@ -22,6 +22,7 @@ Protocols:
 - Valve: The rules field is now a `HashMap<String, String>` instead of a `Vec<ServerRule>` (where the `ServerRule` structure had a name and a value fields).
 - Valve: Structs that contained the `players`, `max_players` and `bots` fields have been renamed to `players_online`, `players_maximum` and `players_bots` respectively.
 - Minecraft: Structs that contained the `online_players`, `max_players` and `sample_players` fields have been renamed to `players_online`, `players_maximum` and `players_sample` respectively.
+- Minecraft: The Java query response struct named `Response` has been renamed to `JavaResponse`.
 
 Errors: 
 - Besides the `BadGame` error, now no other errors returns details about what happened (as it was quite pointless).  
