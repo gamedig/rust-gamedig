@@ -1,4 +1,5 @@
-A supported game is defined as a game that has been successfully tested, other games that use the implemented protocols might work too, but it isn't guaranteed.
+A supported game is defined as a game that has been successfully tested, other games that use the implemented protocols might work too, but it isn't guaranteed.  
+Beware of the `Notes` column, as it contains information about query port offsets or other query requirements.
 
 # Supported games:
 | Game                               | Use name | Protocol                  | Notes                                                                                                                                                                     |

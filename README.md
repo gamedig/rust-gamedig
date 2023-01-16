@@ -8,13 +8,13 @@ MSRV is `1.56.1` and the code is cross-platform.
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
 ## Usage
-Just pick a game/service/protocol, provide the ip and the port (can be optional) (some use a special query port) then query on it.  
+Just pick a game/service/protocol, provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
 Team Fortress 2 query example:
 ```rust
 use gamedig::games::tf2;
 
 fn main() {
-    let response = tf2::query("127.0.0.1", None); //or Some(27015), None is the default protocol port
+    let response = tf2::query("127.0.0.1", None); // None is the default port (which is 27015), could also be Some(27015)
     match response {
         Err(error) => println!("Couldn't query, error: {error}"),
         Ok(r) => println!("{:#?}", r)
