@@ -169,6 +169,8 @@ pub enum SteamID {
     TS = 2400,
     /// Garry's Mod
     GM = 4000,
+    /// Age of Chivalry
+    AOC = 17510,
     /// Insurgency: Modern Infantry Combat
     INSMIC = 17700,
     /// ARMA 2: Operation Arrowhead

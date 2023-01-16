@@ -65,3 +65,5 @@ pub mod bat1944;
 pub mod bm;
 /// Project Zomboid
 pub mod pz;
+/// Age of Chivalry
+pub mod aoc;

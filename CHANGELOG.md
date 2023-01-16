@@ -8,6 +8,7 @@ Games:
 - [Battalion 1944](https://store.steampowered.com/app/489940/BATTALION_Legacy/) support. 
 - [Black Mesa](https://store.steampowered.com/app/362890/Black_Mesa/) support.
 - [Project Zomboid](https://store.steampowered.com/app/108600/Project_Zomboid/) support.
+- [Age of Chivalry](https://store.steampowered.com/app/17510/Age_of_Chivalry/) support.
 
 Protocols:
 - Valve: Players with no name are no more added to the `players_details` field.

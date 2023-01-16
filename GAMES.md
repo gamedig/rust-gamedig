@@ -34,6 +34,7 @@ A supported game is defined as a game that has been successfully tested, other g
 | Battalion 1944                     | BAT1944  | Valve Protocol            | Query port offset: 3. It is strongly recommended to also query the rules, as the game sends server information's in them.                                                 |
 | Black Mesa                         | BM       | Valve Protocol            |                                                                                                                                                                           |
 | Project Zomboid                    | PZ       | Valve Protocol            |                                                                                                                                                                           |
+| Age of Chivalry                    | AOC      | Valve Protocol            |                                                                                                                                                                           |
 
 ## Planned to add support:
 _
