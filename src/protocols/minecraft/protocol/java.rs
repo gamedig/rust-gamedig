@@ -110,9 +110,9 @@ impl Java {
         Ok(Response {
             version_name,
             version_protocol,
-            max_players,
-            online_players,
-            sample_players,
+            players_maximum: max_players,
+            players_online: online_players,
+            players_sample: sample_players,
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),

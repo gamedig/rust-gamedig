@@ -83,8 +83,8 @@ impl Bedrock {
             name: status[1].to_string(),
             version_name: status[3].to_string(),
             version_protocol:  status[2].to_string(),
-            max_players: status[5].parse().map_err(|_| TypeParse)?,
-            online_players: status[4].parse().map_err(|_| TypeParse)?,
+            players_maximum: status[5].parse().map_err(|_| TypeParse)?,
+            players_online: status[4].parse().map_err(|_| TypeParse)?,
             id: status.get(6).and_then(|v| Some(v.to_string())),
             map: status.get(7).and_then(|v| Some(v.to_string())),
             game_mode: match status.get(8) {

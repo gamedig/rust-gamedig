@@ -64,9 +64,9 @@ impl LegacyV1_6 {
         Ok(Response {
             version_name,
             version_protocol,
-            max_players,
-            online_players,
-            sample_players: None,
+            players_maximum: max_players,
+            players_online: online_players,
+            players_sample: None,
             description,
             favicon: None,
             previews_chat: None,

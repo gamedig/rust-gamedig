@@ -46,11 +46,11 @@ pub struct Response {
     /// Version protocol, example: 760 (for 1.19.2).
     pub version_protocol: i32,
     /// Number of server capacity.
-    pub max_players: u32,
+    pub players_maximum: u32,
     /// Number of online players.
-    pub online_players: u32,
+    pub players_online: u32,
     /// Some online players (can be missing).
-    pub sample_players: Option<Vec<Player>>,
+    pub players_sample: Option<Vec<Player>>,
     /// Server's description or MOTD.
     pub description: String,
     /// The favicon (can be missing).
@@ -75,9 +75,9 @@ pub struct BedrockResponse {
     /// Version protocol, example: 760 (for 1.19.2).
     pub version_protocol: String,
     /// Number of server capacity.
-    pub max_players: u32,
+    pub players_maximum: u32,
     /// Number of online players.
-    pub online_players: u32,
+    pub players_online: u32,
     /// Server id.
     pub id: Option<String>,
     /// The map.
@@ -93,9 +93,9 @@ impl Response {
         Self {
             version_name: response.version_name,
             version_protocol: 0,
-            max_players: response.max_players,
-            online_players: response.online_players,
-            sample_players: None,
+            players_maximum: response.players_maximum,
+            players_online: response.players_online,
+            players_sample: None,
             description: response.name,
             favicon: None,
             previews_chat: None,
