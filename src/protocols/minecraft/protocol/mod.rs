@@ -1,6 +1,6 @@
 use crate::GDError::AutoQuery;
 use crate::GDResult;
-use crate::protocols::minecraft::{BedrockResponse, LegacyGroup, Response};
+use crate::protocols::minecraft::{BedrockResponse, LegacyGroup, JavaResponse};
 use crate::protocols::minecraft::protocol::bedrock::Bedrock;
 use crate::protocols::minecraft::protocol::java::Java;
 use crate::protocols::minecraft::protocol::legacy_v1_4::LegacyV1_4;
@@ -15,13 +15,13 @@ mod legacy_bv1_8;
 mod bedrock;
 
 /// Queries a Minecraft server with all the protocol variants one by one (Java -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_java(address, port, timeout_settings.clone()) {
         return Ok(response);
     }
 
     if let Ok(response) = query_bedrock(address, port, timeout_settings.clone()) {
-        return Ok(Response::from_bedrock_response(response));
+        return Ok(JavaResponse::from_bedrock_response(response));
     }
 
     if let Ok(response) = query_legacy(address, port, timeout_settings) {
@@ -32,12 +32,12 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
 }
 
 /// Query a Java Server.
-pub fn query_java(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query_java(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     Java::query(address, port, timeout_settings)
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
-pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_legacy_specific(LegacyGroup::V1_6, address, port, timeout_settings.clone()) {
         return Ok(response);
     }
@@ -54,7 +54,7 @@ pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSe
 }
 
 /// Query a specific (Java) Legacy Server.
-pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     match group {
         LegacyGroup::V1_6 => LegacyV1_6::query(address, port, timeout_settings),
         LegacyGroup::V1_4 => LegacyV1_4::query(address, port, timeout_settings),

@@ -1,7 +1,7 @@
 use crate::GDResult;
 use crate::GDError::{PacketBad, ProtocolFormat};
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::minecraft::{LegacyGroup, Response, Server};
+use crate::protocols::minecraft::{LegacyGroup, JavaResponse, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::error_by_expected_size;
@@ -46,7 +46,7 @@ impl LegacyV1_6 {
         Ok(state)
     }
 
-    pub fn get_response(buffer: &mut Bufferer) -> GDResult<Response> {
+    pub fn get_response(buffer: &mut Bufferer) -> GDResult<JavaResponse> {
         let packet_string = buffer.get_string_utf16()?;
 
         let split: Vec<&str> = packet_string.split("\x00").collect();
@@ -61,7 +61,7 @@ impl LegacyV1_6 {
         let max_players = split[4].parse()
             .map_err(|_| PacketBad)?;
 
-        Ok(Response {
+        Ok(JavaResponse {
             version_name,
             version_protocol,
             players_maximum: max_players,
@@ -75,7 +75,7 @@ impl LegacyV1_6 {
         })
     }
 
-    fn get_info(&mut self) -> GDResult<Response> {
+    fn get_info(&mut self) -> GDResult<JavaResponse> {
         self.send_initial_request()?;
 
         let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
@@ -94,7 +94,7 @@ impl LegacyV1_6 {
         LegacyV1_6::get_response(&mut buffer)
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         LegacyV1_6::new(address, port, timeout_settings)?.get_info()
     }
 }

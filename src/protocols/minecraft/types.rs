@@ -38,9 +38,9 @@ pub struct Player {
     pub id: String
 }
 
-/// A query response.
+/// A Java query response.
 #[derive(Debug)]
-pub struct Response {
+pub struct JavaResponse {
     /// Version name, example: "1.19.2".
     pub version_name: String,
     /// Version protocol, example: 760 (for 1.19.2).
@@ -88,7 +88,7 @@ pub struct BedrockResponse {
     pub server_type: Server
 }
 
-impl Response {
+impl JavaResponse {
     pub fn from_bedrock_response(response: BedrockResponse) -> Self {
         Self {
             version_name: response.version_name,

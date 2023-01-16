@@ -2,7 +2,7 @@
 use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::GDError::{PacketBad, ProtocolFormat};
-use crate::protocols::minecraft::{LegacyGroup, Response, Server};
+use crate::protocols::minecraft::{LegacyGroup, JavaResponse, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::error_by_expected_size;
@@ -25,7 +25,7 @@ impl LegacyBV1_8 {
         self.socket.send(&[0xFE])
     }
 
-    fn get_info(&mut self) -> GDResult<Response> {
+    fn get_info(&mut self) -> GDResult<JavaResponse> {
         self.send_initial_request()?;
 
         let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
@@ -48,7 +48,7 @@ impl LegacyBV1_8 {
         let max_players = split[2].parse()
             .map_err(|_| PacketBad)?;
 
-        Ok(Response {
+        Ok(JavaResponse {
             version_name: "Beta 1.8+".to_string(),
             version_protocol: -1,
             players_maximum: max_players,
@@ -62,7 +62,7 @@ impl LegacyBV1_8 {
         })
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         LegacyBV1_8::new(address, port, timeout_settings)?.get_info()
     }
 }

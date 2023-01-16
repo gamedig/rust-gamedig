@@ -2,7 +2,7 @@ use serde_json::Value;
 use crate::GDResult;
 use crate::GDError::{JsonParse, PacketBad};
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, Response, Server};
+use crate::protocols::minecraft::{as_varint, get_string, get_varint, Player, JavaResponse, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 
@@ -65,7 +65,7 @@ impl Java {
         Ok(())
     }
 
-    fn get_info(&mut self) -> GDResult<Response> {
+    fn get_info(&mut self) -> GDResult<JavaResponse> {
         self.send_handshake()?;
         self.send_status_request()?;
         self.send_ping_request()?;
@@ -107,7 +107,7 @@ impl Java {
             })
         };
 
-        Ok(Response {
+        Ok(JavaResponse {
             version_name,
             version_protocol,
             players_maximum: max_players,
@@ -121,7 +121,7 @@ impl Java {
         })
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         Java::new(address, port, timeout_settings)?.get_info()
     }
 }

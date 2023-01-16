@@ -1,15 +1,15 @@
 use crate::{GDError, GDResult};
 use crate::protocols::minecraft;
-use crate::protocols::minecraft::{Response, LegacyGroup, BedrockResponse};
+use crate::protocols::minecraft::{JavaResponse, LegacyGroup, BedrockResponse};
 
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
-pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_java(address, port) {
         return Ok(response);
     }
 
     if let Ok(response) = query_bedrock(address, port) {
-        return Ok(Response::from_bedrock_response(response));
+        return Ok(JavaResponse::from_bedrock_response(response));
     }
 
     if let Ok(response) = query_legacy(address, port) {
@@ -20,17 +20,17 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
 }
 
 /// Query a Java Server.
-pub fn query_java(address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query_java(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_java(address, port_or_java_default(port), None)
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
-pub fn query_legacy(address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query_legacy(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_legacy(address, port_or_java_default(port), None)
 }
 
 /// Query a specific (Java) Legacy Server.
-pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_legacy_specific(group, address, port_or_java_default(port), None)
 }
 
