@@ -1,7 +1,7 @@
 
 Who knows what the future holds...
 
-# X - DD/MM/YYYY
+# 0.1.0 - 17/01/2023
 ### Changes:
 Games: 
 - [Risk of Rain 2](https://store.steampowered.com/app/632360/Risk_of_Rain_2/) support.

@@ -16,7 +16,7 @@ use gamedig::games::tf2;
 fn main() {
     let response = tf2::query("127.0.0.1", None); // None is the default port (which is 27015), could also be Some(27015)
     match response {
-        Err(error) => println!("Couldn't query, error: {error}"),
+        Err(error) => println!("Couldn't query, error: {}", error),
         Ok(r) => println!("{:#?}", r)
     }
 }
