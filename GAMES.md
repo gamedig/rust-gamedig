@@ -38,6 +38,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Age of Chivalry                    | AOC      | Valve Protocol            |                                                                                                                                                                           |
 | Don't Starve Together              | DST      | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 | Colony Survival                    | COLU     | Valve Protocol            |                                                                                                                                                                           |
+| Onset                              | ONSET    | Valve Protocol            | Query port is 7776.                                                                                                                                                       |
 
 ## Planned to add support:
 _

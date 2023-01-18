@@ -71,3 +71,5 @@ pub mod aoc;
 pub mod dst;
 /// Colony Survival
 pub mod cosu;
+/// Onset
+pub mod onset;

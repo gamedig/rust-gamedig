@@ -207,6 +207,8 @@ pub enum SteamID {
     ASRD = 563560,
     /// Risk of Rain 2
     ROR2 = 632360,
+    /// Onset
+    ONSET = 1105810,
 }
 
 impl SteamID {
