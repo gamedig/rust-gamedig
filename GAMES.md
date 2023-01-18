@@ -36,6 +36,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Black Mesa                         | BM       | Valve Protocol            |                                                                                                                                                                           |
 | Project Zomboid                    | PZ       | Valve Protocol            |                                                                                                                                                                           |
 | Age of Chivalry                    | AOC      | Valve Protocol            |                                                                                                                                                                           |
+| Don't Starve Together              | DST      | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 
 ## Planned to add support:
 _

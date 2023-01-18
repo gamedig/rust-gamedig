@@ -1,6 +1,14 @@
 
 Who knows what the future holds...
 
+# 0.X.Y - DD/MM/2023
+### Changes:
+Games:
+- [Don't Starve Together](https://store.steampowered.com/app/322330/Dont_Starve_Together/) support.
+
+### Breaking:
+Nothing.
+
 # 0.1.0 - 17/01/2023
 ### Changes:
 Games: 

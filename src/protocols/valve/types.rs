@@ -183,6 +183,8 @@ pub enum SteamID {
     SC = 225840,
     /// Rust
     RUST = 252490,
+    /// Don't Starve Together
+    DST = 322320,
     /// Black Mesa
     BM = 362890,
     /// Day of Infamy

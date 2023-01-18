@@ -67,3 +67,5 @@ pub mod bm;
 pub mod pz;
 /// Age of Chivalry
 pub mod aoc;
+/// Don't Starve Together
+pub mod dst;
