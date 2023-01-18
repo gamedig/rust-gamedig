@@ -1,6 +1,6 @@
 
 use std::env;
-use gamedig::{aliens, aoc, arma2oa, ase, asrd, bat1944, bm, cs, cscz, csgo, css, dod, dods, doi, dst, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, pz, ror2, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
+use gamedig::{aliens, aoc, arma2oa, ase, asrd, bat1944, bm, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, pz, ror2, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::App;
@@ -75,6 +75,7 @@ fn main() -> GDResult<()> {
         "pz" => println!("{:#?}", pz::query(ip, port)?),
         "aoc" => println!("{:#?}", aoc::query(ip, port)?),
         "dst" => println!("{:#?}", dst::query(ip, port)?),
+        "cosu" => println!("{:#?}", cosu::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1])
     };
 

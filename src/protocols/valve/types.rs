@@ -187,6 +187,8 @@ pub enum SteamID {
     DST = 322320,
     /// Black Mesa
     BM = 362890,
+    /// Colony Survival
+    COSU = 366090,
     /// Day of Infamy
     DOI = 447820,
     /// The Forrest

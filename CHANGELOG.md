@@ -5,6 +5,7 @@ Who knows what the future holds...
 ### Changes:
 Games:
 - [Don't Starve Together](https://store.steampowered.com/app/322330/Dont_Starve_Together/) support.
+- [Colony Survival](https://store.steampowered.com/app/366090/Colony_Survival/) support.
 
 ### Breaking:
 Nothing.

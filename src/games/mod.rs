@@ -69,3 +69,5 @@ pub mod pz;
 pub mod aoc;
 /// Don't Starve Together
 pub mod dst;
+/// Colony Survival
+pub mod cosu;
