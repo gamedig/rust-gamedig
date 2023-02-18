@@ -189,6 +189,8 @@ pub enum SteamID {
     BO = 296300,
     /// Don't Starve Together
     DST = 322320,
+    /// BrainBread 2
+    BB2 = 346330,
     /// Codename CURE
     CCURE = 355180,
     /// Black Mesa

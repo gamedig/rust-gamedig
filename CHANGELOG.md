@@ -9,6 +9,7 @@ Games:
 - [Onset](https://store.steampowered.com/app/1105810/Onset/) support.
 - [Codename CURE](https://store.steampowered.com/app/355180/Codename_CURE/) support.
 - [Ballistic Overkill](https://store.steampowered.com/app/296300/Ballistic_Overkill/) support.
+- [BrainBread 2](https://store.steampowered.com/app/346330/BrainBread_2/) support.
 
 ### Breaking:
 Nothing.

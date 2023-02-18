@@ -41,6 +41,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Onset                              | ONSET    | Valve Protocol            | Query port is 7776.                                                                                                                                                       |
 | Codename CURE                      | CCURE    | Valve Protocol            |                                                                                                                                                                           |
 | Ballistic Overkill                 | BO       | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
+| BrainBread 2                       | BB2      | Valve Protocol            |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

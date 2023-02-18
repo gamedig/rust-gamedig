@@ -77,3 +77,5 @@ pub mod onset;
 pub mod ccure;
 /// Ballistic Overkill
 pub mod bo;
+/// BrainBread 2
+pub mod bb2;
