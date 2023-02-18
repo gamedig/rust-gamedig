@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::GDResult;
 use crate::protocols::valve;
-use crate::protocols::valve::{Server, ServerPlayer, get_optional_extracted_data, SteamID};
+use crate::protocols::valve::{Server, ServerPlayer, get_optional_extracted_data, SteamApp};
 
 #[derive(Debug)]
 pub struct TheShipPlayer {
@@ -85,7 +85,7 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
     let valve_response = valve::query(address, match port {
         None => 27015,
         Some(port) => port
-    }, SteamID::TS.as_app(), None, None)?;
+    }, SteamApp::TS.as_engine(), None, None)?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }

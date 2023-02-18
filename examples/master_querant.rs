@@ -3,7 +3,7 @@ use std::env;
 use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, tf, tf2, tfc, ts, unturned};
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
-use gamedig::protocols::valve::App;
+use gamedig::protocols::valve::Engine;
 
 fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -48,9 +48,9 @@ fn main() -> GDResult<()> {
         "ts" => println!("{:#?}", ts::query(ip, port)?),
         "cscz" => println!("{:#?}", cscz::query(ip, port)?),
         "dod" => println!("{:#?}", dod::query(ip, port)?),
-        "_src" => println!("{:#?}", valve::query(ip, port.unwrap(), App::Source(None), None, None)?),
-        "_gld" => println!("{:#?}", valve::query(ip, port.unwrap(), App::GoldSrc(false), None, None)?),
-        "_gld_f" => println!("{:#?}", valve::query(ip, port.unwrap(), App::GoldSrc(true), None, None)?),
+        "_src" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::Source(None), None, None)?),
+        "_gld" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::GoldSrc(false), None, None)?),
+        "_gld_f" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::GoldSrc(true), None, None)?),
         "mc" => println!("{:#?}", mc::query(ip, port)?),
         "mc_java" => println!("{:#?}", mc::query_java(ip, port)?),
         "mc_bedrock" => println!("{:#?}", mc::query_bedrock(ip, port)?),

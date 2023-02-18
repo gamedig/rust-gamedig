@@ -135,112 +135,159 @@ pub(crate) enum Request {
     RULES = 0x56
 }
 
-/// Supported steam apps id's
-#[repr(u32)]
+/// Supported steam apps
 #[derive(PartialEq, Clone)]
-pub enum SteamID {
+pub enum SteamApp {
     /// Counter-Strike
-    CS = 10,
+    CS,
     /// Team Fortress Classic
-    TFC = 20,
+    TFC,
     /// Day of Defeat
-    DOD = 30,
+    DOD,
     /// Counter-Strike: Condition Zero
-    CSCZ = 80,
+    CSCZ,
     /// Counter-Strike: Source
-    CSS = 240,
+    CSS,
     /// Day of Defeat: Source
-    DODS = 300,
+    DODS,
     /// Half-Life 2 Deathmatch
-    HL2DM = 320,
+    HL2DM,
     /// Half-Life Deathmatch: Source
-    HLDMS = 360,
+    HLDMS,
     /// Team Fortress 2
-    TF2 = 440,
+    TF2,
     /// Left 4 Dead
-    L4D = 500,
+    L4D,
     /// Left 4 Dead
-    L4D2 = 550,
+    L4D2,
     /// Alien Swarm
-    ALIENS = 630,
+    ALIENS,
     /// Counter-Strike: Global Offensive
-    CSGO = 730,
+    CSGO,
     /// The Ship
-    TS = 2400,
+    TS,
     /// Garry's Mod
-    GM = 4000,
+    GM,
     /// Age of Chivalry
-    AOC = 17510,
+    AOC,
     /// Insurgency: Modern Infantry Combat
-    INSMIC = 17700,
+    INSMIC,
     /// ARMA 2: Operation Arrowhead
-    ARMA2OA = 33930,
+    ARMA2OA,
     /// Project Zomboid
-    PZ = 108600,
+    PZ,
     /// Insurgency
-    INS = 222880,
+    INS,
     /// Sven Co-op
-    SC = 225840,
+    SC,
     /// 7 Days To Die
-    SDTD = 251570,
+    SDTD,
     /// Rust
-    RUST = 252490,
+    RUST,
     /// Vallistic Overkill
-    BO = 296300,
+    BO,
     /// Don't Starve Together
-    DST = 322320,
+    DST,
     /// BrainBread 2
-    BB2 = 346330,
+    BB2,
     /// Codename CURE
-    CCURE = 355180,
+    CCURE,
     /// Black Mesa
-    BM = 362890,
+    BM,
     /// Colony Survival
-    COSU = 366090,
+    COSU,
     /// Avorion
-    AVORION = 445220,
+    AVORION,
     /// Day of Infamy
-    DOI = 447820,
-    /// The Forrest
-    TF = 556450, //this is the id for the dedicated server, for the game its 242760
+    DOI,
+    /// The Forest
+    TF,
     /// Unturned
-    UNTURNED = 304930,
+    UNTURNED,
     /// ARK: Survival Evolved
-    ASE = 346110,
+    ASE,
     /// Battalion 1944
-    BAT1944 = 489940,
+    BAT1944,
     /// Insurgency: Sandstorm
-    INSS = 581320,
+    INSS,
     /// Alien Swarm: Reactive Drop
-    ASRD = 563560,
+    ASRD,
     /// Risk of Rain 2
-    ROR2 = 632360,
+    ROR2,
     /// Operation: Harsh Doorstop
-    OHD = 950900, // this is the id for the dedicated server, for the game its 736590
+    OHD,
     /// Onset
-    ONSET = 1105810,
+    ONSET,
 }
 
-impl SteamID {
-    /// Get ID as App (the engine is specified).
-    pub fn as_app(&self) -> App {
+impl SteamApp {
+    /// Get the specified app as engine.
+    pub fn as_engine(&self) -> Engine {
         match self {
-            SteamID::CS | SteamID::TFC | SteamID::DOD | SteamID::CSCZ | SteamID::SC => App::GoldSrc(false),
-            x => App::Source(Some(x.clone() as u32))
+            SteamApp::CS => Engine::GoldSrc(false), //10
+            SteamApp::TFC => Engine::GoldSrc(false), //20
+            SteamApp::DOD => Engine::GoldSrc(false), //30
+            SteamApp::CSCZ => Engine::GoldSrc(false), //80
+            SteamApp::CSS => Engine::new_source(240),
+            SteamApp::DODS => Engine::new_source(300),
+            SteamApp::HL2DM => Engine::new_source(320),
+            SteamApp::HLDMS => Engine::new_source(360),
+            SteamApp::TF2 => Engine::new_source(440),
+            SteamApp::L4D => Engine::new_source(500),
+            SteamApp::L4D2 => Engine::new_source(550),
+            SteamApp::ALIENS => Engine::new_source(630),
+            SteamApp::CSGO => Engine::new_source(730),
+            SteamApp::TS => Engine::new_source(2400),
+            SteamApp::GM => Engine::new_source(4000),
+            SteamApp::AOC => Engine::new_source(17510),
+            SteamApp::INSMIC => Engine::new_source(17700),
+            SteamApp::ARMA2OA => Engine::new_source(33930),
+            SteamApp::PZ => Engine::new_source(108600),
+            SteamApp::INS => Engine::new_source(222880),
+            SteamApp::SC => Engine::GoldSrc(false), //225840
+            SteamApp::SDTD => Engine::new_source(251570),
+            SteamApp::RUST => Engine::new_source(252490),
+            SteamApp::BO => Engine::new_source(296300),
+            SteamApp::DST => Engine::new_source(322320),
+            SteamApp::BB2 => Engine::new_source(346330),
+            SteamApp::CCURE => Engine::new_source(355180),
+            SteamApp::BM => Engine::new_source(362890),
+            SteamApp::COSU => Engine::new_source(366090),
+            SteamApp::AVORION => Engine::new_source(445220),
+            SteamApp::DOI => Engine::new_source(447820),
+            SteamApp::TF => Engine::new_source(556450),
+            SteamApp::UNTURNED => Engine::new_source(304930),
+            SteamApp::ASE => Engine::new_source(346110),
+            SteamApp::BAT1944 => Engine::new_source(489940),
+            SteamApp::INSS => Engine::new_source(581320),
+            SteamApp::ASRD => Engine::new_source(563560),
+            SteamApp::ROR2 => Engine::new_source(632360),
+            SteamApp::OHD => Engine::new_source_with_dedicated(736590, 950900),
+            SteamApp::ONSET => Engine::new_source(1105810)
         }
     }
 }
 
-/// App type.
+/// Engine type.
 #[derive(PartialEq, Clone)]
-pub enum App {
-    /// A Source game, the argument represents the wanted response steam app id, if its **None**,
-    /// let the query find it, if its **Some**, the query fails if the response id is not the
-    /// specified one.
-    Source(Option<u32>),
-    /// A GoldSrc game, the argument indicates whether to enforce getting the obsolete A2S_INFO
-    /// goldsrc response or not.
+pub enum Engine {
+    /// A Source game, the argument represents the possible steam app ids, if its **None**, let
+    /// the query find it, if its **Some**, the query fails if the response id is not the first
+    /// one, which is the game app id, or the other one, which is the dedicated server app id.
+    Source(Option<(u32, Option<u32>)>),
+    /// A GoldSrc game, the argument indicates whether to enforce
+    /// requesting the obsolete A2S_INFO response or not.
     GoldSrc(bool)
+}
+
+impl Engine {
+    pub fn new_source(appid: u32) -> Self {
+        Engine::Source(Some((appid, None)))
+    }
+
+    pub fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
+        Engine::Source(Some((appid, Some(dedicated_appid))))
+    }
 }
 
 /// What data to gather, purely used only with the query function.
@@ -298,6 +345,8 @@ pub mod game {
         pub map: String,
         /// The name of the game.
         pub game: String,
+        /// Server's app id.
+        pub appid: u32,
         /// Number of players on the server.
         pub players_online: u8,
         /// Details about the server's players (not all players necessarily).
@@ -337,6 +386,7 @@ pub mod game {
                 name: response.info.name,
                 map: response.info.map,
                 game: response.info.game,
+                appid: response.info.appid,
                 players_online: response.info.players_online,
                 players_details: response.players.unwrap_or(vec![]).iter().map(Player::from_valve_response).collect(),
                 players_maximum: response.info.players_maximum,

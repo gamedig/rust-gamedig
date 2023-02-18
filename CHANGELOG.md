@@ -1,7 +1,14 @@
 
 Who knows what the future holds...
 
-# 0.1.Y - DD/MM/2023
+# 0.X.Y - DD/MM/2023
+### Changes:
+None.
+
+### Breaking:
+None.
+
+# 0.2.0 - 18/02/2023
 ### Changes:
 Games:
 - [Don't Starve Together](https://store.steampowered.com/app/322330/Dont_Starve_Together/) support.
@@ -13,8 +20,20 @@ Games:
 - [Avorion](https://store.steampowered.com/app/445220/Avorion/) support.
 - [Operation: Harsh Doorstop](https://store.steampowered.com/app/736590/Operation_Harsh_Doorstop/) support.
 
+Protocols:
+- Valve:
+1. `appid` is now a field in the `Response` struct.
+
 ### Breaking:
-Nothing.
+Protocols:
+- Valve:
+due to some games being able to host a server from within the game AND from a dedicated server, 
+if you were to query one of them, the query would fail for the other one, as the `SteamID` enum
+for that game could specify only one id.
+1. `SteamID` is now `SteamApp`, was an u32 enum, and now it's a simple enum.  
+2. `App` is now `Engine`, the `Source` enum's structure has been changed from `Option<u32>` to
+`Option<u32, Option<u32>>`, where the first parameter is the game app id and the second is
+the dedicated server app id (if there is one).
 
 # 0.1.0 - 17/01/2023
 ### Changes:

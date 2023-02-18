@@ -4,7 +4,7 @@ use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::GDError::{BadGame, Decompress, UnknownEnumCast};
 use crate::protocols::types::TimeoutSettings;
-use crate::protocols::valve::{App, ModData, SteamID};
+use crate::protocols::valve::{Engine, ModData, SteamApp};
 use crate::protocols::valve::types::{Environment, ExtraData, GatheringSettings, Request, Response, Server, ServerInfo, ServerPlayer, TheShip};
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::u8_lower_upper;
@@ -77,18 +77,18 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(app: &App, protocol: u8, buffer: &mut Bufferer) -> GDResult<Self> {
+    fn new(engine: &Engine, protocol: u8, buffer: &mut Bufferer) -> GDResult<Self> {
         let header = buffer.get_u32()?;
         let id = buffer.get_u32()?;
-        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match app {
-            App::GoldSrc(_) => {
+        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match engine {
+            Engine::GoldSrc(_) => {
                 let (lower, upper) = u8_lower_upper(buffer.get_u8()?);
                 (lower, upper, 0, false, None, None)
             }
-            App::Source(_) => {
+            Engine::Source(_) => {
                 let total = buffer.get_u8()?;
                 let number = buffer.get_u8()?;
-                let size = match protocol == 7 && (*app == SteamID::CSS.as_app()) { //certain apps with protocol = 7 doesnt have this field
+                let size = match protocol == 7 && (*engine == SteamApp::CSS.as_engine()) { //certain apps with protocol = 7 dont have this field
                     false => buffer.get_u16()?,
                     true => 1248
                 };
@@ -155,20 +155,20 @@ impl ValveProtocol {
         })
     }
 
-    fn receive(&mut self, app: &App, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
+    fn receive(&mut self, engine: &Engine, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
         let data = self.socket.receive(Some(buffer_size))?;
         let mut buffer = Bufferer::new_with_data(Endianess::Little, &data); 
 
         let header = buffer.get_u8()?;
         buffer.move_position_backward(1);
         if header == 0xFE { //the packet is split
-            let mut main_packet = SplitPacket::new(&app, protocol, &mut buffer)?;
+            let mut main_packet = SplitPacket::new(&engine, protocol, &mut buffer)?;
             let mut chunk_packets = Vec::with_capacity((main_packet.total - 1) as usize);
 
             for _ in 1..main_packet.total {
                 let new_data = self.socket.receive(Some(buffer_size))?;
                 buffer = Bufferer::new_with_data(Endianess::Little, &new_data);
-                let chunk_packet = SplitPacket::new(&app, protocol, &mut buffer)?;
+                let chunk_packet = SplitPacket::new(&engine, protocol, &mut buffer)?;
                 chunk_packets.push(chunk_packet);
             }
 
@@ -187,11 +187,11 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(&mut self, app: &App, protocol: u8, kind: Request) -> GDResult<Bufferer> {
+    fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
         let request_initial_packet = Packet::initial(kind).to_bytes();
 
         self.socket.send(&request_initial_packet)?;
-        let packet = self.receive(app, protocol, PACKET_SIZE)?;
+        let packet = self.receive(engine, protocol, PACKET_SIZE)?;
 
         if packet.kind != 0x41 { //'A'
             let data = packet.payload.clone();
@@ -203,7 +203,7 @@ impl ValveProtocol {
 
         self.socket.send(&challenge_packet)?;
 
-        let data = self.receive(app, protocol, PACKET_SIZE)?.payload;
+        let data = self.receive(engine, protocol, PACKET_SIZE)?.payload;
         Ok(Bufferer::new_with_data(Endianess::Little, &data))
     }
 
@@ -267,10 +267,10 @@ impl ValveProtocol {
     }
 
     /// Get the server information's.
-    fn get_server_info(&mut self, app: &App) -> GDResult<ServerInfo> {
-        let mut buffer = self.get_request_data(&app, 0, Request::INFO)?;
+    fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
+        let mut buffer = self.get_request_data(&engine, 0, Request::INFO)?;
         
-        if let App::GoldSrc(force) = app {
+        if let Engine::GoldSrc(force) = engine {
             if *force {
                 return ValveProtocol::get_goldsrc_server_info(&mut buffer);
             }
@@ -299,7 +299,7 @@ impl ValveProtocol {
         };
         let has_password = buffer.get_u8()? == 1;
         let vac_secured = buffer.get_u8()? == 1;
-        let the_ship = match *app == SteamID::TS.as_app() {
+        let the_ship = match *engine == SteamApp::TS.as_engine() {
             false => None,
             true => Some(TheShip {
                 mode: buffer.get_u8()?,
@@ -366,8 +366,8 @@ impl ValveProtocol {
     }
 
     /// Get the server player's.
-    fn get_server_players(&mut self, app: &App, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let mut buffer = self.get_request_data(&app, protocol, Request::PLAYERS)?;
+    fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
+        let mut buffer = self.get_request_data(&engine, protocol, Request::PLAYERS)?;
 
         let count = buffer.get_u8()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
@@ -379,11 +379,11 @@ impl ValveProtocol {
             let score = buffer.get_u32()?;
             let duration = buffer.get_f32()?;
 
-            let deaths = match *app == SteamID::TS.as_app() {
+            let deaths = match *engine == SteamApp::TS.as_engine() {
                 false => None,
                 true => Some(buffer.get_u32()?)
             };
-            let money = match *app == SteamID::TS.as_app() {
+            let money = match *engine == SteamApp::TS.as_engine() {
                 false => None,
                 true => Some(buffer.get_u32()?)
             };
@@ -403,8 +403,8 @@ impl ValveProtocol {
     }
 
     /// Get the server's rules.
-    fn get_server_rules(&mut self, app: &App, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let mut buffer = self.get_request_data(&app, protocol, Request::RULES)?;
+    fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
+        let mut buffer = self.get_request_data(&engine, protocol, Request::RULES)?;
 
         let count = buffer.get_u16()? as usize;
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
@@ -416,7 +416,7 @@ impl ValveProtocol {
             rules.insert(name, value);
         }
 
-        if *app == SteamID::ROR2.as_app() {
+        if *engine == SteamApp::ROR2.as_engine() {
             rules.remove("Test");
         }
 
@@ -426,20 +426,30 @@ impl ValveProtocol {
 
 /// Query a server by providing the address, the port, the app, gather and timeout settings.
 /// Providing None to the settings results in using the default values for them (GatherSettings::[default](GatheringSettings::default), TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &str, port: u16, app: App, gather_settings: Option<GatheringSettings>, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(address: &str, port: u16, engine: Engine, gather_settings: Option<GatheringSettings>, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let response_gather_settings = gather_settings.unwrap_or(GatheringSettings::default());
-    get_response(address, port, app, response_gather_settings, timeout_settings)
+    get_response(address, port, engine, response_gather_settings, timeout_settings)
 }
 
-fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSettings, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+fn get_response(address: &str, port: u16, engine: Engine, gather_settings: GatheringSettings, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut client = ValveProtocol::new(address, port, timeout_settings)?;
 
-    let info = client.get_server_info(&app)?;
+    let info = client.get_server_info(&engine)?;
     let protocol = info.protocol;
 
-    if let App::Source(source_app) = &app {
-        if let Some(appid) = source_app {
-            if *appid != info.appid {
+    if let Engine::Source(source_app) = &engine {
+        if let Some(appids) = source_app {
+            let mut is_specified_id = false;
+
+            if appids.0 == info.appid {
+                is_specified_id = true;
+            } else if let Some(dedicated_appid) = appids.1 {
+                if dedicated_appid == info.appid {
+                    is_specified_id = true;
+                }
+            }
+
+            if !is_specified_id {
                 return Err(BadGame(format!("AppId: {}", info.appid)));
             }
         }
@@ -449,11 +459,11 @@ fn get_response(address: &str, port: u16, app: App, gather_settings: GatheringSe
         info,
         players: match gather_settings.players {
             false => None,
-            true => Some(client.get_server_players(&app, protocol)?)
+            true => Some(client.get_server_players(&engine, protocol)?)
         },
         rules: match gather_settings.rules {
             false => None,
-            true => Some(client.get_server_rules(&app, protocol)?)
+            true => Some(client.get_server_rules(&engine, protocol)?)
         }
     })
 }

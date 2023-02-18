@@ -15,7 +15,7 @@ use gamedig::games::tf2;
 
 fn main() {
     let response = tf2::query("127.0.0.1", None); // None is the default port (which is 27015), could also be Some(27015)
-    match response {
+    match response { // Result type, must check what it is...
         Err(error) => println!("Couldn't query, error: {}", error),
         Ok(r) => println!("{:#?}", r)
     }
@@ -28,6 +28,7 @@ Response (note that some games have a different structure):
   name: "Team Fortress 2 Dedicated Server.",
   map: "ctf_turbine",
   game: "tf2",
+  appid: 440,
   players_online: 0,
   players_details: [],
   players_maximum: 69,
