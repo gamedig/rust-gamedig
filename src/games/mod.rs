@@ -81,3 +81,5 @@ pub mod bo;
 pub mod bb2;
 /// Avorion
 pub mod avorion;
+/// Operation: Harsh Doorstop
+pub mod ohd;

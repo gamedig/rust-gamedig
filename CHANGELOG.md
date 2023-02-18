@@ -11,6 +11,7 @@ Games:
 - [Ballistic Overkill](https://store.steampowered.com/app/296300/Ballistic_Overkill/) support.
 - [BrainBread 2](https://store.steampowered.com/app/346330/BrainBread_2/) support.
 - [Avorion](https://store.steampowered.com/app/445220/Avorion/) support.
+- [Operation: Harsh Doorstop](https://store.steampowered.com/app/736590/Operation_Harsh_Doorstop/) support.
 
 ### Breaking:
 Nothing.

@@ -215,6 +215,8 @@ pub enum SteamID {
     ASRD = 563560,
     /// Risk of Rain 2
     ROR2 = 632360,
+    /// Operation: Harsh Doorstop
+    OHD = 950900, // this is the id for the dedicated server, for the game its 736590
     /// Onset
     ONSET = 1105810,
 }
