@@ -73,3 +73,5 @@ pub mod dst;
 pub mod cosu;
 /// Onset
 pub mod onset;
+/// Codename CURE
+pub mod ccure;

@@ -1,12 +1,13 @@
 
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/2023
+# 0.1.Y - DD/MM/2023
 ### Changes:
 Games:
 - [Don't Starve Together](https://store.steampowered.com/app/322330/Dont_Starve_Together/) support.
 - [Colony Survival](https://store.steampowered.com/app/366090/Colony_Survival/) support.
 - [Onset](https://store.steampowered.com/app/1105810/Onset/) support.
+- [Codename CURE](https://store.steampowered.com/app/355180/Codename_CURE/) support.
 
 ### Breaking:
 Nothing.

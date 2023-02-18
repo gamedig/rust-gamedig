@@ -39,6 +39,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Don't Starve Together              | DST      | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 | Colony Survival                    | COLU     | Valve Protocol            |                                                                                                                                                                           |
 | Onset                              | ONSET    | Valve Protocol            | Query port is 7776.                                                                                                                                                       |
+| Codename CURE                      | CCURE    | Valve Protocol            |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

@@ -187,6 +187,8 @@ pub enum SteamID {
     RUST = 252490,
     /// Don't Starve Together
     DST = 322320,
+    /// Codename CURE
+    CCURE = 355180,
     /// Black Mesa
     BM = 362890,
     /// Colony Survival
