@@ -181,6 +181,8 @@ pub enum SteamID {
     INS = 222880,
     /// Sven Co-op
     SC = 225840,
+    /// 7 Days To Die
+    SDTD = 251570,
     /// Rust
     RUST = 252490,
     /// Don't Starve Together
@@ -193,8 +195,6 @@ pub enum SteamID {
     DOI = 447820,
     /// The Forrest
     TF = 556450, //this is the id for the dedicated server, for the game its 242760
-    /// 7 Days To Die
-    SDTD = 251570,
     /// Unturned
     UNTURNED = 304930,
     /// ARK: Survival Evolved
