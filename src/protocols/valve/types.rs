@@ -197,6 +197,8 @@ pub enum SteamID {
     BM = 362890,
     /// Colony Survival
     COSU = 366090,
+    /// Avorion
+    AVORION = 445220,
     /// Day of Infamy
     DOI = 447820,
     /// The Forrest

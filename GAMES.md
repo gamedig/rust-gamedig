@@ -42,6 +42,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Codename CURE                      | CCURE    | Valve Protocol            |                                                                                                                                                                           |
 | Ballistic Overkill                 | BO       | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 | BrainBread 2                       | BB2      | Valve Protocol            |                                                                                                                                                                           |
+| Avorion                            | AVORION  | Valve Protocol            | Query port is 27020.                                                                                                                                                      |
 
 ## Planned to add support:
 _

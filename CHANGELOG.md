@@ -10,6 +10,7 @@ Games:
 - [Codename CURE](https://store.steampowered.com/app/355180/Codename_CURE/) support.
 - [Ballistic Overkill](https://store.steampowered.com/app/296300/Ballistic_Overkill/) support.
 - [BrainBread 2](https://store.steampowered.com/app/346330/BrainBread_2/) support.
+- [Avorion](https://store.steampowered.com/app/445220/Avorion/) support.
 
 ### Breaking:
 Nothing.

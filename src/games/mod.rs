@@ -79,3 +79,5 @@ pub mod ccure;
 pub mod bo;
 /// BrainBread 2
 pub mod bb2;
+/// Avorion
+pub mod avorion;
