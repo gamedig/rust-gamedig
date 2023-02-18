@@ -75,3 +75,5 @@ pub mod cosu;
 pub mod onset;
 /// Codename CURE
 pub mod ccure;
+/// Ballistic Overkill
+pub mod bo;

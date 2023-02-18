@@ -40,6 +40,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Colony Survival                    | COLU     | Valve Protocol            |                                                                                                                                                                           |
 | Onset                              | ONSET    | Valve Protocol            | Query port is 7776.                                                                                                                                                       |
 | Codename CURE                      | CCURE    | Valve Protocol            |                                                                                                                                                                           |
+| Ballistic Overkill                 | BO       | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 
 ## Planned to add support:
 _

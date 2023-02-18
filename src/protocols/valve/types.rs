@@ -185,6 +185,8 @@ pub enum SteamID {
     SDTD = 251570,
     /// Rust
     RUST = 252490,
+    /// Vallistic Overkill
+    BO = 296300,
     /// Don't Starve Together
     DST = 322320,
     /// Codename CURE

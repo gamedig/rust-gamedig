@@ -8,6 +8,7 @@ Games:
 - [Colony Survival](https://store.steampowered.com/app/366090/Colony_Survival/) support.
 - [Onset](https://store.steampowered.com/app/1105810/Onset/) support.
 - [Codename CURE](https://store.steampowered.com/app/355180/Codename_CURE/) support.
+- [Ballistic Overkill](https://store.steampowered.com/app/296300/Ballistic_Overkill/) support.
 
 ### Breaking:
 Nothing.
