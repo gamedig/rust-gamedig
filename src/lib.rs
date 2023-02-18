@@ -1,5 +1,5 @@
 
-//! Query many servers
+//! Game Server Query Library.
 //!
 //! # Example
 //!
@@ -14,13 +14,21 @@
 //!     }
 //! }
 //! ```
+//!
+//! # Features:
+//! Enabled by default: None
+//!
+//! `no_games` - disables the included games support.
 
 pub mod errors;
 pub mod protocols;
+#[cfg(not(feature = "no_games"))]
 pub mod games;
+
 mod utils;
 mod socket;
 mod bufferer;
 
 pub use errors::*;
+#[cfg(not(feature = "no_games"))]
 pub use games::*;

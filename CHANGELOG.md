@@ -3,7 +3,9 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
-None.
+Crate:
+- Added feature `no_games` which disables the supported games (useful when you are only using
+the protocols/services, also saves storage space).
 
 ### Breaking:
 None.
