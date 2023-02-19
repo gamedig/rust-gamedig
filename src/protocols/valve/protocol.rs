@@ -375,28 +375,19 @@ impl ValveProtocol {
         for _ in 0..count {
             buffer.move_position_ahead(1); //skip the index byte
 
-            let name = buffer.get_string_utf8()?;
-            let score = buffer.get_u32()?;
-            let duration = buffer.get_f32()?;
-
-            let deaths = match *engine == SteamApp::TS.as_engine() {
-                false => None,
-                true => Some(buffer.get_u32()?)
-            };
-            let money = match *engine == SteamApp::TS.as_engine() {
-                false => None,
-                true => Some(buffer.get_u32()?)
-            };
-
-            if name.len() > 0 {
-                players.push(ServerPlayer {
-                    name,
-                    score,
-                    duration,
-                    deaths,
-                    money
-                });
-            }
+            players.push(ServerPlayer {
+                name: buffer.get_string_utf8()?,
+                score: buffer.get_u32()?,
+                duration: buffer.get_f32()?,
+                deaths: match *engine == SteamApp::TS.as_engine() {
+                    false => None,
+                    true => Some(buffer.get_u32()?)
+                },
+                money: match *engine == SteamApp::TS.as_engine() {
+                    false => None,
+                    true => Some(buffer.get_u32()?)
+                },
+            });
         }
 
         Ok(players)

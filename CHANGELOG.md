@@ -7,6 +7,10 @@ Crate:
 - Added feature `no_games` which disables the supported games (useful when you are only using
 the protocols/services, also saves storage space).
 
+Protocols:
+- Valve:
+1. Reversed (from `0.1.0`) "Players with no name are no more added to the `players_details` field.", also added a note in the [protocols](PROTOCOLS.md) file regarding this.
+
 ### Breaking:
 None.
 
