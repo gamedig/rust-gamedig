@@ -83,3 +83,5 @@ pub mod bb2;
 pub mod avorion;
 /// Operation: Harsh Doorstop
 pub mod ohd;
+/// V Rising
+pub mod vr;

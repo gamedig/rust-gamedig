@@ -44,6 +44,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | BrainBread 2                       | BB2      | Valve Protocol            |                                                                                                                                                                           |
 | Avorion                            | AVORION  | Valve Protocol            | Query port is 27020.                                                                                                                                                      |
 | Operation: Harsh Doorstop          | OHD      | Valve Protocol            | Query port is 27005.                                                                                                                                                      |
+| V Rising                           | VR       | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
 
 ## Planned to add support:
 _

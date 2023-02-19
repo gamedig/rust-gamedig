@@ -218,6 +218,8 @@ pub enum SteamApp {
     OHD,
     /// Onset
     ONSET,
+    /// V Rising
+    VR,
 }
 
 impl SteamApp {
@@ -263,7 +265,8 @@ impl SteamApp {
             SteamApp::ASRD => Engine::new_source(563560),
             SteamApp::ROR2 => Engine::new_source(632360),
             SteamApp::OHD => Engine::new_source_with_dedicated(736590, 950900),
-            SteamApp::ONSET => Engine::new_source(1105810)
+            SteamApp::ONSET => Engine::new_source(1105810),
+            SteamApp::VR => Engine::new_source(1604030),
         }
     }
 }
