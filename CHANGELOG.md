@@ -10,6 +10,7 @@ the protocols/services, also saves storage space).
 Protocols:
 - Valve:
 1. Reversed (from `0.1.0`) "Players with no name are no more added to the `players_details` field.", also added a note in the [protocols](PROTOCOLS.md) file regarding this.
+2. Fixed querying while multiple challenge responses might happen.
 
 ### Breaking:
 None.

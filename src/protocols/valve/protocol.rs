@@ -189,21 +189,19 @@ impl ValveProtocol {
     /// Ask for a specific request only.
     fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
         let request_initial_packet = Packet::initial(kind).to_bytes();
-
         self.socket.send(&request_initial_packet)?;
-        let packet = self.receive(engine, protocol, PACKET_SIZE)?;
 
-        if packet.kind != 0x41 { //'A'
-            let data = packet.payload.clone();
-            return Ok(Bufferer::new_with_data(Endianess::Little, &data));
+        let mut packet = self.receive(engine, protocol, PACKET_SIZE)?;
+        while packet.kind == 0x41 {// 'A'
+            let challenge = packet.payload.clone();
+            let challenge_packet = Packet::challenge(kind, challenge).to_bytes();
+
+            self.socket.send(&challenge_packet)?;
+
+            packet = self.receive(engine, protocol, PACKET_SIZE)?;
         }
 
-        let challenge = packet.payload;
-        let challenge_packet = Packet::challenge(kind, challenge).to_bytes();
-
-        self.socket.send(&challenge_packet)?;
-
-        let data = self.receive(engine, protocol, PACKET_SIZE)?.payload;
+        let data = packet.payload;
         Ok(Bufferer::new_with_data(Endianess::Little, &data))
     }
 
