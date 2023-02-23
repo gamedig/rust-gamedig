@@ -10,3 +10,5 @@ pub mod types;
 pub mod valve;
 /// Reference: [Server List Ping](https://wiki.vg/Server_List_Ping)
 pub mod minecraft;
+/// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/gamespy1.js)
+pub mod gamespy;
