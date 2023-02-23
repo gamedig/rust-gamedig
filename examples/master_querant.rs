@@ -84,7 +84,7 @@ fn main() -> GDResult<()> {
         "avorion" => println!("{:#?}", avorion::query(ip, port)?),
         "ohd" => println!("{:#?}", ohd::query(ip, port)?),
         "vr" => println!("{:#?}", vr::query(ip, port)?),
-        "_gamespy1" => println!("{:#?}", gamespy::query(ip, port.unwrap(), None)),
+        "_gamespy1" => println!("{:#?}", gamespy::one::query(ip, port.unwrap(), None)),
         "ut" => println!("{:#?}", ut::query(ip, port)),
         _ => panic!("Undefined game: {}", args[1])
     };
