@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::GDResult;
 use crate::protocols::gamespy::Response;
@@ -15,9 +16,21 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
 
     let mut as_string = bufferer.get_string_utf8_unended()?;
     as_string.remove(0);
-    println!("{:02X?}", as_string);
+
     let splited: Vec<&str> = as_string.split('\\').collect();
-    println!("{:02X?}", splited);
+    let mut data = HashMap::new();
+
+    for i in 0..splited.len() / 2 {
+        let position = i * 2;
+        let key = splited[position];
+        let value = splited.get(position + 1).unwrap_or(&"");
+
+        data.insert(key, value);
+    }
+
+    println!("{:#?}", data);
+    println!("{}", data.contains_key("final"));
+    println!("{}", data["queryid"]);
 
     Ok(Response {
 
