@@ -5,19 +5,19 @@ use crate::protocols::gamespy::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+fn get_server_values(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<HashMap<String, String>> {
     let mut socket = UdpSocket::new(address, port)?;
     socket.apply_timeout(timeout_settings)?;
 
     socket.send("\\status\\xserverquery".as_bytes())?;
 
-    let mut receivedQueryId: Option<usize> = None;
+    let mut received_query_id: Option<usize> = None;
     let mut parts: Vec<usize> = Vec::new();
-    let mut maxPartNum: Option<usize> = None;
+    let mut is_finished = false;
 
-    let mut serverValues = HashMap::new();
+    let mut server_values = HashMap::new();
 
-    while maxPartNum.is_none() {
+    while !is_finished {
         let data = socket.receive(None)?;
         let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
 
@@ -34,55 +34,51 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
                 Some(v) => v.clone()
             };
 
-            serverValues.insert(key, value);
+            server_values.insert(key, value);
         }
 
-        let isFinal = serverValues.contains_key("final");
-        let queryData = serverValues.get("queryid");
-        let mut part = None;
-        let mut queryId = None;
-        if let Some(qid) = queryData {
+        is_finished = server_values.contains_key("final");
+        server_values.remove("final");
+
+        let query_data = server_values.get("queryid");
+
+        let mut part = parts.len(); //by default, if not part number is provided, its the parts length
+        let mut query_id = None;
+        if let Some(qid) = query_data {
             let split: Vec<&str> = qid.split('.').collect();
-            if split.len() > 1 {
-                part = Some(split[1].parse::<usize>().unwrap());
-            }
-            queryId = Some(split[0].parse::<usize>().unwrap());
+
+            query_id = Some(split[0].parse().unwrap());
+            match split.len() {
+                1 => (),
+                2 => part = split[1].parse().unwrap(),
+                _ => Err(GDError::PacketBad)? //the queryid can't be splitted in more than 2 elements
+            };
         }
 
-        serverValues.remove("final");
-        serverValues.remove("queryid");
+        server_values.remove("queryid");
 
-        println!("{:?} {:?} {:?}", part, queryId, isFinal);
+        println!("{:?} {:?} {:?}", part, query_id, is_finished);
 
-        if receivedQueryId.is_some() && receivedQueryId != queryId {
-            println!("Rejected packet, wrong query ID");
-            return Err(GDError::PacketBad);
-        }
-        else {
-            receivedQueryId = queryId;
-        }
-
-        if part.is_none() {
-            part = Some(parts.len());
-            println!("No part number received, assigned: {:?}", part.unwrap());
+        if received_query_id.is_some() && received_query_id != query_id {
+            return Err(GDError::PacketBad); //wrong query id!
         }
         else {
-            let part_n = part.unwrap();
-            if parts.contains(&part_n) {
-                println!("Rejected packet (duplicate)");
-                return Err(GDError::PacketBad);
-            }
-            else {
-                parts.push(part_n);
-            }
+            received_query_id = query_id;
         }
 
-        if isFinal {
-            maxPartNum = part;
+        match parts.contains(&part) {
+            true => Err(GDError::PacketBad)?,
+            false => parts.push(part)
         }
     }
 
-    println!("{:#?}", serverValues);
+    Ok(server_values)
+}
+
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let server_vars = get_server_values(address, port, timeout_settings)?;
+
+    println!("{:#?}", server_vars);
 
     Ok(Response {
 
