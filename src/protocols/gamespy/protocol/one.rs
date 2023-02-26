@@ -75,12 +75,59 @@ fn get_server_values(address: &str, port: u16, timeout_settings: Option<TimeoutS
     Ok(server_values)
 }
 
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let server_vars = get_server_values(address, port, timeout_settings)?;
+struct Player {
+    pub name: String,
+    pub team: u8,
+    pub ping: u16,
+    pub face: String,
+    pub skin: String,
+    pub mesh: String,
+    pub frags: u16,
+    pub secret: bool
+}
 
-    println!("{:#?}", server_vars);
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let mut server_vars = get_server_values(address, port, timeout_settings)?;
+
+    let name = server_vars.remove("hostname").unwrap();
+    let map = server_vars.remove("mapname").unwrap();
+    let players_maximum = server_vars.remove("maxplayers").unwrap().parse().unwrap();
+
+    let mut players_data: Vec<HashMap<String, String>> = vec![HashMap::new(); players_maximum];
+
+    server_vars.retain(|key, value| {
+        let split: Vec<&str> = key.split('_').collect();
+
+        if split.len() != 2 {
+            return true;
+        }
+
+        let kind = split[0];
+        let id: usize = split[1].parse().unwrap();
+
+        let early_return = match kind {
+            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" => false,
+            x => {
+                println!("UNKNOWN {id} {x} {value}");
+                true
+            }
+        };
+
+        if early_return {
+            return true;
+        }
+
+        players_data[id].insert(kind.to_string(), value.to_string());
+
+        false
+    });
+
+    println!("{:#?}", players_data);
 
     Ok(Response {
-
+        name,
+        map,
+        players_maximum,
+        unused_entries: server_vars
     })
 }
