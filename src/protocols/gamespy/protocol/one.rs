@@ -42,15 +42,15 @@ fn get_server_values(address: &str, port: u16, timeout_settings: Option<TimeoutS
 
         let query_data = server_values.get("queryid");
 
-        let mut part = parts.len(); //by default, if not part number is provided, its the parts length
+        let mut part = parts.len(); //if the part number isn't provided, it's value is the parts length
         let mut query_id = None;
         if let Some(qid) = query_data {
             let split: Vec<&str> = qid.split('.').collect();
 
-            query_id = Some(split[0].parse().unwrap());
+            query_id = Some(split[0].parse().map_err(|_| GDError::TypeParse)?);
             match split.len() {
                 1 => (),
-                2 => part = split[1].parse().unwrap(),
+                2 => part = split[1].parse().map_err(|_| GDError::TypeParse)?,
                 _ => Err(GDError::PacketBad)? //the queryid can't be splitted in more than 2 elements
             };
         }
@@ -112,25 +112,26 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
     let mut players: Vec<Player> = Vec::with_capacity(players_data.len());
 
     for player_data in players_data {
-        //println!("{:#?}", player_data);
-
         let new_player = Player {
-            name: player_data.get("player").unwrap().clone(),
-            team: player_data.get("team").unwrap().trim().parse().unwrap(),
-            ping: player_data.get("ping").unwrap().trim().parse().unwrap(),
-            face: player_data.get("face").unwrap().clone(),
-            skin: player_data.get("skin").unwrap().clone(),
-            mesh: player_data.get("mesh").unwrap().clone(),
-            frags: player_data.get("frags").unwrap().trim().parse().unwrap(),
+            name: match player_data.get("player") {
+                Some(v) => v.clone(),
+                None => player_data.get("playername").ok_or(GDError::PacketBad)?.clone()
+            },
+            team: player_data.get("team").ok_or(GDError::PacketBad)?.trim().parse().map_err(|_| GDError::TypeParse)?,
+            ping: player_data.get("ping").ok_or(GDError::PacketBad)?.trim().parse().map_err(|_| GDError::TypeParse)?,
+            face: player_data.get("face").ok_or(GDError::PacketBad)?.clone(),
+            skin: player_data.get("skin").ok_or(GDError::PacketBad)?.clone(),
+            mesh: player_data.get("mesh").ok_or(GDError::PacketBad)?.clone(),
+            frags: player_data.get("frags").ok_or(GDError::PacketBad)?.trim().parse().map_err(|_| GDError::TypeParse)?,
             deaths: match player_data.get("deaths") {
-                Some(v) => Some(v.trim().parse().unwrap()),
+                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
                 None => None
             },
             health: match player_data.get("health") {
-                Some(v) => Some(v.trim().parse().unwrap()),
+                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
                 None => None
             },
-            secret: player_data.get("ngsecret").unwrap().to_lowercase().parse().unwrap(),
+            secret: player_data.get("ngsecret").ok_or(GDError::PacketBad)?.to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
         };
 
         players.push(new_player);
@@ -142,9 +143,9 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut server_vars = get_server_values(address, port, timeout_settings)?;
 
-    let name = server_vars.remove("hostname").unwrap();
-    let map = server_vars.remove("mapname").unwrap();
-    let players_maximum = server_vars.remove("maxplayers").unwrap().parse().unwrap();
+    let name = server_vars.remove("hostname").ok_or(GDError::PacketBad)?;
+    let map = server_vars.remove("mapname").ok_or(GDError::PacketBad)?;
+    let players_maximum = server_vars.remove("maxplayers").ok_or(GDError::PacketBad)?.parse().map_err(|_| GDError::TypeParse)?;
 
     let players = extract_players(&mut server_vars, players_maximum)?;
 
