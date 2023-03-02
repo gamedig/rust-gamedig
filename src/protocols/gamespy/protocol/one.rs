@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::{GDError, GDResult};
-use crate::protocols::gamespy::Response;
+use crate::protocols::gamespy::{Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 
@@ -75,25 +75,8 @@ fn get_server_values(address: &str, port: u16, timeout_settings: Option<TimeoutS
     Ok(server_values)
 }
 
-struct Player {
-    pub name: String,
-    pub team: u8,
-    pub ping: u16,
-    pub face: String,
-    pub skin: String,
-    pub mesh: String,
-    pub frags: u16,
-    pub secret: bool
-}
-
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let mut server_vars = get_server_values(address, port, timeout_settings)?;
-
-    let name = server_vars.remove("hostname").unwrap();
-    let map = server_vars.remove("mapname").unwrap();
-    let players_maximum = server_vars.remove("maxplayers").unwrap().parse().unwrap();
-
-    let mut players_data: Vec<HashMap<String, String>> = vec![HashMap::new(); players_maximum];
+fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: usize) -> GDResult<Vec<Player>> {
+    let mut players_data: Vec<HashMap<String, String>> = Vec::with_capacity(players_maximum);
 
     server_vars.retain(|key, value| {
         let split: Vec<&str> = key.split('_').collect();
@@ -106,7 +89,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         let id: usize = split[1].parse().unwrap();
 
         let early_return = match kind {
-            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" => false,
+            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" | "deaths" | "health" => false,
             x => {
                 println!("UNKNOWN {id} {x} {value}");
                 true
@@ -117,17 +100,60 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
             return true;
         }
 
+        if id >= players_data.len() {
+            let others = vec![HashMap::new(); id - players_data.len() + 1];
+            players_data.extend_from_slice(&others);
+        }
         players_data[id].insert(kind.to_string(), value.to_string());
 
         false
     });
 
-    println!("{:#?}", players_data);
+    let mut players: Vec<Player> = Vec::with_capacity(players_data.len());
+
+    for player_data in players_data {
+        //println!("{:#?}", player_data);
+
+        let new_player = Player {
+            name: player_data.get("player").unwrap().clone(),
+            team: player_data.get("team").unwrap().trim().parse().unwrap(),
+            ping: player_data.get("ping").unwrap().trim().parse().unwrap(),
+            face: player_data.get("face").unwrap().clone(),
+            skin: player_data.get("skin").unwrap().clone(),
+            mesh: player_data.get("mesh").unwrap().clone(),
+            frags: player_data.get("frags").unwrap().trim().parse().unwrap(),
+            deaths: match player_data.get("deaths") {
+                Some(v) => Some(v.trim().parse().unwrap()),
+                None => None
+            },
+            health: match player_data.get("health") {
+                Some(v) => Some(v.trim().parse().unwrap()),
+                None => None
+            },
+            secret: player_data.get("ngsecret").unwrap().to_lowercase().parse().unwrap(),
+        };
+
+        players.push(new_player);
+    }
+
+    Ok(players)
+}
+
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let mut server_vars = get_server_values(address, port, timeout_settings)?;
+
+    let name = server_vars.remove("hostname").unwrap();
+    let map = server_vars.remove("mapname").unwrap();
+    let players_maximum = server_vars.remove("maxplayers").unwrap().parse().unwrap();
+
+    let players = extract_players(&mut server_vars, players_maximum)?;
 
     Ok(Response {
         name,
         map,
         players_maximum,
+        players_online: players.len(),
+        players,
         unused_entries: server_vars
     })
 }
