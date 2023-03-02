@@ -143,18 +143,26 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut server_vars = get_server_values(address, port, timeout_settings)?;
 
-    let name = server_vars.remove("hostname").ok_or(GDError::PacketBad)?;
-    let map = server_vars.remove("mapname").ok_or(GDError::PacketBad)?;
     let players_maximum = server_vars.remove("maxplayers").ok_or(GDError::PacketBad)?.parse().map_err(|_| GDError::TypeParse)?;
 
     let players = extract_players(&mut server_vars, players_maximum)?;
 
     Ok(Response {
-        name,
-        map,
+        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
+        map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
+        admin_contact: server_vars.remove("AdminEMail").ok_or(GDError::PacketBad)?,
+        admin_name: server_vars.remove("AdminName").ok_or(GDError::PacketBad)?,
+        has_password: server_vars.remove("password").ok_or(GDError::PacketBad)?.to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
+        game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
+        game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
+        balance_teams: server_vars.remove("balanceteams").ok_or(GDError::PacketBad)?.to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
         players_maximum,
         players_online: players.len(),
+        players_minimum: server_vars.remove("minplayers").ok_or(GDError::PacketBad)?.parse().map_err(|_| GDError::TypeParse)?,
+        max_teams: server_vars.remove("maxteams").ok_or(GDError::PacketBad)?.parse().map_err(|_| GDError::TypeParse)?,
+        map_title: server_vars.remove("maptitle").ok_or(GDError::PacketBad)?,
         players,
+        tournament: server_vars.remove("tournament").ok_or(GDError::PacketBad)?.to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
         unused_entries: server_vars
     })
 }
