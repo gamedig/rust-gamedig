@@ -11,7 +11,7 @@ To see the supported (or the planned to support) games/services/protocols, see [
 
 ## Usage
 Just pick a game/service/protocol, provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
-Team Fortress 2 query example:
+[Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 ```rust
 use gamedig::games::tf2;
 
