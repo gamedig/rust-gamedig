@@ -87,3 +87,5 @@ pub mod ohd;
 pub mod vr;
 /// Unreal Tournament
 pub mod ut;
+/// Battlefield 1942
+pub mod bf1942;

@@ -10,6 +10,7 @@ the protocols/services, also saves storage space).
 Games:
 - [V Rising](https://store.steampowered.com/app/1604030/V_Rising/) support.
 - [Unreal Tournament](https://en.wikipedia.org/wiki/Unreal_Tournament) support.
+- [Battlefield 1942](https://www.ea.com/games/battlefield/battlefield-1942) support.
 
 Protocols:
 - Valve:
