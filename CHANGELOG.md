@@ -1,11 +1,11 @@
 
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/2023
+# 0.2.1 - 03/03/2023
 ### Changes:
 Crate:
-- Added feature `no_games` which disables the supported games (useful when you are only using
-the protocols/services, also saves storage space).
+- Added feature `no_games` which disables the supported games (useful when only the 
+protocols/services are needed, also saves storage space).
 
 Games:
 - [V Rising](https://store.steampowered.com/app/1604030/V_Rising/) support.
