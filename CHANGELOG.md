@@ -9,11 +9,15 @@ the protocols/services, also saves storage space).
 
 Games:
 - [V Rising](https://store.steampowered.com/app/1604030/V_Rising/) support.
+- [Unreal Tournament](https://en.wikipedia.org/wiki/Unreal_Tournament) support.
+- [Battlefield 1942](https://www.ea.com/games/battlefield/battlefield-1942) support.
 
 Protocols:
 - Valve:
 1. Reversed (from `0.1.0`) "Players with no name are no more added to the `players_details` field.", also added a note in the [protocols](PROTOCOLS.md) file regarding this.
 2. Fixed querying while multiple challenge responses might happen.
+
+- GameSpy 1 support.
 
 ### Breaking:
 None.

@@ -85,3 +85,7 @@ pub mod avorion;
 pub mod ohd;
 /// V Rising
 pub mod vr;
+/// Unreal Tournament
+pub mod ut;
+/// Battlefield 1942
+pub mod bf1942;

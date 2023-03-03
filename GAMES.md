@@ -45,6 +45,8 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Avorion                            | AVORION  | Valve Protocol            | Query port is 27020.                                                                                                                                                      |
 | Operation: Harsh Doorstop          | OHD      | Valve Protocol            | Query port is 27005.                                                                                                                                                      |
 | V Rising                           | VR       | Valve Protocol            | Query port is 27016.                                                                                                                                                      |
+| Unreal Tournament                  | UT       | GameSpy 1                 | Query Port offset: 1.                                                                                                                                                     |
+| Battlefield 1942                   | BF1942   | GameSpy 1                 | Query port is 23000.                                                                                                                                                      |
 
 ## Planned to add support:
 _
