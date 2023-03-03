@@ -40,15 +40,9 @@ pub fn query_bedrock(address: &str, port: Option<u16>) -> GDResult<BedrockRespon
 }
 
 fn port_or_java_default(port: Option<u16>) -> u16 {
-    match port {
-        None => 25565,
-        Some(port) => port
-    }
+    port.unwrap_or(25565)
 }
 
 fn port_or_bedrock_default(port: Option<u16>) -> u16 {
-    match port {
-        None => 19132,
-        Some(port) => port
-    }
+    port.unwrap_or(19132)
 }

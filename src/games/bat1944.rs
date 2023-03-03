@@ -4,10 +4,7 @@ use crate::protocols::valve;
 use crate::protocols::valve::{game, SteamApp};
 
 pub fn query(address: &str, port: Option<u16>) -> GDResult<game::Response> {
-    let mut valve_response = valve::query(address, match port {
-        None => 7780,
-        Some(port) => port
-    }, SteamApp::BAT1944.as_engine(), None, None)?;
+    let mut valve_response = valve::query(address, port.unwrap_or(7780), SteamApp::BAT1944.as_engine(), None, None)?;
 
     if let Some(rules) = &mut valve_response.rules {
         if let Some(bat_max_players) = rules.get("bat_max_players_i") {

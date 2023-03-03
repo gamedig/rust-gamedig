@@ -3,10 +3,7 @@ use crate::protocols::valve;
 use crate::protocols::valve::{game, SteamApp};
 
 pub fn query(address: &str, port: Option<u16>) -> GDResult<game::Response> {
-    let valve_response = valve::query(address, match port {
-        None => 27015,
-        Some(port) => port
-    }, SteamApp::L4D.as_engine(), None, None)?;
+    let valve_response = valve::query(address, port.unwrap_or(27015), SteamApp::L4D.as_engine(), None, None)?;
 
     Ok(game::Response::new_from_valve_response(valve_response))
 }
