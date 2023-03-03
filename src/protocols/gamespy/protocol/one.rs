@@ -153,8 +153,15 @@ fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
     Ok(as_numeral != 0)
 }
 
+/// If there are parsing problems using the `query` function, you can directly get the server's values using this function.
+pub fn query_vars(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<HashMap<String, String>> {
+    get_server_values(address, port, timeout_settings)
+}
+
+/// Query a server by providing the address, the port and timeout settings.
+/// Providing None to the timeout settings results in using the default values. (TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let mut server_vars = get_server_values(address, port, timeout_settings)?;
+    let mut server_vars = query_vars(address, port, timeout_settings)?;
 
     let players_maximum = server_vars.remove("maxplayers").ok_or(GDError::PacketBad)?.parse().map_err(|_| GDError::TypeParse)?;
 

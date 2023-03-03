@@ -85,6 +85,7 @@ fn main() -> GDResult<()> {
         "ohd" => println!("{:#?}", ohd::query(ip, port)?),
         "vr" => println!("{:#?}", vr::query(ip, port)?),
         "_gamespy1" => println!("{:#?}", gamespy::one::query(ip, port.unwrap(), None)),
+        "_gamespy1_vars" => println!("{:#?}", gamespy::one::query_vars(ip, port.unwrap(), None)),
         "ut" => println!("{:#?}", ut::query(ip, port)),
         "bf1942" => println!("{:#?}", bf1942::query(ip, port)),
         _ => panic!("Undefined game: {}", args[1])

@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
+/// A player’s details.
 #[derive(Debug)]
 pub struct Player {
     pub name: String,
     pub team: u8,
+    /// The ping from the server's perspective.
     pub ping: u16,
     pub face: String,
     pub skin: String,
