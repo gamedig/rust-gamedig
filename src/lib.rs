@@ -1,7 +1,7 @@
 
 //! Game Server Query Library.
 //!
-//! # Example
+//! # An usage example:
 //!
 //! ```no_run
 //! use gamedig::games::tf2;
@@ -15,7 +15,7 @@
 //! }
 //! ```
 //!
-//! # Features:
+//! # Crate features:
 //! Enabled by default: None
 //!
 //! `no_games` - disables the included games support.
