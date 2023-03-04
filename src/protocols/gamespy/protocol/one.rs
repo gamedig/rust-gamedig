@@ -172,7 +172,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
         map_title: server_vars.remove("maptitle"),
         admin_contact: server_vars.remove("AdminEMail"),
-        admin_name: server_vars.remove("AdminName"),
+        admin_name: server_vars.remove("AdminName").or(server_vars.remove("admin")),
         has_password: has_password(&mut server_vars)?,
         game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,

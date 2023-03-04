@@ -89,3 +89,5 @@ pub mod vr;
 pub mod ut;
 /// Battlefield 1942
 pub mod bf1942;
+/// Serious Sam
+pub mod ss;

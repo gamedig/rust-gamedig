@@ -3,7 +3,11 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
-Nothing... yet.
+Protocols:
+- GameSpy 1: Add key `admin` as a possible variable for `admin_name`.
+
+Games:
+- [Serious Sam](https://www.gog.com/game/serious_sam_the_first_encounter) support.
 
 ### Breaking:
 None.
@@ -23,7 +27,6 @@ Protocols:
 - Valve:
 1. Reversed (from `0.1.0`) "Players with no name are no more added to the `players_details` field.", also added a note in the [protocols](PROTOCOLS.md) file regarding this.
 2. Fixed querying while multiple challenge responses might happen.
-
 - GameSpy 1 support.
 
 ### Breaking:
