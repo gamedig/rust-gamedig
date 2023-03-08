@@ -2,12 +2,12 @@
 name = "gamedig"
 version = "0.2.1"
 edition = "2021"
-authors = ["CosminPerRam [cosmin.p@live.com]", "node-GameDig [https://github.com/gamedig/node-gamedig]"]
+authors = ["CosminPerRam [https://github.com/CosminPerRam]", "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]"]
 license = "MIT"
 description = "Check out servers with this."
-homepage = "https://github.com/CosminPerRam/rust-gamedig"
+homepage = "https://github.com/gamedig/rust-gamedig"
 documentation = "https://docs.rs/gamedig/latest/gamedig/"
-repository = "https://github.com/CosminPerRam/rust-gamedig"
+repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
 rust-version = "1.56.1"
