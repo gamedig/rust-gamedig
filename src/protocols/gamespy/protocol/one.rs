@@ -172,15 +172,15 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
         map_title: server_vars.remove("maptitle"),
         admin_contact: server_vars.remove("AdminEMail"),
-        admin_name: server_vars.remove("AdminName").or(server_vars.remove("admin")),
+        admin_name: server_vars.remove("AdminName").or_else(|| server_vars.remove("admin")),
         has_password: has_password(&mut server_vars)?,
         game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
         players_maximum,
         players_online: players.len(),
-        players_minimum: server_vars.remove("minplayers").unwrap_or("0".to_string()).parse().map_err(|_| GDError::TypeParse)?,
+        players_minimum: server_vars.remove("minplayers").unwrap_or_else(|| "0".to_string()).parse().map_err(|_| GDError::TypeParse)?,
         players,
-        tournament: server_vars.remove("tournament").unwrap_or("true".to_string()).to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
+        tournament: server_vars.remove("tournament").unwrap_or_else(|| "true".to_string()).to_lowercase().parse().map_err(|_| GDError::TypeParse)?,
         unused_entries: server_vars
     })
 }

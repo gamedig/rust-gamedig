@@ -49,7 +49,7 @@ impl LegacyV1_6 {
     pub fn get_response(buffer: &mut Bufferer) -> GDResult<JavaResponse> {
         let packet_string = buffer.get_string_utf16()?;
 
-        let split: Vec<&str> = packet_string.split("\x00").collect();
+        let split: Vec<&str> = packet_string.split('\x00').collect();
         error_by_expected_size(5, split.len())?;
 
         let version_protocol = split[0].parse()

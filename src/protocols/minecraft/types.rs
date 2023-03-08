@@ -174,14 +174,13 @@ pub(crate) fn as_varint(value: i32) -> Vec<u8> {
 
 pub(crate) fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
     let length = get_varint(buffer)? as usize;
-    let mut text = vec![0; length];
+    let mut text = Vec::with_capacity(length);
 
-    for i in 0..length {
-        text[i] = buffer.get_u8()?;
+    for _ in 0..length {
+        text.push(buffer.get_u8()?)
     }
 
-    Ok(String::from_utf8(text)
-        .map_err(|_| PacketBad)?)
+    String::from_utf8(text).map_err(|_| PacketBad)
 }
 
 #[allow(dead_code)]

@@ -10,7 +10,8 @@ Games:
 - [Serious Sam](https://www.gog.com/game/serious_sam_the_first_encounter) support.
 
 ### Breaking:
-None.
+Protocols:
+- Valve: Request type enums have been renamed from all caps to starting-only uppercase, ex: `INFO` to `Info`
 
 # 0.2.1 - 03/03/2023
 ### Changes:

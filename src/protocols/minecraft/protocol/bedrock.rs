@@ -71,7 +71,7 @@ impl Bedrock {
         error_by_expected_size(remaining_length, buffer.remaining_length())?;
 
         let binding = buffer.get_string_utf8_unended()?;
-        let status: Vec<&str> = binding.split(";").collect();
+        let status: Vec<&str> = binding.split(';').collect();
 
         // We must have at least 6 values
         if status.len() < 6 {
@@ -85,8 +85,8 @@ impl Bedrock {
             version_protocol:  status[2].to_string(),
             players_maximum: status[5].parse().map_err(|_| TypeParse)?,
             players_online: status[4].parse().map_err(|_| TypeParse)?,
-            id: status.get(6).and_then(|v| Some(v.to_string())),
-            map: status.get(7).and_then(|v| Some(v.to_string())),
+            id: status.get(6).map(|v| v.to_string()),
+            map: status.get(7).map(|v| v.to_string()),
             game_mode: match status.get(8) {
                 None => None,
                 Some(v) => Some(GameMode::from_bedrock(v)?)

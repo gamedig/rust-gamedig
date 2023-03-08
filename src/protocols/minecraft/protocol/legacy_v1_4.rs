@@ -44,7 +44,7 @@ impl LegacyV1_4 {
 
         let packet_string = buffer.get_string_utf16()?;
 
-        let split: Vec<&str> = packet_string.split("§").collect();
+        let split: Vec<&str> = packet_string.split('§').collect();
         error_by_expected_size(3, split.len())?;
 
         let description = split[0].to_string();

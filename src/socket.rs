@@ -31,7 +31,7 @@ impl Socket for TcpSocket {
     }
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-        let settings = timeout_settings.unwrap_or(TimeoutSettings::default());
+        let settings = timeout_settings.unwrap_or_default();
         self.socket.set_read_timeout(settings.get_read()).unwrap();   //unwrapping because TimeoutSettings::new
         self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
 
@@ -39,7 +39,7 @@ impl Socket for TcpSocket {
     }
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.write(&data).map_err(|_| PacketSend)?;
+        self.socket.write(data).map_err(|_| PacketSend)?;
         Ok(())
     }
 
@@ -68,7 +68,7 @@ impl Socket for UdpSocket {
     }
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-        let settings = timeout_settings.unwrap_or(TimeoutSettings::default());
+        let settings = timeout_settings.unwrap_or_default();
         self.socket.set_read_timeout(settings.get_read()).unwrap();   //unwrapping because TimeoutSettings::new
         self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
 
@@ -76,7 +76,7 @@ impl Socket for UdpSocket {
     }
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.send_to(&data, &self.complete_address).map_err(|_| PacketSend)?;
+        self.socket.send_to(data, &self.complete_address).map_err(|_| PacketSend)?;
         Ok(())
     }
 

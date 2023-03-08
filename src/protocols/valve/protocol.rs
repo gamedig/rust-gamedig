@@ -32,7 +32,7 @@ impl Packet {
             header: initial.header,
             kind: initial.kind,
             payload: match kind {
-                Request::INFO => {
+                Request::Info => {
                     initial.payload.extend(challenge);
                     initial.payload
                 },
@@ -46,7 +46,7 @@ impl Packet {
             header: 4294967295, //FF FF FF FF
             kind: kind as u8,
             payload: match kind {
-                Request::INFO => String::from("Source Engine Query\0").into_bytes(),
+                Request::Info => String::from("Source Engine Query\0").into_bytes(),
                 _ => vec![0xFF, 0xFF, 0xFF, 0xFF]
             }
         }
@@ -124,10 +124,8 @@ impl SplitPacket {
             let mut decompressed_payload = Vec::with_capacity(decompressed_size);
             decoder.read(&mut decompressed_payload).map_err(|_| Decompress)?;
 
-            if decompressed_payload.len() != decompressed_size {
-                Err(Decompress)
-            }
-            else if crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap() {
+            if decompressed_payload.len() != decompressed_size
+                || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap() {
                 Err(Decompress)
             }
             else {
@@ -162,13 +160,13 @@ impl ValveProtocol {
         let header = buffer.get_u8()?;
         buffer.move_position_backward(1);
         if header == 0xFE { //the packet is split
-            let mut main_packet = SplitPacket::new(&engine, protocol, &mut buffer)?;
+            let mut main_packet = SplitPacket::new(engine, protocol, &mut buffer)?;
             let mut chunk_packets = Vec::with_capacity((main_packet.total - 1) as usize);
 
             for _ in 1..main_packet.total {
                 let new_data = self.socket.receive(Some(buffer_size))?;
                 buffer = Bufferer::new_with_data(Endianess::Little, &new_data);
-                let chunk_packet = SplitPacket::new(&engine, protocol, &mut buffer)?;
+                let chunk_packet = SplitPacket::new(engine, protocol, &mut buffer)?;
                 chunk_packets.push(chunk_packet);
             }
 
@@ -266,7 +264,7 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
-        let mut buffer = self.get_request_data(&engine, 0, Request::INFO)?;
+        let mut buffer = self.get_request_data(engine, 0, Request::Info)?;
         
         if let Engine::GoldSrc(force) = engine {
             if *force {
@@ -365,7 +363,7 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let mut buffer = self.get_request_data(&engine, protocol, Request::PLAYERS)?;
+        let mut buffer = self.get_request_data(engine, protocol, Request::Players)?;
 
         let count = buffer.get_u8()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
@@ -393,7 +391,7 @@ impl ValveProtocol {
 
     /// Get the server's rules.
     fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let mut buffer = self.get_request_data(&engine, protocol, Request::RULES)?;
+        let mut buffer = self.get_request_data(engine, protocol, Request::Rules)?;
 
         let count = buffer.get_u16()? as usize;
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
@@ -416,7 +414,7 @@ impl ValveProtocol {
 /// Query a server by providing the address, the port, the app, gather and timeout settings.
 /// Providing None to the settings results in using the default values for them (GatherSettings::[default](GatheringSettings::default), TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &str, port: u16, engine: Engine, gather_settings: Option<GatheringSettings>, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let response_gather_settings = gather_settings.unwrap_or(GatheringSettings::default());
+    let response_gather_settings = gather_settings.unwrap_or_default();
     get_response(address, port, engine, response_gather_settings, timeout_settings)
 }
 
@@ -426,21 +424,19 @@ fn get_response(address: &str, port: u16, engine: Engine, gather_settings: Gathe
     let info = client.get_server_info(&engine)?;
     let protocol = info.protocol;
 
-    if let Engine::Source(source_app) = &engine {
-        if let Some(appids) = source_app {
-            let mut is_specified_id = false;
+    if let Engine::Source(Some(appids)) = &engine {
+        let mut is_specified_id = false;
 
-            if appids.0 == info.appid {
+        if appids.0 == info.appid {
+            is_specified_id = true;
+        } else if let Some(dedicated_appid) = appids.1 {
+            if dedicated_appid == info.appid {
                 is_specified_id = true;
-            } else if let Some(dedicated_appid) = appids.1 {
-                if dedicated_appid == info.appid {
-                    is_specified_id = true;
-                }
             }
+        }
 
-            if !is_specified_id {
-                return Err(BadGame(format!("AppId: {}", info.appid)));
-            }
+        if !is_specified_id {
+            return Err(BadGame(format!("AppId: {}", info.appid)));
         }
     }
 

@@ -124,19 +124,19 @@ pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u1
 }
 
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 #[repr(u8)]
 pub(crate) enum Request {
     /// Known as `A2S_INFO`
-    INFO = 0x54,
+    Info = 0x54,
     /// Known as `A2S_PLAYERS`
-    PLAYERS = 0x55,
+    Players = 0x55,
     /// Known as `A2S_RULES`
-    RULES = 0x56
+    Rules = 0x56
 }
 
 /// Supported steam apps
-#[derive(PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone)]
 pub enum SteamApp {
     /// Counter-Strike
     CS,
@@ -272,7 +272,7 @@ impl SteamApp {
 }
 
 /// Engine type.
-#[derive(PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone)]
 pub enum Engine {
     /// A Source game, the argument represents the possible steam app ids, if its **None**, let
     /// the query find it, if its **Some**, the query fails if the response id is not the first
@@ -391,7 +391,7 @@ pub mod game {
                 game: response.info.game,
                 appid: response.info.appid,
                 players_online: response.info.players_online,
-                players_details: response.players.unwrap_or(vec![]).iter().map(Player::from_valve_response).collect(),
+                players_details: response.players.unwrap_or_default().iter().map(Player::from_valve_response).collect(),
                 players_maximum: response.info.players_maximum,
                 players_bots: response.info.players_bots,
                 server_type: response.info.server_type,
@@ -403,7 +403,7 @@ pub mod game {
                 tv_port,
                 tv_name,
                 keywords,
-                rules: response.rules.unwrap_or(HashMap::new())
+                rules: response.rules.unwrap_or_default()
             }
         }
     }

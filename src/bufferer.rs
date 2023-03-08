@@ -100,7 +100,7 @@ impl Bufferer {
 
     pub fn get_string_utf8(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
-        if sub_buf.len() == 0 {
+        if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
 
@@ -115,11 +115,11 @@ impl Bufferer {
 
     pub fn get_string_utf8_unended(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
-        if sub_buf.len() == 0 {
+        if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
 
-        let value = std::str::from_utf8(&sub_buf)
+        let value = std::str::from_utf8(sub_buf)
             .map_err(|_| PacketBad)?.to_string();
 
         self.position += value.len();
@@ -128,7 +128,7 @@ impl Bufferer {
 
     pub fn get_string_utf16(&mut self) -> GDResult<String> {
         let sub_buf = &self.data[self.position..];
-        if sub_buf.len() == 0 {
+        if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
 
@@ -138,8 +138,7 @@ impl Bufferer {
             Endianess::Big => u16::from_be_bytes([a[0], a[1]])
         }).collect();
 
-        let value = String::from_utf16(&paired_buf)
-            .map_err(|_| PacketBad)?.to_string();
+        let value = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
 
         self.position += value.len() * 2;
         Ok(value)

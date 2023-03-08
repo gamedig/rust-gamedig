@@ -1,7 +1,7 @@
 
 //! Game Server Query Library.
 //!
-//! # An usage example:
+//! # Usage example:
 //!
 //! ```no_run
 //!use gamedig::games::tf2;
