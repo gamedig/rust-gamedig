@@ -21,7 +21,7 @@ impl Packet {
         Ok(Self {
             header: buffer.get_u32()?,
             kind: buffer.get_u8()?,
-            payload: buffer.get_data_in_front_of_position()
+            payload: buffer.remaining_data_vec()
         })
     }
 
@@ -110,7 +110,7 @@ impl SplitPacket {
             compressed,
             decompressed_size,
             uncompressed_crc32,
-            payload: buffer.get_data_in_front_of_position()
+            payload: buffer.remaining_data_vec()
         })
     }
 

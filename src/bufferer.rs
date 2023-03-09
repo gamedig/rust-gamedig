@@ -1,5 +1,6 @@
 use crate::GDResult;
 use crate::GDError::{PacketBad, PacketUnderflow};
+use byteorder::{ByteOrder, LittleEndian, BigEndian};
 
 pub enum Endianess {
     Little, Big
@@ -39,11 +40,9 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let source_data: [u8; 2] = (&self.data[self.position..self.position + 2]).try_into().unwrap();
-
         let value = match self.endianess {
-            Endianess::Little => u16::from_le_bytes(source_data),
-            Endianess::Big => u16::from_be_bytes(source_data)
+            Endianess::Little => LittleEndian::read_u16(self.remaining_data()),
+            Endianess::Big => BigEndian::read_u16(self.remaining_data()),
         };
 
         self.position += 2;
@@ -55,11 +54,9 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
-
         let value = match self.endianess {
-            Endianess::Little => u32::from_le_bytes(source_data),
-            Endianess::Big => u32::from_be_bytes(source_data)
+            Endianess::Little => LittleEndian::read_u32(self.remaining_data()),
+            Endianess::Big => BigEndian::read_u32(self.remaining_data()),
         };
 
         self.position += 4;
@@ -71,11 +68,9 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let source_data: [u8; 4] = (&self.data[self.position..self.position + 4]).try_into().unwrap();
-
         let value = match self.endianess {
-            Endianess::Little => f32::from_le_bytes(source_data),
-            Endianess::Big => f32::from_be_bytes(source_data)
+            Endianess::Little => LittleEndian::read_f32(self.remaining_data()),
+            Endianess::Big => BigEndian::read_f32(self.remaining_data())
         };
 
         self.position += 4;
@@ -87,11 +82,9 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let source_data: [u8; 8] = (&self.data[self.position..self.position + 8]).try_into().unwrap();
-        
         let value = match self.endianess {
-            Endianess::Little => u64::from_le_bytes(source_data),
-            Endianess::Big => u64::from_be_bytes(source_data)
+            Endianess::Little => LittleEndian::read_u64(self.remaining_data()),
+            Endianess::Big => BigEndian::read_u64(self.remaining_data())
         };
 
         self.position += 8;
@@ -151,10 +144,6 @@ impl Bufferer {
     pub fn move_position_backward(&mut self, by: usize) {
         self.position -= by;
     }
-    
-    pub fn get_data_in_front_of_position(&self) -> Vec<u8> {
-        self.data[self.position..].to_vec()
-    }
 
     pub fn data_length(&self) -> usize {
         self.data.len()
@@ -162,6 +151,10 @@ impl Bufferer {
 
     pub fn remaining_data(&self) -> &[u8] {
         &self.data[self.position..]
+    }
+
+    pub fn remaining_data_vec(&self) -> Vec<u8> {
+        self.data[self.position..].to_vec()
     }
 
     pub fn remaining_length(&self) -> usize {
