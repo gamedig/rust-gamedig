@@ -125,8 +125,9 @@ mod tests {
             .filter(|&x| x != 0)
             .collect();
 
+        server_thread.join().expect("server thread panicked");
+
         assert_eq!(message, &received_message[..]);
-        server_thread.join().unwrap();
     }
 
     #[test]
@@ -154,7 +155,8 @@ mod tests {
             .filter(|&x| x != 0)
             .collect();
 
+        server_thread.join().expect("server thread panicked");
+
         assert_eq!(message, &received_message[..]);
-        server_thread.join().unwrap();
     }
 }
