@@ -11,7 +11,7 @@ pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
 }
 
 pub fn address_and_port_as_string(address: &str, port: u16) -> String {
-    address.to_string() + ":" + &*port.to_string()
+    format!("{}:{}", address, port)
 }
 
 pub fn u8_lower_upper(n: u8) -> (u8, u8) {
