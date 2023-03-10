@@ -1,12 +1,12 @@
-use std::time::Duration;
-use crate::GDResult;
 use crate::GDError::InvalidInput;
+use crate::GDResult;
+use std::time::Duration;
 
 /// Timeout settings for socket operations
 #[derive(Clone)]
 pub struct TimeoutSettings {
     read: Option<Duration>,
-    write: Option<Duration>
+    write: Option<Duration>,
 }
 
 impl TimeoutSettings {
@@ -14,20 +14,17 @@ impl TimeoutSettings {
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
-                return Err(InvalidInput)
+                return Err(InvalidInput);
             }
         }
 
         if let Some(write_duration) = write {
             if write_duration == Duration::new(0, 0) {
-                return Err(InvalidInput)
+                return Err(InvalidInput);
             }
         }
 
-        Ok(Self {
-            read,
-            write
-        })
+        Ok(Self { read, write })
     }
 
     /// Get the read timeout.
@@ -46,7 +43,7 @@ impl Default for TimeoutSettings {
     fn default() -> Self {
         Self {
             read: Some(Duration::from_secs(4)),
-            write: Some(Duration::from_secs(4))
+            write: Some(Duration::from_secs(4)),
         }
     }
 }

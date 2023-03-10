@@ -1,7 +1,6 @@
-
 //! The library's possible errors.
 use std::fmt;
-use std::{fmt::Formatter, error::Error};
+use std::{error::Error, fmt::Formatter};
 
 /// Result of Type and GDError.
 pub type GDResult<T> = Result<T, GDError>;

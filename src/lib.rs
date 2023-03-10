@@ -1,4 +1,3 @@
-
 //! Game Server Query Library.
 //!
 //! # Usage example:
@@ -21,13 +20,13 @@
 //! `no_games` - disables the included games support.
 
 pub mod errors;
-pub mod protocols;
 #[cfg(not(feature = "no_games"))]
 pub mod games;
+pub mod protocols;
 
-mod utils;
-mod socket;
 mod bufferer;
+mod socket;
+mod utils;
 
 pub use errors::*;
 #[cfg(not(feature = "no_games"))]

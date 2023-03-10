@@ -1,13 +1,12 @@
-
 /*
 Although its a lightly modified version, this file contains code
 by Jaiden Bernard (2021-2022 - MIT) from
 https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 */
 
-use crate::GDResult;
 use crate::bufferer::Bufferer;
 use crate::GDError::{PacketBad, UnknownEnumCast};
+use crate::GDResult;
 
 /// The type of Minecraft Server you want to query.
 #[derive(Debug)]
@@ -17,7 +16,7 @@ pub enum Server {
     /// Legacy Java.
     Legacy(LegacyGroup),
     /// Bedrock Edition.
-    Bedrock
+    Bedrock,
 }
 
 /// Legacy Java (Versions) Groups.
@@ -28,14 +27,14 @@ pub enum LegacyGroup {
     /// 1.4 - 1.5
     V1_4,
     /// Beta 1.8 - 1.3
-    VB1_8
+    VB1_8,
 }
 
 /// Information about a player.
 #[derive(Debug)]
 pub struct Player {
     pub name: String,
-    pub id: String
+    pub id: String,
 }
 
 /// A Java query response.
@@ -60,7 +59,7 @@ pub struct JavaResponse {
     /// Tells if secure chat is enforced (can be missing).
     pub enforces_secure_chat: Option<bool>,
     /// Tell's the server type.
-    pub server_type: Server
+    pub server_type: Server,
 }
 
 /// A Bedrock Edition query response.
@@ -85,7 +84,7 @@ pub struct BedrockResponse {
     /// Current game mode.
     pub game_mode: Option<GameMode>,
     /// Tells the server type.
-    pub server_type: Server
+    pub server_type: Server,
 }
 
 impl JavaResponse {
@@ -100,7 +99,7 @@ impl JavaResponse {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Bedrock
+            server_type: Server::Bedrock,
         }
     }
 }
@@ -108,7 +107,11 @@ impl JavaResponse {
 /// A server's game mode (used only by Bedrock servers).
 #[derive(Debug)]
 pub enum GameMode {
-    Survival, Creative, Hardcore, Spectator, Adventure
+    Survival,
+    Creative,
+    Hardcore,
+    Spectator,
+    Adventure,
 }
 
 impl GameMode {
@@ -119,7 +122,7 @@ impl GameMode {
             "Hardcore" => Ok(GameMode::Hardcore),
             "Spectator" => Ok(GameMode::Spectator),
             "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(UnknownEnumCast)
+            _ => Err(UnknownEnumCast),
         }
     }
 }
@@ -137,7 +140,7 @@ pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(PacketBad)
+            return Err(PacketBad);
         }
 
         if (current_byte & msb) == 0 {

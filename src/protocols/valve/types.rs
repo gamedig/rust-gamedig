@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub enum Server {
     Dedicated,
     NonDedicated,
-    TV
+    TV,
 }
 
 /// The Operating System that the server is on.
@@ -13,7 +13,7 @@ pub enum Server {
 pub enum Environment {
     Linux,
     Windows,
-    Mac
+    Mac,
 }
 
 /// A query response.
@@ -21,7 +21,7 @@ pub enum Environment {
 pub struct Response {
     pub info: ServerInfo,
     pub players: Option<Vec<ServerPlayer>>,
-    pub rules: Option<HashMap<String, String>>
+    pub rules: Option<HashMap<String, String>>,
 }
 
 /// General server information's.
@@ -62,7 +62,7 @@ pub struct ServerInfo {
     /// GoldSrc only: Indicates whether the hosted game is a mod.
     pub is_mod: bool,
     /// GoldSrc only: If the game is a mod, provide additional data.
-    pub mod_data: Option<ModData>
+    pub mod_data: Option<ModData>,
 }
 
 /// A server player.
@@ -85,7 +85,7 @@ pub struct ServerPlayer {
 pub struct TheShip {
     pub mode: u8,
     pub witnesses: u8,
-    pub duration: u8
+    pub duration: u8,
 }
 
 /// Some extra data that the server might provide or not.
@@ -102,7 +102,7 @@ pub struct ExtraData {
     /// Keywords that describe the server according to it.
     pub keywords: Option<String>,
     /// The server's 64-bit GameID.
-    pub game_id: Option<u64>
+    pub game_id: Option<u64>,
 }
 
 /// Data related to GoldSrc Mod response.
@@ -113,13 +113,21 @@ pub struct ModData {
     pub version: u32,
     pub size: u32,
     pub multiplayer_only: bool,
-    pub has_own_dll: bool
+    pub has_own_dll: bool,
 }
 
-pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
+pub(crate) fn get_optional_extracted_data(
+    data: Option<ExtraData>,
+) -> (
+    Option<u16>,
+    Option<u64>,
+    Option<u16>,
+    Option<String>,
+    Option<String>,
+) {
     match data {
         None => (None, None, None, None, None),
-        Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
+        Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords),
     }
 }
 
@@ -132,7 +140,7 @@ pub(crate) enum Request {
     /// Known as `A2S_PLAYERS`
     Players = 0x55,
     /// Known as `A2S_RULES`
-    Rules = 0x56
+    Rules = 0x56,
 }
 
 /// Supported steam apps
@@ -226,9 +234,9 @@ impl SteamApp {
     /// Get the specified app as engine.
     pub fn as_engine(&self) -> Engine {
         match self {
-            SteamApp::CS => Engine::GoldSrc(false), //10
-            SteamApp::TFC => Engine::GoldSrc(false), //20
-            SteamApp::DOD => Engine::GoldSrc(false), //30
+            SteamApp::CS => Engine::GoldSrc(false),   //10
+            SteamApp::TFC => Engine::GoldSrc(false),  //20
+            SteamApp::DOD => Engine::GoldSrc(false),  //30
             SteamApp::CSCZ => Engine::GoldSrc(false), //80
             SteamApp::CSS => Engine::new_source(240),
             SteamApp::DODS => Engine::new_source(300),
@@ -280,7 +288,7 @@ pub enum Engine {
     Source(Option<(u32, Option<u32>)>),
     /// A GoldSrc game, the argument indicates whether to enforce
     /// requesting the obsolete A2S_INFO response or not.
-    GoldSrc(bool)
+    GoldSrc(bool),
 }
 
 impl Engine {
@@ -296,7 +304,7 @@ impl Engine {
 /// What data to gather, purely used only with the query function.
 pub struct GatheringSettings {
     pub players: bool,
-    pub rules: bool
+    pub rules: bool,
 }
 
 impl Default for GatheringSettings {
@@ -304,7 +312,7 @@ impl Default for GatheringSettings {
     fn default() -> Self {
         Self {
             players: true,
-            rules: true
+            rules: true,
         }
     }
 }
@@ -312,9 +320,9 @@ impl Default for GatheringSettings {
 /// Generic response types that are used by many games, they are the protocol ones, but without the
 /// unnecessary bits (example: the **The Ship**-only fields).
 pub mod game {
-    use std::collections::HashMap;
-    use crate::protocols::valve::types::get_optional_extracted_data;
     use super::{Server, ServerPlayer};
+    use crate::protocols::valve::types::get_optional_extracted_data;
+    use std::collections::HashMap;
 
     /// A player's details.
     #[derive(Debug)]
@@ -324,7 +332,7 @@ pub mod game {
         /// Player's score.
         pub score: u32,
         /// How long a player has been in the server (seconds).
-        pub duration: f32
+        pub duration: f32,
     }
 
     impl Player {
@@ -332,7 +340,7 @@ pub mod game {
             Self {
                 name: player.name.clone(),
                 score: player.score,
-                duration: player.duration
+                duration: player.duration,
             }
         }
     }
@@ -377,12 +385,13 @@ pub mod game {
         /// Keywords that describe the server according to it.
         pub keywords: Option<String>,
         /// Server's rules.
-        pub rules: HashMap<String, String>
+        pub rules: HashMap<String, String>,
     }
 
     impl Response {
         pub fn new_from_valve_response(response: super::Response) -> Self {
-            let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
+            let (port, steam_id, tv_port, tv_name, keywords) =
+                get_optional_extracted_data(response.info.extra_data);
 
             Self {
                 protocol: response.info.protocol,
@@ -391,7 +400,12 @@ pub mod game {
                 game: response.info.game,
                 appid: response.info.appid,
                 players_online: response.info.players_online,
-                players_details: response.players.unwrap_or_default().iter().map(Player::from_valve_response).collect(),
+                players_details: response
+                    .players
+                    .unwrap_or_default()
+                    .iter()
+                    .map(Player::from_valve_response)
+                    .collect(),
                 players_maximum: response.info.players_maximum,
                 players_bots: response.info.players_bots,
                 server_type: response.info.server_type,
@@ -403,7 +417,7 @@ pub mod game {
                 tv_port,
                 tv_name,
                 keywords,
-                rules: response.rules.unwrap_or_default()
+                rules: response.rules.unwrap_or_default(),
             }
         }
     }

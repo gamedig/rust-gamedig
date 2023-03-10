@@ -1,4 +1,3 @@
-
 use gamedig::games::mc;
 
 fn main() {
@@ -7,6 +6,6 @@ fn main() {
 
     match response {
         Err(error) => println!("Couldn't query, error: {}", error),
-        Ok(r) => println!("{:#?}", r)
+        Ok(r) => println!("{:#?}", r),
     }
 }

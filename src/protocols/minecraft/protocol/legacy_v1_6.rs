@@ -1,13 +1,13 @@
-use crate::GDResult;
-use crate::GDError::{PacketBad, ProtocolFormat};
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::minecraft::{LegacyGroup, JavaResponse, Server};
+use crate::protocols::minecraft::{JavaResponse, LegacyGroup, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::error_by_expected_size;
+use crate::GDError::{PacketBad, ProtocolFormat};
+use crate::GDResult;
 
 pub struct LegacyV1_6 {
-    socket: TcpSocket
+    socket: TcpSocket,
 }
 
 impl LegacyV1_6 {
@@ -15,29 +15,26 @@ impl LegacyV1_6 {
         let socket = TcpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
 
-        Ok(Self {
-            socket
-        })
+        Ok(Self { socket })
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> {
         self.socket.send(&[
             // Packet ID (FE)
-            0xfe,
-            // Ping payload (01)
-            0x01,
-            // Packet identifier for plugin message
-            0xfa,
-            // Length of 'GameDig' string (7) as unsigned short
-            0x00, 0x07,
-            // 'GameDig' string as UTF-16BE
-            0x00, 0x47, 0x00, 0x61, 0x00, 0x6D, 0x00, 0x65, 0x00, 0x44, 0x00, 0x69, 0x00, 0x67])?;
+            0xfe, // Ping payload (01)
+            0x01, // Packet identifier for plugin message
+            0xfa, // Length of 'GameDig' string (7) as unsigned short
+            0x00, 0x07, // 'GameDig' string as UTF-16BE
+            0x00, 0x47, 0x00, 0x61, 0x00, 0x6D, 0x00, 0x65, 0x00, 0x44, 0x00, 0x69, 0x00, 0x67,
+        ])?;
 
         Ok(())
     }
 
     pub fn is_protocol(buffer: &mut Bufferer) -> GDResult<bool> {
-        let state = buffer.remaining_data().starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
+        let state = buffer
+            .remaining_data()
+            .starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
 
         if state {
             buffer.move_position_ahead(6);
@@ -52,14 +49,11 @@ impl LegacyV1_6 {
         let split: Vec<&str> = packet_string.split('\x00').collect();
         error_by_expected_size(5, split.len())?;
 
-        let version_protocol = split[0].parse()
-            .map_err(|_| PacketBad)?;
+        let version_protocol = split[0].parse().map_err(|_| PacketBad)?;
         let version_name = split[1].to_string();
         let description = split[2].to_string();
-        let online_players = split[3].parse()
-            .map_err(|_| PacketBad)?;
-        let max_players = split[4].parse()
-            .map_err(|_| PacketBad)?;
+        let online_players = split[3].parse().map_err(|_| PacketBad)?;
+        let max_players = split[4].parse().map_err(|_| PacketBad)?;
 
         Ok(JavaResponse {
             version_name,
@@ -71,7 +65,7 @@ impl LegacyV1_6 {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Legacy(LegacyGroup::V1_6)
+            server_type: Server::Legacy(LegacyGroup::V1_6),
         })
     }
 
@@ -94,7 +88,11 @@ impl LegacyV1_6 {
         LegacyV1_6::get_response(&mut buffer)
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+    pub fn query(
+        address: &str,
+        port: u16,
+        timeout_settings: Option<TimeoutSettings>,
+    ) -> GDResult<JavaResponse> {
         LegacyV1_6::new(address, port, timeout_settings)?.get_info()
     }
 }

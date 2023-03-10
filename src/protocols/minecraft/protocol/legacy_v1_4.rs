@@ -1,15 +1,14 @@
-
-use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
-use crate::GDError::{PacketBad, ProtocolFormat};
-use crate::protocols::minecraft::{LegacyGroup, JavaResponse, Server};
 use crate::protocols::minecraft::protocol::legacy_v1_6::LegacyV1_6;
+use crate::protocols::minecraft::{JavaResponse, LegacyGroup, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, TcpSocket};
 use crate::utils::error_by_expected_size;
+use crate::GDError::{PacketBad, ProtocolFormat};
+use crate::GDResult;
 
 pub struct LegacyV1_4 {
-    socket: TcpSocket
+    socket: TcpSocket,
 }
 
 impl LegacyV1_4 {
@@ -17,9 +16,7 @@ impl LegacyV1_4 {
         let socket = TcpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
 
-        Ok(Self {
-            socket
-        })
+        Ok(Self { socket })
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> {
@@ -48,10 +45,8 @@ impl LegacyV1_4 {
         error_by_expected_size(3, split.len())?;
 
         let description = split[0].to_string();
-        let online_players = split[1].parse()
-            .map_err(|_| PacketBad)?;
-        let max_players = split[2].parse()
-            .map_err(|_| PacketBad)?;
+        let online_players = split[1].parse().map_err(|_| PacketBad)?;
+        let max_players = split[2].parse().map_err(|_| PacketBad)?;
 
         Ok(JavaResponse {
             version_name: "1.4+".to_string(),
@@ -63,11 +58,15 @@ impl LegacyV1_4 {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Legacy(LegacyGroup::V1_4)
+            server_type: Server::Legacy(LegacyGroup::V1_4),
         })
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+    pub fn query(
+        address: &str,
+        port: u16,
+        timeout_settings: Option<TimeoutSettings>,
+    ) -> GDResult<JavaResponse> {
         LegacyV1_4::new(address, port, timeout_settings)?.get_info()
     }
 }

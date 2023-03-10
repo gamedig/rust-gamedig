@@ -1,15 +1,16 @@
-use crate::GDResult;
 use crate::GDError::{PacketBad, PacketUnderflow};
-use byteorder::{ByteOrder, LittleEndian, BigEndian};
+use crate::GDResult;
+use byteorder::{BigEndian, ByteOrder, LittleEndian};
 
 pub enum Endianess {
-    Little, Big
+    Little,
+    Big,
 }
 
 pub struct Bufferer {
     data: Vec<u8>,
     endianess: Endianess,
-    position: usize
+    position: usize,
 }
 
 impl Bufferer {
@@ -17,7 +18,7 @@ impl Bufferer {
         Bufferer {
             data: data.to_vec(),
             endianess,
-            position: 0
+            position: 0,
         }
     }
 
@@ -48,7 +49,7 @@ impl Bufferer {
         self.position += 2;
         Ok(value)
     }
-    
+
     pub fn get_u32(&mut self) -> GDResult<u32> {
         if self.check_size(4) {
             return Err(PacketUnderflow);
@@ -70,7 +71,7 @@ impl Bufferer {
 
         let value = match self.endianess {
             Endianess::Little => LittleEndian::read_f32(self.remaining_data()),
-            Endianess::Big => BigEndian::read_f32(self.remaining_data())
+            Endianess::Big => BigEndian::read_f32(self.remaining_data()),
         };
 
         self.position += 4;
@@ -84,7 +85,7 @@ impl Bufferer {
 
         let value = match self.endianess {
             Endianess::Little => LittleEndian::read_u64(self.remaining_data()),
-            Endianess::Big => BigEndian::read_u64(self.remaining_data())
+            Endianess::Big => BigEndian::read_u64(self.remaining_data()),
         };
 
         self.position += 8;
@@ -97,10 +98,10 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let first_null_position = sub_buf.iter().position(|&x| x == 0)
-            .ok_or(PacketBad)?;
+        let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(PacketBad)?;
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
-            .map_err(|_| PacketBad)?.to_string();
+            .map_err(|_| PacketBad)?
+            .to_string();
 
         self.position += value.len() + 1;
         Ok(value)
@@ -113,7 +114,8 @@ impl Bufferer {
         }
 
         let value = std::str::from_utf8(sub_buf)
-            .map_err(|_| PacketBad)?.to_string();
+            .map_err(|_| PacketBad)?
+            .to_string();
 
         self.position += value.len();
         Ok(value)
@@ -125,18 +127,21 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let paired_buf: Vec<u16> = sub_buf.chunks_exact(2)
-            .into_iter().map(|pair| match self.endianess {
-            Endianess::Little => LittleEndian::read_u16(pair),
-            Endianess::Big => BigEndian::read_u16(pair)
-        }).collect();
+        let paired_buf: Vec<u16> = sub_buf
+            .chunks_exact(2)
+            .into_iter()
+            .map(|pair| match self.endianess {
+                Endianess::Little => LittleEndian::read_u16(pair),
+                Endianess::Big => BigEndian::read_u16(pair),
+            })
+            .collect();
 
         let value = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
 
         self.position += value.len() * 2;
         Ok(value)
     }
-    
+
     pub fn move_position_ahead(&mut self, by: usize) {
         self.position += by;
     }
@@ -239,7 +244,8 @@ mod tests {
 
     #[test]
     fn get_u64_le() {
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 99, 69, 4, 2, 0]);
+        let mut buffer =
+            Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 99, 69, 4, 2, 0]);
 
         assert_eq!(buffer.get_u64().unwrap(), 567646022016328);
         assert_eq!(buffer.remaining_length(), 0);
@@ -257,7 +263,8 @@ mod tests {
 
     #[test]
     fn get_string_utf8() {
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111, 0, 72]);
+        let mut buffer =
+            Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111, 0, 72]);
 
         assert_eq!(buffer.get_string_utf8().unwrap(), "Hello");
         assert_eq!(buffer.remaining_length(), 1);
@@ -275,7 +282,10 @@ mod tests {
 
     #[test]
     fn get_string_utf16_le() {
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00]);
+        let mut buffer = Bufferer::new_with_data(
+            Endianess::Little,
+            &[0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00],
+        );
 
         assert_eq!(buffer.get_string_utf16().unwrap(), "Hello");
         assert_eq!(buffer.remaining_length(), 0);
@@ -284,7 +294,10 @@ mod tests {
 
     #[test]
     fn get_string_utf16_be() {
-        let mut buffer = Bufferer::new_with_data(Endianess::Big, &[0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f]);
+        let mut buffer = Bufferer::new_with_data(
+            Endianess::Big,
+            &[0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f],
+        );
 
         assert_eq!(buffer.get_string_utf16().unwrap(), "Hello");
         assert_eq!(buffer.remaining_length(), 0);

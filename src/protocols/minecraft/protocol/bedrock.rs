@@ -1,19 +1,18 @@
-
 /*
 This file has code that has been documented by the NodeJS GameDig library (MIT) from
 https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
 */
 
-use crate::GDResult;
 use crate::bufferer::{Bufferer, Endianess};
-use crate::GDError::{PacketBad, TypeParse};
 use crate::protocols::minecraft::{BedrockResponse, GameMode, Server};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::error_by_expected_size;
+use crate::GDError::{PacketBad, TypeParse};
+use crate::GDResult;
 
 pub struct Bedrock {
-    socket: UdpSocket
+    socket: UdpSocket,
 }
 
 impl Bedrock {
@@ -21,21 +20,18 @@ impl Bedrock {
         let socket = UdpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
 
-        Ok(Self {
-            socket
-        })
+        Ok(Self { socket })
     }
 
     fn send_status_request(&mut self) -> GDResult<()> {
         self.socket.send(&[
             // Message ID, ID_UNCONNECTED_PING
-            0x01,
-            // Nonce / timestamp
-            0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
-            // Magic
-            0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78,
-            // Client GUID
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+            0x01, // Nonce / timestamp
+            0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, // Magic
+            0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34,
+            0x56, 0x78, // Client GUID
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ])?;
 
         Ok(())
     }
@@ -82,20 +78,24 @@ impl Bedrock {
             edition: status[0].to_string(),
             name: status[1].to_string(),
             version_name: status[3].to_string(),
-            version_protocol:  status[2].to_string(),
+            version_protocol: status[2].to_string(),
             players_maximum: status[5].parse().map_err(|_| TypeParse)?,
             players_online: status[4].parse().map_err(|_| TypeParse)?,
             id: status.get(6).map(|v| v.to_string()),
             map: status.get(7).map(|v| v.to_string()),
             game_mode: match status.get(8) {
                 None => None,
-                Some(v) => Some(GameMode::from_bedrock(v)?)
+                Some(v) => Some(GameMode::from_bedrock(v)?),
             },
-            server_type: Server::Bedrock
+            server_type: Server::Bedrock,
         })
     }
 
-    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
+    pub fn query(
+        address: &str,
+        port: u16,
+        timeout_settings: Option<TimeoutSettings>,
+    ) -> GDResult<BedrockResponse> {
         Bedrock::new(address, port, timeout_settings)?.get_info()
     }
 }
