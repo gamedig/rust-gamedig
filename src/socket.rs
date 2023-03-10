@@ -5,7 +5,7 @@ use crate::GDResult;
 use std::io::{Read, Write};
 use std::net;
 
-static DEFAULT_PACKET_SIZE: usize = 1024;
+const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
     fn new(address: &str, port: u16) -> GDResult<Self>
@@ -25,9 +25,10 @@ pub struct TcpSocket {
 impl Socket for TcpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
-        let socket = net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?;
 
-        Ok(Self { socket })
+        Ok(Self {
+            socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?
+        })
     }
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {

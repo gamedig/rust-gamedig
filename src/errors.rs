@@ -1,13 +1,12 @@
-
 //! The library's possible errors.
 use std::fmt;
-use std::{fmt::Formatter, error::Error};
+use std::{error::Error, fmt::Formatter};
 
 /// Result of Type and GDError.
 pub type GDResult<T> = Result<T, GDError>;
 
 /// GameDig Error.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GDError {
     /// The received packet was bigger than the buffer size.
     PacketOverflow,
@@ -46,5 +45,46 @@ impl Error for GDError {}
 impl fmt::Display for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Testing Ok variant of the GDResult type
+    #[test]
+    fn test_gdresult_ok() {
+        let result: GDResult<u32> = Ok(42);
+        assert_eq!(result.unwrap(), 42);
+    }
+
+    // Testing Err variant of the GDResult type
+    #[test]
+    fn test_gdresult_err() {
+        let result: GDResult<u32> = Err(GDError::InvalidInput);
+        assert_eq!(result.is_err(), true);
+    }
+
+    // Testing the Display trait for the GDError type
+    #[test]
+    fn test_display() {
+        let error = GDError::PacketOverflow;
+        assert_eq!(format!("{}", error), "PacketOverflow");
+    }
+
+    // Testing the Error trait for the GDError type
+    #[test]
+    fn test_error_trait() {
+        let error = GDError::PacketBad;
+        assert!(error.source().is_none());
+    }
+
+    // Testing cloning the GDError type
+    #[test]
+    fn test_cloning() {
+        let error = GDError::BadGame(String::from("MyGame"));
+        let cloned_error = error.clone();
+        assert_eq!(error, cloned_error);
     }
 }

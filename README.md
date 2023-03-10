@@ -6,6 +6,8 @@
 
 Minimum Supported Rust Version is `1.56.1` and the code is cross-platform.
 
+Check out the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).
+
 ## Games/Services/Protocols List
 To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
 
