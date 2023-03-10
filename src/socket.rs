@@ -5,7 +5,7 @@ use crate::GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect};
 use crate::protocols::types::TimeoutSettings;
 use crate::utils::address_and_port_as_string;
 
-static DEFAULT_PACKET_SIZE: usize = 1024;
+const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
     fn new(address: &str, port: u16) -> GDResult<Self> where Self: Sized;
@@ -23,10 +23,9 @@ pub struct TcpSocket {
 impl Socket for TcpSocket {
     fn new(address: &str, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
-        let socket = net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?;
 
         Ok(Self {
-            socket
+            socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?
         })
     }
 
