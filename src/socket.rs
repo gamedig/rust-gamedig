@@ -103,7 +103,8 @@ mod tests {
     #[test]
     fn test_tcp_socket_send_and_receive() {
         // Spawn a thread to run the server
-        let listener = net::TcpListener::bind("127.0.0.1:8080").unwrap();
+        let listener = net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let bound_address = listener.local_addr().unwrap();
         let server_thread = thread::spawn(move || {
             let (mut stream, _) = listener.accept().unwrap();
             let mut buf = [0; 1024];
@@ -112,7 +113,7 @@ mod tests {
         });
 
         // Create a TCP socket and send a message to the server
-        let mut socket = TcpSocket::new("127.0.0.1", 8080).unwrap();
+        let mut socket = TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -134,7 +135,8 @@ mod tests {
     #[test]
     fn test_udp_socket_send_and_receive() {
         // Spawn a thread to run the server
-        let socket = net::UdpSocket::bind("127.0.0.1:8080").unwrap();
+        let socket = net::UdpSocket::bind("127.0.0.1:0").unwrap();
+        let bound_address = socket.local_addr().unwrap();
         let server_thread = thread::spawn(move || {
             let mut buf = [0; 1024];
             let (_, src_addr) = socket.recv_from(&mut buf).unwrap();
@@ -142,7 +144,7 @@ mod tests {
         });
 
         // Create a UDP socket and send a message to the server
-        let mut socket = UdpSocket::new("127.0.0.1", 8080).unwrap();
+        let mut socket = UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
