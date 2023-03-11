@@ -27,7 +27,7 @@ impl Socket for TcpSocket {
         let complete_address = address_and_port_as_string(address, port);
 
         Ok(Self {
-            socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?
+            socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?,
         })
     }
 
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn test_tcp_socket_send_and_receive() {
         // Spawn a thread to run the server
-        let server_thread = thread::spawn(|| {
+        let server_thread = thread::spawn(move || {
             let listener = net::TcpListener::bind("127.0.0.1:8080").unwrap();
             let (mut stream, _) = listener.accept().unwrap();
             let mut buf = [0; 1024];
@@ -134,7 +134,7 @@ mod tests {
     #[test]
     fn test_udp_socket_send_and_receive() {
         // Spawn a thread to run the server
-        let server_thread = thread::spawn(|| {
+        let server_thread = thread::spawn(move || {
             let socket = net::UdpSocket::bind("127.0.0.1:8080").unwrap();
             let mut buf = [0; 1024];
             let (_, src_addr) = socket.recv_from(&mut buf).unwrap();
