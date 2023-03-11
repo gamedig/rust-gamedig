@@ -103,8 +103,8 @@ mod tests {
     #[test]
     fn test_tcp_socket_send_and_receive() {
         // Spawn a thread to run the server
+        let listener = net::TcpListener::bind("127.0.0.1:8080").unwrap();
         let server_thread = thread::spawn(move || {
-            let listener = net::TcpListener::bind("127.0.0.1:8080").unwrap();
             let (mut stream, _) = listener.accept().unwrap();
             let mut buf = [0; 1024];
             stream.read(&mut buf).unwrap();
@@ -134,8 +134,8 @@ mod tests {
     #[test]
     fn test_udp_socket_send_and_receive() {
         // Spawn a thread to run the server
+        let socket = net::UdpSocket::bind("127.0.0.1:8080").unwrap();
         let server_thread = thread::spawn(move || {
-            let socket = net::UdpSocket::bind("127.0.0.1:8080").unwrap();
             let mut buf = [0; 1024];
             let (_, src_addr) = socket.recv_from(&mut buf).unwrap();
             socket.send_to(&buf, src_addr).unwrap();
