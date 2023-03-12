@@ -4,15 +4,17 @@
 
 **rust-GameDig** is a game servers/services query library that fetches the availability and details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
-Minimum Supported Rust Version is `1.56.1` and the code is cross-platform.
-
-Check out the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).
-
-## Games/Services/Protocols List
-To see the supported (or the planned to support) games/services/protocols, see [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) respectively.
+## Community
+Checkout the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).  
+Note that it isn't be a replacement for GitHub issues, if you have found a problem
+within the library or want to request a feature, it's better to do so here rather than
+on Discord.
 
 ## Usage
-Just pick a game/service/protocol, provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
+Minimum Supported Rust Version is `1.56.1` and the code is cross-platform.
+
+Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
+
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 ```rust
 use gamedig::games::tf2;
@@ -54,11 +56,11 @@ Response (note that some games have a different structure):
 }
 ```
 
-To see more examples, see the [examples](examples) folder.
+Want to see more examples? Checkout the [examples](examples) folder.
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
-Curious about the history and what changed between versions? Check out the [CHANGELOG](CHANGELOG.md) file.
+Curious about the history and what changed between versions? Everything is in the [CHANGELOG](CHANGELOG.md) file.
 
 ## Contributing
 If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
