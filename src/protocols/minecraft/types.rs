@@ -1,45 +1,51 @@
-
 /*
 Although its a lightly modified version, this file contains code
 by Jaiden Bernard (2021-2022 - MIT) from
 https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 */
 
-use crate::GDResult;
 use crate::bufferer::Bufferer;
 use crate::GDError::{PacketBad, UnknownEnumCast};
+use crate::GDResult;
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// The type of Minecraft Server you want to query.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Server {
     /// Java Edition.
     Java,
     /// Legacy Java.
     Legacy(LegacyGroup),
     /// Bedrock Edition.
-    Bedrock
+    Bedrock,
 }
 
 /// Legacy Java (Versions) Groups.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum LegacyGroup {
     /// 1.6
     V1_6,
     /// 1.4 - 1.5
     V1_4,
     /// Beta 1.8 - 1.3
-    VB1_8
+    VB1_8,
 }
 
 /// Information about a player.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
     pub name: String,
-    pub id: String
+    pub id: String,
 }
 
 /// A Java query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
     pub version_name: String,
@@ -60,11 +66,12 @@ pub struct JavaResponse {
     /// Tells if secure chat is enforced (can be missing).
     pub enforces_secure_chat: Option<bool>,
     /// Tell's the server type.
-    pub server_type: Server
+    pub server_type: Server,
 }
 
 /// A Bedrock Edition query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BedrockResponse {
     /// Server's edition.
     pub edition: String,
@@ -85,7 +92,7 @@ pub struct BedrockResponse {
     /// Current game mode.
     pub game_mode: Option<GameMode>,
     /// Tells the server type.
-    pub server_type: Server
+    pub server_type: Server,
 }
 
 impl JavaResponse {
@@ -100,15 +107,20 @@ impl JavaResponse {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Bedrock
+            server_type: Server::Bedrock,
         }
     }
 }
 
-/// A server's game mode (used only by Bedrock servers).
-#[derive(Debug)]
+/// A server's game mode (used only by Bedrock servers.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum GameMode {
-    Survival, Creative, Hardcore, Spectator, Adventure
+    Survival,
+    Creative,
+    Hardcore,
+    Spectator,
+    Adventure,
 }
 
 impl GameMode {
@@ -119,7 +131,7 @@ impl GameMode {
             "Hardcore" => Ok(GameMode::Hardcore),
             "Spectator" => Ok(GameMode::Spectator),
             "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(UnknownEnumCast)
+            _ => Err(UnknownEnumCast),
         }
     }
 }
@@ -137,7 +149,7 @@ pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(PacketBad)
+            return Err(PacketBad);
         }
 
         if (current_byte & msb) == 0 {
