@@ -31,7 +31,7 @@ impl Bufferer {
         }
 
         let value = self.data[self.position];
-        self.position += 1;
+        self.move_position_ahead(1);
         Ok(value)
     }
 
@@ -45,10 +45,10 @@ impl Bufferer {
             Endianess::Big => BigEndian::read_u16(self.remaining_data()),
         };
 
-        self.position += 2;
+        self.move_position_ahead(2);
         Ok(value)
     }
-    
+
     pub fn get_u32(&mut self) -> GDResult<u32> {
         if self.check_size(4) {
             return Err(PacketUnderflow);
@@ -59,7 +59,7 @@ impl Bufferer {
             Endianess::Big => BigEndian::read_u32(self.remaining_data()),
         };
 
-        self.position += 4;
+        self.move_position_ahead(4);
         Ok(value)
     }
 
@@ -73,7 +73,7 @@ impl Bufferer {
             Endianess::Big => BigEndian::read_f32(self.remaining_data())
         };
 
-        self.position += 4;
+        self.move_position_ahead(4);
         Ok(value)
     }
 
@@ -87,12 +87,12 @@ impl Bufferer {
             Endianess::Big => BigEndian::read_u64(self.remaining_data())
         };
 
-        self.position += 8;
+        self.move_position_ahead(8);
         Ok(value)
     }
 
     pub fn get_string_utf8(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.position..];
+        let sub_buf = self.remaining_data();
         if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
@@ -102,12 +102,12 @@ impl Bufferer {
         let value = std::str::from_utf8(&sub_buf[..first_null_position])
             .map_err(|_| PacketBad)?.to_string();
 
-        self.position += value.len() + 1;
+        self.move_position_ahead(value.len() + 1);
         Ok(value)
     }
 
     pub fn get_string_utf8_unended(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.position..];
+        let sub_buf = self.remaining_data();
         if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
@@ -115,12 +115,12 @@ impl Bufferer {
         let value = std::str::from_utf8(sub_buf)
             .map_err(|_| PacketBad)?.to_string();
 
-        self.position += value.len();
+        self.move_position_ahead(value.len());
         Ok(value)
     }
 
     pub fn get_string_utf16(&mut self) -> GDResult<String> {
-        let sub_buf = &self.data[self.position..];
+        let sub_buf = self.remaining_data();
         if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
@@ -133,10 +133,10 @@ impl Bufferer {
 
         let value = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
 
-        self.position += value.len() * 2;
+        self.move_position_ahead(value.len() * 2);
         Ok(value)
     }
-    
+
     pub fn move_position_ahead(&mut self, by: usize) {
         self.position += by;
     }
@@ -154,11 +154,11 @@ impl Bufferer {
     }
 
     pub fn remaining_data_vec(&self) -> Vec<u8> {
-        self.data[self.position..].to_vec()
+        self.remaining_data().to_vec()
     }
 
     pub fn remaining_length(&self) -> usize {
-        self.data.len() - self.position
+        self.data_length() - self.position
     }
 
     pub fn as_endianess(&self, endianess: Endianess) -> Self {
