@@ -125,11 +125,13 @@ impl Bufferer {
             return Err(PacketUnderflow);
         }
 
-        let paired_buf: Vec<u16> = sub_buf.chunks_exact(2)
-            .into_iter().map(|pair| match self.endianess {
-            Endianess::Little => LittleEndian::read_u16(pair),
-            Endianess::Big => BigEndian::read_u16(pair)
-        }).collect();
+        let paired_buf: Vec<u16> = sub_buf
+            .chunks_exact(2)
+            .map(|pair| match self.endianess {
+                Endianess::Little => LittleEndian::read_u16(pair),
+                Endianess::Big => BigEndian::read_u16(pair),
+            })
+            .collect();
 
         let value = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
 

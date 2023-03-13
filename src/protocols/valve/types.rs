@@ -116,10 +116,20 @@ pub struct ModData {
     pub has_own_dll: bool
 }
 
-pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> (Option<u16>, Option<u64>, Option<u16>, Option<String>, Option<String>) {
+pub(crate) type ExtractedData = (
+    Option<u16>,
+    Option<u64>,
+    Option<u16>,
+    Option<String>,
+    Option<String>,
+);
+
+pub(crate) fn get_optional_extracted_data(
+    data: Option<ExtraData>,
+) -> ExtractedData {
     match data {
         None => (None, None, None, None, None),
-        Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords)
+        Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords),
     }
 }
 
