@@ -122,6 +122,9 @@ impl SplitPacket {
             let decompressed_size = self.decompressed_size.unwrap() as usize;
 
             let mut decompressed_payload = Vec::with_capacity(decompressed_size);
+
+            decompressed_payload.resize(decompressed_size, 0);
+            
             decoder.read(&mut decompressed_payload).map_err(|_| Decompress)?;
 
             if decompressed_payload.len() != decompressed_size
