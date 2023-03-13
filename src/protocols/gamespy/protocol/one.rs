@@ -5,7 +5,8 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, UdpSocket},
-    GDError, GDResult,
+    GDError,
+    GDResult,
 };
 
 use std::collections::HashMap;
