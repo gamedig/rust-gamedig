@@ -1,16 +1,20 @@
-use crate::protocols::types::TimeoutSettings;
-use crate::utils::address_and_port_as_string;
-use crate::GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect};
-use crate::GDResult;
-use std::io::{Read, Write};
-use std::net;
+use crate::{
+    protocols::types::TimeoutSettings,
+    utils::address_and_port_as_string,
+    GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect},
+    GDResult,
+};
+
+use std::{
+    io::{Read, Write},
+    net,
+};
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
     fn new(address: &str, port: u16) -> GDResult<Self>
-    where
-        Self: Sized;
+    where Self: Sized;
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()>;
 
@@ -33,8 +37,8 @@ impl Socket for TcpSocket {
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
         let settings = timeout_settings.unwrap_or_default();
-        self.socket.set_read_timeout(settings.get_read()).unwrap(); //unwrapping because TimeoutSettings::new
-        self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
+        self.socket.set_read_timeout(settings.get_read()).unwrap(); // unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(settings.get_write()).unwrap(); // checks if these are 0 and throws an error
 
         Ok(())
     }
@@ -72,8 +76,8 @@ impl Socket for UdpSocket {
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
         let settings = timeout_settings.unwrap_or_default();
-        self.socket.set_read_timeout(settings.get_read()).unwrap(); //unwrapping because TimeoutSettings::new
-        self.socket.set_write_timeout(settings.get_write()).unwrap(); //checks if these are 0 and throws an error
+        self.socket.set_read_timeout(settings.get_read()).unwrap(); // unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(settings.get_write()).unwrap(); // checks if these are 0 and throws an error
 
         Ok(())
     }
@@ -90,7 +94,7 @@ impl Socket for UdpSocket {
         let (number_of_bytes_received, _) =
             self.socket.recv_from(&mut buf).map_err(|_| PacketReceive)?;
 
-        Ok(buf[..number_of_bytes_received].to_vec())
+        Ok(buf[.. number_of_bytes_received].to_vec())
     }
 }
 
@@ -113,7 +117,8 @@ mod tests {
         });
 
         // Create a TCP socket and send a message to the server
-        let mut socket = TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket =
+            TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -144,7 +149,8 @@ mod tests {
         });
 
         // Create a UDP socket and send a message to the server
-        let mut socket = UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket =
+            UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 

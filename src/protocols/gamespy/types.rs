@@ -13,7 +13,7 @@ pub struct Player {
     pub frags: u32,
     pub deaths: Option<u32>,
     pub health: Option<u32>,
-    pub secret: bool
+    pub secret: bool,
 }
 
 /// A query response.
@@ -32,5 +32,5 @@ pub struct Response {
     pub players_minimum: u8,
     pub players: Vec<Player>,
     pub tournament: bool,
-    pub unused_entries: HashMap<String, String>
+    pub unused_entries: HashMap<String, String>,
 }

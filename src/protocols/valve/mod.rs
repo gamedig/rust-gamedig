@@ -1,4 +1,3 @@
-
 /// The implementation.
 pub mod protocol;
 /// All types used by the implementation.

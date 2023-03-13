@@ -1,5 +1,5 @@
-use crate::GDError::InvalidInput;
-use crate::GDResult;
+use crate::{GDError::InvalidInput, GDResult};
+
 use std::time::Duration;
 
 /// Timeout settings for socket operations
@@ -10,7 +10,8 @@ pub struct TimeoutSettings {
 }
 
 impl TimeoutSettings {
-    /// Construct new settings, passing None will block indefinitely. Passing zero Duration throws GDError::[InvalidInput](InvalidInput).
+    /// Construct new settings, passing None will block indefinitely. Passing
+    /// zero Duration throws GDError::[InvalidInput](InvalidInput).
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
@@ -28,14 +29,10 @@ impl TimeoutSettings {
     }
 
     /// Get the read timeout.
-    pub fn get_read(&self) -> Option<Duration> {
-        self.read
-    }
+    pub fn get_read(&self) -> Option<Duration> { self.read }
 
     /// Get the write timeout.
-    pub fn get_write(&self) -> Option<Duration> {
-        self.write
-    }
+    pub fn get_write(&self) -> Option<Duration> { self.write }
 }
 
 impl Default for TimeoutSettings {
@@ -77,10 +74,12 @@ mod tests {
         let read_duration = Duration::new(0, 0);
         let write_duration = Duration::from_secs(2);
 
-        // Try to create new TimeoutSettings with the zero read duration (this should fail)
+        // Try to create new TimeoutSettings with the zero read duration (this should
+        // fail)
         let result = TimeoutSettings::new(Some(read_duration), Some(write_duration));
 
-        // Verify that the function returned an error and that the error type is InvalidInput
+        // Verify that the function returned an error and that the error type is
+        // InvalidInput
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), InvalidInput);
     }
@@ -91,7 +90,8 @@ mod tests {
         // Get the default TimeoutSettings values
         let default_settings = TimeoutSettings::default();
 
-        // Verify that the get_read and get_write methods return the expected default values
+        // Verify that the get_read and get_write methods return the expected default
+        // values
         assert_eq!(default_settings.get_read(), Some(Duration::from_secs(4)));
         assert_eq!(default_settings.get_write(), Some(Duration::from_secs(4)));
     }
