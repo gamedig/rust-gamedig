@@ -145,8 +145,7 @@ pub(crate) fn get_optional_extracted_data(
 }
 
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 #[repr(u8)]
 pub(crate) enum Request {
     /// Known as `A2S_INFO`
