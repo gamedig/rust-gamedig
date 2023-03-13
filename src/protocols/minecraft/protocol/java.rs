@@ -11,6 +11,20 @@ use crate::{
 
 use serde_json::Value;
 
+#[rustfmt::skip]
+const PAYLOAD: [u8; 17] = [
+    //Packet ID (0)
+    0x00,
+    //Protocol Version (-1 to determine version)
+    0xFF, 0xFF, 0xFF, 0xFF, 0x0F,
+    //Server address (can be anything)
+    0x07, 0x47, 0x61, 0x6D, 0x65, 0x44, 0x69, 0x67,
+    //Server port (can be anything)
+    0x00, 0x00,
+    //Next state (1 for status)
+    0x01
+];
+
 pub struct Java {
     socket: TcpSocket,
 }
@@ -39,18 +53,7 @@ impl Java {
     }
 
     fn send_handshake(&mut self) -> GDResult<()> {
-        self.send(
-            [
-                // Packet ID (0)
-                0x00, // Protocol Version (-1 to determine version)
-                0xFF, 0xFF, 0xFF, 0xFF, 0x0F, // Server address (can be anything)
-                0x07, 0x47, 0x61, 0x6D, 0x65, 0x44, 0x69, 0x67,
-                // Server port (can be anything)
-                0x00, 0x00, // Next state (1 for status)
-                0x01,
-            ]
-            .to_vec(),
-        )?;
+        self.send(PAYLOAD.to_vec())?;
 
         Ok(())
     }
