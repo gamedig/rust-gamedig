@@ -16,6 +16,7 @@
 //! Enabled by default: None
 //!
 //! `no_games` - disables the included games support.
+//! `serde` - enables json serialization/deserialization for all types
 
 pub mod errors;
 #[cfg(not(feature = "no_games"))]

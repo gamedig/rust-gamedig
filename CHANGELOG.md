@@ -5,6 +5,7 @@ Who knows what the future holds...
 ### Changes:
 Crate:
 - General optimizations thanks to [cargo clippy](https://github.com/rust-lang/rust-clippy) and [@cainthebest](https://github.com/cainthebest).
+- Added feature `serde` which enables json serialization/deserialization for all types (by [@cainthebest](https://github.com/cainthebest)).
 
 Protocols:
 - GameSpy 1: Add key `admin` as a possible variable for `admin_name`.
