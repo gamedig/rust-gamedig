@@ -3,7 +3,11 @@ use crate::GDResult;
 use crate::protocols::valve;
 use crate::protocols::valve::{Server, ServerPlayer, get_optional_extracted_data, SteamApp};
 
-#[derive(Debug)]
+#[cfg (feature = "serde")]
+use serde::{Serialize, Deserialize};
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct TheShipPlayer {
     pub name: String,
     pub score: u32,
@@ -24,7 +28,8 @@ impl TheShipPlayer {
     }
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Response {
     pub protocol: u8,
     pub name: String,

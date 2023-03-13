@@ -1,31 +1,38 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The type of the server.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Server {
     Dedicated,
     NonDedicated,
-    TV
+    TV,
 }
 
 /// The Operating System that the server is on.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Environment {
     Linux,
     Windows,
-    Mac
+    Mac,
 }
 
 /// A query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Response {
     pub info: ServerInfo,
     pub players: Option<Vec<ServerPlayer>>,
-    pub rules: Option<HashMap<String, String>>
+    pub rules: Option<HashMap<String, String>>,
 }
 
 /// General server information's.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ServerInfo {
     /// Protocol used by the server.
     pub protocol: u8,
@@ -62,11 +69,12 @@ pub struct ServerInfo {
     /// GoldSrc only: Indicates whether the hosted game is a mod.
     pub is_mod: bool,
     /// GoldSrc only: If the game is a mod, provide additional data.
-    pub mod_data: Option<ModData>
+    pub mod_data: Option<ModData>,
 }
 
 /// A server player.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ServerPlayer {
     /// Player's name.
     pub name: String,
@@ -81,15 +89,17 @@ pub struct ServerPlayer {
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TheShip {
     pub mode: u8,
     pub witnesses: u8,
-    pub duration: u8
+    pub duration: u8,
 }
 
 /// Some extra data that the server might provide or not.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ExtraData {
     /// The server's game port number.
     pub port: Option<u16>,
@@ -102,18 +112,19 @@ pub struct ExtraData {
     /// Keywords that describe the server according to it.
     pub keywords: Option<String>,
     /// The server's 64-bit GameID.
-    pub game_id: Option<u64>
+    pub game_id: Option<u64>,
 }
 
 /// Data related to GoldSrc Mod response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ModData {
     pub link: String,
     pub download_link: String,
     pub version: u32,
     pub size: u32,
     pub multiplayer_only: bool,
-    pub has_own_dll: bool
+    pub has_own_dll: bool,
 }
 
 pub(crate) type ExtractedData = (
@@ -142,11 +153,12 @@ pub(crate) enum Request {
     /// Known as `A2S_PLAYERS`
     Players = 0x55,
     /// Known as `A2S_RULES`
-    Rules = 0x56
+    Rules = 0x56,
 }
 
 /// Supported steam apps
-#[derive(Eq, PartialEq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum SteamApp {
     /// Counter-Strike
     CS,
@@ -236,9 +248,9 @@ impl SteamApp {
     /// Get the specified app as engine.
     pub fn as_engine(&self) -> Engine {
         match self {
-            SteamApp::CS => Engine::GoldSrc(false), //10
-            SteamApp::TFC => Engine::GoldSrc(false), //20
-            SteamApp::DOD => Engine::GoldSrc(false), //30
+            SteamApp::CS => Engine::GoldSrc(false),   //10
+            SteamApp::TFC => Engine::GoldSrc(false),  //20
+            SteamApp::DOD => Engine::GoldSrc(false),  //30
             SteamApp::CSCZ => Engine::GoldSrc(false), //80
             SteamApp::CSS => Engine::new_source(240),
             SteamApp::DODS => Engine::new_source(300),
@@ -282,7 +294,8 @@ impl SteamApp {
 }
 
 /// Engine type.
-#[derive(Eq, PartialEq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Engine {
     /// A Source game, the argument represents the possible steam app ids, if its **None**, let
     /// the query find it, if its **Some**, the query fails if the response id is not the first
@@ -290,7 +303,7 @@ pub enum Engine {
     Source(Option<(u32, Option<u32>)>),
     /// A GoldSrc game, the argument indicates whether to enforce
     /// requesting the obsolete A2S_INFO response or not.
-    GoldSrc(bool)
+    GoldSrc(bool),
 }
 
 impl Engine {
@@ -306,7 +319,7 @@ impl Engine {
 /// What data to gather, purely used only with the query function.
 pub struct GatheringSettings {
     pub players: bool,
-    pub rules: bool
+    pub rules: bool,
 }
 
 impl Default for GatheringSettings {
@@ -314,7 +327,7 @@ impl Default for GatheringSettings {
     fn default() -> Self {
         Self {
             players: true,
-            rules: true
+            rules: true,
         }
     }
 }
@@ -322,19 +335,23 @@ impl Default for GatheringSettings {
 /// Generic response types that are used by many games, they are the protocol ones, but without the
 /// unnecessary bits (example: the **The Ship**-only fields).
 pub mod game {
-    use std::collections::HashMap;
-    use crate::protocols::valve::types::get_optional_extracted_data;
     use super::{Server, ServerPlayer};
+    use crate::protocols::valve::types::get_optional_extracted_data;
+    use std::collections::HashMap;
+
+    #[cfg(feature = "serde")]
+    use serde::{Deserialize, Serialize};
 
     /// A player's details.
-    #[derive(Debug)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    #[derive(Debug, Clone, PartialEq, PartialOrd)]
     pub struct Player {
         /// Player's name.
         pub name: String,
         /// Player's score.
         pub score: u32,
         /// How long a player has been in the server (seconds).
-        pub duration: f32
+        pub duration: f32,
     }
 
     impl Player {
@@ -342,13 +359,14 @@ pub mod game {
             Self {
                 name: player.name.clone(),
                 score: player.score,
-                duration: player.duration
+                duration: player.duration,
             }
         }
     }
 
     /// The query response.
-    #[derive(Debug)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct Response {
         /// Protocol used by the server.
         pub protocol: u8,
@@ -387,12 +405,13 @@ pub mod game {
         /// Keywords that describe the server according to it.
         pub keywords: Option<String>,
         /// Server's rules.
-        pub rules: HashMap<String, String>
+        pub rules: HashMap<String, String>,
     }
 
     impl Response {
         pub fn new_from_valve_response(response: super::Response) -> Self {
-            let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
+            let (port, steam_id, tv_port, tv_name, keywords) =
+                get_optional_extracted_data(response.info.extra_data);
 
             Self {
                 protocol: response.info.protocol,
@@ -401,7 +420,12 @@ pub mod game {
                 game: response.info.game,
                 appid: response.info.appid,
                 players_online: response.info.players_online,
-                players_details: response.players.unwrap_or_default().iter().map(Player::from_valve_response).collect(),
+                players_details: response
+                    .players
+                    .unwrap_or_default()
+                    .iter()
+                    .map(Player::from_valve_response)
+                    .collect(),
                 players_maximum: response.info.players_maximum,
                 players_bots: response.info.players_bots,
                 server_type: response.info.server_type,
@@ -413,7 +437,7 @@ pub mod game {
                 tv_port,
                 tv_name,
                 keywords,
-                rules: response.rules.unwrap_or_default()
+                rules: response.rules.unwrap_or_default(),
             }
         }
     }

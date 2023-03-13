@@ -2,7 +2,10 @@
 name = "gamedig"
 version = "0.2.1"
 edition = "2021"
-authors = ["CosminPerRam [https://github.com/CosminPerRam]", "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]"]
+authors = [
+    "CosminPerRam [https://github.com/CosminPerRam]",
+    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
+]
 license = "MIT"
 description = "Check out servers with this."
 homepage = "https://github.com/gamedig/rust-gamedig"
@@ -13,12 +16,14 @@ keywords = ["server", "query", "game", "check", "status"]
 rust-version = "1.56.1"
 
 [features]
+default = []
 no_games = []
+serde = ["dep:serde", "serde/derive"]
 
 [dependencies]
 byteorder = "1.4.3"
-
-bzip2-rs = "0.1.2" # for compression
+bzip2-rs = "0.1.2"
 crc32fast = "1.3.2"
+serde_json = "1.0.91"
 
-serde_json = "1.0.91" # json to structs
+serde = { version = "1.0.155", optional = true }
