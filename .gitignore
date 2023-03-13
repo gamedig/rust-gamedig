@@ -12,5 +12,6 @@ Cargo.lock
 # Others
 .idea/
 .venv/
+.vscode/
 
 test_everything.py
