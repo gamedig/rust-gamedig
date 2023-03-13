@@ -130,9 +130,11 @@ impl Bufferer {
 
         let paired_buf: Vec<u16> = sub_buf
             .chunks_exact(2)
-            .map(|pair| match self.endianess {
-                Endianess::Little => LittleEndian::read_u16(pair),
-                Endianess::Big => BigEndian::read_u16(pair),
+            .map(|pair| {
+                match self.endianess {
+                    Endianess::Little => LittleEndian::read_u16(pair),
+                    Endianess::Big => BigEndian::read_u16(pair),
+                }
             })
             .collect();
 
