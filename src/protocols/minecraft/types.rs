@@ -1,6 +1,8 @@
-// Although its a lightly modified version, this file contains code
-// by Jaiden Bernard (2021-2022 - MIT) from
-// https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
+/*
+Although its a lightly modified version, this file contains code
+by Jaiden Bernard (2021-2022 - MIT) from
+https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
+*/
 
 use crate::{
     bufferer::Bufferer,
@@ -8,8 +10,12 @@ use crate::{
     GDResult,
 };
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The type of Minecraft Server you want to query.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Server {
     /// Java Edition.
     Java,
@@ -20,7 +26,8 @@ pub enum Server {
 }
 
 /// Legacy Java (Versions) Groups.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum LegacyGroup {
     /// 1.6
     V1_6,
@@ -31,19 +38,20 @@ pub enum LegacyGroup {
 }
 
 /// Information about a player.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
     pub name: String,
     pub id: String,
 }
 
 /// A Java query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2). Note that for versions
-    /// below 1.6 this field is always -1.
+    /// Version protocol, example: 760 (for 1.19.2). Note that for versions below 1.6 this field is always -1.
     pub version_protocol: i32,
     /// Number of server capacity.
     pub players_maximum: u32,
@@ -64,7 +72,8 @@ pub struct JavaResponse {
 }
 
 /// A Bedrock Edition query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BedrockResponse {
     /// Server's edition.
     pub edition: String,
@@ -105,8 +114,9 @@ impl JavaResponse {
     }
 }
 
-/// A server's game mode (used only by Bedrock servers).
-#[derive(Debug)]
+/// A server's game mode (used only by Bedrock servers.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum GameMode {
     Survival,
     Creative,
@@ -134,7 +144,7 @@ pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
     let msb: u8 = 0b10000000;
     let mask: u8 = !msb;
 
-    for i in 0 .. 5 {
+    for i in 0..5 {
         let current_byte = buffer.get_u8()?;
 
         result |= ((current_byte & mask) as i32) << (7 * i);
@@ -159,7 +169,7 @@ pub(crate) fn as_varint(value: i32) -> Vec<u8> {
     let msb: u8 = 0b10000000;
     let mask: i32 = 0b01111111;
 
-    for _ in 0 .. 5 {
+    for _ in 0..5 {
         let tmp = (reading_value & mask) as u8;
 
         reading_value &= !mask;
@@ -180,7 +190,7 @@ pub(crate) fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
     let length = get_varint(buffer)? as usize;
     let mut text = Vec::with_capacity(length);
 
-    for _ in 0 .. length {
+    for _ in 0..length {
         text.push(buffer.get_u8()?)
     }
 
@@ -194,3 +204,4 @@ pub(crate) fn as_string(value: String) -> Vec<u8> {
 
     buf
 }
+

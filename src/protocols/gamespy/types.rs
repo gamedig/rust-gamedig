@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// A player’s details.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
     pub name: String,
     pub team: u8,
@@ -17,7 +21,8 @@ pub struct Player {
 }
 
 /// A query response.
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Response {
     pub name: String,
     pub map: String,

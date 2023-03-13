@@ -5,13 +5,17 @@ use crate::{
 
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[cfg (feature = "serde")]
+use serde::{Serialize, Deserialize};
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct TheShipPlayer {
     pub name: String,
     pub score: u32,
     pub duration: f32,
     pub deaths: u32,
-    pub money: u32,
+    pub money: u32
 }
 
 impl TheShipPlayer {
@@ -21,12 +25,13 @@ impl TheShipPlayer {
             score: player.score,
             duration: player.duration,
             deaths: player.deaths.unwrap(),
-            money: player.money.unwrap(),
+            money: player.money.unwrap()
         }
     }
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Response {
     pub protocol: u8,
     pub name: String,
@@ -48,13 +53,12 @@ pub struct Response {
     pub rules: HashMap<String, String>,
     pub mode: u8,
     pub witnesses: u8,
-    pub duration: u8,
+    pub duration: u8
 }
 
 impl Response {
     pub fn new_from_valve_response(response: valve::Response) -> Self {
-        let (port, steam_id, tv_port, tv_name, keywords) =
-            get_optional_extracted_data(response.info.extra_data);
+        let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
         let the_unwrapped_ship = response.info.the_ship.unwrap();
 
@@ -64,12 +68,7 @@ impl Response {
             map: response.info.map,
             game: response.info.game,
             players: response.info.players_online,
-            players_details: response
-                .players
-                .unwrap()
-                .iter()
-                .map(TheShipPlayer::new_from_valve_player)
-                .collect(),
+            players_details: response.players.unwrap().iter().map(TheShipPlayer::new_from_valve_player).collect(),
             max_players: response.info.players_maximum,
             bots: response.info.players_bots,
             server_type: response.info.server_type,
@@ -84,19 +83,13 @@ impl Response {
             rules: response.rules.unwrap(),
             mode: the_unwrapped_ship.mode,
             witnesses: the_unwrapped_ship.witnesses,
-            duration: the_unwrapped_ship.duration,
+            duration: the_unwrapped_ship.duration
         }
     }
 }
 
 pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
-    let valve_response = valve::query(
-        address,
-        port.unwrap_or(27015),
-        SteamApp::TS.as_engine(),
-        None,
-        None,
-    )?;
+    let valve_response = valve::query(address, port.unwrap_or(27015), SteamApp::TS.as_engine(), None, None)?;
 
     Ok(Response::new_from_valve_response(valve_response))
 }
