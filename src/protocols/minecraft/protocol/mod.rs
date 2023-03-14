@@ -24,11 +24,7 @@ mod legacy_v1_6;
 
 /// Queries a Minecraft server with all the protocol variants one by one (Java
 /// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
-pub fn query(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<JavaResponse> {
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_java(address, port, timeout_settings.clone()) {
         return Ok(response);
     }
@@ -45,34 +41,21 @@ pub fn query(
 }
 
 /// Query a Java Server.
-pub fn query_java(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<JavaResponse> {
+pub fn query_java(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     Java::query(address, port, timeout_settings)
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
-pub fn query_legacy(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<JavaResponse> {
-    if let Ok(response) =
-        query_legacy_specific(LegacyGroup::V1_6, address, port, timeout_settings.clone())
-    {
+pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_6, address, port, timeout_settings.clone()) {
         return Ok(response);
     }
 
-    if let Ok(response) =
-        query_legacy_specific(LegacyGroup::V1_4, address, port, timeout_settings.clone())
-    {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_4, address, port, timeout_settings.clone()) {
         return Ok(response);
     }
 
-    if let Ok(response) = query_legacy_specific(LegacyGroup::VB1_8, address, port, timeout_settings)
-    {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::VB1_8, address, port, timeout_settings) {
         return Ok(response);
     }
 
@@ -94,10 +77,6 @@ pub fn query_legacy_specific(
 }
 
 /// Query a Bedrock Server.
-pub fn query_bedrock(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<BedrockResponse> {
+pub fn query_bedrock(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
     Bedrock::query(address, port, timeout_settings)
 }

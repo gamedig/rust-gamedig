@@ -91,8 +91,7 @@ impl Socket for UdpSocket {
 
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
         let mut buf: Vec<u8> = vec![0; size.unwrap_or(DEFAULT_PACKET_SIZE)];
-        let (number_of_bytes_received, _) =
-            self.socket.recv_from(&mut buf).map_err(|_| PacketReceive)?;
+        let (number_of_bytes_received, _) = self.socket.recv_from(&mut buf).map_err(|_| PacketReceive)?;
 
         Ok(buf[.. number_of_bytes_received].to_vec())
     }
@@ -117,8 +116,7 @@ mod tests {
         });
 
         // Create a TCP socket and send a message to the server
-        let mut socket =
-            TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket = TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -149,8 +147,7 @@ mod tests {
         });
 
         // Create a UDP socket and send a message to the server
-        let mut socket =
-            UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket = UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 

@@ -408,8 +408,7 @@ pub mod game {
 
     impl Response {
         pub fn new_from_valve_response(response: super::Response) -> Self {
-            let (port, steam_id, tv_port, tv_name, keywords) =
-                get_optional_extracted_data(response.info.extra_data);
+            let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
             Self {
                 protocol: response.info.protocol,

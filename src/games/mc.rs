@@ -33,11 +33,7 @@ pub fn query_legacy(address: &str, port: Option<u16>) -> GDResult<JavaResponse> 
 }
 
 /// Query a specific (Java) Legacy Server.
-pub fn query_legacy_specific(
-    group: LegacyGroup,
-    address: &str,
-    port: Option<u16>,
-) -> GDResult<JavaResponse> {
+pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_legacy_specific(group, address, port_or_java_default(port), None)
 }
 

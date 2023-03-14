@@ -1,6 +1,6 @@
 attr_fn_like_width = 70
 array_width = 60
-binop_separator = "Back"
+binop_separator = "Front"
 blank_lines_lower_bound = 0
 blank_lines_upper_bound = 1
 brace_style = "PreferSameLine"
@@ -39,7 +39,7 @@ make_backup = false
 match_arm_blocks = true
 match_arm_leading_pipes = "Never"
 match_block_trailing_comma = false
-max_width = 100
+max_width = 120
 merge_derives = true
 newline_style = "Auto"
 normalize_comments = true

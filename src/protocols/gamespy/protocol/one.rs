@@ -83,10 +83,7 @@ fn get_server_values(
     Ok(server_values)
 }
 
-fn extract_players(
-    server_vars: &mut HashMap<String, String>,
-    players_maximum: usize,
-) -> GDResult<Vec<Player>> {
+fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: usize) -> GDResult<Vec<Player>> {
     let mut players_data: Vec<HashMap<String, String>> = Vec::with_capacity(players_maximum);
 
     server_vars.retain(|key, value| {
@@ -103,12 +100,8 @@ fn extract_players(
         };
 
         let early_return = match kind {
-            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" |
-            "deaths" | "health" => false,
-            _x => {
-                // println!("UNKNOWN {id} {x} {value}");
-                true
-            }
+            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" | "deaths" | "health" => false,
+            _x => true, // println!("UNKNOWN {id} {x} {value}");
         };
 
         if early_return {
@@ -208,11 +201,7 @@ pub fn query_vars(
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<Response> {
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut server_vars = query_vars(address, port, timeout_settings)?;
 
     let players_maximum = server_vars

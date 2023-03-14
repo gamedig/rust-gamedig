@@ -101,8 +101,7 @@ impl SplitPacket {
     fn new(engine: &Engine, protocol: u8, buffer: &mut Bufferer) -> GDResult<Self> {
         let header = buffer.get_u32()?;
         let id = buffer.get_u32()?;
-        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match engine
-        {
+        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match engine {
             Engine::GoldSrc(_) => {
                 let (lower, upper) = u8_lower_upper(buffer.get_u8()?);
                 (lower, upper, 0, false, None, None)
@@ -157,8 +156,8 @@ impl SplitPacket {
                 .read(&mut decompressed_payload)
                 .map_err(|_| Decompress)?;
 
-            if decompressed_payload.len() != decompressed_size ||
-                crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
+            if decompressed_payload.len() != decompressed_size
+                || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
             {
                 Err(Decompress)
             } else {
@@ -208,8 +207,7 @@ impl ValveProtocol {
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
-            let mut new_packet_buffer =
-                Bufferer::new_with_data(Endianess::Little, &main_packet.get_payload()?);
+            let mut new_packet_buffer = Bufferer::new_with_data(Endianess::Little, &main_packet.get_payload()?);
             Ok(Packet::new(&mut new_packet_buffer)?)
         } else {
             Packet::new(&mut buffer)
@@ -217,12 +215,7 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
-    fn get_request_data(
-        &mut self,
-        engine: &Engine,
-        protocol: u8,
-        kind: Request,
-    ) -> GDResult<Bufferer> {
+    fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
         let request_initial_packet = Packet::initial(kind).to_bytes();
         self.socket.send(&request_initial_packet)?;
 
@@ -434,11 +427,7 @@ impl ValveProtocol {
     }
 
     /// Get the server's rules.
-    fn get_server_rules(
-        &mut self,
-        engine: &Engine,
-        protocol: u8,
-    ) -> GDResult<HashMap<String, String>> {
+    fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
         let mut buffer = self.get_request_data(engine, protocol, Request::Rules)?;
 
         let count = buffer.get_u16()? as usize;

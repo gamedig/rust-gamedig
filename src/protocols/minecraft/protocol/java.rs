@@ -60,11 +60,8 @@ impl Java {
 
     fn send_status_request(&mut self) -> GDResult<()> {
         self.send(
-            [
-                // Packet ID (0)
-                0x00,
-            ]
-            .to_vec(),
+            [0x00] // Packet ID (0)
+                .to_vec(),
         )?;
 
         Ok(())
@@ -72,11 +69,8 @@ impl Java {
 
     fn send_ping_request(&mut self) -> GDResult<()> {
         self.send(
-            [
-                // Packet ID (1)
-                0x01,
-            ]
-            .to_vec(),
+            [0x01] // Packet ID (1)
+                .to_vec(),
         )?;
 
         Ok(())
@@ -109,27 +103,26 @@ impl Java {
         let online_players = value_response["players"]["online"]
             .as_u64()
             .ok_or(PacketBad)? as u32;
-        let sample_players: Option<Vec<Player>> =
-            match value_response["players"]["sample"].is_null() {
-                true => None,
-                false => {
-                    Some({
-                        let players_values = value_response["players"]["sample"]
-                            .as_array()
-                            .ok_or(PacketBad)?;
+        let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
+            true => None,
+            false => {
+                Some({
+                    let players_values = value_response["players"]["sample"]
+                        .as_array()
+                        .ok_or(PacketBad)?;
 
-                        let mut players = Vec::with_capacity(players_values.len());
-                        for player in players_values {
-                            players.push(Player {
-                                name: player["name"].as_str().ok_or(PacketBad)?.to_string(),
-                                id: player["id"].as_str().ok_or(PacketBad)?.to_string(),
-                            })
-                        }
+                    let mut players = Vec::with_capacity(players_values.len());
+                    for player in players_values {
+                        players.push(Player {
+                            name: player["name"].as_str().ok_or(PacketBad)?.to_string(),
+                            id: player["id"].as_str().ok_or(PacketBad)?.to_string(),
+                        })
+                    }
 
-                        players
-                    })
-                }
-            };
+                    players
+                })
+            }
+        };
 
         Ok(JavaResponse {
             version_name,
@@ -145,11 +138,7 @@ impl Java {
         })
     }
 
-    pub fn query(
-        address: &str,
-        port: u16,
-        timeout_settings: Option<TimeoutSettings>,
-    ) -> GDResult<JavaResponse> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         Java::new(address, port, timeout_settings)?.get_info()
     }
 }

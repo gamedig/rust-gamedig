@@ -24,12 +24,12 @@ impl LegacyV1_6 {
 
     fn send_initial_request(&mut self) -> GDResult<()> {
         self.socket.send(&[
-            // Packet ID (FE)
-            0xfe, // Ping payload (01)
-            0x01, // Packet identifier for plugin message
-            0xfa, // Length of 'GameDig' string (7) as unsigned short
-            0x00, 0x07, // 'GameDig' string as UTF-16BE
-            0x00, 0x47, 0x00, 0x61, 0x00, 0x6D, 0x00, 0x65, 0x00, 0x44, 0x00, 0x69, 0x00, 0x67,
+            0xfe, // Packet ID (FE)
+            0x01, // Ping payload (01)
+            0xfa, // Packet identifier for plugin message
+            0x00, 0x07, // Length of 'GameDig' string (7) as unsigned short
+            0x00, 0x47, 0x00, 0x61, 0x00, 0x6D, 0x00, 0x65, 0x00, 0x44, 0x00, 0x69, 0x00,
+            0x67, // 'GameDig' string as UTF-16BE
         ])?;
 
         Ok(())
@@ -92,11 +92,7 @@ impl LegacyV1_6 {
         LegacyV1_6::get_response(&mut buffer)
     }
 
-    pub fn query(
-        address: &str,
-        port: u16,
-        timeout_settings: Option<TimeoutSettings>,
-    ) -> GDResult<JavaResponse> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         LegacyV1_6::new(address, port, timeout_settings)?.get_info()
     }
 }

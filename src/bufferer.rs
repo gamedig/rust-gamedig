@@ -234,8 +234,7 @@ mod tests {
 
     #[test]
     fn get_u64_le() {
-        let mut buffer =
-            Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 99, 69, 4, 2, 0]);
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 29, 128, 99, 69, 4, 2, 0]);
 
         assert_eq!(buffer.get_u64().unwrap(), 567646022016328);
         assert_eq!(buffer.remaining_length(), 0);
@@ -253,8 +252,7 @@ mod tests {
 
     #[test]
     fn get_string_utf8() {
-        let mut buffer =
-            Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111, 0, 72]);
+        let mut buffer = Bufferer::new_with_data(Endianess::Little, &[72, 101, 108, 108, 111, 0, 72]);
 
         assert_eq!(buffer.get_string_utf8().unwrap(), "Hello");
         assert_eq!(buffer.remaining_length(), 1);

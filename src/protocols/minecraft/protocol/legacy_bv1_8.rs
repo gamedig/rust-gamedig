@@ -59,11 +59,7 @@ impl LegacyBV1_8 {
         })
     }
 
-    pub fn query(
-        address: &str,
-        port: u16,
-        timeout_settings: Option<TimeoutSettings>,
-    ) -> GDResult<JavaResponse> {
+    pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
         LegacyBV1_8::new(address, port, timeout_settings)?.get_info()
     }
 }
