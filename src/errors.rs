@@ -1,6 +1,7 @@
-//! The library's possible errors.
-use std::fmt;
-use std::{error::Error, fmt::Formatter};
+use std::{
+    error::Error,
+    fmt::{self, Formatter},
+};
 
 /// Result of Type and GDError.
 pub type GDResult<T> = Result<T, GDError>;
@@ -43,9 +44,7 @@ pub enum GDError {
 impl Error for GDError {}
 
 impl fmt::Display for GDError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
 #[cfg(test)]

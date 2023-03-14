@@ -1,10 +1,56 @@
-
-use std::env;
-use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bf1942, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, GDResult, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, ss, tf, tf2, tfc, ts, unturned, ut, vr};
+use gamedig::protocols::gamespy;
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::Engine;
-use gamedig::protocols::gamespy;
+use gamedig::{
+    aliens,
+    aoc,
+    arma2oa,
+    ase,
+    asrd,
+    avorion,
+    bat1944,
+    bb2,
+    bf1942,
+    bm,
+    bo,
+    ccure,
+    cosu,
+    cs,
+    cscz,
+    csgo,
+    css,
+    dod,
+    dods,
+    doi,
+    dst,
+    gm,
+    hl2dm,
+    hldms,
+    ins,
+    insmic,
+    inss,
+    l4d,
+    l4d2,
+    mc,
+    ohd,
+    onset,
+    pz,
+    ror2,
+    rust,
+    sc,
+    sdtd,
+    ss,
+    tf,
+    tf2,
+    tfc,
+    ts,
+    unturned,
+    ut,
+    vr,
+    GDResult,
+};
+use std::env;
 
 fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -28,8 +74,8 @@ fn main() -> GDResult<()> {
             }
 
             None
-        },
-        true => Some(args[3].parse::<u16>().expect("Invalid port!"))
+        }
+        true => Some(args[3].parse::<u16>().expect("Invalid port!")),
     };
 
     match args[1].as_str() {
@@ -49,16 +95,46 @@ fn main() -> GDResult<()> {
         "ts" => println!("{:#?}", ts::query(ip, port)?),
         "cscz" => println!("{:#?}", cscz::query(ip, port)?),
         "dod" => println!("{:#?}", dod::query(ip, port)?),
-        "_src" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::Source(None), None, None)?),
-        "_gld" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::GoldSrc(false), None, None)?),
-        "_gld_f" => println!("{:#?}", valve::query(ip, port.unwrap(), Engine::GoldSrc(true), None, None)?),
+        "_src" => {
+            println!(
+                "{:#?}",
+                valve::query(ip, port.unwrap(), Engine::Source(None), None, None)?
+            )
+        }
+        "_gld" => {
+            println!(
+                "{:#?}",
+                valve::query(ip, port.unwrap(), Engine::GoldSrc(false), None, None)?
+            )
+        }
+        "_gld_f" => {
+            println!(
+                "{:#?}",
+                valve::query(ip, port.unwrap(), Engine::GoldSrc(true), None, None)?
+            )
+        }
         "mc" => println!("{:#?}", mc::query(ip, port)?),
         "mc_java" => println!("{:#?}", mc::query_java(ip, port)?),
         "mc_bedrock" => println!("{:#?}", mc::query_bedrock(ip, port)?),
         "mc_legacy" => println!("{:#?}", mc::query_legacy(ip, port)?),
-        "mc_legacy_vb1_8" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::VB1_8, ip, port)?),
-        "mc_legacy_v1_4" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::V1_4, ip, port)?),
-        "mc_legacy_v1_6" => println!("{:#?}", mc::query_legacy_specific(LegacyGroup::V1_6, ip, port)?),
+        "mc_legacy_vb1_8" => {
+            println!(
+                "{:#?}",
+                mc::query_legacy_specific(LegacyGroup::VB1_8, ip, port)?
+            )
+        }
+        "mc_legacy_v1_4" => {
+            println!(
+                "{:#?}",
+                mc::query_legacy_specific(LegacyGroup::V1_4, ip, port)?
+            )
+        }
+        "mc_legacy_v1_6" => {
+            println!(
+                "{:#?}",
+                mc::query_legacy_specific(LegacyGroup::V1_6, ip, port)?
+            )
+        }
         "7dtd" => println!("{:#?}", sdtd::query(ip, port)?),
         "ase" => println!("{:#?}", ase::query(ip, port)?),
         "unturned" => println!("{:#?}", unturned::query(ip, port)?),
@@ -89,7 +165,7 @@ fn main() -> GDResult<()> {
         "ut" => println!("{:#?}", ut::query(ip, port)),
         "bf1942" => println!("{:#?}", bf1942::query(ip, port)),
         "ss" => println!("{:#?}", ss::query(ip, port)),
-        _ => panic!("Undefined game: {}", args[1])
+        _ => panic!("Undefined game: {}", args[1]),
     };
 
     Ok(())

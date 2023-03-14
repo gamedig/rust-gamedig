@@ -83,9 +83,9 @@ pub struct ServerPlayer {
     /// How long a player has been in the server (seconds).
     pub duration: f32,
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): deaths count
-    pub deaths: Option<u32>, //the_ship
+    pub deaths: Option<u32>, // the_ship
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): money amount
-    pub money: Option<u32>, //the_ship
+    pub money: Option<u32>, // the_ship
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
@@ -135,9 +135,7 @@ pub(crate) type ExtractedData = (
     Option<String>,
 );
 
-pub(crate) fn get_optional_extracted_data(
-    data: Option<ExtraData>,
-) -> ExtractedData {
+pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> ExtractedData {
     match data {
         None => (None, None, None, None, None),
         Some(ed) => (ed.port, ed.steam_id, ed.tv_port, ed.tv_name, ed.keywords),
@@ -248,10 +246,10 @@ impl SteamApp {
     /// Get the specified app as engine.
     pub fn as_engine(&self) -> Engine {
         match self {
-            SteamApp::CS => Engine::GoldSrc(false),   //10
-            SteamApp::TFC => Engine::GoldSrc(false),  //20
-            SteamApp::DOD => Engine::GoldSrc(false),  //30
-            SteamApp::CSCZ => Engine::GoldSrc(false), //80
+            SteamApp::CS => Engine::GoldSrc(false),   // 10
+            SteamApp::TFC => Engine::GoldSrc(false),  // 20
+            SteamApp::DOD => Engine::GoldSrc(false),  // 30
+            SteamApp::CSCZ => Engine::GoldSrc(false), // 80
             SteamApp::CSS => Engine::new_source(240),
             SteamApp::DODS => Engine::new_source(300),
             SteamApp::HL2DM => Engine::new_source(320),
@@ -268,7 +266,7 @@ impl SteamApp {
             SteamApp::ARMA2OA => Engine::new_source(33930),
             SteamApp::PZ => Engine::new_source(108600),
             SteamApp::INS => Engine::new_source(222880),
-            SteamApp::SC => Engine::GoldSrc(false), //225840
+            SteamApp::SC => Engine::GoldSrc(false), // 225840
             SteamApp::SDTD => Engine::new_source(251570),
             SteamApp::RUST => Engine::new_source(252490),
             SteamApp::BO => Engine::new_source(296300),
@@ -297,9 +295,10 @@ impl SteamApp {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Engine {
-    /// A Source game, the argument represents the possible steam app ids, if its **None**, let
-    /// the query find it, if its **Some**, the query fails if the response id is not the first
-    /// one, which is the game app id, or the other one, which is the dedicated server app id.
+    /// A Source game, the argument represents the possible steam app ids, if
+    /// its **None**, let the query find it, if its **Some**, the query
+    /// fails if the response id is not the first one, which is the game app
+    /// id, or the other one, which is the dedicated server app id.
     Source(Option<(u32, Option<u32>)>),
     /// A GoldSrc game, the argument indicates whether to enforce
     /// requesting the obsolete A2S_INFO response or not.
@@ -307,9 +306,7 @@ pub enum Engine {
 }
 
 impl Engine {
-    pub fn new_source(appid: u32) -> Self {
-        Engine::Source(Some((appid, None)))
-    }
+    pub fn new_source(appid: u32) -> Self { Engine::Source(Some((appid, None))) }
 
     pub fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
         Engine::Source(Some((appid, Some(dedicated_appid))))
@@ -332,8 +329,9 @@ impl Default for GatheringSettings {
     }
 }
 
-/// Generic response types that are used by many games, they are the protocol ones, but without the
-/// unnecessary bits (example: the **The Ship**-only fields).
+/// Generic response types that are used by many games, they are the protocol
+/// ones, but without the unnecessary bits (example: the **The Ship**-only
+/// fields).
 pub mod game {
     use super::{Server, ServerPlayer};
     use crate::protocols::valve::types::get_optional_extracted_data;
@@ -410,8 +408,7 @@ pub mod game {
 
     impl Response {
         pub fn new_from_valve_response(response: super::Response) -> Self {
-            let (port, steam_id, tv_port, tv_name, keywords) =
-                get_optional_extracted_data(response.info.extra_data);
+            let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
             Self {
                 protocol: response.info.protocol,

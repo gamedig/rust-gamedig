@@ -1,20 +1,29 @@
-use crate::GDError::AutoQuery;
-use crate::GDResult;
-use crate::protocols::minecraft::{BedrockResponse, LegacyGroup, JavaResponse};
-use crate::protocols::minecraft::protocol::bedrock::Bedrock;
-use crate::protocols::minecraft::protocol::java::Java;
-use crate::protocols::minecraft::protocol::legacy_v1_4::LegacyV1_4;
-use crate::protocols::minecraft::protocol::legacy_v1_6::LegacyV1_6;
-use crate::protocols::minecraft::protocol::legacy_bv1_8::LegacyBV1_8;
-use crate::protocols::types::TimeoutSettings;
+use crate::{
+    protocols::minecraft::{
+        protocol::{
+            bedrock::Bedrock,
+            java::Java,
+            legacy_bv1_8::LegacyBV1_8,
+            legacy_v1_4::LegacyV1_4,
+            legacy_v1_6::LegacyV1_6,
+        },
+        BedrockResponse,
+        JavaResponse,
+        LegacyGroup,
+    },
+    protocols::types::TimeoutSettings,
+    GDError::AutoQuery,
+    GDResult,
+};
 
+mod bedrock;
 mod java;
+mod legacy_bv1_8;
 mod legacy_v1_4;
 mod legacy_v1_6;
-mod legacy_bv1_8;
-mod bedrock;
 
-/// Queries a Minecraft server with all the protocol variants one by one (Java -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
+/// Queries a Minecraft server with all the protocol variants one by one (Java
+/// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_java(address, port, timeout_settings.clone()) {
         return Ok(response);
@@ -54,11 +63,16 @@ pub fn query_legacy(address: &str, port: u16, timeout_settings: Option<TimeoutSe
 }
 
 /// Query a specific (Java) Legacy Server.
-pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+pub fn query_legacy_specific(
+    group: LegacyGroup,
+    address: &str,
+    port: u16,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<JavaResponse> {
     match group {
         LegacyGroup::V1_6 => LegacyV1_6::query(address, port, timeout_settings),
         LegacyGroup::V1_4 => LegacyV1_4::query(address, port, timeout_settings),
-        LegacyGroup::VB1_8 => LegacyBV1_8::query(address, port, timeout_settings)
+        LegacyGroup::VB1_8 => LegacyBV1_8::query(address, port, timeout_settings),
     }
 }
 
