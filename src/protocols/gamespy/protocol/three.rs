@@ -2,7 +2,7 @@ use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
-// use std::collections::HashMap;
+use std::collections::HashMap;
 
 const THIS_SESSION_ID: u32 = 1;
 
@@ -87,7 +87,7 @@ impl GameSpy3 {
         })
     }
 
-    fn send_data_request(&mut self, challenge: Option<i32>) -> GDResult<Bufferer> {
+    fn send_data_request(&mut self, challenge: Option<i32>) -> GDResult<()> {
         self.socket.send(
             &RequestPacket {
                 header: 65277,
@@ -97,23 +97,48 @@ impl GameSpy3 {
                 payload: Some([0xff, 0xff, 0xff, 0x01]),
             }
             .to_bytes(),
-        )?;
-
-        self.receive(None, 0)
+        )
     }
 }
 
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-#[allow(unused_variables)]
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
     let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
 
     let challenge = gs3.make_initial_handshake()?;
-    let buf = gs3.send_data_request(challenge)?;
+    gs3.send_data_request(challenge)?;
 
-    println!("remaining: {:02X?}", buf.remaining_data());
+    let mut buf = gs3.receive(None, 0)?;
+
+    if buf.get_string_utf8()? != "splitnum" {
+        return Err(GDError::PacketBad);
+    }
+
+    let id = buf.get_u8()?;
+    let is_last = (id & 0x80) > 0;
+    let packet_id = id & 0x7f;
+    println!("id: {}, is_last: {}, packet_id: {}", id, is_last, packet_id);
+
+    buf.move_position_ahead(1); //unused byte
+
+    // to do: manage multiple packets
+
+    let mut values: HashMap<String, String> = HashMap::new();
+
+    while buf.remaining_length() > 0 {
+        let key = buf.get_string_utf8()?;
+        if key.is_empty() {
+            continue;
+        }
+
+        let value = buf.get_string_utf8()?;
+
+        values.insert(key, value);
+    }
+
+    println!("{:#?}", values);
 
     Ok(())
 }
