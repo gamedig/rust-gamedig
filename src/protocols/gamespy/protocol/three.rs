@@ -29,10 +29,6 @@ impl RequestPacket {
             packet.extend_from_slice(&payload);
         }
 
-        if packet.len() == 7 {
-            packet.extend_from_slice(&[0, 0, 0, 0]);
-        }
-
         packet
     }
 }
