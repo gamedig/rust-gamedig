@@ -39,57 +39,68 @@ struct GameSpy3 {
 
 static PACKET_SIZE: usize = 2048;
 
-fn receive(socket: &mut UdpSocket, size: Option<usize>, kind: u8) -> GDResult<Bufferer> {
-    let received = socket.receive(size)?;
-    let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
+impl GameSpy3 {
+    fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = UdpSocket::new(address, port)?;
+        socket.apply_timeout(timeout_settings)?;
 
-    if buf.get_u8()? != kind {
-        return Err(GDError::PacketBad);
+        Ok(Self { socket })
     }
 
-    if buf.get_u32()? != THIS_SESSION_ID {
-        return Err(GDError::PacketBad);
+    fn receive(&mut self, size: Option<usize>, kind: u8) -> GDResult<Bufferer> {
+        let received = self.socket.receive(size.or(Some(PACKET_SIZE)))?;
+        let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
+
+        if buf.get_u8()? != kind {
+            return Err(GDError::PacketBad);
+        }
+
+        if buf.get_u32()? != THIS_SESSION_ID {
+            return Err(GDError::PacketBad);
+        }
+
+        Ok(buf)
     }
 
-    Ok(buf)
-}
+    fn make_initial_handshake(&mut self) -> GDResult<Option<i32>> {
+        self.socket.send(
+            &RequestPacket {
+                header: 65277,
+                kind: 9,
+                session_id: THIS_SESSION_ID,
+                challenge: None,
+                payload: None,
+            }
+            .to_bytes(),
+        )?;
 
-fn make_initial_handshake(socket: &mut UdpSocket) -> GDResult<Option<i32>> {
-    socket.send(
-        &RequestPacket {
-            header: 65277,
-            kind: 9,
-            session_id: THIS_SESSION_ID,
-            challenge: None,
-            payload: None,
-        }
-        .to_bytes(),
-    )?;
+        let mut buf = self.receive(Some(16), 9)?;
 
-    let mut buf = receive(socket, Some(16), 9)?;
+        let challenge_as_string = buf.get_string_utf8()?;
+        let challenge = challenge_as_string
+            .parse()
+            .map_err(|_| GDError::TypeParse)?;
 
-    let challenge_as_string = buf.get_string_utf8()?;
-    let challenge = challenge_as_string
-        .parse()
-        .map_err(|_| GDError::TypeParse)?;
+        Ok(match challenge == 0 {
+            true => None,
+            false => Some(challenge),
+        })
+    }
 
-    Ok(match challenge == 0 {
-        true => None,
-        false => Some(challenge),
-    })
-}
+    fn send_data_request(&mut self, challenge: Option<i32>) -> GDResult<Bufferer> {
+        self.socket.send(
+            &RequestPacket {
+                header: 65277,
+                kind: 0,
+                session_id: THIS_SESSION_ID,
+                challenge,
+                payload: Some([0xff, 0xff, 0xff, 0x01]),
+            }
+            .to_bytes(),
+        )?;
 
-fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDResult<()> {
-    socket.send(
-        &RequestPacket {
-            header: 65277,
-            kind: 0,
-            session_id: THIS_SESSION_ID,
-            challenge,
-            payload: Some([0xff, 0xff, 0xff, 0x01]),
-        }
-        .to_bytes(),
-    )
+        self.receive(None, 0)
+    }
 }
 
 /// Query a server by providing the address, the port and timeout settings.
@@ -97,13 +108,10 @@ fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDResult
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
 #[allow(unused_variables)]
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-    let mut socket = UdpSocket::new(address, port)?;
-    socket.apply_timeout(timeout_settings)?;
+    let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
 
-    let challenge = make_initial_handshake(&mut socket)?;
-    send_data_request(&mut socket, challenge)?;
-
-    let mut buf = receive(&mut socket, Some(2048), 0)?;
+    let challenge = gs3.make_initial_handshake()?;
+    let buf = gs3.send_data_request(challenge)?;
 
     println!("remaining: {:02X?}", buf.remaining_data());
 
