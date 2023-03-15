@@ -1,9 +1,58 @@
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::gamespy::{Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
-use std::collections::HashMap;
+use std::time::Duration;
+// use std::collections::HashMap;
+
+const THIS_SESSION_ID: u32 = 1;
+
+struct RequestPacket {
+    header: u16,
+    kind: u8,
+    session_id: u32,
+    challenge: Option<i32>,
+    payload: Option<Vec<u8>>,
+}
+
+impl RequestPacket {
+    fn to_bytes(self) -> Vec<u8> {
+        let mut packet: Vec<u8> = Vec::with_capacity(7);
+        packet.extend_from_slice(&self.header.to_be_bytes());
+        packet.push(self.kind);
+        packet.extend_from_slice(&self.session_id.to_be_bytes());
+
+        if let Some(challenge) = self.challenge {
+            packet.extend_from_slice(&challenge.to_be_bytes());
+        }
+
+        if let Some(payload) = self.payload {
+            packet.extend_from_slice(&payload);
+        }
+
+        if packet.len() == 7 {
+            packet.extend_from_slice(&[0, 0, 0, 0]);
+        }
+
+        packet
+    }
+}
+
+pub fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDResult<()> {
+    let challenge_packet = RequestPacket {
+        header: 65277,
+        kind: 0,
+        session_id: THIS_SESSION_ID,
+        challenge,
+        payload: Some(vec![0xff, 0xff, 0xff, 0x01]),
+    }
+    .to_bytes();
+    println!("sending: {:02X?}", challenge_packet);
+
+    socket.send(&challenge_packet)?;
+
+    Ok(())
+}
 
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
@@ -11,28 +60,23 @@ use std::collections::HashMap;
 #[allow(unused_variables)]
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
     let mut socket = UdpSocket::new(address, port)?;
-    socket.apply_timeout(timeout_settings)?;
+    let tss = TimeoutSettings::new(Some(Duration::from_secs(4)), None)?;
+    socket.apply_timeout(Some(tss))?;
 
-    let challenge: Option<i32> = None;
-    let payload: Option<Vec<u8>> = None;
+    let initial_packet = RequestPacket {
+        header: 65277,
+        kind: 9,
+        session_id: THIS_SESSION_ID,
+        challenge: None,
+        payload: None,
+    }
+    .to_bytes();
+    println!("sending: {:02X?}", initial_packet);
 
-    let challenge_length = match challenge {
-        Some(_) => 4,
-        None => 0,
-    };
-    let payload_length = match payload {
-        Some(d) => d.len(),
-        None => 0,
-    };
-
-    // getting the challenge
-    let data = [0xFE, 0xFD, 0x09, 0, 0, 0, 9];
-    // add challenge length
-    // add payload length????
-
-    socket.send(&data)?;
-    let mut received = socket.receive(None)?;
-    let mut buf = Bufferer::new_with_data(Endianess::Little, &received);
+    socket.send(&initial_packet)?;
+    let mut received = socket.receive(Some(16))?;
+    let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
+    println!("received: {:02X?}", buf.remaining_data());
 
     let mut received_kind = buf.get_u8()?;
     if received_kind != 9 {
@@ -40,30 +84,37 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
     }
 
     let mut session_id = buf.get_u32()?;
-    println!("challenge: {}", session_id);
-
-    let challenge = buf.get_u16()?;
-
-    // asking for data with challenge
-    let payload_request_form: [u8; 4] = [0xff, 0xff, 0xff, 0x01];
-    let mut base_data: Vec<u8> = [0xFE, 0xFD, 0x00, 0, 0, 0, 1].to_vec();
-    base_data.extend_from_slice(&challenge.to_le_bytes());
-    base_data.extend_from_slice(&payload_request_form);
-
-    socket.send(&data)?;
-    received = socket.receive(None)?;
-    buf = Bufferer::new_with_data(Endianess::Little, &received);
-
-    received_kind = buf.get_u8()?;
-    println!("data: {}", received_kind);
-    if received_kind != 9 {
+    if session_id != THIS_SESSION_ID {
         return Err(GDError::PacketBad);
     }
 
-    session_id = buf.get_u32()?;
-    println!("data: {}", session_id);
+    let challenge_as_string = buf.get_string_utf8().unwrap();
+    let challenge = challenge_as_string.parse().unwrap();
 
-    println!("{:02X?}", buf.remaining_data());
+    let challenge_as_option = match challenge == 0 {
+        true => None,
+        false => Some(challenge),
+    };
+
+    send_data_request(&mut socket, challenge_as_option)?;
+
+    for i in 0 .. 3 {
+        received = socket.receive(Some(2048))?;
+        buf = Bufferer::new_with_data(Endianess::Big, &received);
+        println!("{i} start remaining: {:02X?}", buf.remaining_data());
+
+        received_kind = buf.get_u8()?;
+        if received_kind != 0 {
+            return Err(GDError::PacketBad);
+        }
+
+        session_id = buf.get_u32()?;
+        if session_id != THIS_SESSION_ID {
+            return Err(GDError::PacketBad);
+        }
+
+        println!("{i} end remaining: {:02X?}", buf.remaining_data());
+    }
 
     Ok(())
 }
