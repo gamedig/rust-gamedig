@@ -33,20 +33,63 @@ impl RequestPacket {
     }
 }
 
-pub fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDResult<()> {
-    let challenge_packet = RequestPacket {
-        header: 65277,
-        kind: 0,
-        session_id: THIS_SESSION_ID,
-        challenge,
-        payload: Some([0xff, 0xff, 0xff, 0x01]),
+struct GameSpy3 {
+    socket: UdpSocket,
+}
+
+static PACKET_SIZE: usize = 2048;
+
+fn receive(socket: &mut UdpSocket, size: Option<usize>, kind: u8) -> GDResult<Bufferer> {
+    let received = socket.receive(size)?;
+    let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
+
+    if buf.get_u8()? != kind {
+        return Err(GDError::PacketBad);
     }
-    .to_bytes();
-    println!("sending: {:02X?}", challenge_packet);
 
-    socket.send(&challenge_packet)?;
+    if buf.get_u32()? != THIS_SESSION_ID {
+        return Err(GDError::PacketBad);
+    }
 
-    Ok(())
+    Ok(buf)
+}
+
+fn make_initial_handshake(socket: &mut UdpSocket) -> GDResult<Option<i32>> {
+    socket.send(
+        &RequestPacket {
+            header: 65277,
+            kind: 9,
+            session_id: THIS_SESSION_ID,
+            challenge: None,
+            payload: None,
+        }
+        .to_bytes(),
+    )?;
+
+    let mut buf = receive(socket, Some(16), 9)?;
+
+    let challenge_as_string = buf.get_string_utf8()?;
+    let challenge = challenge_as_string
+        .parse()
+        .map_err(|_| GDError::TypeParse)?;
+
+    Ok(match challenge == 0 {
+        true => None,
+        false => Some(challenge),
+    })
+}
+
+fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDResult<()> {
+    socket.send(
+        &RequestPacket {
+            header: 65277,
+            kind: 0,
+            session_id: THIS_SESSION_ID,
+            challenge,
+            payload: Some([0xff, 0xff, 0xff, 0x01]),
+        }
+        .to_bytes(),
+    )
 }
 
 /// Query a server by providing the address, the port and timeout settings.
@@ -57,53 +100,10 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
     let mut socket = UdpSocket::new(address, port)?;
     socket.apply_timeout(timeout_settings)?;
 
-    let initial_packet = RequestPacket {
-        header: 65277,
-        kind: 9,
-        session_id: THIS_SESSION_ID,
-        challenge: None,
-        payload: None,
-    }
-    .to_bytes();
-    println!("sending: {:02X?}", initial_packet);
+    let challenge = make_initial_handshake(&mut socket)?;
+    send_data_request(&mut socket, challenge)?;
 
-    socket.send(&initial_packet)?;
-    let mut received = socket.receive(Some(16))?;
-    let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
-    println!("received: {:02X?}", buf.remaining_data());
-
-    let mut received_kind = buf.get_u8()?;
-    if received_kind != 9 {
-        return Err(GDError::PacketBad);
-    }
-
-    let mut session_id = buf.get_u32()?;
-    if session_id != THIS_SESSION_ID {
-        return Err(GDError::PacketBad);
-    }
-
-    let challenge_as_string = buf.get_string_utf8().unwrap();
-    let challenge = challenge_as_string.parse().unwrap();
-
-    let challenge_as_option = match challenge == 0 {
-        true => None,
-        false => Some(challenge),
-    };
-
-    send_data_request(&mut socket, challenge_as_option)?;
-
-    received = socket.receive(Some(2048))?;
-    buf = Bufferer::new_with_data(Endianess::Big, &received);
-
-    received_kind = buf.get_u8()?;
-    if received_kind != 0 {
-        return Err(GDError::PacketBad);
-    }
-
-    session_id = buf.get_u32()?;
-    if session_id != THIS_SESSION_ID {
-        return Err(GDError::PacketBad);
-    }
+    let mut buf = receive(&mut socket, Some(2048), 0)?;
 
     println!("remaining: {:02X?}", buf.remaining_data());
 
