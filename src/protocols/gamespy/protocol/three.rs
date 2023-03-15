@@ -2,7 +2,6 @@ use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
-use std::time::Duration;
 // use std::collections::HashMap;
 
 const THIS_SESSION_ID: u32 = 1;
@@ -12,7 +11,7 @@ struct RequestPacket {
     kind: u8,
     session_id: u32,
     challenge: Option<i32>,
-    payload: Option<Vec<u8>>,
+    payload: Option<[u8; 4]>,
 }
 
 impl RequestPacket {
@@ -44,7 +43,7 @@ pub fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDRe
         kind: 0,
         session_id: THIS_SESSION_ID,
         challenge,
-        payload: Some(vec![0xff, 0xff, 0xff, 0x01]),
+        payload: Some([0xff, 0xff, 0xff, 0x01]),
     }
     .to_bytes();
     println!("sending: {:02X?}", challenge_packet);
@@ -60,8 +59,7 @@ pub fn send_data_request(socket: &mut UdpSocket, challenge: Option<i32>) -> GDRe
 #[allow(unused_variables)]
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
     let mut socket = UdpSocket::new(address, port)?;
-    let tss = TimeoutSettings::new(Some(Duration::from_secs(4)), None)?;
-    socket.apply_timeout(Some(tss))?;
+    socket.apply_timeout(timeout_settings)?;
 
     let initial_packet = RequestPacket {
         header: 65277,
@@ -98,23 +96,20 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
 
     send_data_request(&mut socket, challenge_as_option)?;
 
-    for i in 0 .. 3 {
-        received = socket.receive(Some(2048))?;
-        buf = Bufferer::new_with_data(Endianess::Big, &received);
-        println!("{i} start remaining: {:02X?}", buf.remaining_data());
+    received = socket.receive(Some(2048))?;
+    buf = Bufferer::new_with_data(Endianess::Big, &received);
 
-        received_kind = buf.get_u8()?;
-        if received_kind != 0 {
-            return Err(GDError::PacketBad);
-        }
-
-        session_id = buf.get_u32()?;
-        if session_id != THIS_SESSION_ID {
-            return Err(GDError::PacketBad);
-        }
-
-        println!("{i} end remaining: {:02X?}", buf.remaining_data());
+    received_kind = buf.get_u8()?;
+    if received_kind != 0 {
+        return Err(GDError::PacketBad);
     }
+
+    session_id = buf.get_u32()?;
+    if session_id != THIS_SESSION_ID {
+        return Err(GDError::PacketBad);
+    }
+
+    println!("remaining: {:02X?}", buf.remaining_data());
 
     Ok(())
 }
