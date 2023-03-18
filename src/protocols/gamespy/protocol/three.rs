@@ -101,44 +101,75 @@ impl GameSpy3 {
     }
 }
 
-/// Query a server by providing the address, the port and timeout settings.
-/// Providing None to the timeout settings results in using the default values.
-/// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
+fn get_server_values(
+    address: &str,
+    port: u16,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<HashMap<String, String>> {
     let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
 
     let challenge = gs3.make_initial_handshake()?;
     gs3.send_data_request(challenge)?;
 
-    let mut buf = gs3.receive(None, 0)?;
+    let mut values: HashMap<String, String> = HashMap::new();
 
-    if buf.get_string_utf8()? != "splitnum" {
+    let mut expected_number_of_packets: Option<u8> = None;
+    let mut processed_packets = 0;
+
+    while expected_number_of_packets.is_none() {
+        let mut buf = gs3.receive(None, 0)?;
+        processed_packets += 1;
+
+        if buf.get_string_utf8()? != "splitnum" {
+            return Err(GDError::PacketBad);
+        }
+
+        let id = buf.get_u8()?;
+        let is_last = (id & 0x80) > 0;
+        let packet_id = id & 0x7f;
+        buf.move_position_ahead(1); //unknown byte regarding packet no.
+
+        if is_last {
+            expected_number_of_packets = Some(packet_id + 1);
+        }
+
+        while buf.remaining_length() > 0 {
+            let key = buf.get_string_utf8()?;
+            if key.is_empty() {
+                continue;
+            }
+
+            let value = buf.get_string_utf8_optional()?;
+
+            values.insert(key, value);
+        }
+    }
+
+    if processed_packets != expected_number_of_packets.unwrap() {
+        // unwrapping is safe here
         return Err(GDError::PacketBad);
     }
 
-    let id = buf.get_u8()?;
-    let is_last = (id & 0x80) > 0;
-    let packet_id = id & 0x7f;
-    println!("id: {}, is_last: {}, packet_id: {}", id, is_last, packet_id);
+    Ok(values)
+}
 
-    buf.move_position_ahead(1); //unused byte
+/// If there are parsing problems using the `query` function, you can directly
+/// get the server's values using this function.
+pub fn query_vars(
+    address: &str,
+    port: u16,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<HashMap<String, String>> {
+    get_server_values(address, port, timeout_settings)
+}
 
-    // to do: manage multiple packets
+/// Query a server by providing the address, the port and timeout settings.
+/// Providing None to the timeout settings results in using the default values.
+/// (TimeoutSettings::[default](TimeoutSettings::default)).
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
+    let server_vars = query_vars(address, port, timeout_settings)?;
 
-    let mut values: HashMap<String, String> = HashMap::new();
-
-    while buf.remaining_length() > 0 {
-        let key = buf.get_string_utf8()?;
-        if key.is_empty() {
-            continue;
-        }
-
-        let value = buf.get_string_utf8()?;
-
-        values.insert(key, value);
-    }
-
-    println!("{:#?}", values);
+    println!("{:#?}", server_vars);
 
     Ok(())
 }

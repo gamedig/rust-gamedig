@@ -108,6 +108,18 @@ impl Bufferer {
         Ok(value)
     }
 
+    pub fn get_string_utf8_optional(&mut self) -> GDResult<String> {
+        match self.get_string_utf8() {
+            Ok(data) => Ok(data),
+            Err(e) => {
+                match e {
+                    PacketUnderflow => Ok(String::new()),
+                    x => Err(x),
+                }
+            }
+        }
+    }
+
     pub fn get_string_utf8_unended(&mut self) -> GDResult<String> {
         let sub_buf = self.remaining_data();
         if sub_buf.is_empty() {
