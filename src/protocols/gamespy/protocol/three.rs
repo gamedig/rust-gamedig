@@ -1,4 +1,5 @@
 use crate::bufferer::{Bufferer, Endianess};
+use crate::protocols::gamespy::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
@@ -101,24 +102,18 @@ impl GameSpy3 {
     }
 }
 
-fn get_server_values(
-    address: &str,
-    port: u16,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<HashMap<String, String>> {
+fn get_server_packets(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<Vec<u8>>> {
     let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
 
     let challenge = gs3.make_initial_handshake()?;
     gs3.send_data_request(challenge)?;
 
-    let mut values: HashMap<String, String> = HashMap::new();
+    let mut values: Vec<Vec<u8>> = Vec::new();
 
-    let mut expected_number_of_packets: Option<u8> = None;
-    let mut processed_packets = 0;
+    let mut expected_number_of_packets: Option<usize> = None;
 
-    while expected_number_of_packets.is_none() {
+    while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
         let mut buf = gs3.receive(None, 0)?;
-        processed_packets += 1;
 
         if buf.get_string_utf8()? != "splitnum" {
             return Err(GDError::PacketBad);
@@ -126,31 +121,63 @@ fn get_server_values(
 
         let id = buf.get_u8()?;
         let is_last = (id & 0x80) > 0;
-        let packet_id = id & 0x7f;
+        let packet_id = (id & 0x7f) as usize;
         buf.move_position_ahead(1); //unknown byte regarding packet no.
 
         if is_last {
             expected_number_of_packets = Some(packet_id + 1);
         }
 
-        while buf.remaining_length() > 0 {
-            let key = buf.get_string_utf8()?;
-            if key.is_empty() {
-                continue;
-            }
-
-            let value = buf.get_string_utf8_optional()?;
-
-            values.insert(key, value);
+        while values.len() <= packet_id {
+            values.push(Vec::new());
         }
+
+        values[packet_id] = buf.remaining_data_vec();
     }
 
-    if processed_packets != expected_number_of_packets.unwrap() {
-        // unwrapping is safe here
+    if values.iter().any(|v| v.is_empty()) {
         return Err(GDError::PacketBad);
     }
 
     Ok(values)
+}
+// fn extract_players(other_vars: HashMap<String, String>) -> GDResult<()> {
+// for (key, value) in &other_vars {
+// if key.chars().nth(0).unwrap() < 2 as char {
+// continue;
+// }
+//
+// let split_key: Vec<&str> = key.split('_').collect();
+// let field_name = split_key[0];
+// let item_type = match split_key.len() > 1 {
+// true => split_key[1],
+// false => "no_",
+// };
+//
+// println!("{} {}", field_name, item_type);
+// println!("{:#?}", other_vars);
+// return Ok(());
+// }
+//
+// Ok(())
+// }
+
+fn data_to_map(packet: &Vec<u8>) -> GDResult<HashMap<String, String>> {
+    let mut vars = HashMap::new();
+
+    let mut buf = Bufferer::new_with_data(Endianess::Big, &packet);
+    while buf.remaining_length() > 0 {
+        let key = buf.get_string_utf8()?;
+        if key.is_empty() {
+            continue;
+        }
+
+        let value = buf.get_string_utf8_optional()?;
+
+        vars.insert(key, value);
+    }
+
+    Ok(vars)
 }
 
 /// If there are parsing problems using the `query` function, you can directly
@@ -160,16 +187,75 @@ pub fn query_vars(
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    get_server_values(address, port, timeout_settings)
+    let packets = get_server_packets(address, port, timeout_settings)?;
+
+    let mut vars = HashMap::new();
+
+    for packet in &packets {
+        vars.extend(data_to_map(packet)?);
+    }
+
+    Ok(vars)
+}
+
+fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
+    let password_value = server_vars
+        .remove("password")
+        .ok_or(GDError::PacketBad)?
+        .to_lowercase();
+
+    if let Ok(has) = password_value.parse::<bool>() {
+        return Ok(has);
+    }
+
+    let as_numeral: u8 = password_value.parse().map_err(|_| GDError::TypeParse)?;
+
+    Ok(as_numeral != 0)
 }
 
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-    let server_vars = query_vars(address, port, timeout_settings)?;
+pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let packets = get_server_packets(address, port, timeout_settings)?;
 
-    println!("{:#?}", server_vars);
+    let mut server_vars = HashMap::new();
 
-    Ok(())
+    for packet in &packets {
+        server_vars.extend(data_to_map(packet)?);
+    }
+
+    let players_maximum = server_vars
+        .remove("maxplayers")
+        .ok_or(GDError::PacketBad)?
+        .parse()
+        .map_err(|_| GDError::TypeParse)?;
+
+    Ok(Response {
+        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
+        map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
+        map_title: server_vars.remove("maptitle"),
+        admin_contact: server_vars.remove("AdminEMail"),
+        admin_name: server_vars
+            .remove("AdminName")
+            .or_else(|| server_vars.remove("admin")),
+        has_password: has_password(&mut server_vars)?,
+        game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
+        game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
+        players_maximum,
+        players_online: 0,
+        players_minimum: server_vars
+            .remove("minplayers")
+            .unwrap_or_else(|| "0".to_string())
+            .parse()
+            .map_err(|_| GDError::TypeParse)?,
+        players: Vec::new(),
+        tournament: server_vars
+            .remove("tournament")
+            .unwrap_or_else(|| "true".to_string())
+            .to_lowercase()
+            .parse()
+            .map_err(|_| GDError::TypeParse)?,
+        unused_entries: server_vars,
+    })
 }
