@@ -105,14 +105,13 @@ fn get_server_values(
     address: &str,
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<(HashMap<String, String>, HashMap<String, String>)> {
+) -> GDResult<HashMap<String, String>> {
     let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
 
     let challenge = gs3.make_initial_handshake()?;
     gs3.send_data_request(challenge)?;
 
-    let mut server_values: HashMap<String, String> = HashMap::new();
-    let mut other_values: HashMap<String, String> = HashMap::new();
+    let mut values: HashMap<String, String> = HashMap::new();
 
     let mut expected_number_of_packets: Option<u8> = None;
     let mut processed_packets = 0;
@@ -142,11 +141,7 @@ fn get_server_values(
 
             let value = buf.get_string_utf8_optional()?;
 
-            if packet_id == 0 {
-                server_values.insert(key, value);
-            } else {
-                other_values.insert(key, value);
-            }
+            values.insert(key, value);
         }
     }
 
@@ -155,7 +150,7 @@ fn get_server_values(
         return Err(GDError::PacketBad);
     }
 
-    Ok((server_values, other_values))
+    Ok(values)
 }
 
 /// If there are parsing problems using the `query` function, you can directly
@@ -165,9 +160,7 @@ pub fn query_vars(
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    let (server_values, other_values) = get_server_values(address, port, timeout_settings)?;
-
-    Ok(server_values.into_iter().chain(other_values).collect())
+    get_server_values(address, port, timeout_settings)
 }
 
 /// Query a server by providing the address, the port and timeout settings.
