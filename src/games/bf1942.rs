@@ -1,5 +1,5 @@
 use crate::{
-    protocols::gamespy::{self, Response},
+    protocols::gamespy::{self, types::one::Response},
     GDResult,
 };
 
