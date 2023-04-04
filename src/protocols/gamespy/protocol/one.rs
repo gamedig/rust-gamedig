@@ -1,7 +1,7 @@
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
-        gamespy::{Player, Response},
+        gamespy::types::one::{Player, Response},
         types::TimeoutSettings,
     },
     socket::{Socket, UdpSocket},
