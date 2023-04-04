@@ -87,20 +87,20 @@ pub mod two {
                 self.team_info,
             ]
         }
-
-        pub(crate) const REQUEST_PACKET_BYTES: [u8; 10] = RequestPacket {
-            header: 0xFEFD,
-            delimiter: 0x00,
-            // The ping value is referred to as "CORY" because it was originally documented by Cory,
-            // who created a C library a long time ago. His documentation has since been adopted by many
-            // other libraries and is still in use today, as it provides valuable information.
-            ping_value: [b'C', b'O', b'R', b'Y'],
-            server_info_and_rules: 0xFF,
-            player_info: 0xFF,
-            team_info: 0xFF,
-        }
-        .to_u8_array();
     }
+    
+    pub(crate) const REQUEST_PACKET_BYTES: [u8; 10] = RequestPacket {
+        header: 0xFEFD,
+        delimiter: 0x00,
+        // The ping value is referred to as "CORY" because it was originally documented by Cory,
+        // who created a C library a long time ago. His documentation has since been adopted by many
+        // other libraries and is still in use today, as it provides valuable information.
+        ping_value: [b'C', b'O', b'R', b'Y'],
+        server_info_and_rules: 0xFF,
+        player_info: 0xFF,
+        team_info: 0xFF,
+    }
+    .to_u8_array();
 
     /// A Flag is a representation of a boolean value from a string.
     #[derive(Debug, PartialEq)]
@@ -228,13 +228,14 @@ pub mod two {
 
         pub struct PlayerInfo {
             pub players: Vec<Player>,
+            pub player_count: u8,
         }
     }
 
     pub mod team_info {
         pub struct TeamInfo {
             // ! Team info structure is not not known yet
-            pub data: String,
+            pub raw: String,
         }
     }
 
