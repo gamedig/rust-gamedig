@@ -51,7 +51,9 @@ impl GameSpy2 {
     }
 }
 
+/// A raw response from a GameSpy2 server
 pub struct RawResponse {
+    /// The raw response data
     pub data: Vec<u8>,
 }
 
@@ -214,6 +216,7 @@ impl RawResponse {
         players
     }
 
+    /// Parses the raw response data and returns a `Response` object
     pub fn parse(&self) -> GDResult<Response> {
         let mut bufferer = Bufferer::new_with_data(Endianess::Little, &self.data);
 
