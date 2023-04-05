@@ -88,7 +88,7 @@ pub mod two {
             ]
         }
     }
-    
+
     pub(crate) const REQUEST_PACKET_BYTES: [u8; 10] = RequestPacket {
         header: 0xFEFD,
         delimiter: 0x00,
@@ -111,7 +111,7 @@ pub mod two {
     }
 
     impl Flag {
-        fn from_str(s: &str) -> Self {
+        pub(crate) fn from_str(s: &str) -> Self {
             match s.trim().to_lowercase().as_str() {
                 "yes" | "on" | "1" => Flag::Enabled,
                 "no" | "off" | "0" => Flag::Disabled,
@@ -153,8 +153,8 @@ pub mod two {
 
         #[derive(Debug, PartialEq, Default)]
         pub struct GameplaySettings {
-            pub sv_punkbuster: Option<Flag>,
-            pub time_limit: Option<u8>,
+            pub punkbuster: Option<Flag>,
+            pub time_limit: Option<String>,
             pub num_rounds: Option<u8>,
             pub spawn_wave_time: Option<u8>,
             pub spawn_delay: Option<u8>,
