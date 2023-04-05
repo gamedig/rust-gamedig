@@ -5,7 +5,24 @@ use std::{
 
 use crate::{
     bufferer::{Bufferer, Endianess},
-    protocols::gamespy::types::two::{Response, REQUEST_PACKET_BYTES},
+    protocols::gamespy::types::two::{
+        player_info::{Player, PlayerInfo},
+        server_info::{
+            CameraSettings,
+            FriendlyFireSettings,
+            GameInfo,
+            GameStartSettings,
+            GameplaySettings,
+            ServerConfig,
+            ServerConnection,
+            ServerInfo,
+            TeamSettings,
+        },
+        team_info::TeamInfo,
+        Flag,
+        Response,
+        REQUEST_PACKET_BYTES,
+    },
     socket::{Socket, UdpSocket},
     GDResult,
 };
@@ -46,10 +63,13 @@ impl RawResponse {
         bufferer.move_position_ahead(5);
 
         // Parse the key/value strings pairs, ending with an empty key and value
+        // ! Fix active_mods as it's not a key/value pair its a key/key/value (I think)
         let mut server_data = HashMap::new();
-        while let Some(key) = bufferer.get_string_utf8().ok().filter(|s| !s.is_empty()) {
-            if let Some(value) = bufferer.get_string_utf8().ok() {
-                server_data.insert(key, value);
+        while let Ok(key) = bufferer.get_string_utf8() {
+            if !key.is_empty() {
+                if let Ok(value) = bufferer.get_string_utf8() {
+                    server_data.insert(key, value);
+                }
             }
         }
 
@@ -59,8 +79,10 @@ impl RawResponse {
         // Parse the player count and score names
         let player_count = bufferer.get_u8()?;
         let mut score_set = HashSet::new();
-        while let Some(score_name) = bufferer.get_string_utf8().ok().filter(|s| !s.is_empty()) {
-            score_set.insert(score_name);
+        while let Ok(score_name) = bufferer.get_string_utf8() {
+            if !score_name.is_empty() {
+                score_set.insert(score_name);
+            }
         }
 
         // Skip empty byte
@@ -71,11 +93,19 @@ impl RawResponse {
         for _ in 0 .. player_count {
             let mut player = HashMap::new();
             for score_name in &score_set {
-                if let Some(score_value) = bufferer.get_string_utf8().ok() {
+                if let Ok(score_value) = bufferer.get_string_utf8() {
                     player.insert(score_name.clone(), score_value);
                 }
             }
-            players.push(player);
+
+            players.push(Player {
+                name: player.remove("player_").unwrap_or_default(),
+                score: player.remove("score_").and_then(|s| s.parse().ok()),
+                deaths: player.remove("deaths_").and_then(|s| s.parse().ok()),
+                ping: player.remove("ping_").and_then(|s| s.parse().ok()),
+                team: player.remove("team_").and_then(|s| s.parse().ok()),
+                kills: player.remove("kills_").and_then(|s| s.parse().ok()),
+            });
         }
 
         // Skip empty byte
@@ -84,8 +114,125 @@ impl RawResponse {
         // ! Team structure is unknown
         let teams = bufferer.get_string_utf8_unended()?;
 
-        // TODO: Parse the data into a Response struct
+        let connection = ServerConnection {
+            hostname: server_data.remove("hostname").unwrap_or_default(),
+            hostport: server_data
+                .remove("hostport")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            password: Flag::from_str(server_data.remove("password").unwrap_or_default().as_str()),
+        };
 
-        todo!()
+        let game_info = GameInfo {
+            map_name: server_data.remove("mapname").unwrap_or_default(),
+            game_type: server_data.remove("gametype").unwrap_or_default(),
+            num_players: player_count,
+            max_players: server_data
+                .remove("maxplayers")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(player_count),
+            game_mode: server_data.remove("gamemode").unwrap_or_default(),
+            game_version: server_data.remove("gamever").unwrap_or_default(),
+            status: server_data
+                .remove("status")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            game_id: server_data.remove("game_id").unwrap_or_default(),
+            map_id: server_data.remove("map_id").unwrap_or_default(),
+        };
+
+        let gameplay_settings = GameplaySettings {
+            punkbuster: server_data
+                .remove("sv_punkbuster")
+                .map(|s| Flag::from_str(&s)),
+            time_limit: server_data.remove("timelimit"),
+            num_rounds: server_data
+                .remove("number_of_rounds")
+                .and_then(|s| s.parse().ok()),
+            spawn_wave_time: server_data
+                .remove("spawn_wave_time")
+                .and_then(|s| s.parse().ok()),
+            spawn_delay: server_data
+                .remove("spawn_delay")
+                .and_then(|s| s.parse().ok()),
+        };
+
+        let friendly_fire_settings = FriendlyFireSettings {
+            soldier_friendly_fire: server_data
+                .remove("soldier_friendly_fire")
+                .map(|s| Flag::from_str(&s)),
+            vehicle_friendly_fire: server_data
+                .remove("vehicle_friendly_fire")
+                .map(|s| Flag::from_str(&s)),
+            soldier_friendly_fire_on_splash: server_data.remove("soldier_friendly_fire_on_splash"),
+            vehicle_friendly_fire_on_splash: server_data.remove("vehicle_friendly_fire_on_splash"),
+        };
+
+        let team_settings = TeamSettings {
+            us_team_ratio: server_data
+                .remove("us_team_ratio")
+                .and_then(|s| s.parse().ok()),
+            nva_team_ratio: server_data
+                .remove("nva_team_ratio")
+                .and_then(|s| s.parse().ok()),
+        };
+
+        let camera_settings = CameraSettings {
+            name_tag_distance: server_data
+                .remove("name_tag_distance")
+                .and_then(|s| s.parse().ok()),
+            name_tag_distance_scope: server_data
+                .remove("name_tag_distance_scope")
+                .and_then(|s| s.parse().ok()),
+            allow_nose_cam: server_data.remove("allow_nose_cam"),
+            external_view: server_data.remove("external_view"),
+            free_camera: server_data
+                .remove("free_camera")
+                .map(|s| Flag::from_str(&s)),
+        };
+
+        let game_start_settings = GameStartSettings {
+            game_start_delay: server_data
+                .remove("game_start_delay")
+                .and_then(|s| s.parse().ok()),
+            ticket_ratio: server_data.remove("ticket_ratio"),
+            kickback: server_data.remove("kickback"),
+            kickback_on_splash: server_data.remove("kickback_on_splash"),
+            auto_balance: server_data
+                .remove("auto_balance_teams")
+                .map(|s| Flag::from_str(&s)),
+        };
+
+        let config = ServerConfig {
+            dedicated: server_data.remove("dedicated").map(|s| Flag::from_str(&s)),
+            cpu: server_data.remove("cpu").and_then(|s| s.parse().ok()),
+            bot_skill: server_data.remove("bot_skill"),
+            reserved_slots: server_data
+                .remove("reservedslots")
+                .and_then(|s| s.parse().ok()),
+            active_mods: server_data.remove("active_mods"),
+        };
+
+        let server_info = ServerInfo {
+            connection,
+            game_info,
+            gameplay_settings,
+            friendly_fire_settings,
+            team_settings,
+            camera_settings,
+            game_start_settings,
+            config,
+        };
+
+        let team_info = TeamInfo { raw: teams };
+
+        Ok(Response {
+            server_info,
+            player_info: PlayerInfo {
+                players,
+                player_count,
+            },
+            team_info,
+        })
     }
 }
