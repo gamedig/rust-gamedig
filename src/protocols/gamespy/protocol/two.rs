@@ -56,14 +56,7 @@ pub struct RawResponse {
 }
 
 impl RawResponse {
-    pub fn parse(&self) -> GDResult<Response> {
-        let mut bufferer = Bufferer::new_with_data(Endianess::Little, &self.data);
-
-        // Skip the header
-        bufferer.move_position_ahead(5);
-
-        // Parse the key/value strings pairs, ending with an empty key and value
-        // ! Fix active_mods as it's not a key/value pair its a key/key/value (I think)
+    fn parse_server_data(bufferer: &mut Bufferer) -> ServerInfo {
         let mut server_data = HashMap::new();
         while let Ok(key) = bufferer.get_string_utf8() {
             if !key.is_empty() {
@@ -72,48 +65,6 @@ impl RawResponse {
                 }
             }
         }
-
-        // Skip empty key/value
-        bufferer.move_position_ahead(2);
-
-        // Parse the player count and score names
-        let player_count = bufferer.get_u8()?;
-        let mut score_set = HashSet::new();
-        while let Ok(score_name) = bufferer.get_string_utf8() {
-            if !score_name.is_empty() {
-                score_set.insert(score_name);
-            }
-        }
-
-        // Skip empty byte
-        bufferer.move_position_ahead(1);
-
-        // Parse the players
-        let mut players = Vec::new();
-        for _ in 0 .. player_count {
-            let mut player = HashMap::new();
-            for score_name in &score_set {
-                if let Ok(score_value) = bufferer.get_string_utf8() {
-                    player.insert(score_name.clone(), score_value);
-                }
-            }
-
-            players.push(Player {
-                name: player.remove("player_").unwrap_or_default(),
-                score: player.remove("score_").and_then(|s| s.parse().ok()),
-                deaths: player.remove("deaths_").and_then(|s| s.parse().ok()),
-                ping: player.remove("ping_").and_then(|s| s.parse().ok()),
-                team: player.remove("team_").and_then(|s| s.parse().ok()),
-                kills: player.remove("kills_").and_then(|s| s.parse().ok()),
-            });
-        }
-
-        // Skip empty byte
-        bufferer.move_position_ahead(1);
-
-        // ! Team structure is unknown
-        let teams = bufferer.get_string_utf8_unended()?;
-
         let connection = ServerConnection {
             hostname: server_data.remove("hostname").unwrap_or_default(),
             hostport: server_data
@@ -126,11 +77,15 @@ impl RawResponse {
         let game_info = GameInfo {
             map_name: server_data.remove("mapname").unwrap_or_default(),
             game_type: server_data.remove("gametype").unwrap_or_default(),
-            num_players: player_count,
+            num_players: server_data
+                .remove("numplayers")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or_default(),
             max_players: server_data
                 .remove("maxplayers")
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(player_count),
+                .unwrap_or_default(),
+
             game_mode: server_data.remove("gamemode").unwrap_or_default(),
             game_version: server_data.remove("gamever").unwrap_or_default(),
             status: server_data
@@ -223,6 +178,69 @@ impl RawResponse {
             game_start_settings,
             config,
         };
+
+        server_info
+    }
+
+    fn parse_score_set(bufferer: &mut Bufferer) -> HashSet<String> {
+        let mut score_set = HashSet::new();
+        while let Ok(score_name) = bufferer.get_string_utf8() {
+            if !score_name.is_empty() {
+                score_set.insert(score_name);
+            }
+        }
+        score_set
+    }
+
+    fn parse_players(bufferer: &mut Bufferer, player_count: u8, score_set: &HashSet<String>) -> Vec<Player> {
+        let mut players = Vec::new();
+        for _ in 0 .. player_count {
+            let mut player = HashMap::new();
+            for score_name in score_set {
+                if let Ok(score_value) = bufferer.get_string_utf8() {
+                    player.insert(score_name.clone(), score_value);
+                }
+            }
+
+            players.push(Player {
+                name: player.remove("player_").unwrap_or_default(),
+                score: player.remove("score_").and_then(|s| s.parse().ok()),
+                deaths: player.remove("deaths_").and_then(|s| s.parse().ok()),
+                ping: player.remove("ping_").and_then(|s| s.parse().ok()),
+                team: player.remove("team_").and_then(|s| s.parse().ok()),
+                kills: player.remove("kills_").and_then(|s| s.parse().ok()),
+            });
+        }
+        players
+    }
+
+    pub fn parse(&self) -> GDResult<Response> {
+        let mut bufferer = Bufferer::new_with_data(Endianess::Little, &self.data);
+
+        // Skip the header
+        bufferer.move_position_ahead(5);
+
+        // Parse the key/value strings pairs, ending with an empty key and value
+        let server_info = Self::parse_server_data(&mut bufferer);
+
+        // Skip empty key/value
+        bufferer.move_position_ahead(2);
+
+        // Parse the player count and score names
+        let player_count = bufferer.get_u8()?;
+        let score_set = Self::parse_score_set(&mut bufferer);
+
+        // Skip empty byte
+        bufferer.move_position_ahead(1);
+
+        // Parse the players
+        let players = Self::parse_players(&mut bufferer, player_count, &score_set);
+
+        // Skip empty byte
+        bufferer.move_position_ahead(1);
+
+        // ! Team structure is unknown
+        let teams = bufferer.get_string_utf8_unended()?;
 
         let team_info = TeamInfo { raw: teams };
 
