@@ -24,6 +24,7 @@ use gamedig::{
     dods,
     doi,
     dst,
+    ffow,
     gm,
     hl2dm,
     hldms,
@@ -167,6 +168,7 @@ fn main() -> GDResult<()> {
         "ss" => println!("{:#?}", ss::query(ip, port)),
         "_gamespy3" => println!("{:#?}", gamespy::three::query(ip, port.unwrap(), None)),
         "_gamespy3_vars" => println!("{:#?}", gamespy::three::query_vars(ip, port.unwrap(), None)),
+        "ffow" => println!("{:#?}", ffow::query(ip, port)),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
