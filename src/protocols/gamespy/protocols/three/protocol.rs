@@ -39,7 +39,7 @@ struct GameSpy3 {
     socket: UdpSocket,
 }
 
-static PACKET_SIZE: usize = 2048;
+const PACKET_SIZE: usize = 2048;
 
 impl GameSpy3 {
     fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
