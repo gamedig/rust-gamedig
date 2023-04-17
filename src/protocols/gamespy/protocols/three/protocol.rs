@@ -150,7 +150,7 @@ fn data_to_map(packet: &Vec<u8>) -> GDResult<HashMap<String, String>> {
     while buf.remaining_length() > 0 {
         let key = buf.get_string_utf8()?;
         if key.is_empty() {
-            continue;
+            break;
         }
 
         let value = buf.get_string_utf8_optional()?;
@@ -299,6 +299,17 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         None => None,
         Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
     };
+    let players = parse_parse_players(packets)?;
+    let players_online = match server_vars.remove("numplayers") {
+        None => players.len(),
+        Some(v) => {
+            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            match reported_players < players.len() {
+                true => players.len(),
+                false => reported_players,
+            }
+        }
+    };
 
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
@@ -312,13 +323,9 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
         players_maximum,
-        players_online: server_vars
-            .remove("numplayers")
-            .unwrap_or("0".to_string())
-            .parse()
-            .map_err(|_| GDError::TypeParse)?,
+        players_online,
         players_minimum,
-        players: parse_parse_players(packets)?,
+        players,
         tournament: server_vars
             .remove("tournament")
             .unwrap_or("true".to_string())
