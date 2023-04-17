@@ -1,3 +1,4 @@
+mod common;
 /// The implementations.
 pub mod protocols;
 
