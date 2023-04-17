@@ -21,9 +21,6 @@ pub struct Player {
 pub struct Response {
     pub name: String,
     pub map: String,
-    pub map_title: Option<String>,
-    pub admin_contact: Option<String>,
-    pub admin_name: Option<String>,
     pub has_password: bool,
     pub game_type: String,
     pub game_version: String,

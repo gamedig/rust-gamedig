@@ -9,6 +9,7 @@ Crate:
 
 Protocols:
 - GameSpy 1: Add key `admin` as a possible variable for `admin_name`.
+- GameSpy 3 support.
 
 Games:
 - [Serious Sam](https://www.gog.com/game/serious_sam_the_first_encounter) support.

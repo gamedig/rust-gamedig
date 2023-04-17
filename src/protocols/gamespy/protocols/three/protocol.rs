@@ -215,11 +215,6 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
 
             let mut offset = buf.get_u8()?;
 
-            println!(
-                "Parsing new field, type: {:?}, name: {:?}, start offset: {:?}",
-                field_type, field_name, offset
-            );
-
             if field_type.is_some() {
                 // skip parsing team data
                 continue;
@@ -236,7 +231,6 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
                 }
 
                 let player_data = players_data.get_mut(offset as usize).unwrap();
-                // println!("{:?} {:?} {:?}", field_name, offset, item);
                 player_data.insert(field_name.to_string(), item);
 
                 offset += 1;
@@ -314,11 +308,6 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
         map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
-        map_title: server_vars.remove("maptitle"),
-        admin_contact: server_vars.remove("AdminEMail"),
-        admin_name: server_vars
-            .remove("AdminName")
-            .or_else(|| server_vars.remove("admin")),
         has_password: has_password(&mut server_vars)?,
         game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
