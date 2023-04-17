@@ -144,7 +144,7 @@ fn get_server_packets(address: &str, port: u16, timeout_settings: Option<Timeout
     Ok(values)
 }
 
-fn data_to_map(packet: &Vec<u8>) -> GDResult<HashMap<String, String>> {
+fn data_to_map(packet: &Vec<u8>) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
     let mut vars = HashMap::new();
 
     let mut buf = Bufferer::new_with_data(Endianess::Big, &packet);
@@ -159,7 +159,7 @@ fn data_to_map(packet: &Vec<u8>) -> GDResult<HashMap<String, String>> {
         vars.insert(key, value);
     }
 
-    Ok(vars)
+    Ok((vars, buf.remaining_data_vec()))
 }
 
 /// If there are parsing problems using the `query` function, you can directly
@@ -174,7 +174,8 @@ pub fn query_vars(
     let mut vars = HashMap::new();
 
     for packet in &packets {
-        vars.extend(data_to_map(packet)?);
+        let (key_values, _remaining_data) = data_to_map(packet)?;
+        vars.extend(key_values);
     }
 
     Ok(vars)
@@ -302,7 +303,11 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let packets = get_server_packets(address, port, timeout_settings)?;
 
-    let mut server_vars = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
+    let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
+
+    let mut remaining_data_packets = vec![remaining_data];
+    remaining_data_packets.extend_from_slice(&packets[1 ..]);
+    let (players, teams) = parse_players_and_teams(remaining_data_packets)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")
@@ -313,7 +318,6 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         None => None,
         Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
     };
-    let (players, teams) = parse_players_and_teams(packets)?;
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
