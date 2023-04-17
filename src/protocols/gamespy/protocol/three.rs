@@ -1,5 +1,5 @@
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::gamespy::Response;
+use crate::protocols::gamespy::{Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
@@ -193,6 +193,119 @@ fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
     Ok(as_numeral != 0)
 }
 
+#[derive(Debug)]
+struct GS3Player {
+    pub name: String,
+    pub score: i32,
+    pub ping: u16,
+    pub team: u8,
+    pub deaths: u32,
+    pub skill: u32,
+}
+
+fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<GS3Player>> {
+    let mut players_data: Vec<HashMap<String, String>> = vec![HashMap::new()];
+
+    for packet in packets {
+        let mut buf = Bufferer::new_with_data(Endianess::Little, &packet);
+
+        while buf.remaining_length() > 0 {
+            if buf.get_u8()? < 3 {
+                continue;
+            }
+
+            buf.move_position_backward(1);
+
+            let field = buf.get_string_utf8()?;
+            if field.is_empty() {
+                continue;
+            }
+
+            let field_split: Vec<&str> = field.split('_').collect();
+            let field_name = field_split.get(0).ok_or(GDError::PacketBad)?;
+            if !["player", "score", "ping", "team", "deaths", "pid", "skill"].contains(field_name) {
+                continue;
+            }
+
+            let field_type = match field_split.get(1) {
+                None => None,
+                Some(v) => {
+                    match v.is_empty() {
+                        true => None,
+                        false => Some(v),
+                    }
+                }
+            };
+
+            let mut offset = buf.get_u8()?;
+
+            println!(
+                "Parsing new field, type: {:?}, name: {:?}, start offset: {:?}",
+                field_type, field_name, offset
+            );
+
+            if field_type.is_some() {
+                // skip parsing team data
+                continue;
+            }
+
+            while buf.remaining_length() > 0 {
+                let item = buf.get_string_utf8()?;
+                if item.is_empty() {
+                    break;
+                }
+
+                while players_data.len() <= offset as usize {
+                    players_data.push(HashMap::new())
+                }
+
+                let player_data = players_data.get_mut(offset as usize).unwrap();
+                // println!("{:?} {:?} {:?}", field_name, offset, item);
+                player_data.insert(field_name.to_string(), item);
+
+                offset += 1;
+            }
+        }
+    }
+
+    let mut players: Vec<GS3Player> = Vec::new();
+    for player_data in players_data {
+        players.push(GS3Player {
+            name: player_data
+                .get("player")
+                .ok_or(GDError::PacketBad)?
+                .to_string(),
+            score: player_data
+                .get("score")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+            ping: player_data
+                .get("ping")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+            team: player_data
+                .get("team")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+            deaths: player_data
+                .get("deaths")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+            skill: player_data
+                .get("skill")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+        })
+    }
+
+    Ok(players)
+}
+
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
@@ -210,6 +323,8 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         None => None,
         Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
     };
+
+    println!("{:#?}", parse_parse_players(packets)?);
 
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
