@@ -34,7 +34,7 @@ pub struct Response {
     pub game_version: String,
     pub players_maximum: usize,
     pub players_online: usize,
-    pub players_minimum: u8,
+    pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
     pub tournament: bool,
     pub unused_entries: HashMap<String, String>,

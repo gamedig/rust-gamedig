@@ -209,6 +209,10 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         .ok_or(GDError::PacketBad)?
         .parse()
         .map_err(|_| GDError::TypeParse)?;
+    let players_minimum = match server_vars.remove("minplayers") {
+        None => None,
+        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+    };
 
     let players = extract_players(&mut server_vars, players_maximum)?;
 
@@ -225,15 +229,11 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
         players_maximum,
         players_online: players.len(),
-        players_minimum: server_vars
-            .remove("minplayers")
-            .unwrap_or_else(|| "0".to_string())
-            .parse()
-            .map_err(|_| GDError::TypeParse)?,
+        players_minimum,
         players,
         tournament: server_vars
             .remove("tournament")
-            .unwrap_or_else(|| "true".to_string())
+            .unwrap_or("true".to_string())
             .to_lowercase()
             .parse()
             .map_err(|_| GDError::TypeParse)?,

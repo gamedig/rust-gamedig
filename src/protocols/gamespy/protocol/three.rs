@@ -141,26 +141,6 @@ fn get_server_packets(address: &str, port: u16, timeout_settings: Option<Timeout
 
     Ok(values)
 }
-// fn extract_players(other_vars: HashMap<String, String>) -> GDResult<()> {
-// for (key, value) in &other_vars {
-// if key.chars().nth(0).unwrap() < 2 as char {
-// continue;
-// }
-//
-// let split_key: Vec<&str> = key.split('_').collect();
-// let field_name = split_key[0];
-// let item_type = match split_key.len() > 1 {
-// true => split_key[1],
-// false => "no_",
-// };
-//
-// println!("{} {}", field_name, item_type);
-// println!("{:#?}", other_vars);
-// return Ok(());
-// }
-//
-// Ok(())
-// }
 
 fn data_to_map(packet: &Vec<u8>) -> GDResult<HashMap<String, String>> {
     let mut vars = HashMap::new();
@@ -230,6 +210,10 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         .ok_or(GDError::PacketBad)?
         .parse()
         .map_err(|_| GDError::TypeParse)?;
+    let players_minimum = match server_vars.remove("minplayers") {
+        None => None,
+        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+    };
 
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
@@ -243,16 +227,16 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
         game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
         players_maximum,
-        players_online: 0,
-        players_minimum: server_vars
-            .remove("minplayers")
-            .unwrap_or_else(|| "0".to_string())
+        players_online: server_vars
+            .remove("numplayers")
+            .unwrap_or("0".to_string())
             .parse()
             .map_err(|_| GDError::TypeParse)?,
+        players_minimum,
         players: Vec::new(),
         tournament: server_vars
             .remove("tournament")
-            .unwrap_or_else(|| "true".to_string())
+            .unwrap_or("true".to_string())
             .to_lowercase()
             .parse()
             .map_err(|_| GDError::TypeParse)?,
