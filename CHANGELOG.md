@@ -9,6 +9,7 @@ Crate:
 
 Protocols:
 - GameSpy 1: Add key `admin` as a possible variable for `admin_name`.
+- GameSpy 3 support.
 
 Games:
 - [Serious Sam](https://www.gog.com/game/serious_sam_the_first_encounter) support.
@@ -16,6 +17,7 @@ Games:
 ### Breaking:
 Protocols:
 - Valve: Request type enums have been renamed from all caps to starting-only uppercase, ex: `INFO` to `Info`
+- GameSpy 1: `players_minimum` is now an `Option<u8>` instead of an `u8`
 
 # 0.2.1 - 03/03/2023
 ### Changes:
