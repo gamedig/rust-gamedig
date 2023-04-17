@@ -1,5 +1,5 @@
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::gamespy::{Player, Response};
+use crate::protocols::gamespy::three::{Player, Response};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
@@ -193,17 +193,7 @@ fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
     Ok(as_numeral != 0)
 }
 
-#[derive(Debug)]
-struct GS3Player {
-    pub name: String,
-    pub score: i32,
-    pub ping: u16,
-    pub team: u8,
-    pub deaths: u32,
-    pub skill: u32,
-}
-
-fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<GS3Player>> {
+fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
     let mut players_data: Vec<HashMap<String, String>> = vec![HashMap::new()];
 
     for packet in packets {
@@ -268,9 +258,9 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<GS3Player>> {
         }
     }
 
-    let mut players: Vec<GS3Player> = Vec::new();
+    let mut players: Vec<Player> = Vec::new();
     for player_data in players_data {
-        players.push(GS3Player {
+        players.push(Player {
             name: player_data
                 .get("player")
                 .ok_or(GDError::PacketBad)?
@@ -324,8 +314,6 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
     };
 
-    println!("{:#?}", parse_parse_players(packets)?);
-
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
         map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
@@ -344,7 +332,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
             .parse()
             .map_err(|_| GDError::TypeParse)?,
         players_minimum,
-        players: Vec::new(),
+        players: parse_parse_players(packets)?,
         tournament: server_vars
             .remove("tournament")
             .unwrap_or("true".to_string())
