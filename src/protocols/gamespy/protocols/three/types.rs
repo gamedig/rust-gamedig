@@ -15,6 +15,14 @@ pub struct Player {
     pub skill: u32,
 }
 
+/// A team's details
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Team {
+    pub name: String,
+    pub score: i32,
+}
+
 /// A query response.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,6 +36,7 @@ pub struct Response {
     pub players_online: usize,
     pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
+    pub teams: Vec<Team>,
     pub tournament: bool,
     pub unused_entries: HashMap<String, String>,
 }

@@ -1,6 +1,7 @@
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response};
+use crate::protocols::gamespy::Team;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
@@ -179,8 +180,9 @@ pub fn query_vars(
     Ok(vars)
 }
 
-fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
+fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<Team>)> {
     let mut players_data: Vec<HashMap<String, String>> = vec![HashMap::new()];
+    let mut teams_data: Vec<HashMap<String, String>> = vec![HashMap::new()];
 
     for packet in packets {
         let mut buf = Bufferer::new_with_data(Endianess::Little, &packet);
@@ -208,17 +210,23 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
                 Some(v) => {
                     match v.is_empty() {
                         true => None,
-                        false => Some(v),
+                        false => {
+                            if v != &"t" {
+                                Err(GDError::PacketBad)?
+                            }
+
+                            Some(v)
+                        }
                     }
                 }
             };
 
-            let mut offset = buf.get_u8()?;
+            let mut offset = buf.get_u8()? as usize;
 
-            if field_type.is_some() {
-                // skip parsing team data
-                continue;
-            }
+            let data = match field_type.is_none() {
+                true => &mut players_data,
+                false => &mut teams_data,
+            };
 
             while buf.remaining_length() > 0 {
                 let item = buf.get_string_utf8()?;
@@ -226,12 +234,12 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
                     break;
                 }
 
-                while players_data.len() <= offset as usize {
-                    players_data.push(HashMap::new())
+                while data.len() <= offset {
+                    data.push(HashMap::new())
                 }
 
-                let player_data = players_data.get_mut(offset as usize).unwrap();
-                player_data.insert(field_name.to_string(), item);
+                let entry_data = data.get_mut(offset).unwrap();
+                entry_data.insert(field_name.to_string(), item);
 
                 offset += 1;
             }
@@ -273,7 +281,19 @@ fn parse_parse_players(packets: Vec<Vec<u8>>) -> GDResult<Vec<Player>> {
         })
     }
 
-    Ok(players)
+    let mut teams: Vec<Team> = Vec::new();
+    for team_data in teams_data {
+        teams.push(Team {
+            name: team_data.get("team").ok_or(GDError::PacketBad)?.to_string(),
+            score: team_data
+                .get("score")
+                .ok_or(GDError::PacketBad)?
+                .parse()
+                .map_err(|_| GDError::PacketBad)?,
+        })
+    }
+
+    Ok((players, teams))
 }
 
 /// Query a server by providing the address, the port and timeout settings.
@@ -293,7 +313,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         None => None,
         Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
     };
-    let players = parse_parse_players(packets)?;
+    let (players, teams) = parse_players_and_teams(packets)?;
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
@@ -315,6 +335,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         players_online,
         players_minimum,
         players,
+        teams,
         tournament: server_vars
             .remove("tournament")
             .unwrap_or("true".to_string())
