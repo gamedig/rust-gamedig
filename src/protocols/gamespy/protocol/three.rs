@@ -199,11 +199,7 @@ fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
 pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let packets = get_server_packets(address, port, timeout_settings)?;
 
-    let mut server_vars = HashMap::new();
-
-    for packet in &packets {
-        server_vars.extend(data_to_map(packet)?);
-    }
+    let mut server_vars = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")
