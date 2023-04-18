@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::bufferer::Bufferer;
+use crate::GDResult;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -142,6 +144,40 @@ pub(crate) fn get_optional_extracted_data(data: Option<ExtraData>) -> ExtractedD
     }
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct Packet {
+    pub header: u32,
+    pub kind: u8,
+    pub payload: Vec<u8>,
+}
+
+impl Packet {
+    pub fn new(kind: u8, payload: Vec<u8>) -> Self {
+        Self {
+            header: 4294967295, // FF FF FF FF
+            kind,
+            payload,
+        }
+    }
+
+    pub fn new_from_bufferer(buffer: &mut Bufferer) -> GDResult<Self> {
+        Ok(Self {
+            header: buffer.get_u32()?,
+            kind: buffer.get_u8()?,
+            payload: buffer.remaining_data_vec(),
+        })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::from(self.header.to_be_bytes());
+
+        buf.push(self.kind);
+        buf.extend(&self.payload);
+
+        buf
+    }
+}
+
 /// The type of the request, see the [protocol](https://developer.valvesoftware.com/wiki/Server_queries).
 #[derive(Eq, PartialEq, Copy, Clone)]
 #[repr(u8)]
@@ -152,6 +188,15 @@ pub(crate) enum Request {
     Players = 0x55,
     /// Known as `A2S_RULES`
     Rules = 0x56,
+}
+
+impl Request {
+    pub fn get_default_payload(&self) -> Vec<u8> {
+        match self {
+            Request::Info => String::from("Source Engine Query\0").into_bytes(),
+            _ => vec![0xFF, 0xFF, 0xFF, 0xFF],
+        }
+    }
 }
 
 /// Supported steam apps
