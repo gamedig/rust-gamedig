@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::bufferer::Bufferer;
+use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,17 @@ pub enum Server {
     TV,
 }
 
+impl Server {
+    pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
+        Ok(match value {
+            100 => Server::Dedicated,    //'d'
+            108 => Server::NonDedicated, //'l'
+            112 => Server::TV,           //'p'
+            _ => Err(UnknownEnumCast)?,
+        })
+    }
+}
+
 /// The Operating System that the server is on.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -21,6 +33,17 @@ pub enum Environment {
     Linux,
     Windows,
     Mac,
+}
+
+impl Environment {
+    pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
+        Ok(match value {
+            108 => Environment::Linux,     //'l'
+            119 => Environment::Windows,   //'w'
+            109 | 111 => Environment::Mac, //'m' or 'o'
+            _ => Err(UnknownEnumCast)?,
+        })
+    }
 }
 
 /// A query response.

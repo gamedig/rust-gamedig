@@ -281,18 +281,8 @@ impl ValveProtocol {
         let players = buffer.get_u8()?;
         let max_players = buffer.get_u8()?;
         let bots = buffer.get_u8()?;
-        let server_type = match buffer.get_u8()? {
-            100 => Server::Dedicated,    //'d'
-            108 => Server::NonDedicated, //'l'
-            112 => Server::TV,           //'p'
-            _ => Err(UnknownEnumCast)?,
-        };
-        let environment_type = match buffer.get_u8()? {
-            108 => Environment::Linux,     //'l'
-            119 => Environment::Windows,   //'w'
-            109 | 111 => Environment::Mac, //'m' or 'o'
-            _ => Err(UnknownEnumCast)?,
-        };
+        let server_type = Server::from_gldsrc(buffer.get_u8()?)?;
+        let environment_type = Environment::from_gldsrc(buffer.get_u8()?)?;
         let has_password = buffer.get_u8()? == 1;
         let vac_secured = buffer.get_u8()? == 1;
         let the_ship = match *engine == SteamApp::TS.as_engine() {
