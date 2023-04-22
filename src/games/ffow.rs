@@ -4,6 +4,7 @@ use crate::GDResult;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+/// The query response.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Response {
@@ -13,9 +14,13 @@ pub struct Response {
     pub name: String,
     /// Map name.
     pub active_mod: String,
+    /// Running game mode.
     pub game_mode: String,
+    /// Description of the server.
     pub description: String,
+    /// The version that the server is running on.
     pub version: String,
+    /// Current map.
     pub map: String,
     /// Number of players on the server.
     pub players_online: u8,
