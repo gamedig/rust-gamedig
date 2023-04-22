@@ -42,6 +42,8 @@ pub mod dods;
 pub mod doi;
 /// Don't Starve Together
 pub mod dst;
+/// Frontlines: Fuel of War
+pub mod ffow;
 /// Garry's Mod
 pub mod gm;
 /// Half-Life 2 Deathmatch

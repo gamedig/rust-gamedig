@@ -28,60 +28,8 @@ use crate::{
 
 use bzip2_rs::decoder::Decoder;
 
+use crate::protocols::valve::Packet;
 use std::collections::HashMap;
-
-#[derive(Debug, Clone)]
-struct Packet {
-    pub header: u32,
-    pub kind: u8,
-    pub payload: Vec<u8>,
-}
-
-impl Packet {
-    fn new(buffer: &mut Bufferer) -> GDResult<Self> {
-        Ok(Self {
-            header: buffer.get_u32()?,
-            kind: buffer.get_u8()?,
-            payload: buffer.remaining_data_vec(),
-        })
-    }
-
-    fn challenge(kind: Request, challenge: Vec<u8>) -> Self {
-        let mut initial = Packet::initial(kind);
-
-        Self {
-            header: initial.header,
-            kind: initial.kind,
-            payload: match kind {
-                Request::Info => {
-                    initial.payload.extend(challenge);
-                    initial.payload
-                }
-                _ => challenge,
-            },
-        }
-    }
-
-    fn initial(kind: Request) -> Self {
-        Self {
-            header: 4294967295, // FF FF FF FF
-            kind: kind as u8,
-            payload: match kind {
-                Request::Info => String::from("Source Engine Query\0").into_bytes(),
-                _ => vec![0xFF, 0xFF, 0xFF, 0xFF],
-            },
-        }
-    }
-
-    fn to_bytes(&self) -> Vec<u8> {
-        let mut buf = Vec::from(self.header.to_be_bytes());
-
-        buf.push(self.kind);
-        buf.extend(&self.payload);
-
-        buf
-    }
-}
 
 #[derive(Debug)]
 #[allow(dead_code)] //remove this later on
@@ -169,14 +117,14 @@ impl SplitPacket {
     }
 }
 
-struct ValveProtocol {
+pub(crate) struct ValveProtocol {
     socket: UdpSocket,
 }
 
 static PACKET_SIZE: usize = 6144;
 
 impl ValveProtocol {
-    fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+    pub fn new(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
 
@@ -208,22 +156,41 @@ impl ValveProtocol {
             }
 
             let mut new_packet_buffer = Bufferer::new_with_data(Endianess::Little, &main_packet.get_payload()?);
-            Ok(Packet::new(&mut new_packet_buffer)?)
+            Ok(Packet::new_from_bufferer(&mut new_packet_buffer)?)
         } else {
-            Packet::new(&mut buffer)
+            Packet::new_from_bufferer(&mut buffer)
         }
     }
 
+    pub fn get_kind_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
+        self.get_request_data(engine, protocol, kind as u8, kind.get_default_payload())
+    }
+
     /// Ask for a specific request only.
-    fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
-        let request_initial_packet = Packet::initial(kind).to_bytes();
+    pub fn get_request_data(
+        &mut self,
+        engine: &Engine,
+        protocol: u8,
+        kind: u8,
+        payload: Vec<u8>,
+    ) -> GDResult<Bufferer> {
+        let request_initial_packet = Packet::new(kind, payload).to_bytes();
         self.socket.send(&request_initial_packet)?;
 
         let mut packet = self.receive(engine, protocol, PACKET_SIZE)?;
         while packet.kind == 0x41 {
             // 'A'
-            let challenge = packet.payload.clone();
-            let challenge_packet = Packet::challenge(kind, challenge).to_bytes();
+            let challenge = packet.payload;
+
+            const INFO: u8 = Request::Info as u8; // hmm, this could be unwanted and problematic
+            let challenge_packet = Packet::new(
+                kind,
+                match kind {
+                    INFO => [Request::Info.get_default_payload(), challenge].concat(),
+                    _ => challenge,
+                },
+            )
+            .to_bytes();
 
             self.socket.send(&challenge_packet)?;
 
@@ -297,7 +264,7 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
-        let mut buffer = self.get_request_data(engine, 0, Request::Info)?;
+        let mut buffer = self.get_kind_request_data(engine, 0, Request::Info)?;
 
         if let Engine::GoldSrc(force) = engine {
             if *force {
@@ -314,18 +281,8 @@ impl ValveProtocol {
         let players = buffer.get_u8()?;
         let max_players = buffer.get_u8()?;
         let bots = buffer.get_u8()?;
-        let server_type = match buffer.get_u8()? {
-            100 => Server::Dedicated,    //'d'
-            108 => Server::NonDedicated, //'l'
-            112 => Server::TV,           //'p'
-            _ => Err(UnknownEnumCast)?,
-        };
-        let environment_type = match buffer.get_u8()? {
-            108 => Environment::Linux,     //'l'
-            119 => Environment::Windows,   //'w'
-            109 | 111 => Environment::Mac, //'m' or 'o'
-            _ => Err(UnknownEnumCast)?,
-        };
+        let server_type = Server::from_gldsrc(buffer.get_u8()?)?;
+        let environment_type = Environment::from_gldsrc(buffer.get_u8()?)?;
         let has_password = buffer.get_u8()? == 1;
         let vac_secured = buffer.get_u8()? == 1;
         let the_ship = match *engine == SteamApp::TS.as_engine() {
@@ -400,7 +357,7 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let mut buffer = self.get_request_data(engine, protocol, Request::Players)?;
+        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Players)?;
 
         let count = buffer.get_u8()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
@@ -428,7 +385,7 @@ impl ValveProtocol {
 
     /// Get the server's rules.
     fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let mut buffer = self.get_request_data(engine, protocol, Request::Rules)?;
+        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Rules)?;
 
         let count = buffer.get_u16()? as usize;
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
