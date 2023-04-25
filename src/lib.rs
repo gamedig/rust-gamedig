@@ -22,6 +22,7 @@ pub mod errors;
 #[cfg(not(feature = "no_games"))]
 pub mod games;
 pub mod protocols;
+pub mod services;
 
 mod bufferer;
 mod socket;
@@ -30,3 +31,4 @@ mod utils;
 pub use errors::*;
 #[cfg(not(feature = "no_games"))]
 pub use games::*;
+pub use services::*;
