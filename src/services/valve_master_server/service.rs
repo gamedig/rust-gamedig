@@ -2,6 +2,7 @@ use crate::bufferer::{Bufferer, Endianess};
 use crate::socket::{Socket, UdpSocket};
 use crate::valve_master_server::{Region, SearchFilters};
 use crate::{GDError, GDResult};
+use std::net::Ipv4Addr;
 
 fn construct_payload(region: Region, filters: Option<SearchFilters>, last_ip: String, last_port: u16) -> Vec<u8> {
     let filters_bytes: Vec<u8> = match filters {
@@ -30,12 +31,11 @@ fn construct_payload(region: Region, filters: Option<SearchFilters>, last_ip: St
     .concat()
 }
 
-pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<String>> {
+pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
     let mut socket = UdpSocket::new("hl2master.steampowered.com", 27011)?;
     socket.apply_timeout(None)?;
 
     let initial_payload = construct_payload(region, search_filters, "0.0.0.0".to_string(), 0);
-    println!("{:02X?}", initial_payload);
     socket.send(&initial_payload)?;
 
     let received_data = socket.receive(Some(1400))?;
@@ -45,20 +45,15 @@ pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<
         return Err(GDError::PacketBad);
     }
 
+    let mut ips: Vec<(Ipv4Addr, u16)> = Vec::new();
     while buf.remaining_length() > 0 {
-        let first_octet = buf.get_u8()?;
-        let second_octet = buf.get_u8()?;
-        let third_octet = buf.get_u8()?;
-        let fourth_octet = buf.get_u8()?;
-
+        let ip = Ipv4Addr::new(buf.get_u8()?, buf.get_u8()?, buf.get_u8()?, buf.get_u8()?);
         let port = buf.get_u16()?;
 
-        println!("{first_octet}.{second_octet}.{third_octet}.{fourth_octet}:{port}");
+        ips.push((ip, port));
     }
 
-    println!("{:02X?}", buf.remaining_data());
-
-    Ok(Vec::new())
+    Ok(ips)
 }
 
 #[cfg(test)]
@@ -71,6 +66,6 @@ mod master_query {
             .add(Filter::AppId(440))
             .add(Filter::CanHavePassword(false));
 
-        query(Region::Europe, Some(search_filters)).unwrap();
+        println!("{:?}", query(Region::Europe, Some(search_filters)).unwrap());
     }
 }
