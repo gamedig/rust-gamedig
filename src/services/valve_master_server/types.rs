@@ -10,19 +10,19 @@ pub enum Filter {
 
 fn bool_as_char_u8(b: bool) -> u8 {
     match b {
-        true => '1' as u8,
-        false => '0' as u8,
+        true => b'1',
+        false => b'0',
     }
 }
 
 impl Filter {
-    pub(crate) fn to_bytes(self) -> Vec<u8> {
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8>;
 
         match self {
             Filter::IsSecured(secured) => {
                 bytes = "\\secure\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(secured)]);
+                bytes.extend([bool_as_char_u8(*secured)]);
             }
             Filter::Map(map) => {
                 bytes = "\\map\\".as_bytes().to_vec();
@@ -30,15 +30,15 @@ impl Filter {
             }
             Filter::CanHavePassword(password) => {
                 bytes = "\\password\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(password)]);
+                bytes.extend([bool_as_char_u8(*password)]);
             }
             Filter::CanBeEmpty(empty) => {
                 bytes = "\\empty\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(empty)]);
+                bytes.extend([bool_as_char_u8(*empty)]);
             }
             Filter::CanBeFull(full) => {
                 bytes = "\\full\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(full)]);
+                bytes.extend([bool_as_char_u8(*full)]);
             }
             Filter::AppId(id) => {
                 bytes = "\\appid\\".as_bytes().to_vec();
@@ -84,11 +84,10 @@ impl SearchFilters {
         }
     }
 
-    // pub(crate) fn to_bytes<'a>(self) -> &'a [u8] { &[0x00] }
-    pub(crate) fn to_bytes(self) -> Vec<u8> {
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
 
-        for filter in self.filters {
+        for filter in &self.filters {
             bytes.extend(filter.to_bytes())
         }
 
