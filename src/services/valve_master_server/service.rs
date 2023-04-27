@@ -4,7 +4,9 @@ use crate::valve_master_server::{Region, SearchFilters};
 use crate::{GDError, GDResult};
 use std::net::Ipv4Addr;
 
+/// The default master ip, which is the one for Source.
 pub const DEFAULT_MASTER_IP: &str = "hl2master.steampowered.com";
+/// The default master port.
 pub const DEFAULT_MASTER_PORT: u16 = 27011;
 
 fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &str, last_port: u16) -> Vec<u8> {
@@ -34,11 +36,13 @@ fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &
     .concat()
 }
 
-struct ValveMasterServer {
+/// The implementation, use this if you want to keep the same socket.
+pub struct ValveMasterServer {
     socket: UdpSocket,
 }
 
 impl ValveMasterServer {
+    /// Construct a new struct.
     pub fn new(master_ip: &str, master_port: u16) -> GDResult<Self> {
         let socket = UdpSocket::new(master_ip, master_port)?;
         socket.apply_timeout(None)?;
@@ -46,6 +50,8 @@ impl ValveMasterServer {
         Ok(Self { socket })
     }
 
+    /// Make just a single query, providing `0.0.0.0` as the last ip and `0` as
+    /// the last port will give the initial packet.
     pub fn query_specific(
         &mut self,
         region: Region,
@@ -74,6 +80,7 @@ impl ValveMasterServer {
         Ok(ips)
     }
 
+    /// Make a complete query.
     pub fn query(&mut self, region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
         let mut ips: Vec<(Ipv4Addr, u16)> = Vec::new();
 
@@ -112,12 +119,16 @@ impl ValveMasterServer {
     }
 }
 
+/// Take only the first response of (what would be a) complete query. This is
+/// faster as it results in less packets being sent, received and processed but
+/// yields less ips.
 pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
     let mut master_server = ValveMasterServer::new(DEFAULT_MASTER_IP, DEFAULT_MASTER_PORT)?;
 
     master_server.query_specific(region, &search_filters, "0.0.0.0", 0)
 }
 
+/// Make a complete query.
 pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
     let mut master_server = ValveMasterServer::new(DEFAULT_MASTER_IP, DEFAULT_MASTER_PORT)?;
 
@@ -131,8 +142,8 @@ mod master_query {
     #[test]
     fn test_stuff() {
         let search_filters = SearchFilters::new()
-            .add(Filter::AppId(440))
-            .add(Filter::CanHavePassword(true));
+            .insert(Filter::AppId(440))
+            .insert(Filter::CanHavePassword(true));
 
         let ips = query_singular(Region::Europe, Some(search_filters)).unwrap();
         println!("{:?} {}", ips, ips.len());

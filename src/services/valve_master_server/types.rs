@@ -1,4 +1,5 @@
-#[derive(Debug, Eq, PartialEq, Clone)]
+/// A query filter.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Filter {
     IsSecured(bool),
     Map(String),
@@ -51,19 +52,34 @@ impl Filter {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+/// Query search filters.
+/// An example of constructing one:
+/// ```rust
+/// use gamedig::valve_master_server::{Filter, SearchFilters};
+///
+/// let search_filters = SearchFilters::new()
+///             .insert(Filter::AppId(440))
+///             .insert(Filter::CanHavePassword(true));
+/// ```
+/// This would query the servers that are (by App ID) 440 and that can contain
+/// passwords.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SearchFilters {
     filters: Vec<Filter>,
 }
 
+impl Default for SearchFilters {
+    fn default() -> Self { SearchFilters::new() }
+}
+
 impl SearchFilters {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             filters: Vec::new(),
         }
     }
 
-    pub(crate) fn add(self, filter: Filter) -> Self {
+    pub fn insert(self, filter: Filter) -> Self {
         let mut last_filters = self.filters;
 
         let found_same_filter = last_filters.iter_mut().find_map(|f| {
@@ -95,7 +111,8 @@ impl SearchFilters {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone)]
+/// The region that you want to query server for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Region {
     UsEast = 0x00,
