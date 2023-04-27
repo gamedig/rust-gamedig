@@ -59,8 +59,8 @@ impl ValveMasterServer {
         last_address_ip: &str,
         last_address_port: u16,
     ) -> GDResult<Vec<(Ipv4Addr, u16)>> {
-        let initial_payload = construct_payload(region, search_filters, last_address_ip, last_address_port);
-        self.socket.send(&initial_payload)?;
+        let payload = construct_payload(region, search_filters, last_address_ip, last_address_port);
+        self.socket.send(&payload)?;
 
         let received_data = self.socket.receive(Some(1400))?;
         let mut buf = Bufferer::new_with_data(Endianess::Big, &received_data);
@@ -125,7 +125,18 @@ impl ValveMasterServer {
 pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
     let mut master_server = ValveMasterServer::new(DEFAULT_MASTER_IP, DEFAULT_MASTER_PORT)?;
 
-    master_server.query_specific(region, &search_filters, "0.0.0.0", 0)
+    let mut ips = master_server.query_specific(region, &search_filters, "0.0.0.0", 0)?;
+
+    match ips.last() {
+        None => {}
+        Some((last_ip, last_port)) => {
+            if last_ip.to_string() == "0.0.0.0" && *last_port == 0 {
+                ips.pop();
+            }
+        }
+    }
+
+    Ok(ips)
 }
 
 /// Make a complete query.
@@ -141,9 +152,13 @@ mod master_query {
 
     #[test]
     fn test_stuff() {
+        let mut tags = Vec::new();
+        tags.push("minecraft".to_string());
+
         let search_filters = SearchFilters::new()
             .insert(Filter::AppId(440))
-            .insert(Filter::CanHavePassword(true));
+            .insert(Filter::CanHavePassword(true))
+            .insert(Filter::HasTags(tags));
 
         let ips = query_singular(Region::Europe, Some(search_filters)).unwrap();
         println!("{:?} {}", ips, ips.len());

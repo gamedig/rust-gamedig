@@ -7,6 +7,7 @@ pub enum Filter {
     CanBeEmpty(bool),
     CanBeFull(bool),
     AppId(u32),
+    HasTags(Vec<String>),
 }
 
 fn bool_as_char_u8(b: bool) -> u8 {
@@ -18,7 +19,7 @@ fn bool_as_char_u8(b: bool) -> u8 {
 
 impl Filter {
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes: Vec<u8>;
+        let mut bytes: Vec<u8> = Vec::new();
 
         match self {
             Filter::IsSecured(secured) => {
@@ -45,9 +46,19 @@ impl Filter {
                 bytes = "\\appid\\".as_bytes().to_vec();
                 bytes.extend(id.to_string().as_bytes());
             }
+            Filter::HasTags(tags) => {
+                if !tags.is_empty() {
+                    bytes = "\\gametype\\".as_bytes().to_vec();
+                    for tag in tags {
+                        bytes.extend(tag.as_bytes());
+                        bytes.extend([b',']);
+                    }
+
+                    bytes.pop();
+                }
+            }
         }
 
-        bytes.extend([0x00]);
         bytes
     }
 }
@@ -107,6 +118,7 @@ impl SearchFilters {
             bytes.extend(filter.to_bytes())
         }
 
+        bytes.extend([0x00]);
         bytes
     }
 }
