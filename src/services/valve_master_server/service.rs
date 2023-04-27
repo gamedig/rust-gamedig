@@ -126,7 +126,7 @@ pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<
 
 #[cfg(test)]
 mod master_query {
-    use crate::valve_master_server::{query, query_singular, Filter, Region, SearchFilters};
+    use crate::valve_master_server::{query_singular, Filter, Region, SearchFilters};
 
     #[test]
     fn test_stuff() {
@@ -134,7 +134,7 @@ mod master_query {
             .add(Filter::AppId(440))
             .add(Filter::CanHavePassword(true));
 
-        let ips = query(Region::Europe, Some(search_filters)).unwrap();
+        let ips = query_singular(Region::Europe, Some(search_filters)).unwrap();
         println!("{:?} {}", ips, ips.len());
     }
 }
