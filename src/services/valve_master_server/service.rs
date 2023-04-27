@@ -127,12 +127,9 @@ pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> 
 
     let mut ips = master_server.query_specific(region, &search_filters, "0.0.0.0", 0)?;
 
-    match ips.last() {
-        None => {}
-        Some((last_ip, last_port)) => {
-            if last_ip.to_string() == "0.0.0.0" && *last_port == 0 {
-                ips.pop();
-            }
+    if let Some((last_ip, last_port)) = ips.last() {
+        if last_ip.to_string() == "0.0.0.0" && *last_port == 0 {
+            ips.pop();
         }
     }
 
