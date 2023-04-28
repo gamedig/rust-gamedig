@@ -98,11 +98,11 @@ impl ValveMasterServer {
                     let mut remove_last = false;
 
                     let latest_ip_string = latest_ip.to_string();
-                    if latest_ip_string == last_ip && *latest_port == last_port {
-                        exit_fetching = true;
-                    } else if latest_ip_string == "0.0.0.0" && *latest_port == 0 {
+                    if latest_ip_string == "0.0.0.0" && *latest_port == 0 {
                         exit_fetching = true;
                         remove_last = true;
+                    } else if latest_ip_string == last_ip && *latest_port == last_port {
+                        exit_fetching = true;
                     } else {
                         last_ip = latest_ip_string;
                         last_port = *latest_port;
