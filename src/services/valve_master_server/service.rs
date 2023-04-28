@@ -143,22 +143,3 @@ pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<
 
     master_server.query(region, search_filters)
 }
-
-#[cfg(test)]
-mod master_query {
-    use crate::valve_master_server::{query, Filter, Region, SearchFilters};
-
-    #[test]
-    fn test_stuff() {
-        let search_filters = SearchFilters::new()
-            .insert(Filter::RunsAppID(440))
-            .insert_nor(Filter::Whitelisted(true))
-            .insert_nor(Filter::RunsLinux(false))
-            .insert(Filter::IsEmpty(false))
-            .insert(Filter::CanHavePassword(true))
-            .insert(Filter::HasTags(&["minecraft"]));
-
-        let ips = query(Region::Europe, Some(search_filters)).unwrap();
-        println!("{:?} {}", ips, ips.len());
-    }
-}
