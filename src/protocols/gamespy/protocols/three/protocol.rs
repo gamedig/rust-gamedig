@@ -18,7 +18,7 @@ struct RequestPacket {
 }
 
 impl RequestPacket {
-    fn to_bytes(self) -> Vec<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         let mut packet: Vec<u8> = Vec::with_capacity(7);
         packet.extend_from_slice(&self.header.to_be_bytes());
         packet.push(self.kind);
@@ -144,10 +144,10 @@ fn get_server_packets(address: &str, port: u16, timeout_settings: Option<Timeout
     Ok(values)
 }
 
-fn data_to_map(packet: &Vec<u8>) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
+fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
     let mut vars = HashMap::new();
 
-    let mut buf = Bufferer::new_with_data(Endianess::Big, &packet);
+    let mut buf = Bufferer::new_with_data(Endianess::Big, packet);
     while buf.remaining_length() > 0 {
         let key = buf.get_string_utf8()?;
         if key.is_empty() {
@@ -201,7 +201,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
             }
 
             let field_split: Vec<&str> = field.split('_').collect();
-            let field_name = field_split.get(0).ok_or(GDError::PacketBad)?;
+            let field_name = field_split.first().ok_or(GDError::PacketBad)?;
             if !["player", "score", "ping", "team", "deaths", "pid", "skill"].contains(field_name) {
                 continue;
             }
@@ -342,7 +342,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         teams,
         tournament: server_vars
             .remove("tournament")
-            .unwrap_or("true".to_string())
+            .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
             .map_err(|_| GDError::TypeParse)?,

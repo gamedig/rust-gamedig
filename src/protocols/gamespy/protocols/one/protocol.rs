@@ -219,7 +219,7 @@ pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>
         players,
         tournament: server_vars
             .remove("tournament")
-            .unwrap_or("true".to_string())
+            .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
             .map_err(|_| GDError::TypeParse)?,
