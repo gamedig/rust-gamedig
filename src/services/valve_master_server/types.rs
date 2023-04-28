@@ -132,45 +132,88 @@ impl<'a> Filter<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SearchFilters<'a> {
     filters: Vec<Filter<'a>>,
+    nor_filters: Vec<Filter<'a>>,
+    nand_filters: Vec<Filter<'a>>,
 }
 
 impl<'a> Default for SearchFilters<'a> {
     fn default() -> Self { SearchFilters::new() }
 }
 
+fn update_or_insert_vec<'a>(filter_list: Vec<Filter<'a>>, filter: Filter<'a>) -> Vec<Filter<'a>> {
+    let mut list = filter_list;
+
+    let found_same_filter = list.iter_mut().find_map(|f| {
+        if std::mem::discriminant(f) == std::mem::discriminant(&filter) {
+            Some(f)
+        } else {
+            None
+        }
+    });
+
+    match found_same_filter {
+        None => list.push(filter),
+        Some(f) => *f = filter,
+    }
+
+    list
+}
+
 impl<'a> SearchFilters<'a> {
     pub fn new() -> Self {
         Self {
             filters: Vec::new(),
+            nor_filters: Vec::new(),
+            nand_filters: Vec::new(),
         }
     }
 
     pub fn insert(self, filter: Filter<'a>) -> Self {
-        let mut last_filters = self.filters;
-
-        let found_same_filter = last_filters.iter_mut().find_map(|f| {
-            if std::mem::discriminant(f) == std::mem::discriminant(&filter) {
-                Some(f)
-            } else {
-                None
-            }
-        });
-
-        match found_same_filter {
-            None => last_filters.push(filter),
-            Some(f) => *f = filter,
-        }
-
         Self {
-            filters: last_filters,
+            filters: update_or_insert_vec(self.filters, filter),
+            nand_filters: self.nand_filters,
+            nor_filters: self.nor_filters,
+        }
+    }
+
+    pub fn insert_nand(self, filter: Filter<'a>) -> Self {
+        Self {
+            filters: self.filters,
+            nand_filters: self.nand_filters,
+            nor_filters: update_or_insert_vec(self.nor_filters, filter),
+        }
+    }
+
+    pub fn insert_nor(self, filter: Filter<'a>) -> Self {
+        Self {
+            filters: self.filters,
+            nand_filters: update_or_insert_vec(self.nand_filters, filter),
+            nor_filters: self.nor_filters,
         }
     }
 
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
 
+        // hmm, this is repetitive
         for filter in &self.filters {
             bytes.extend(filter.to_bytes())
+        }
+
+        if !self.nand_filters.is_empty() {
+            bytes.extend(b"\\nand\\".to_vec());
+            bytes.extend(self.nand_filters.len().to_string().as_bytes());
+            for filter in &self.nand_filters {
+                bytes.extend(filter.to_bytes())
+            }
+        }
+
+        if !self.nor_filters.is_empty() {
+            bytes.extend(b"\\nor\\".to_vec());
+            bytes.extend(self.nor_filters.len().to_string().as_bytes());
+            for filter in &self.nor_filters {
+                bytes.extend(filter.to_bytes())
+            }
         }
 
         bytes.extend([0x00]);

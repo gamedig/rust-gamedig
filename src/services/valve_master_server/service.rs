@@ -152,6 +152,9 @@ mod master_query {
     fn test_stuff() {
         let search_filters = SearchFilters::new()
             .insert(Filter::RunsAppID(440))
+            .insert_nor(Filter::Whitelisted(true))
+            .insert_nor(Filter::RunsLinux(false))
+            .insert(Filter::IsEmpty(false))
             .insert(Filter::CanHavePassword(true))
             .insert(Filter::HasTags(&["minecraft"]));
 
