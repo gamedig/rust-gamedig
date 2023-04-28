@@ -60,6 +60,7 @@ impl ValveMasterServer {
         last_address_port: u16,
     ) -> GDResult<Vec<(Ipv4Addr, u16)>> {
         let payload = construct_payload(region, search_filters, last_address_ip, last_address_port);
+        println!("{:02X?}", payload);
         self.socket.send(&payload)?;
 
         let received_data = self.socket.receive(Some(1400))?;
@@ -145,19 +146,16 @@ pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<
 
 #[cfg(test)]
 mod master_query {
-    use crate::valve_master_server::{query_singular, Filter, Region, SearchFilters};
+    use crate::valve_master_server::{query, Filter, Region, SearchFilters};
 
     #[test]
     fn test_stuff() {
-        let mut tags = Vec::new();
-        tags.push("minecraft".to_string());
-
         let search_filters = SearchFilters::new()
-            .insert(Filter::AppId(440))
+            .insert(Filter::RunsAppID(440))
             .insert(Filter::CanHavePassword(true))
-            .insert(Filter::HasTags(tags));
+            .insert(Filter::HasTags(&["minecraft"]));
 
-        let ips = query_singular(Region::Europe, Some(search_filters)).unwrap();
+        let ips = query(Region::Europe, Some(search_filters)).unwrap();
         println!("{:?} {}", ips, ips.len());
     }
 }
