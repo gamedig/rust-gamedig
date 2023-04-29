@@ -17,6 +17,7 @@ Games:
 
 Services:
 - [Valve Master Server Query](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol) support.
+- Added feature `no_services` which disables the supported services.
 
 ### Breaking:
 Protocols:

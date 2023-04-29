@@ -18,6 +18,7 @@ rust-version = "1.56.1"
 [features]
 default = []
 no_games = []
+no_services = []
 serde = ["dep:serde", "serde/derive"]
 
 [dependencies]
