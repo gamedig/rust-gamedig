@@ -32,13 +32,13 @@ fn bool_as_char_u8(b: bool) -> u8 {
 }
 
 impl<'a> Filter<'a> {
-    pub(crate) fn to_bytes(&self) -> Vec<u8> {
+    pub(crate) fn to_bytes(self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
 
         match self {
             Filter::IsSecured(secured) => {
                 bytes = "\\secure\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*secured)]);
+                bytes.extend([bool_as_char_u8(secured)]);
             }
             Filter::RunsMap(map) => {
                 bytes = "\\map\\".as_bytes().to_vec();
@@ -46,15 +46,15 @@ impl<'a> Filter<'a> {
             }
             Filter::CanHavePassword(password) => {
                 bytes = "\\password\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*password)]);
+                bytes.extend([bool_as_char_u8(password)]);
             }
             Filter::CanBeEmpty(empty) => {
                 bytes = "\\empty\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*empty)]);
+                bytes.extend([bool_as_char_u8(empty)]);
             }
             Filter::CanBeFull(full) => {
                 bytes = "\\full\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*full)]);
+                bytes.extend([bool_as_char_u8(full)]);
             }
             Filter::RunsAppID(id) => {
                 bytes = "\\appid\\".as_bytes().to_vec();
@@ -77,7 +77,7 @@ impl<'a> Filter<'a> {
             }
             Filter::IsEmpty(empty) => {
                 bytes = "\\noplayers\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*empty)]);
+                bytes.extend([bool_as_char_u8(empty)]);
             }
             Filter::MatchName(name) => {
                 bytes = "\\name_match\\".as_bytes().to_vec();
@@ -89,7 +89,7 @@ impl<'a> Filter<'a> {
             }
             Filter::RestrictUniqueIP(unique) => {
                 bytes = "\\collapse_addr_hash\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*unique)]);
+                bytes.extend([bool_as_char_u8(unique)]);
             }
             Filter::OnAddress(address) => {
                 bytes = "\\gameaddr\\".as_bytes().to_vec();
@@ -97,19 +97,19 @@ impl<'a> Filter<'a> {
             }
             Filter::Whitelisted(whitelisted) => {
                 bytes = "\\white\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*whitelisted)]);
+                bytes.extend([bool_as_char_u8(whitelisted)]);
             }
             Filter::SpectatorProxy(condition) => {
                 bytes = "\\proxy\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*condition)]);
+                bytes.extend([bool_as_char_u8(condition)]);
             }
             Filter::IsDedicated(dedicated) => {
                 bytes = "\\dedicated\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*dedicated)]);
+                bytes.extend([bool_as_char_u8(dedicated)]);
             }
             Filter::RunsLinux(linux) => {
                 bytes = "\\linux\\".as_bytes().to_vec();
-                bytes.extend([bool_as_char_u8(*linux)]);
+                bytes.extend([bool_as_char_u8(linux)]);
             }
             Filter::HasGameDir(game_dir) => {
                 bytes = "\\gamedir\\".as_bytes().to_vec();
