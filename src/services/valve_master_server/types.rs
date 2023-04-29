@@ -15,7 +15,9 @@ pub enum Filter<'a> {
     HasTags(&'a [&'a str]),
     MatchName(&'a str),
     MatchVersion(&'a str),
+    /// Restrict to only a server if an IP hosts (on different ports) multiple servers.
     RestrictUniqueIP(bool),
+    /// Query for servers on a specific address.
     OnAddress(&'a str),
     Whitelisted(bool),
     SpectatorProxy(bool),
@@ -128,10 +130,10 @@ impl<'a> Filter<'a> {
 ///
 /// let search_filters = SearchFilters::new()
 ///             .insert(Filter::RunsAppID(440))
-///             .insert(Filter::CanHavePassword(true));
+///             .insert(Filter::IsEmpty(false))
+///             .insert(Filter::CanHavePassword(false));
 /// ```
-/// This would query the servers that are (by App ID) 440 and that can contain
-/// passwords.
+/// This will construct filters that search for servers that can't have a password, are not empty and run App ID 440.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SearchFilters<'a> {
     filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
