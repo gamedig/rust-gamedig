@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::mem::Discriminant;
 
 /// A query filter.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Filter<'a> {
     IsSecured(bool),
     RunsMap(&'a str),
