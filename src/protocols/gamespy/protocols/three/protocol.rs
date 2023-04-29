@@ -248,6 +248,10 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 
     let mut players: Vec<Player> = Vec::new();
     for player_data in players_data {
+        if player_data.is_empty() {
+            continue;
+        }
+
         players.push(Player {
             name: player_data
                 .get("player")
@@ -283,6 +287,10 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 
     let mut teams: Vec<Team> = Vec::new();
     for team_data in teams_data {
+        if team_data.is_empty() {
+            continue;
+        }
+
         teams.push(Team {
             name: team_data.get("team").ok_or(GDError::PacketBad)?.to_string(),
             score: team_data
