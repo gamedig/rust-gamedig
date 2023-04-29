@@ -14,6 +14,7 @@ Protocols:
 Games:
 - [Serious Sam](https://www.gog.com/game/serious_sam_the_first_encounter) support.
 - [Frontlines: Fuel of War](https://store.steampowered.com/app/9460/Frontlines_Fuel_of_War/) support.
+- [Crysis Wars](https://steamcommunity.com/app/17340) support.
 
 Services:
 - [Valve Master Server Query](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol) support.

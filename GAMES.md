@@ -49,6 +49,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Battlefield 1942                   | BF1942   | GameSpy 1                    | Query port is 23000.                                                                                                                                                      |
 | Serious Sam                        | SS       | GameSpy 1                    | Query Port offset: 1.                                                                                                                                                     |
 | Frontlines: Fuel of War            | FFOW     | Valve Protocol (Proprietary) | Query Port offset: 2.                                                                                                                                                     |
+| Crysis Wars                        | CW       | GameSpy 3                    |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

@@ -92,3 +92,5 @@ pub mod unturned;
 pub mod ut;
 /// V Rising
 pub mod vr;
+/// Crysis Wars
+pub mod cw;
