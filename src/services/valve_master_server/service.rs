@@ -60,7 +60,6 @@ impl ValveMasterServer {
         last_address_port: u16,
     ) -> GDResult<Vec<(Ipv4Addr, u16)>> {
         let payload = construct_payload(region, search_filters, last_address_ip, last_address_port);
-        println!("{:02X?}", payload);
         self.socket.send(&payload)?;
 
         let received_data = self.socket.receive(Some(1400))?;

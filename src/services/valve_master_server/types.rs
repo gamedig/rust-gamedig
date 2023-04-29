@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::mem::Discriminant;
+
 /// A query filter.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Filter<'a> {
@@ -129,65 +132,55 @@ impl<'a> Filter<'a> {
 /// ```
 /// This would query the servers that are (by App ID) 440 and that can contain
 /// passwords.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SearchFilters<'a> {
-    filters: Vec<Filter<'a>>,
-    nor_filters: Vec<Filter<'a>>,
-    nand_filters: Vec<Filter<'a>>,
+    filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
+    nor_filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
+    nand_filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
 }
 
 impl<'a> Default for SearchFilters<'a> {
     fn default() -> Self { SearchFilters::new() }
 }
 
-fn update_or_insert_vec<'a>(filter_list: Vec<Filter<'a>>, filter: Filter<'a>) -> Vec<Filter<'a>> {
-    let mut list = filter_list;
-
-    let found_same_filter = list.iter_mut().find_map(|f| {
-        if std::mem::discriminant(f) == std::mem::discriminant(&filter) {
-            Some(f)
-        } else {
-            None
-        }
-    });
-
-    match found_same_filter {
-        None => list.push(filter),
-        Some(f) => *f = filter,
-    }
-
-    list
-}
-
 impl<'a> SearchFilters<'a> {
     pub fn new() -> Self {
         Self {
-            filters: Vec::new(),
-            nor_filters: Vec::new(),
-            nand_filters: Vec::new(),
+            filters: HashMap::new(),
+            nor_filters: HashMap::new(),
+            nand_filters: HashMap::new(),
         }
     }
 
     pub fn insert(self, filter: Filter<'a>) -> Self {
+        let mut updated_fitler = self.filters;
+        updated_fitler.insert(std::mem::discriminant(&filter), filter);
+
         Self {
-            filters: update_or_insert_vec(self.filters, filter),
+            filters: updated_fitler,
             nand_filters: self.nand_filters,
             nor_filters: self.nor_filters,
         }
     }
 
     pub fn insert_nand(self, filter: Filter<'a>) -> Self {
+        let mut updated_fitler = self.nor_filters;
+        updated_fitler.insert(std::mem::discriminant(&filter), filter);
+
         Self {
             filters: self.filters,
             nand_filters: self.nand_filters,
-            nor_filters: update_or_insert_vec(self.nor_filters, filter),
+            nor_filters: updated_fitler,
         }
     }
 
     pub fn insert_nor(self, filter: Filter<'a>) -> Self {
+        let mut updated_fitler = self.nand_filters;
+        updated_fitler.insert(std::mem::discriminant(&filter), filter);
+
         Self {
             filters: self.filters,
-            nand_filters: update_or_insert_vec(self.nand_filters, filter),
+            nand_filters: updated_fitler,
             nor_filters: self.nor_filters,
         }
     }
@@ -196,14 +189,14 @@ impl<'a> SearchFilters<'a> {
         let mut bytes: Vec<u8> = Vec::new();
 
         // hmm, this is repetitive
-        for filter in &self.filters {
+        for filter in self.filters.values() {
             bytes.extend(filter.to_bytes())
         }
 
         if !self.nand_filters.is_empty() {
             bytes.extend(b"\\nand\\".to_vec());
             bytes.extend(self.nand_filters.len().to_string().as_bytes());
-            for filter in &self.nand_filters {
+            for filter in self.nand_filters.values() {
                 bytes.extend(filter.to_bytes())
             }
         }
@@ -211,7 +204,7 @@ impl<'a> SearchFilters<'a> {
         if !self.nor_filters.is_empty() {
             bytes.extend(b"\\nor\\".to_vec());
             bytes.extend(self.nor_filters.len().to_string().as_bytes());
-            for filter in &self.nor_filters {
+            for filter in self.nor_filters.values() {
                 bytes.extend(filter.to_bytes())
             }
         }
