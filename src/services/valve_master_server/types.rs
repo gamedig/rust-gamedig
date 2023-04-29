@@ -185,29 +185,29 @@ impl<'a> SearchFilters<'a> {
         }
     }
 
+    fn special_filter_to_bytes(name: &str, filters: &HashMap<Discriminant<Filter>, Filter>) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        if !filters.is_empty() {
+            bytes.extend(name.as_bytes());
+            bytes.extend(filters.len().to_string().as_bytes());
+            for filter in filters.values() {
+                bytes.extend(filter.to_bytes())
+            }
+        }
+
+        bytes
+    }
+
     pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
 
-        // hmm, this is repetitive
         for filter in self.filters.values() {
             bytes.extend(filter.to_bytes())
         }
 
-        if !self.nand_filters.is_empty() {
-            bytes.extend(b"\\nand\\".to_vec());
-            bytes.extend(self.nand_filters.len().to_string().as_bytes());
-            for filter in self.nand_filters.values() {
-                bytes.extend(filter.to_bytes())
-            }
-        }
-
-        if !self.nor_filters.is_empty() {
-            bytes.extend(b"\\nor\\".to_vec());
-            bytes.extend(self.nor_filters.len().to_string().as_bytes());
-            for filter in self.nor_filters.values() {
-                bytes.extend(filter.to_bytes())
-            }
-        }
+        bytes.extend(SearchFilters::special_filter_to_bytes("nand", &self.nand_filters));
+        bytes.extend(SearchFilters::special_filter_to_bytes("nor", &self.nor_filters));
 
         bytes.extend([0x00]);
         bytes
