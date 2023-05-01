@@ -1,11 +1,18 @@
 
 Who knows what the future holds...
-
 # 0.X.Y - DD/MM/2023
+### Changes:
+To be made...
+
+### Breaking:
+Nothing, yet...
+
+# 0.2.2 - 01/05/2023
 ### Changes:
 Crate:
 - General optimizations thanks to [cargo clippy](https://github.com/rust-lang/rust-clippy) and [@cainthebest](https://github.com/cainthebest).
 - Added feature `serde` which enables json serialization/deserialization for all types (by [@cainthebest](https://github.com/cainthebest)).
+- Documentation improvements.
 
 Protocols:
 - GameSpy 1: Add key `admin` as a possible variable for `admin_name`.
