@@ -2,7 +2,9 @@
 Who knows what the future holds...
 # 0.X.Y - DD/MM/2023
 ### Changes:
-To be made...
+Protocols:
+- Valve:
+1. Added standard and serde derives to `GatheringSettings`.
 
 ### Breaking:
 Nothing, yet...

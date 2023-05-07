@@ -382,6 +382,8 @@ impl Engine {
 }
 
 /// What data to gather, purely used only with the query function.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct GatheringSettings {
     pub players: bool,
     pub rules: bool,
