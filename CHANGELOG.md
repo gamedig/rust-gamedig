@@ -7,7 +7,9 @@ Protocols:
 1. Added standard and serde derives to `GatheringSettings`.
 
 ### Breaking:
-Nothing, yet...
+Services:
+- Valve Master Query:
+1. Removed Filter and SearchFilters lifetimes and changed `&'a str` to `String` and `&'a [&'a str]` to `Vec<String>`
 
 # 0.2.2 - 01/05/2023
 ### Changes:

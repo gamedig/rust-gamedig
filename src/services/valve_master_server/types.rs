@@ -2,39 +2,39 @@ use std::collections::HashMap;
 use std::mem::Discriminant;
 
 /// A query filter.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum Filter<'a> {
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Filter {
     IsSecured(bool),
-    RunsMap(&'a str),
+    RunsMap(String),
     CanHavePassword(bool),
     CanBeEmpty(bool),
     IsEmpty(bool),
     CanBeFull(bool),
     RunsAppID(u32),
     NotAppID(u32),
-    HasTags(&'a [&'a str]),
-    MatchName(&'a str),
-    MatchVersion(&'a str),
+    HasTags(Vec<String>),
+    MatchName(String),
+    MatchVersion(String),
     /// Restrict to only a server if an IP hosts (on different ports) multiple servers.
     RestrictUniqueIP(bool),
     /// Query for servers on a specific address.
-    OnAddress(&'a str),
+    OnAddress(String),
     Whitelisted(bool),
     SpectatorProxy(bool),
     IsDedicated(bool),
     RunsLinux(bool),
-    HasGameDir(&'a str),
+    HasGameDir(String),
 }
 
-fn bool_as_char_u8(b: bool) -> u8 {
+fn bool_as_char_u8(b: &bool) -> u8 {
     match b {
         true => b'1',
         false => b'0',
     }
 }
 
-impl<'a> Filter<'a> {
-    pub(crate) fn to_bytes(self) -> Vec<u8> {
+impl Filter {
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
 
         match self {
@@ -135,17 +135,17 @@ impl<'a> Filter<'a> {
 /// ```
 /// This will construct filters that search for servers that can't have a password, are not empty and run App ID 440.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SearchFilters<'a> {
-    filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
-    nor_filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
-    nand_filters: HashMap<Discriminant<Filter<'a>>, Filter<'a>>,
+pub struct SearchFilters {
+    filters: HashMap<Discriminant<Filter>, Filter>,
+    nor_filters: HashMap<Discriminant<Filter>, Filter>,
+    nand_filters: HashMap<Discriminant<Filter>, Filter>,
 }
 
-impl<'a> Default for SearchFilters<'a> {
+impl Default for SearchFilters {
     fn default() -> Self { SearchFilters::new() }
 }
 
-impl<'a> SearchFilters<'a> {
+impl SearchFilters {
     pub fn new() -> Self {
         Self {
             filters: HashMap::new(),
@@ -154,7 +154,7 @@ impl<'a> SearchFilters<'a> {
         }
     }
 
-    pub fn insert(self, filter: Filter<'a>) -> Self {
+    pub fn insert(self, filter: Filter) -> Self {
         let mut updated_fitler = self.filters;
         updated_fitler.insert(std::mem::discriminant(&filter), filter);
 
@@ -165,7 +165,7 @@ impl<'a> SearchFilters<'a> {
         }
     }
 
-    pub fn insert_nand(self, filter: Filter<'a>) -> Self {
+    pub fn insert_nand(self, filter: Filter) -> Self {
         let mut updated_fitler = self.nor_filters;
         updated_fitler.insert(std::mem::discriminant(&filter), filter);
 
@@ -176,7 +176,7 @@ impl<'a> SearchFilters<'a> {
         }
     }
 
-    pub fn insert_nor(self, filter: Filter<'a>) -> Self {
+    pub fn insert_nor(self, filter: Filter) -> Self {
         let mut updated_fitler = self.nand_filters;
         updated_fitler.insert(std::mem::discriminant(&filter), filter);
 
@@ -194,7 +194,7 @@ impl<'a> SearchFilters<'a> {
             bytes.extend(name.as_bytes());
             bytes.extend(filters.len().to_string().as_bytes());
             for filter in filters.values() {
-                bytes.extend(filter.to_bytes())
+                bytes.extend(filter.to_bytes());
             }
         }
 
