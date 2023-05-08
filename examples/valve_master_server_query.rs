@@ -7,7 +7,7 @@ fn main() {
         .insert(Filter::CanBeFull(false))
         .insert(Filter::CanHavePassword(false))
         .insert(Filter::IsSecured(true))
-        .insert(Filter::HasTags(&["minecraft"]));
+        .insert(Filter::HasTags(vec!["minecraft".to_string()]));
 
     let ips = query(Region::Europe, Some(search_filters)).unwrap();
     println!("Servers: {:?} \n Amount: {}", ips, ips.len());
