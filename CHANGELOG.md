@@ -6,9 +6,6 @@ Protocols:
 - Valve:
 1. Added standard and serde derives to `GatheringSettings`.
 
-Services:
-1. Added methods to merge two search filters together.
-
 ### Breaking:
 Nothing, yet...
 
