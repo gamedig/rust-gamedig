@@ -60,12 +60,14 @@ fn get_server_values(
     }
 
     let mut players = Vec::new();
+    let mut bots = Vec::new();
+
     while !bufferer.is_remaining_empty() {
         let data = bufferer.get_string_utf8_newline()?;
         let data_split = data.split(" ").collect::<Vec<&str>>();
         let mut data_iter = data_split.iter();
 
-        players.push(Player {
+        let player = Player {
             frags: match data_iter.next() {
                 None => Err(GDError::PacketBad)?,
                 Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
@@ -78,10 +80,16 @@ fn get_server_values(
                 None => Err(GDError::PacketBad)?,
                 Some(v) => v.to_string()
             },
-        });
+        };
+
+        match player.ping == 0 {
+            false => &mut players,
+            true => &mut bots
+        }.push(player);
     }
 
     println!("{:?}", players);
+    println!("{:?}", bots);
 
     Ok(vars)
 }
