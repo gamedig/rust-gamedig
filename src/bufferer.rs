@@ -176,6 +176,8 @@ impl Bufferer {
 
     pub fn remaining_length(&self) -> usize { self.data_length() - self.position }
 
+    pub fn is_remaining_empty(&self) -> bool { self.remaining_length() == 0 }
+
     pub fn as_endianess(&self, endianess: Endianess) -> Self {
         Bufferer {
             data: self.data.clone(),

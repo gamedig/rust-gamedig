@@ -10,6 +10,13 @@ pub struct Response {
     pub name: String
 }
 
+#[derive(Debug)]
+pub struct Player {
+    pub frags: u8,
+    pub ping: u8,
+    pub name: String
+}
+
 fn get_server_values(
     address: &Ipv4Addr,
     port: u16,
@@ -52,13 +59,37 @@ fn get_server_values(
         }
     }
 
+    let mut players = Vec::new();
+    while !bufferer.is_remaining_empty() {
+        let data = bufferer.get_string_utf8_newline()?;
+        let data_split = data.split(" ").collect::<Vec<&str>>();
+        let mut data_iter = data_split.iter();
+
+        players.push(Player {
+            frags: match data_iter.next() {
+                None => Err(GDError::PacketBad)?,
+                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
+            },
+            ping: match data_iter.next() {
+                None => Err(GDError::PacketBad)?,
+                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
+            },
+            name: match data_iter.next() {
+                None => Err(GDError::PacketBad)?,
+                Some(v) => v.to_string()
+            },
+        });
+    }
+
+    println!("{:?}", players);
+
     Ok(vars)
 }
 
 pub fn query(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let server_vars = get_server_values(address, port, timeout_settings)?;
 
-    println!("{:#?}", server_vars);
+    //println!("{:#?}", server_vars);
     Ok(Response {
         name: "test".to_string()
     })
