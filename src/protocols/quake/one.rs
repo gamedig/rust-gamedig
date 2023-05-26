@@ -28,12 +28,17 @@ fn get_server_values(
         return Err(GDError::PacketBad);
     }
 
-    let data = bufferer.get_string_utf8_unended()?;
-    let after_the_first_weird_value = data.split("\\")
-        .into_iter()
-        .skip(1)
-        .collect::<Vec<&str>>();
-    let values = after_the_first_weird_value.chunks(2);
+    bufferer.get_string_utf8_newline()?; //print
+
+    let data = bufferer.get_string_utf8_newline()?;
+    let mut data_split = data.split("\\").collect::<Vec<&str>>();
+    if let Some(first) = data_split.first() {
+        if first == &"" {
+            data_split.remove(0);
+        }
+    }
+
+    let values = data_split.chunks(2);
 
     let mut vars: HashMap<String, String> = HashMap::new();
     for data in values {
