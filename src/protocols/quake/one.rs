@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::net::Ipv4Addr;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::{GDError, GDResult};
 use crate::protocols::types::TimeoutSettings;
@@ -10,7 +11,7 @@ pub struct Response {
 }
 
 fn get_server_values(
-    address: &str,
+    address: &Ipv4Addr,
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
@@ -18,6 +19,7 @@ fn get_server_values(
     socket.apply_timeout(timeout_settings)?;
 
     socket.send(&[0xFF, 0xFF, 0xFF, 0xFF, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x00])?;
+    //                                         ^ header                         ^
 
     let data = socket.receive(None)?;
     let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
@@ -26,7 +28,7 @@ fn get_server_values(
         return Err(GDError::PacketBad);
     }
 
-    let data = bufferer.get_string_utf8()?;
+    let data = bufferer.get_string_utf8_unended()?;
     let after_the_first_weird_value = data.split("\\")
         .into_iter()
         .skip(1)
@@ -48,7 +50,7 @@ fn get_server_values(
     Ok(vars)
 }
 
-pub fn query(address: &str, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let server_vars = get_server_values(address, port, timeout_settings)?;
 
     println!("{:#?}", server_vars);
