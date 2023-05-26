@@ -1,10 +1,11 @@
+use std::net::Ipv4Addr;
 use crate::{
     protocols::valve::{self, game, SteamApp},
     GDError::TypeParse,
     GDResult,
 };
 
-pub fn query(address: &str, port: Option<u16>) -> GDResult<game::Response> {
+pub fn query(address: &Ipv4Addr, port: Option<u16>) -> GDResult<game::Response> {
     let mut valve_response = valve::query(
         address,
         port.unwrap_or(7780),

@@ -5,7 +5,7 @@
 //! ```
 //! use gamedig::games::tf2;
 //!
-//! let response = tf2::query("127.0.0.1", None); // None is the default port (which is 27015), could also be Some(27015)
+//! let response = tf2::query(&"127.0.0.1".parse().unwrap(), None); // None is the default port (which is 27015), could also be Some(27015)
 //! match response { // Result type, must check what it is...
 //!     Err(error) => println!("Couldn't query, error: {}", error),
 //!     Ok(r) => println!("{:#?}", r)

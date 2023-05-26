@@ -1,3 +1,4 @@
+use std::net::Ipv4Addr;
 use crate::protocols::types::TimeoutSettings;
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::GDResult;
@@ -42,11 +43,11 @@ pub struct Response {
     pub time_left: u16,
 }
 
-pub fn query(address: &str, port: Option<u16>) -> GDResult<Response> {
+pub fn query(address: &Ipv4Addr, port: Option<u16>) -> GDResult<Response> {
     query_with_timeout(address, port, TimeoutSettings::default())
 }
 
-pub fn query_with_timeout(address: &str, port: Option<u16>, timeout_settings: TimeoutSettings) -> GDResult<Response> {
+pub fn query_with_timeout(address: &Ipv4Addr, port: Option<u16>, timeout_settings: TimeoutSettings) -> GDResult<Response> {
     let mut client = ValveProtocol::new(address, port.unwrap_or(5478), Some(timeout_settings))?;
     let mut buffer = client.get_request_data(
         &Engine::GoldSrc(true),

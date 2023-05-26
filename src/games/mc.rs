@@ -1,3 +1,4 @@
+use std::net::Ipv4Addr;
 use crate::{
     protocols::minecraft::{self, BedrockResponse, JavaResponse, LegacyGroup},
     GDError,
@@ -6,7 +7,7 @@ use crate::{
 
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
 /// (1.6 -> 1.4 -> Beta 1.8)).
-pub fn query(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
+pub fn query(address: &Ipv4Addr, port: Option<u16>) -> GDResult<JavaResponse> {
     if let Ok(response) = query_java(address, port) {
         return Ok(response);
     }
@@ -23,22 +24,22 @@ pub fn query(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
 }
 
 /// Query a Java Server.
-pub fn query_java(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
+pub fn query_java(address: &Ipv4Addr, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_java(address, port_or_java_default(port), None)
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
-pub fn query_legacy(address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
+pub fn query_legacy(address: &Ipv4Addr, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_legacy(address, port_or_java_default(port), None)
 }
 
 /// Query a specific (Java) Legacy Server.
-pub fn query_legacy_specific(group: LegacyGroup, address: &str, port: Option<u16>) -> GDResult<JavaResponse> {
+pub fn query_legacy_specific(group: LegacyGroup, address: &Ipv4Addr, port: Option<u16>) -> GDResult<JavaResponse> {
     minecraft::query_legacy_specific(group, address, port_or_java_default(port), None)
 }
 
 /// Query a Bedrock Server.
-pub fn query_bedrock(address: &str, port: Option<u16>) -> GDResult<BedrockResponse> {
+pub fn query_bedrock(address: &Ipv4Addr, port: Option<u16>) -> GDResult<BedrockResponse> {
     minecraft::query_bedrock(address, port_or_bedrock_default(port), None)
 }
 

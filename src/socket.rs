@@ -9,11 +9,12 @@ use std::{
     io::{Read, Write},
     net,
 };
+use std::net::Ipv4Addr;
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
-    fn new(address: &str, port: u16) -> GDResult<Self>
+    fn new(address: &Ipv4Addr, port: u16) -> GDResult<Self>
     where Self: Sized;
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()>;
@@ -27,7 +28,7 @@ pub struct TcpSocket {
 }
 
 impl Socket for TcpSocket {
-    fn new(address: &str, port: u16) -> GDResult<Self> {
+    fn new(address: &Ipv4Addr, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
 
         Ok(Self {
@@ -64,7 +65,7 @@ pub struct UdpSocket {
 }
 
 impl Socket for UdpSocket {
-    fn new(address: &str, port: u16) -> GDResult<Self> {
+    fn new(address: &Ipv4Addr, port: u16) -> GDResult<Self> {
         let complete_address = address_and_port_as_string(address, port);
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|_| SocketBind)?;
 
@@ -99,6 +100,7 @@ impl Socket for UdpSocket {
 
 #[cfg(test)]
 mod tests {
+    use std::net::IpAddr;
     use std::thread;
 
     use super::*;
@@ -115,8 +117,13 @@ mod tests {
             stream.write(&buf).unwrap();
         });
 
+        let address = match bound_address.ip() {
+            IpAddr::V4(a) => a,
+            _ => panic!("address not ipv4!")
+        };
+
         // Create a TCP socket and send a message to the server
-        let mut socket = TcpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket = TcpSocket::new(&address, bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -146,8 +153,13 @@ mod tests {
             socket.send_to(&buf, src_addr).unwrap();
         });
 
+        let address = match bound_address.ip() {
+            IpAddr::V4(a) => a,
+            _ => panic!("address not ipv4!")
+        };
+
         // Create a UDP socket and send a message to the server
-        let mut socket = UdpSocket::new(&*bound_address.ip().to_string(), bound_address.port()).unwrap();
+        let mut socket = UdpSocket::new(&address, bound_address.port()).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
