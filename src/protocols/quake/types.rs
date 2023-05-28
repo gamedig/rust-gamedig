@@ -28,7 +28,7 @@ pub struct Response<P> {
 pub(crate) trait QuakeClient {
     type Player;
 
-    fn get_send_header() -> String;
+    fn get_send_header<'a>() -> &'a str;
     fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()>;
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
@@ -37,7 +37,7 @@ fn get_data<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings
     let mut socket = UdpSocket::new(address, port)?;
     socket.apply_timeout(timeout_settings)?;
 
-    socket.send(&[&[0xFF, 0xFF, 0xFF, 0xFF], Client::get_send_header().into_bytes().as_slice(), &[0x00]].concat())?;
+    socket.send(&[&[0xFF, 0xFF, 0xFF, 0xFF], Client::get_send_header().as_bytes(), &[0x00]].concat())?;
 
     let data = socket.receive(None)?;
     let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
@@ -53,7 +53,7 @@ fn get_data<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings
 
 fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String>> {
     let data = bufferer.get_string_utf8_newline()?;
-    let mut data_split = data.split("\\").collect::<Vec<&str>>();
+    let mut data_split = data.split('\\').collect::<Vec<&str>>();
     if let Some(first) = data_split.first() {
         if first == &"" {
             data_split.remove(0);
@@ -64,7 +64,7 @@ fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String
 
     let mut vars: HashMap<String, String> = HashMap::new();
     for data in values {
-        let key = data.get(0);
+        let key = data.first();
         let value = data.get(1);
 
         if let Some(k) = key {
@@ -82,7 +82,7 @@ fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Cli
 
     while !bufferer.is_remaining_empty() {
         let data = bufferer.get_string_utf8_newline()?;
-        let data_split = data.split(" ").collect::<Vec<&str>>();
+        let data_split = data.split(' ').collect::<Vec<&str>>();
         let data_iter = data_split.iter();
 
         players.push(Client::parse_player_string(data_iter)?)

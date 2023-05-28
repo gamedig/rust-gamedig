@@ -16,12 +16,12 @@ struct QuakeOne;
 impl QuakeClient for QuakeOne {
     type Player = Player;
 
-    fn get_send_header() -> String {
-        "status".to_string()
+    fn get_send_header<'a>() -> &'a str {
+        "status"
     }
 
     fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()> {
-        if bufferer.get_string_utf8_newline()? == "print".to_string() {
+        if bufferer.get_string_utf8_newline()? == *"print" {
             Ok(())
         } else {
             Err(GDError::PacketBad)
@@ -43,7 +43,7 @@ impl QuakeClient for QuakeOne {
 
         let name = match data_iter.next() {
             None => Err(GDError::PacketBad)?,
-            Some(v) => match v.starts_with("\"") && v.ends_with("\"") {
+            Some(v) => match v.starts_with('\"') && v.ends_with('\"') {
                 false => v,
                 true => &v[1..v.len() - 1]
             }.to_string()
