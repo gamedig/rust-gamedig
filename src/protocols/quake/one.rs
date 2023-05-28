@@ -36,7 +36,6 @@ fn get_data(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSetti
     socket.apply_timeout(timeout_settings)?;
 
     socket.send(&[0xFF, 0xFF, 0xFF, 0xFF, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x00])?;
-    //                                         ^ header                         ^
 
     let data = socket.receive(None)?;
     let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
