@@ -21,10 +21,10 @@ impl QuakeClient for QuakeOne {
     }
 
     fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()> {
-        if bufferer.get_string_utf8_newline()? != "print".to_string() {
-            Err(GDError::PacketBad)
-        } else {
+        if bufferer.get_string_utf8_newline()? == "print".to_string() {
             Ok(())
+        } else {
+            Err(GDError::PacketBad)
         }
     }
 
