@@ -86,19 +86,28 @@ fn get_players(bufferer: &mut Bufferer) -> GDResult<Vec<Player>> {
         let data_split = data.split(" ").collect::<Vec<&str>>();
         let mut data_iter = data_split.iter();
 
+        let frags = match data_iter.next() {
+            None => Err(GDError::PacketBad)?,
+            Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
+        };
+
+        let ping = match data_iter.next() {
+            None => Err(GDError::PacketBad)?,
+            Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
+        };
+
+        let name = match data_iter.next() {
+            None => Err(GDError::PacketBad)?,
+            Some(v) => match v.starts_with("\"") && v.ends_with("\"") {
+                false => v,
+                true => &v[1..v.len() - 1]
+            }.to_string()
+        };
+
         players.push(Player {
-            frags: match data_iter.next() {
-                None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
-            },
-            ping: match data_iter.next() {
-                None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?
-            },
-            name: match data_iter.next() {
-                None => Err(GDError::PacketBad)?,
-                Some(v) => v.to_string()
-            },
+            frags,
+            ping,
+            name,
         });
     }
 
