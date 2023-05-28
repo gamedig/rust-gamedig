@@ -16,9 +16,17 @@ keywords = ["server", "query", "game", "check", "status"]
 rust-version = "1.56.1"
 
 [features]
-default = []
-no_games = []
-no_services = []
+default = ["protocol_all", "service_all"]
+games = []
+protocol_valve = ["games"]
+protocol_minecraft = ["games"]
+protocol_gamespy = ["games"]
+protocol_all = ["protocol_valve", "protocol_minecraft", "protocol_gamespy"]
+
+services = []
+service_valve = ["services"]
+service_all = ["service_valve"]
+
 serde = ["dep:serde", "serde/derive"]
 
 [dependencies]
