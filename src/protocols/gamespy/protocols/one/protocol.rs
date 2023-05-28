@@ -11,10 +11,10 @@ use crate::{
 
 use crate::protocols::gamespy::common::has_password;
 use std::collections::HashMap;
-use std::net::Ipv4Addr;
+use std::net::IpAddr;
 
 fn get_server_values(
-    address: &Ipv4Addr,
+    address: &IpAddr,
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
@@ -178,7 +178,7 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
 /// If there are parsing problems using the `query` function, you can directly
 /// get the server's values using this function.
 pub fn query_vars(
-    address: &Ipv4Addr,
+    address: &IpAddr,
     port: u16,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
@@ -188,7 +188,7 @@ pub fn query_vars(
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut server_vars = query_vars(address, port, timeout_settings)?;
 
     let players_maximum = server_vars
