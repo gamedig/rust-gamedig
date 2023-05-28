@@ -25,19 +25,19 @@ pub struct Response<P> {
     pub unused_entries: HashMap<String, String>,
 }
 
-pub(crate) trait Client {
+pub(crate) trait QuakeClient {
     type Player;
 
-    fn get_send_header(&self) -> String;
-    fn validate_received_data(&self, bufferer: &mut Bufferer) -> GDResult<()>;
-    fn parse_player_string(&self, data: Iter<&str>) -> GDResult<Self::Player>;
+    fn get_send_header() -> String;
+    fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()>;
+    fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
-fn get_data(client: &impl Client, address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Bufferer> {
+fn get_data<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Bufferer> {
     let mut socket = UdpSocket::new(address, port)?;
     socket.apply_timeout(timeout_settings)?;
 
-    socket.send(&[&[0xFF, 0xFF, 0xFF, 0xFF], client.get_send_header().into_bytes().as_slice(), &[0x00]].concat())?;
+    socket.send(&[&[0xFF, 0xFF, 0xFF, 0xFF], Client::get_send_header().into_bytes().as_slice(), &[0x00]].concat())?;
 
     let data = socket.receive(None)?;
     let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
@@ -46,7 +46,7 @@ fn get_data(client: &impl Client, address: &Ipv4Addr, port: u16, timeout_setting
         return Err(GDError::PacketBad);
     }
 
-    client.validate_received_data(&mut bufferer)?;
+    Client::validate_received_data(&mut bufferer)?;
 
     Ok(bufferer)
 }
@@ -77,25 +77,25 @@ fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String
     Ok(vars)
 }
 
-fn get_players<C: Client>(client: &C, bufferer: &mut Bufferer) -> GDResult<Vec<C::Player>> {
-    let mut players: Vec<C::Player> = Vec::new();
+fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Client::Player>> {
+    let mut players: Vec<Client::Player> = Vec::new();
 
     while !bufferer.is_remaining_empty() {
         let data = bufferer.get_string_utf8_newline()?;
         let data_split = data.split(" ").collect::<Vec<&str>>();
         let data_iter = data_split.iter();
 
-        players.push(client.parse_player_string(data_iter)?)
+        players.push(Client::parse_player_string(data_iter)?)
     }
 
     Ok(players)
 }
 
-pub(crate) fn client_query<C: Client>(client: C, address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<C::Player>> {
-    let mut bufferer = get_data(&client, address, port, timeout_settings)?;
+pub(crate) fn client_query<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Client::Player>> {
+    let mut bufferer = get_data::<Client>(address, port, timeout_settings)?;
 
     let mut server_vars = get_server_values(&mut bufferer)?;
-    let players = get_players(&client, &mut bufferer)?;
+    let players = get_players::<Client>(&mut bufferer)?;
 
     Ok(Response {
         name: server_vars.remove("hostname")

@@ -2,7 +2,7 @@ use std::net::Ipv4Addr;
 use std::slice::Iter;
 use crate::bufferer::Bufferer;
 use crate::{GDError, GDResult};
-use crate::protocols::quake::types::{Client, Response, client_query};
+use crate::protocols::quake::types::{QuakeClient, Response, client_query};
 use crate::protocols::types::TimeoutSettings;
 
 #[derive(Debug)]
@@ -13,14 +13,14 @@ pub struct Player {
 }
 
 struct QuakeOne;
-impl Client for QuakeOne {
+impl QuakeClient for QuakeOne {
     type Player = Player;
 
-    fn get_send_header(&self) -> String {
+    fn get_send_header() -> String {
         "status".to_string()
     }
 
-    fn validate_received_data(&self, bufferer: &mut Bufferer) -> GDResult<()> {
+    fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()> {
         if bufferer.get_string_utf8_newline()? != "print".to_string() {
             Err(GDError::PacketBad)
         } else {
@@ -28,7 +28,7 @@ impl Client for QuakeOne {
         }
     }
 
-    fn parse_player_string(&self, data: Iter<&str>) -> GDResult<Self::Player> {
+    fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player> {
         let mut data_iter = data;
 
         let frags = match data_iter.next() {
@@ -58,5 +58,5 @@ impl Client for QuakeOne {
 }
 
 pub fn query(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Player>> {
-    client_query(QuakeOne, address, port, timeout_settings)
+    client_query::<QuakeOne>(address, port, timeout_settings)
 }
