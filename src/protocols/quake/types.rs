@@ -29,7 +29,7 @@ pub(crate) trait QuakeClient {
     type Player;
 
     fn get_send_header<'a>() -> &'a str;
-    fn validate_received_data(bufferer: &mut Bufferer) -> GDResult<()>;
+    fn get_response_header<'a>() -> &'a[u8];
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
@@ -46,7 +46,12 @@ fn get_data<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings
         return Err(GDError::PacketBad);
     }
 
-    Client::validate_received_data(&mut bufferer)?;
+    let response_header = Client::get_response_header();
+    if !bufferer.remaining_data().starts_with(response_header) {
+        Err(GDError::PacketBad)?
+    }
+
+    bufferer.move_position_ahead(response_header.len());
 
     Ok(bufferer)
 }
