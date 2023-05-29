@@ -17,8 +17,6 @@ pub struct Response<P> {
     pub players_maximum: u8,
     /// Indicates whether the server requires a password.
     pub has_password: bool,
-    /// Indicates whether the server has cheats enabled.
-    pub cheats_enabled: bool,
     pub frag_limit: u8,
     pub time_limit: u8,
     pub version: String,
@@ -104,15 +102,18 @@ pub(crate) fn client_query<Client: QuakeClient>(address: &IpAddr, port: u16, tim
 
     Ok(Response {
         name: server_vars.remove("hostname")
+            .or(server_vars.remove("sv_hostname"))
             .ok_or(GDError::PacketBad)?,
         map: server_vars.remove("mapname")
             .ok_or(GDError::PacketBad)?,
         players_online: players.len() as u8,
         players_maximum: server_vars.remove("maxclients")
+            .or(server_vars.remove("sv_maxclients"))
             .ok_or(GDError::PacketBad)?
             .parse()
             .map_err(|_| GDError::TypeParse)?,
         has_password: server_vars.remove("needpass")
+            .or(server_vars.remove("g_needpass"))
             .ok_or(GDError::PacketBad)? == "1",
         players,
         frag_limit: server_vars.remove("fraglimit")
@@ -125,8 +126,6 @@ pub(crate) fn client_query<Client: QuakeClient>(address: &IpAddr, port: u16, tim
             .map_err(|_| GDError::TypeParse)?,
         version: server_vars.remove("version")
             .ok_or(GDError::PacketBad)?,
-        cheats_enabled: server_vars.remove("cheats")
-            .ok_or(GDError::PacketBad)? == "1",
         unused_entries: server_vars,
     })
 }
