@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::net::Ipv4Addr;
+use std::net::IpAddr;
 use std::slice::Iter;
 use crate::bufferer::{Bufferer, Endianess};
 use crate::{GDError, GDResult};
@@ -33,7 +33,7 @@ pub(crate) trait QuakeClient {
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
-fn get_data<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Bufferer> {
+fn get_data<Client: QuakeClient>(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Bufferer> {
     let mut socket = UdpSocket::new(address, port)?;
     socket.apply_timeout(timeout_settings)?;
 
@@ -96,7 +96,7 @@ fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Cli
     Ok(players)
 }
 
-pub(crate) fn client_query<Client: QuakeClient>(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Client::Player>> {
+pub(crate) fn client_query<Client: QuakeClient>(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Client::Player>> {
     let mut bufferer = get_data::<Client>(address, port, timeout_settings)?;
 
     let mut server_vars = get_server_values(&mut bufferer)?;
