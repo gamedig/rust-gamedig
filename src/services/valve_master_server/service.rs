@@ -2,10 +2,10 @@ use crate::bufferer::{Bufferer, Endianess};
 use crate::socket::{Socket, UdpSocket};
 use crate::valve_master_server::{Region, SearchFilters};
 use crate::{GDError, GDResult};
-use std::net::Ipv4Addr;
+use std::net::{IpAddr, Ipv4Addr};
 
 /// The default master ip, which is the one for Source.
-pub const DEFAULT_MASTER_IP: Ipv4Addr = Ipv4Addr::new(208, 64, 201, 194); // hl2master.steampowered.com
+pub const DEFAULT_MASTER_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(208, 64, 201, 194)); // hl2master.steampowered.com
 /// The default master port.
 pub const DEFAULT_MASTER_PORT: u16 = 27011;
 
@@ -43,7 +43,7 @@ pub struct ValveMasterServer {
 
 impl ValveMasterServer {
     /// Construct a new struct.
-    pub fn new(master_ip: &Ipv4Addr, master_port: u16) -> GDResult<Self> {
+    pub fn new(master_ip: &IpAddr, master_port: u16) -> GDResult<Self> {
         let socket = UdpSocket::new(master_ip, master_port)?;
         socket.apply_timeout(None)?;
 
@@ -58,7 +58,7 @@ impl ValveMasterServer {
         search_filters: &Option<SearchFilters>,
         last_address_ip: &str,
         last_address_port: u16,
-    ) -> GDResult<Vec<(Ipv4Addr, u16)>> {
+    ) -> GDResult<Vec<(IpAddr, u16)>> {
         let payload = construct_payload(region, search_filters, last_address_ip, last_address_port);
         self.socket.send(&payload)?;
 
@@ -69,9 +69,9 @@ impl ValveMasterServer {
             return Err(GDError::PacketBad);
         }
 
-        let mut ips: Vec<(Ipv4Addr, u16)> = Vec::new();
+        let mut ips: Vec<(IpAddr, u16)> = Vec::new();
         while buf.remaining_length() > 0 {
-            let ip = Ipv4Addr::new(buf.get_u8()?, buf.get_u8()?, buf.get_u8()?, buf.get_u8()?);
+            let ip = IpAddr::V4(Ipv4Addr::new(buf.get_u8()?, buf.get_u8()?, buf.get_u8()?, buf.get_u8()?));
             let port = buf.get_u16()?;
 
             ips.push((ip, port));
@@ -81,8 +81,8 @@ impl ValveMasterServer {
     }
 
     /// Make a complete query.
-    pub fn query(&mut self, region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
-        let mut ips: Vec<(Ipv4Addr, u16)> = Vec::new();
+    pub fn query(&mut self, region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(IpAddr, u16)>> {
+        let mut ips: Vec<(IpAddr, u16)> = Vec::new();
 
         let mut exit_fetching = false;
         let mut last_ip: String = "0.0.0.0".to_string();
@@ -122,7 +122,7 @@ impl ValveMasterServer {
 /// Take only the first response of (what would be a) complete query. This is
 /// faster as it results in less packets being sent, received and processed but
 /// yields less ips.
-pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
+pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(IpAddr, u16)>> {
     let mut master_server = ValveMasterServer::new(&DEFAULT_MASTER_IP, DEFAULT_MASTER_PORT)?;
 
     let mut ips = master_server.query_specific(region, &search_filters, "0.0.0.0", 0)?;
@@ -137,7 +137,7 @@ pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> 
 }
 
 /// Make a complete query.
-pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(Ipv4Addr, u16)>> {
+pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(IpAddr, u16)>> {
     let mut master_server = ValveMasterServer::new(&DEFAULT_MASTER_IP, DEFAULT_MASTER_PORT)?;
 
     master_server.query(region, search_filters)

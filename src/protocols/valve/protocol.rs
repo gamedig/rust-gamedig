@@ -30,7 +30,7 @@ use bzip2_rs::decoder::Decoder;
 
 use crate::protocols::valve::Packet;
 use std::collections::HashMap;
-use std::net::Ipv4Addr;
+use std::net::IpAddr;
 
 #[derive(Debug)]
 #[allow(dead_code)] //remove this later on
@@ -125,7 +125,7 @@ pub(crate) struct ValveProtocol {
 static PACKET_SIZE: usize = 6144;
 
 impl ValveProtocol {
-    pub fn new(address: &Ipv4Addr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+    pub fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address, port)?;
         socket.apply_timeout(timeout_settings)?;
 
@@ -412,7 +412,7 @@ impl ValveProtocol {
 /// (GatherSettings::[default](GatheringSettings::default),
 /// TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(
-    address: &Ipv4Addr,
+    address: &IpAddr,
     port: u16,
     engine: Engine,
     gather_settings: Option<GatheringSettings>,
@@ -429,7 +429,7 @@ pub fn query(
 }
 
 fn get_response(
-    address: &Ipv4Addr,
+    address: &IpAddr,
     port: u16,
     engine: Engine,
     gather_settings: GatheringSettings,

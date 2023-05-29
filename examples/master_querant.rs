@@ -4,7 +4,7 @@ use gamedig::protocols::valve;
 use gamedig::protocols::valve::Engine;
 use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bf1942, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, ffow, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, ss, tf, tf2, tfc, ts, unturned, ut, vr, GDResult, cw};
 use std::env;
-use std::net::Ipv4Addr;
+use std::net::IpAddr;
 
 fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -20,7 +20,7 @@ fn main() -> GDResult<()> {
         return Ok(());
     }
 
-    let ip = &args[2].as_str().parse::<Ipv4Addr>().unwrap();
+    let ip = &args[2].as_str().parse::<IpAddr>().unwrap();
     let port = match args.len() == 4 {
         false => {
             if args[1].starts_with("_") {
