@@ -7,7 +7,7 @@ Protocols:
 1. Added standard and serde derives to `GatheringSettings`.
 
 ### Breaking:
-- Every function that used `address: &str` has been changed to `address: &Ipv4Addr`.
+- Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
 
 Services:
 - Valve Master Query:
