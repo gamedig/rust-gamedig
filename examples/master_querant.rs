@@ -124,6 +124,8 @@ fn main() -> GDResult<()> {
         "ffow" => println!("{:#?}", ffow::query(ip, port)),
         "cw" => println!("{:#?}", cw::query(ip, port)),
         "_quake1" => println!("{:#?}", quake::one::query(ip, port.unwrap(), None)),
+        "_quake2" => println!("{:#?}", quake::two::query(ip, port.unwrap(), None)),
+        "_quake3" => println!("{:#?}", quake::three::query(ip, port.unwrap(), None)),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
