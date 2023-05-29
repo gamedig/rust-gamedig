@@ -21,7 +21,7 @@ impl QuakeClient for QuakeTwo {
     }
 
     fn get_response_header<'a>() -> &'a [u8] {
-        &[0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A]
+        &[0x70, 0x72, 0x69, 0x6E, 0x74, 0x0A]
     }
 
     fn parse_player_string(mut data: Iter<&str>) -> GDResult<Self::Player> {
