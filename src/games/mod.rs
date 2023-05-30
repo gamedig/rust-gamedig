@@ -98,3 +98,5 @@ pub mod cw;
 pub mod quake2;
 /// Quake 1
 pub mod quake1;
+/// Quake 3: Arena
+pub mod quake3a;

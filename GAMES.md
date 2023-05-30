@@ -52,6 +52,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Crysis Wars                        | CW       | GameSpy 3                    |                                                                                                                                                                           |
 | Quake 2                            | QUAKE2   | Quake 2                      |                                                                                                                                                                           |
 | Quake 1                            | QUAKE1   | Quake 1                      |                                                                                                                                                                           |
+| Quake 3: Arena                     | QUAKE3A  | Quake 3                      |                                                                                                                                                                           |
 
 ## Planned to add support:
 _
