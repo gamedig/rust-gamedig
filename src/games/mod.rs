@@ -94,3 +94,5 @@ pub mod ut;
 pub mod vr;
 /// Crysis Wars
 pub mod cw;
+/// Quake 2
+pub mod quake2;

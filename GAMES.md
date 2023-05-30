@@ -50,6 +50,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Serious Sam                        | SS       | GameSpy 1                    | Query Port offset: 1.                                                                                                                                                     |
 | Frontlines: Fuel of War            | FFOW     | Valve Protocol (Proprietary) | Query Port offset: 2.                                                                                                                                                     |
 | Crysis Wars                        | CW       | GameSpy 3                    |                                                                                                                                                                           |
+| Quake 2                            | QUAKE2   | Quake 2                      |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

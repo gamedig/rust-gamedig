@@ -7,6 +7,9 @@ Protocols:
 1. Added standard and serde derives to `GatheringSettings`.
 - Quake 1, 2 and 3 support.
 
+Games:
+- [Quake 2](https://store.steampowered.com/app/2320/Quake_II/) support.
+
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
 

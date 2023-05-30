@@ -2,7 +2,7 @@ use gamedig::protocols::{gamespy, quake};
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::Engine;
-use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bf1942, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, ffow, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, ss, tf, tf2, tfc, ts, unturned, ut, vr, GDResult, cw};
+use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bf1942, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, ffow, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, ss, tf, tf2, tfc, ts, unturned, ut, vr, GDResult, cw, quake2};
 use std::env;
 use std::net::IpAddr;
 
@@ -126,6 +126,7 @@ fn main() -> GDResult<()> {
         "_quake1" => println!("{:#?}", quake::one::query(ip, port.unwrap(), None)),
         "_quake2" => println!("{:#?}", quake::two::query(ip, port.unwrap(), None)),
         "_quake3" => println!("{:#?}", quake::three::query(ip, port.unwrap(), None)),
+        "quake2" => println!("{:#?}", quake2::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
