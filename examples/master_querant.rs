@@ -9,7 +9,7 @@ use std::net::IpAddr;
 fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() == 1 || args[1] == "help".to_string() {
+    if args.len() == 1 || args[1] == *"help" {
         println!("Usage: <game> <ip> <port>");
         println!("       <game> - any game, example: tf2");
         println!("       <ip> - an ip, example: 192.168.0.0");
@@ -23,7 +23,7 @@ fn main() -> GDResult<()> {
     let ip = &args[2].as_str().parse::<IpAddr>().unwrap();
     let port = match args.len() == 4 {
         false => {
-            if args[1].starts_with("_") {
+            if args[1].starts_with('_') {
                 panic!("The port must be specified with an anonymous query.")
             }
 

@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_gdresult_err() {
         let result: GDResult<u32> = Err(GDError::InvalidInput);
-        assert_eq!(result.is_err(), true);
+        assert!(result.is_err());
     }
 
     // Testing the Display trait for the GDError type
