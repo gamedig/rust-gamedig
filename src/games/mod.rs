@@ -102,3 +102,5 @@ pub mod quake1;
 pub mod quake3a;
 /// Hell Let Loose
 pub mod hll;
+/// Soldier of Fortune 2
+pub mod sof2;

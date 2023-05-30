@@ -12,6 +12,7 @@ Games:
 - [Quake 1](https://store.steampowered.com/app/2310/Quake/) support.
 - [Quake 3: Arena](https://store.steampowered.com/app/2200/Quake_III_Arena/) support.
 - [Hell Let Loose](https://store.steampowered.com/app/686810/Hell_Let_Loose/) support.
+- [Soldier of Fortune 2](https://www.gog.com/en/game/soldier_of_fortune_ii_double_helix_gold_edition) support.
 
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
