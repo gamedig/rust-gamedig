@@ -308,6 +308,8 @@ pub enum SteamApp {
     ONSET,
     /// V Rising
     VR,
+    /// Hell Let Loose
+    HLL,
 }
 
 impl SteamApp {
@@ -355,6 +357,7 @@ impl SteamApp {
             SteamApp::OHD => Engine::new_source_with_dedicated(736590, 950900),
             SteamApp::ONSET => Engine::new_source(1105810),
             SteamApp::VR => Engine::new_source(1604030),
+            SteamApp::HLL => Engine::new_source(686810),
         }
     }
 }

@@ -100,3 +100,5 @@ pub mod quake2;
 pub mod quake1;
 /// Quake 3: Arena
 pub mod quake3a;
+/// Hell Let Loose
+pub mod hll;

@@ -11,6 +11,7 @@ Games:
 - [Quake 2](https://store.steampowered.com/app/2320/Quake_II/) support.
 - [Quake 1](https://store.steampowered.com/app/2310/Quake/) support.
 - [Quake 3: Arena](https://store.steampowered.com/app/2200/Quake_III_Arena/) support.
+- [Hell Let Loose](https://store.steampowered.com/app/686810/Hell_Let_Loose/) support.
 
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
