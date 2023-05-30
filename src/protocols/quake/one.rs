@@ -2,7 +2,7 @@ use std::net::IpAddr;
 use std::slice::Iter;
 use crate::{GDError, GDResult};
 use crate::protocols::quake::Response;
-use crate::protocols::quake::client::{QuakeClient, client_query};
+use crate::protocols::quake::client::{QuakeClient, client_query, remove_wrapping_quotes};
 use crate::protocols::types::TimeoutSettings;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -13,9 +13,9 @@ use serde::{Deserialize, Serialize};
 pub struct Player {
     /// Player's server id.
     pub id: u8,
-    pub score: u8,
-    pub time: u8,
-    pub ping: u8,
+    pub score: u16,
+    pub time: u16,
+    pub ping: u16,
     pub name: String,
     pub skin: String,
     pub color_primary: u8,
@@ -54,11 +54,11 @@ impl QuakeClient for QuakeOne {
             },
             name: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.to_string()
+                Some(v) => remove_wrapping_quotes(v).to_string()
             },
             skin: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.to_string()
+                Some(v) => remove_wrapping_quotes(v).to_string()
             },
             color_primary: match data.next() {
                 None => Err(GDError::PacketBad)?,

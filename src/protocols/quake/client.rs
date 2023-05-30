@@ -67,12 +67,12 @@ fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String
 fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Client::Player>> {
     let mut players: Vec<Client::Player> = Vec::new();
 
-    while !bufferer.is_remaining_empty() {
+    while !bufferer.is_remaining_empty() && bufferer.remaining_data() != &[0x00] {
         let data = bufferer.get_string_utf8_newline()?;
         let data_split = data.split(' ').collect::<Vec<&str>>();
         let data_iter = data_split.iter();
 
-        players.push(Client::parse_player_string(data_iter)?)
+        players.push(Client::parse_player_string(data_iter)?);
     }
 
     Ok(players)
@@ -89,6 +89,7 @@ pub(crate) fn client_query<Client: QuakeClient>(address: &IpAddr, port: u16, tim
             .or(server_vars.remove("sv_hostname"))
             .ok_or(GDError::PacketBad)?,
         map: server_vars.remove("mapname")
+            .or(server_vars.remove("map"))
             .ok_or(GDError::PacketBad)?,
         players_online: players.len() as u8,
         players_maximum: server_vars.remove("maxclients")
@@ -96,20 +97,17 @@ pub(crate) fn client_query<Client: QuakeClient>(address: &IpAddr, port: u16, tim
             .ok_or(GDError::PacketBad)?
             .parse()
             .map_err(|_| GDError::TypeParse)?,
-        has_password: server_vars.remove("needpass")
-            .or(server_vars.remove("g_needpass"))
-            .ok_or(GDError::PacketBad)? == "1",
         players,
-        frag_limit: server_vars.remove("fraglimit")
-            .ok_or(GDError::PacketBad)?
-            .parse()
-            .map_err(|_| GDError::TypeParse)?,
-        time_limit: server_vars.remove("timelimit")
-            .ok_or(GDError::PacketBad)?
-            .parse()
-            .map_err(|_| GDError::TypeParse)?,
         version: server_vars.remove("version")
+            .or(server_vars.remove("*version"))
             .ok_or(GDError::PacketBad)?,
         unused_entries: server_vars,
     })
+}
+
+pub(crate) fn remove_wrapping_quotes<'a>(string: &&'a str) -> &'a str {
+    match string.starts_with('\"') && string.ends_with('\"') {
+        false => string,
+        true => &string[1..string.len() - 1]
+    }
 }

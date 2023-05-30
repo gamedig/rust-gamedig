@@ -3,7 +3,7 @@ use std::slice::Iter;
 use crate::{GDError, GDResult};
 use crate::protocols::quake::one::QuakeOne;
 use crate::protocols::quake::Response;
-use crate::protocols::quake::client::{QuakeClient, client_query};
+use crate::protocols::quake::client::{QuakeClient, client_query, remove_wrapping_quotes};
 use crate::protocols::types::TimeoutSettings;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -12,8 +12,8 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
-    pub frags: u8,
-    pub ping: u8,
+    pub frags: u16,
+    pub ping: u16,
     pub name: String
 }
 
@@ -41,10 +41,7 @@ impl QuakeClient for QuakeTwo {
             },
             name: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => match v.starts_with('\"') && v.ends_with('\"') {
-                    false => v,
-                    true => &v[1..v.len() - 1]
-                }.to_string()
+                Some(v) => remove_wrapping_quotes(v).to_string()
             }
         })
     }
