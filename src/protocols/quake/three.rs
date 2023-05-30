@@ -2,7 +2,8 @@ use std::net::IpAddr;
 use std::slice::Iter;
 use crate::GDResult;
 use crate::protocols::quake::two::{Player, QuakeTwo};
-use crate::protocols::quake::types::{QuakeClient, Response, client_query};
+use crate::protocols::quake::Response;
+use crate::protocols::quake::client::{QuakeClient, client_query};
 use crate::protocols::types::TimeoutSettings;
 
 struct QuakeThree;

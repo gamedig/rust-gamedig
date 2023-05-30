@@ -1,11 +1,17 @@
 use std::net::IpAddr;
 use std::slice::Iter;
 use crate::{GDError, GDResult};
-use crate::protocols::quake::types::{QuakeClient, Response, client_query};
+use crate::protocols::quake::Response;
+use crate::protocols::quake::client::{QuakeClient, client_query};
 use crate::protocols::types::TimeoutSettings;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+/// Quake 1 player data.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
+    /// Player's server id.
     pub id: u8,
     pub score: u8,
     pub time: u8,
