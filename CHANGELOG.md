@@ -5,6 +5,7 @@ Who knows what the future holds...
 Protocols:
 - Valve:
 1. Added standard and serde derives to `GatheringSettings`.
+- Quake 1, 2 and 3 support.
 
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
