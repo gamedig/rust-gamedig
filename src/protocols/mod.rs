@@ -12,3 +12,5 @@ pub mod minecraft;
 pub mod types;
 /// Reference: [Server Query](https://developer.valvesoftware.com/wiki/Server_queries)
 pub mod valve;
+/// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/quake1.js)
+pub mod quake;

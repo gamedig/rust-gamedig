@@ -93,19 +93,27 @@ impl Bufferer {
         Ok(value)
     }
 
-    pub fn get_string_utf8(&mut self) -> GDResult<String> {
+    fn get_string_utf8_until(&mut self, until: u8) -> GDResult<String> {
         let sub_buf = self.remaining_data();
         if sub_buf.is_empty() {
             return Err(PacketUnderflow);
         }
 
-        let first_null_position = sub_buf.iter().position(|&x| x == 0).ok_or(PacketBad)?;
+        let first_null_position = sub_buf.iter().position(|&x| x == until).ok_or(PacketBad)?;
         let value = std::str::from_utf8(&sub_buf[.. first_null_position])
             .map_err(|_| PacketBad)?
             .to_string();
 
         self.move_position_ahead(value.len() + 1);
         Ok(value)
+    }
+
+    pub fn get_string_utf8(&mut self) -> GDResult<String> {
+        self.get_string_utf8_until(0)
+    }
+
+    pub fn get_string_utf8_newline(&mut self) -> GDResult<String> {
+        self.get_string_utf8_until(10)
     }
 
     pub fn get_string_utf8_optional(&mut self) -> GDResult<String> {
@@ -167,6 +175,8 @@ impl Bufferer {
     pub fn remaining_data_vec(&self) -> Vec<u8> { self.remaining_data().to_vec() }
 
     pub fn remaining_length(&self) -> usize { self.data_length() - self.position }
+
+    pub fn is_remaining_empty(&self) -> bool { self.remaining_length() == 0 }
 
     pub fn as_endianess(&self, endianess: Endianess) -> Self {
         Bufferer {

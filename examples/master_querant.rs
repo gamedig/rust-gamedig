@@ -1,4 +1,4 @@
-use gamedig::protocols::gamespy;
+use gamedig::protocols::{gamespy, quake};
 use gamedig::protocols::minecraft::LegacyGroup;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::Engine;
@@ -123,6 +123,9 @@ fn main() -> GDResult<()> {
         "_gamespy3_vars" => println!("{:#?}", gamespy::three::query_vars(ip, port.unwrap(), None)),
         "ffow" => println!("{:#?}", ffow::query(ip, port)),
         "cw" => println!("{:#?}", cw::query(ip, port)),
+        "_quake1" => println!("{:#?}", quake::one::query(ip, port.unwrap(), None)),
+        "_quake2" => println!("{:#?}", quake::two::query(ip, port.unwrap(), None)),
+        "_quake3" => println!("{:#?}", quake::three::query(ip, port.unwrap(), None)),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
