@@ -51,6 +51,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Frontlines: Fuel of War            | FFOW     | Valve Protocol (Proprietary) | Query Port offset: 2.                                                                                                                                                     |
 | Crysis Wars                        | CW       | GameSpy 3                    |                                                                                                                                                                           |
 | Quake 2                            | QUAKE2   | Quake 2                      |                                                                                                                                                                           |
+| Quake 1                            | QUAKE1   | Quake 1                      |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

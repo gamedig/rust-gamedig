@@ -9,6 +9,7 @@ Protocols:
 
 Games:
 - [Quake 2](https://store.steampowered.com/app/2320/Quake_II/) support.
+- [Quake 1](https://store.steampowered.com/app/2310/Quake/) support.
 
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).

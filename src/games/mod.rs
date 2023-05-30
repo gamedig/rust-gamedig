@@ -96,3 +96,5 @@ pub mod vr;
 pub mod cw;
 /// Quake 2
 pub mod quake2;
+/// Quake 1
+pub mod quake1;
