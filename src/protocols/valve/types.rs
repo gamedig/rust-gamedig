@@ -377,7 +377,9 @@ pub enum Engine {
 }
 
 impl Engine {
-    pub fn new_source(appid: u32) -> Self { Engine::Source(Some((appid, None))) }
+    pub fn new_source(appid: u32) -> Self {
+        Engine::Source(Some((appid, None)))
+    }
 
     pub fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
         Engine::Source(Some((appid, Some(dedicated_appid))))
@@ -407,7 +409,7 @@ impl Default for GatheringSettings {
 /// fields).
 pub mod game {
     use super::{Server, ServerPlayer};
-    use crate::protocols::valve::types::get_optional_extracted_data;
+    use crate::{protocols::valve::types::get_optional_extracted_data, GenericResponse};
     use std::collections::HashMap;
 
     #[cfg(feature = "serde")]
@@ -509,6 +511,16 @@ pub mod game {
                 keywords,
                 rules: response.rules.unwrap_or_default(),
             }
+        }
+    }
+
+    impl GenericResponse for Response {
+        fn server_name(&self) -> String {
+            self.name.clone()
+        }
+
+        fn server_map(&self) -> String {
+            self.map.clone()
         }
     }
 }

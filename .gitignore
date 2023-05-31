@@ -15,3 +15,5 @@ Cargo.lock
 .vscode/
 
 test_everything.py
+
+src/games/mod.rs

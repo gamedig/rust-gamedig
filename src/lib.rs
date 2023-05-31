@@ -28,6 +28,7 @@ pub mod services;
 
 mod bufferer;
 mod socket;
+mod types;
 mod utils;
 
 pub use errors::*;
@@ -35,3 +36,4 @@ pub use errors::*;
 pub use games::*;
 #[cfg(not(feature = "no_services"))]
 pub use services::*;
+pub use types::*;
