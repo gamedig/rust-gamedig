@@ -1,0 +1,75 @@
+[aliens]
+name = "Alien Swarm"
+protocol = "valve"
+
+[aoc]
+name = "Age of Chivalry"
+protocol = ""
+
+[arma2oa]
+name = "ARMA 2: Operation Arrowhead"
+protocol = ""
+
+[ase]
+name = "ARK: Survival Evolved"
+protocol = ""
+
+[asrd]
+name = "Alien Swarm: Reactive Drop"
+protocol = ""
+
+[avorion]
+name = "Avorion"
+protocol = ""
+
+[bat1944]
+name = "Battalion 1944"
+protocol = ""
+
+[bb2]
+name = "BrainBread 2"
+protocol = ""
+
+[bf1942]
+name = "Battlefield 1942"
+protocol = ""
+
+[bm]
+name = "Black Mesa"
+protocol = ""
+
+[bo]
+name = "Ballistic Overkill"
+protocol = ""
+
+[ccure]
+name = "Codename CURE"
+protocol = ""
+
+[cosu]
+name = "Colony Survival"
+protocol = ""
+
+[cs]
+name = "Counter-Strike"
+protocol = "valve"
+
+[cscz]
+name = "Counter Strike: Condition Zero"
+protocol = "valve"
+
+[csgo]
+name = "Counter-Strike: Global Offensive"
+protocol = "valve"
+
+[css]
+name = "Counter-Strike: Source"
+protocol = ""
+
+[dod]
+name = "Day of Defeat"
+protocol = ""
+
+[tf2]
+name = "Team Fortress 2"
+protocol = "valve"

@@ -3,6 +3,8 @@ use std::collections::HashMap;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+use crate::GenericResponse;
+
 /// A player’s details.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -38,4 +40,14 @@ pub struct Response {
     pub players: Vec<Player>,
     pub tournament: bool,
     pub unused_entries: HashMap<String, String>,
+}
+
+impl GenericResponse for Response {
+    fn server_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn server_map(&self) -> String {
+        self.map.clone()
+    }
 }

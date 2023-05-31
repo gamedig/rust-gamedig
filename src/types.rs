@@ -13,22 +13,3 @@ pub trait GameInfo {
     fn protocol(&self) -> &'static str;
     fn query(&self, address: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn GenericResponse>>;
 }
-
-/*
-#[derive(Clone)]
-pub struct GameInfo {
-    pub name: &'static str,
-    pub protocol: &'static str,
-    pub query: QueryFunction,
-}
-
-impl std::fmt::Debug for GameInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "GameInfo{{ name={:?}, protocol={:?} }}",
-            self.name, self.protocol,
-        )
-    }
-}
-*/
