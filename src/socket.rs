@@ -28,10 +28,8 @@ pub struct TcpSocket {
 
 impl Socket for TcpSocket {
     fn new(address: &SocketAddr) -> GDResult<Self> {
-        let complete_address = address.to_string();
-
         Ok(Self {
-            socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?,
+            socket: net::TcpStream::connect(address).map_err(|_| SocketConnect)?,
         })
     }
 
@@ -60,17 +58,16 @@ impl Socket for TcpSocket {
 
 pub struct UdpSocket {
     socket: net::UdpSocket,
-    complete_address: String,
+    address: SocketAddr,
 }
 
 impl Socket for UdpSocket {
     fn new(address: &SocketAddr) -> GDResult<Self> {
-        let complete_address = address.to_string();
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|_| SocketBind)?;
 
         Ok(Self {
             socket,
-            complete_address,
+            address: address.clone(),
         })
     }
 
@@ -84,7 +81,7 @@ impl Socket for UdpSocket {
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
         self.socket
-            .send_to(data, &self.complete_address)
+            .send_to(data, &self.address)
             .map_err(|_| PacketSend)?;
         Ok(())
     }
