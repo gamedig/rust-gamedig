@@ -1,9 +1,10 @@
 [package]
 name = "gamedig"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 authors = [
     "CosminPerRam [https://github.com/CosminPerRam]",
+    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
     "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
 ]
 license = "MIT"
