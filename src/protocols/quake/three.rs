@@ -15,7 +15,7 @@ impl QuakeClient for QuakeThree {
     }
 
     fn get_response_header<'a>() -> &'a [u8] {
-        &[0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6F, 0x6E, 0x73, 0x65, 0x0A]
+        "statusResponse\n".as_bytes()
     }
 
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player> {
