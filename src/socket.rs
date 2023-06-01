@@ -1,6 +1,5 @@
 use crate::{
     protocols::types::TimeoutSettings,
-    utils::address_and_port_as_string,
     GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect},
     GDResult,
 };
@@ -9,12 +8,12 @@ use std::{
     io::{Read, Write},
     net,
 };
-use std::net::IpAddr;
+use std::net::SocketAddr;
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
-    fn new(address: &IpAddr, port: u16) -> GDResult<Self>
+    fn new(address: &SocketAddr) -> GDResult<Self>
     where Self: Sized;
 
     fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()>;
@@ -28,8 +27,8 @@ pub struct TcpSocket {
 }
 
 impl Socket for TcpSocket {
-    fn new(address: &IpAddr, port: u16) -> GDResult<Self> {
-        let complete_address = address_and_port_as_string(address, port);
+    fn new(address: &SocketAddr) -> GDResult<Self> {
+        let complete_address = address.to_string();
 
         Ok(Self {
             socket: net::TcpStream::connect(complete_address).map_err(|_| SocketConnect)?,
@@ -65,8 +64,8 @@ pub struct UdpSocket {
 }
 
 impl Socket for UdpSocket {
-    fn new(address: &IpAddr, port: u16) -> GDResult<Self> {
-        let complete_address = address_and_port_as_string(address, port);
+    fn new(address: &SocketAddr) -> GDResult<Self> {
+        let complete_address = address.to_string();
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|_| SocketBind)?;
 
         Ok(Self {
@@ -116,10 +115,8 @@ mod tests {
             stream.write(&buf).unwrap();
         });
 
-        let address = bound_address.ip();
-
         // Create a TCP socket and send a message to the server
-        let mut socket = TcpSocket::new(&address, bound_address.port()).unwrap();
+        let mut socket = TcpSocket::new(&bound_address).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -149,10 +146,8 @@ mod tests {
             socket.send_to(&buf, src_addr).unwrap();
         });
 
-        let address = bound_address.ip();
-
         // Create a UDP socket and send a message to the server
-        let mut socket = UdpSocket::new(&address, bound_address.port()).unwrap();
+        let mut socket = UdpSocket::new(&bound_address).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 

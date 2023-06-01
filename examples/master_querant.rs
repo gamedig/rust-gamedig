@@ -4,7 +4,7 @@ use gamedig::protocols::valve;
 use gamedig::protocols::valve::Engine;
 use gamedig::{aliens, aoc, arma2oa, ase, asrd, avorion, bat1944, bb2, bf1942, bm, bo, ccure, cosu, cs, cscz, csgo, css, dod, dods, doi, dst, ffow, gm, hl2dm, hldms, ins, insmic, inss, l4d, l4d2, mc, ohd, onset, pz, ror2, rust, sc, sdtd, ss, tf, tf2, tfc, ts, unturned, ut, vr, GDResult, cw, quake2, quake1, quake3a, hll, sof2};
 use std::env;
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 
 fn main() -> GDResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -31,6 +31,7 @@ fn main() -> GDResult<()> {
         }
         true => Some(args[3].parse::<u16>().expect("Invalid port!")),
     };
+    let address = &SocketAddr::new(ip.clone(), port.unwrap_or(0));
 
     match args[1].as_str() {
         "aliens" => println!("{:#?}", aliens::query(ip, port)?),
@@ -52,19 +53,19 @@ fn main() -> GDResult<()> {
         "_src" => {
             println!(
                 "{:#?}",
-                valve::query(ip, port.unwrap(), Engine::Source(None), None, None)?
+                valve::query(address, Engine::Source(None), None, None)?
             )
         }
         "_gld" => {
             println!(
                 "{:#?}",
-                valve::query(ip, port.unwrap(), Engine::GoldSrc(false), None, None)?
+                valve::query(address, Engine::GoldSrc(false), None, None)?
             )
         }
         "_gld_f" => {
             println!(
                 "{:#?}",
-                valve::query(ip, port.unwrap(), Engine::GoldSrc(true), None, None)?
+                valve::query(address, Engine::GoldSrc(true), None, None)?
             )
         }
         "mc" => println!("{:#?}", mc::query(ip, port)?),
@@ -114,18 +115,18 @@ fn main() -> GDResult<()> {
         "avorion" => println!("{:#?}", avorion::query(ip, port)?),
         "ohd" => println!("{:#?}", ohd::query(ip, port)?),
         "vr" => println!("{:#?}", vr::query(ip, port)?),
-        "_gamespy1" => println!("{:#?}", gamespy::one::query(ip, port.unwrap(), None)),
-        "_gamespy1_vars" => println!("{:#?}", gamespy::one::query_vars(ip, port.unwrap(), None)),
+        "_gamespy1" => println!("{:#?}", gamespy::one::query(address, None)),
+        "_gamespy1_vars" => println!("{:#?}", gamespy::one::query_vars(address, None)),
         "ut" => println!("{:#?}", ut::query(ip, port)),
         "bf1942" => println!("{:#?}", bf1942::query(ip, port)),
         "ss" => println!("{:#?}", ss::query(ip, port)),
-        "_gamespy3" => println!("{:#?}", gamespy::three::query(ip, port.unwrap(), None)),
-        "_gamespy3_vars" => println!("{:#?}", gamespy::three::query_vars(ip, port.unwrap(), None)),
+        "_gamespy3" => println!("{:#?}", gamespy::three::query(address, None)),
+        "_gamespy3_vars" => println!("{:#?}", gamespy::three::query_vars(address, None)),
         "ffow" => println!("{:#?}", ffow::query(ip, port)),
         "cw" => println!("{:#?}", cw::query(ip, port)),
-        "_quake1" => println!("{:#?}", quake::one::query(ip, port.unwrap(), None)),
-        "_quake2" => println!("{:#?}", quake::two::query(ip, port.unwrap(), None)),
-        "_quake3" => println!("{:#?}", quake::three::query(ip, port.unwrap(), None)),
+        "_quake1" => println!("{:#?}", quake::one::query(address, None)),
+        "_quake2" => println!("{:#?}", quake::two::query(address, None)),
+        "_quake3" => println!("{:#?}", quake::three::query(address, None)),
         "quake2" => println!("{:#?}", quake2::query(ip, port)?),
         "quake1" => println!("{:#?}", quake1::query(ip, port)?),
         "quake3a" => println!("{:#?}", quake3a::query(ip, port)?),

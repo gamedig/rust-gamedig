@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::SocketAddr;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -16,8 +16,8 @@ pub struct LegacyV1_6 {
 }
 
 impl LegacyV1_6 {
-    fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = TcpSocket::new(address, port)?;
+    fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = TcpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
         Ok(Self { socket })
@@ -93,7 +93,7 @@ impl LegacyV1_6 {
         LegacyV1_6::get_response(&mut buffer)
     }
 
-    pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        LegacyV1_6::new(address, port, timeout_settings)?.get_info()
+    pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+        LegacyV1_6::new(address, timeout_settings)?.get_info()
     }
 }
