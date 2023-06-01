@@ -14,8 +14,8 @@ impl QuakeClient for QuakeThree {
         "getstatus"
     }
 
-    fn get_response_header<'a>() -> &'a [u8] {
-        "statusResponse\n".as_bytes()
+    fn get_response_header<'a>() -> &'a str {
+        "statusResponse\n"
     }
 
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player> {

@@ -30,8 +30,8 @@ impl QuakeClient for QuakeOne {
         "status"
     }
 
-    fn get_response_header<'a>() -> &'a [u8] {
-        "n".as_bytes()
+    fn get_response_header<'a>() -> &'a str {
+        "n"
     }
 
     fn parse_player_string(mut data: Iter<&str>) -> GDResult<Self::Player> {
