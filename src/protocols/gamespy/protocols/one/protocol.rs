@@ -8,17 +8,15 @@ use crate::{
     GDError,
     GDResult,
 };
-
 use crate::protocols::gamespy::common::has_password;
 use std::collections::HashMap;
-use std::net::IpAddr;
+use std::net::SocketAddr;
 
 fn get_server_values(
-    address: &IpAddr,
-    port: u16,
+    address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    let mut socket = UdpSocket::new(address, port)?;
+    let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
 
     socket.send("\\status\\xserverquery".as_bytes())?;
@@ -178,18 +176,17 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
 /// If there are parsing problems using the `query` function, you can directly
 /// get the server's values using this function.
 pub fn query_vars(
-    address: &IpAddr,
-    port: u16,
+    address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    get_server_values(address, port, timeout_settings)
+    get_server_values(address, timeout_settings)
 }
 
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let mut server_vars = query_vars(address, port, timeout_settings)?;
+pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let mut server_vars = query_vars(address, timeout_settings)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")

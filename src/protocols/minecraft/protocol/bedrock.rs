@@ -1,7 +1,7 @@
 // This file has code that has been documented by the NodeJS GameDig library
 // (MIT) from https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
 
-use std::net::IpAddr;
+use std::net::SocketAddr;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -19,8 +19,8 @@ pub struct Bedrock {
 }
 
 impl Bedrock {
-    fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address, port)?;
+    fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = UdpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
         Ok(Self { socket })
@@ -93,7 +93,7 @@ impl Bedrock {
         })
     }
 
-    pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
-        Bedrock::new(address, port, timeout_settings)?.get_info()
+    pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
+        Bedrock::new(address, timeout_settings)?.get_info()
     }
 }

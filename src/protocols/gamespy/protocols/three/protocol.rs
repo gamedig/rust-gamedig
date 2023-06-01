@@ -5,7 +5,7 @@ use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
 use std::collections::HashMap;
-use std::net::IpAddr;
+use std::net::SocketAddr;
 
 const THIS_SESSION_ID: u32 = 1;
 
@@ -43,8 +43,8 @@ struct GameSpy3 {
 const PACKET_SIZE: usize = 2048;
 
 impl GameSpy3 {
-    fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address, port)?;
+    fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = UdpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
         Ok(Self { socket })
@@ -104,8 +104,8 @@ impl GameSpy3 {
     }
 }
 
-fn get_server_packets(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<Vec<u8>>> {
-    let mut gs3 = GameSpy3::new(address, port, timeout_settings)?;
+fn get_server_packets(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<Vec<u8>>> {
+    let mut gs3 = GameSpy3::new(address, timeout_settings)?;
 
     let challenge = gs3.make_initial_handshake()?;
     gs3.send_data_request(challenge)?;
@@ -165,11 +165,10 @@ fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
 /// If there are parsing problems using the `query` function, you can directly
 /// get the server's values using this function.
 pub fn query_vars(
-    address: &IpAddr,
-    port: u16,
+    address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    let packets = get_server_packets(address, port, timeout_settings)?;
+    let packets = get_server_packets(address, timeout_settings)?;
 
     let mut vars = HashMap::new();
 
@@ -308,8 +307,8 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 /// Query a server by providing the address, the port and timeout settings.
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
-pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let packets = get_server_packets(address, port, timeout_settings)?;
+pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let packets = get_server_packets(address, timeout_settings)?;
 
     let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
 

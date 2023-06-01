@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::SocketAddr;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -31,8 +31,8 @@ pub struct Java {
 }
 
 impl Java {
-    fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = TcpSocket::new(address, port)?;
+    fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = TcpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
         Ok(Self { socket })
@@ -139,7 +139,7 @@ impl Java {
         })
     }
 
-    pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        Java::new(address, port, timeout_settings)?.get_info()
+    pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
+        Java::new(address, timeout_settings)?.get_info()
     }
 }

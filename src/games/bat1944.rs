@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 use crate::{
     protocols::valve::{self, game, SteamApp},
     GDError::TypeParse,
@@ -7,8 +7,7 @@ use crate::{
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<game::Response> {
     let mut valve_response = valve::query(
-        address,
-        port.unwrap_or(7780),
+        &SocketAddr::new(*address, port.unwrap_or(7780)),
         SteamApp::BAT1944.as_engine(),
         None,
         None,

@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::net::SocketAddr;
 use std::slice::Iter;
 use crate::{GDError, GDResult};
 use crate::protocols::quake::one::QuakeOne;
@@ -47,6 +47,6 @@ impl QuakeClient for QuakeTwo {
     }
 }
 
-pub fn query(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Player>> {
-    client_query::<QuakeTwo>(address, port, timeout_settings)
+pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Player>> {
+    client_query::<QuakeTwo>(address, timeout_settings)
 }

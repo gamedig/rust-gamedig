@@ -30,7 +30,7 @@ use bzip2_rs::decoder::Decoder;
 
 use crate::protocols::valve::Packet;
 use std::collections::HashMap;
-use std::net::IpAddr;
+use std::net::SocketAddr;
 
 #[derive(Debug)]
 #[allow(dead_code)] //remove this later on
@@ -125,8 +125,8 @@ pub(crate) struct ValveProtocol {
 static PACKET_SIZE: usize = 6144;
 
 impl ValveProtocol {
-    pub fn new(address: &IpAddr, port: u16, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address, port)?;
+    pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = UdpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
         Ok(Self { socket })
@@ -412,8 +412,7 @@ impl ValveProtocol {
 /// (GatherSettings::[default](GatheringSettings::default),
 /// TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(
-    address: &IpAddr,
-    port: u16,
+    address: &SocketAddr,
     engine: Engine,
     gather_settings: Option<GatheringSettings>,
     timeout_settings: Option<TimeoutSettings>,
@@ -421,7 +420,6 @@ pub fn query(
     let response_gather_settings = gather_settings.unwrap_or_default();
     get_response(
         address,
-        port,
         engine,
         response_gather_settings,
         timeout_settings,
@@ -429,13 +427,12 @@ pub fn query(
 }
 
 fn get_response(
-    address: &IpAddr,
-    port: u16,
+    address: &SocketAddr,
     engine: Engine,
     gather_settings: GatheringSettings,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response> {
-    let mut client = ValveProtocol::new(address, port, timeout_settings)?;
+    let mut client = ValveProtocol::new(address, timeout_settings)?;
 
     let info = client.get_server_info(&engine)?;
     let protocol = info.protocol;
