@@ -16,6 +16,7 @@ Games:
 
 ### Breaking:
 - Every function that used `&str` for the address has been changed to `&IpAddr` (thanks [@Douile](https://github.com/Douile) for the re-re-write).
+- Protocols now use `&SocketAddr` instead of `address: &str, port: u16`.
 
 Services:
 - Valve Master Query:
