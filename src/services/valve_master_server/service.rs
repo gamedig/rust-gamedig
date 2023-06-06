@@ -5,8 +5,9 @@ use crate::{GDError, GDResult};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 /// The default master ip, which is the one for Source.
-pub const DEFAULT_MASTER_ADDRESS: SocketAddr
-    = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(208, 64, 201, 194)), 27011); // hl2master.steampowered.com
+pub fn default_master_address() -> SocketAddr {
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(208, 64, 201, 194)), 27011) // hl2master.steampowered.com
+}
 
 fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &str, last_port: u16) -> Vec<u8> {
     let filters_bytes: Vec<u8> = match filters {
@@ -122,7 +123,7 @@ impl ValveMasterServer {
 /// faster as it results in less packets being sent, received and processed but
 /// yields less ips.
 pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(IpAddr, u16)>> {
-    let mut master_server = ValveMasterServer::new(&DEFAULT_MASTER_ADDRESS)?;
+    let mut master_server = ValveMasterServer::new(&default_master_address())?;
 
     let mut ips = master_server.query_specific(region, &search_filters, "0.0.0.0", 0)?;
 
@@ -137,7 +138,7 @@ pub fn query_singular(region: Region, search_filters: Option<SearchFilters>) -> 
 
 /// Make a complete query.
 pub fn query(region: Region, search_filters: Option<SearchFilters>) -> GDResult<Vec<(IpAddr, u16)>> {
-    let mut master_server = ValveMasterServer::new(&DEFAULT_MASTER_ADDRESS)?;
+    let mut master_server = ValveMasterServer::new(&default_master_address())?;
 
     master_server.query(region, search_filters)
 }

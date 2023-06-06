@@ -14,7 +14,7 @@ documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.56.1"
+rust-version = "1.60.0"
 
 [features]
 default = []
