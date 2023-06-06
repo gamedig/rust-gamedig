@@ -15,7 +15,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
+    - name: Run Check
+      run: cargo check --verbose
+    - name: Run Build
       run: cargo build --verbose
-    - name: Run tests
+    - name: Run Tests
       run: cargo test --verbose
+    - name: Install MSRV
+      with:
+        toolchain: 1.60.0
+        override: true
+    - name: Run MSRV
+      run: cargo build
