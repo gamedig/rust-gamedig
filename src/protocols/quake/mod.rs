@@ -1,10 +1,17 @@
-
 pub mod one;
-pub mod two;
 pub mod three;
+pub mod two;
 
 /// All types used by the implementation.
 pub mod types;
 pub use types::*;
 
 mod client;
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum QuakeVersion {
+    One,
+    Two,
+    Three,
+}

@@ -4,6 +4,7 @@
 
 use crate::{
     bufferer::Bufferer,
+    protocols::GenericResponse,
     GDError::{PacketBad, UnknownEnumCast},
     GDResult,
 };
@@ -68,6 +69,24 @@ pub struct JavaResponse {
     pub enforces_secure_chat: Option<bool>,
     /// Tell's the server type.
     pub server_type: Server,
+}
+
+impl From<JavaResponse> for GenericResponse {
+    fn from(r: JavaResponse) -> Self {
+        let clone = r.clone();
+        Self {
+            server_name: None,
+            server_description: Some(r.description),
+            server_game: Some(String::from("Minecraft")),
+            server_game_version: Some(r.version_name),
+            server_map: None,
+            players_maximum: Some(r.players_maximum.into()),
+            players_online: Some(r.players_online.into()),
+            players_bots: None,
+            has_password: None,
+            inner: crate::protocols::SpecificResponse::Minecraft(clone),
+        }
+    }
 }
 
 /// A Bedrock Edition query response.

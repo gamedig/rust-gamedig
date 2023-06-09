@@ -1,6 +1,8 @@
-use std::collections::HashMap;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+use crate::protocols::GenericResponse;
 
 /// General server information's.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -20,4 +22,30 @@ pub struct Response<P> {
     pub version: String,
     /// Other server entries that weren't used.
     pub unused_entries: HashMap<String, String>,
+}
+
+impl<T: Clone> From<Response<T>> for GenericResponse {
+    fn from(r: Response<T>) -> Self {
+        let clone = r.clone();
+        Self {
+            server_name: Some(r.name),
+            server_description: None,
+            server_game: None,
+            server_game_version: Some(r.version),
+            server_map: Some(r.map),
+            players_maximum: Some(r.players_maximum.into()),
+            players_online: Some(r.players_online.into()),
+            players_bots: None,
+            has_password: None,
+            inner: crate::protocols::SpecificResponse::Quake(Response::<()> {
+                players: vec![],
+                name: clone.name,
+                map: clone.map,
+                players_maximum: clone.players_maximum,
+                players_online: clone.players_online,
+                version: clone.version,
+                unused_entries: clone.unused_entries,
+            }),
+        }
+    }
 }

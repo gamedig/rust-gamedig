@@ -23,6 +23,16 @@ mod legacy_bv1_8;
 mod legacy_v1_4;
 mod legacy_v1_6;
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum MinecraftVersion {
+    Bedrock,
+    Java,
+    LegacyBV1_8,
+    LegacyV1_4,
+    LegacyV1_6,
+}
+
 /// Queries a Minecraft server with all the protocol variants one by one (Java
 /// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
