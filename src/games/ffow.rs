@@ -1,9 +1,9 @@
-use std::net::{IpAddr, SocketAddr};
 use crate::protocols::types::TimeoutSettings;
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::GDResult;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, SocketAddr};
 
 /// The query response.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -47,8 +47,15 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
     query_with_timeout(address, port, TimeoutSettings::default())
 }
 
-pub fn query_with_timeout(address: &IpAddr, port: Option<u16>, timeout_settings: TimeoutSettings) -> GDResult<Response> {
-    let mut client = ValveProtocol::new(&SocketAddr::new(*address, port.unwrap_or(5478)), Some(timeout_settings))?;
+pub fn query_with_timeout(
+    address: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: TimeoutSettings,
+) -> GDResult<Response> {
+    let mut client = ValveProtocol::new(
+        &SocketAddr::new(*address, port.unwrap_or(5478)),
+        Some(timeout_settings),
+    )?;
     let mut buffer = client.get_request_data(
         &Engine::GoldSrc(true),
         0,

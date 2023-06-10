@@ -1,8 +1,8 @@
-use std::net::{IpAddr, SocketAddr};
 use crate::{
     protocols::valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
     GDResult,
 };
+use std::net::{IpAddr, SocketAddr};
 
 use std::collections::HashMap;
 

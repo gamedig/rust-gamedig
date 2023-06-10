@@ -1,7 +1,6 @@
-
 pub mod one;
-pub mod two;
 pub mod three;
+pub mod two;
 
 /// All types used by the implementation.
 pub mod types;

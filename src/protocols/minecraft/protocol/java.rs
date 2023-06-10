@@ -1,4 +1,3 @@
-use std::net::SocketAddr;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -9,6 +8,7 @@ use crate::{
     GDError::{JsonParse, PacketBad},
     GDResult,
 };
+use std::net::SocketAddr;
 
 use serde_json::Value;
 

@@ -4,11 +4,11 @@ use crate::{
     GDResult,
 };
 
+use std::net::SocketAddr;
 use std::{
     io::{Read, Write},
     net,
 };
-use std::net::SocketAddr;
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 

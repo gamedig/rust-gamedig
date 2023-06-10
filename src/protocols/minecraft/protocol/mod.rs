@@ -1,4 +1,3 @@
-use std::net::SocketAddr;
 use crate::{
     protocols::minecraft::{
         protocol::{
@@ -16,6 +15,7 @@ use crate::{
     GDError::AutoQuery,
     GDResult,
 };
+use std::net::SocketAddr;
 
 mod bedrock;
 mod java;

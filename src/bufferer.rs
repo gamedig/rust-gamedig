@@ -108,13 +108,9 @@ impl Bufferer {
         Ok(value)
     }
 
-    pub fn get_string_utf8(&mut self) -> GDResult<String> {
-        self.get_string_utf8_until(0)
-    }
+    pub fn get_string_utf8(&mut self) -> GDResult<String> { self.get_string_utf8_until(0) }
 
-    pub fn get_string_utf8_newline(&mut self) -> GDResult<String> {
-        self.get_string_utf8_until(10)
-    }
+    pub fn get_string_utf8_newline(&mut self) -> GDResult<String> { self.get_string_utf8_until(10) }
 
     pub fn get_string_utf8_optional(&mut self) -> GDResult<String> {
         match self.get_string_utf8() {

@@ -1,3 +1,4 @@
+use crate::protocols::gamespy::common::has_password;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -8,7 +9,6 @@ use crate::{
     GDError,
     GDResult,
 };
-use crate::protocols::gamespy::common::has_password;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
