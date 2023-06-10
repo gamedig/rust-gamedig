@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use std::net::SocketAddr;
-use std::slice::Iter;
 use crate::bufferer::{Bufferer, Endianess};
-use crate::{GDError, GDResult};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::{GDError, GDResult};
+use std::collections::HashMap;
+use std::net::SocketAddr;
+use std::slice::Iter;
 
 pub(crate) trait QuakeClient {
     type Player;
@@ -15,11 +15,21 @@ pub(crate) trait QuakeClient {
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
-fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Bufferer> {
+fn get_data<Client: QuakeClient>(
+    address: &SocketAddr,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Bufferer> {
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
 
-    socket.send(&[&[0xFF, 0xFF, 0xFF, 0xFF], Client::get_send_header().as_bytes(), &[0x00]].concat())?;
+    socket.send(
+        &[
+            &[0xFF, 0xFF, 0xFF, 0xFF],
+            Client::get_send_header().as_bytes(),
+            &[0x00],
+        ]
+        .concat(),
+    )?;
 
     let data = socket.receive(None)?;
     let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
@@ -78,27 +88,34 @@ fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Cli
     Ok(players)
 }
 
-pub(crate) fn client_query<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response<Client::Player>> {
+pub(crate) fn client_query<Client: QuakeClient>(
+    address: &SocketAddr,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Response<Client::Player>> {
     let mut bufferer = get_data::<Client>(address, timeout_settings)?;
 
     let mut server_vars = get_server_values(&mut bufferer)?;
     let players = get_players::<Client>(&mut bufferer)?;
 
     Ok(Response {
-        name: server_vars.remove("hostname")
+        name: server_vars
+            .remove("hostname")
             .or(server_vars.remove("sv_hostname"))
             .ok_or(GDError::PacketBad)?,
-        map: server_vars.remove("mapname")
+        map: server_vars
+            .remove("mapname")
             .or(server_vars.remove("map"))
             .ok_or(GDError::PacketBad)?,
         players_online: players.len() as u8,
-        players_maximum: server_vars.remove("maxclients")
+        players_maximum: server_vars
+            .remove("maxclients")
             .or(server_vars.remove("sv_maxclients"))
             .ok_or(GDError::PacketBad)?
             .parse()
             .map_err(|_| GDError::TypeParse)?,
         players,
-        version: server_vars.remove("version")
+        version: server_vars
+            .remove("version")
             .or(server_vars.remove("*version"))
             .ok_or(GDError::PacketBad)?,
         unused_entries: server_vars,
@@ -108,6 +125,6 @@ pub(crate) fn client_query<Client: QuakeClient>(address: &SocketAddr, timeout_se
 pub(crate) fn remove_wrapping_quotes<'a>(string: &&'a str) -> &'a str {
     match string.starts_with('\"') && string.ends_with('\"') {
         false => string,
-        true => &string[1..string.len() - 1]
+        true => &string[1 .. string.len() - 1],
     }
 }

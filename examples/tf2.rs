@@ -2,7 +2,7 @@ use gamedig::games::tf2;
 
 fn main() {
     let response = tf2::query(&"127.0.0.1".parse().unwrap(), None);
-        // or Some(27015), None is the default protocol port (which is 27015)
+    // or Some(27015), None is the default protocol port (which is 27015)
 
     match response {
         // Result type, must check what it is...

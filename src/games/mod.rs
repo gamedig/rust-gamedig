@@ -34,6 +34,8 @@ pub mod cscz;
 pub mod csgo;
 /// Counter-Strike: Source
 pub mod css;
+/// Crysis Wars
+pub mod cw;
 /// Day of Defeat
 pub mod dod;
 /// Day of Defeat: Source
@@ -50,6 +52,8 @@ pub mod gm;
 pub mod hl2dm;
 /// Half-Life Deathmatch: Source
 pub mod hldms;
+/// Hell Let Loose
+pub mod hll;
 /// Insurgency
 pub mod ins;
 /// Insurgency: Modern Infantry Combat
@@ -68,6 +72,12 @@ pub mod ohd;
 pub mod onset;
 /// Project Zomboid
 pub mod pz;
+/// Quake 1
+pub mod quake1;
+/// Quake 2
+pub mod quake2;
+/// Quake 3: Arena
+pub mod quake3a;
 /// Risk of Rain 2
 pub mod ror2;
 /// Rust
@@ -76,6 +86,8 @@ pub mod rust;
 pub mod sc;
 /// 7 Days To Die
 pub mod sdtd;
+/// Soldier of Fortune 2
+pub mod sof2;
 /// Serious Sam
 pub mod ss;
 /// The Forest
@@ -92,15 +104,3 @@ pub mod unturned;
 pub mod ut;
 /// V Rising
 pub mod vr;
-/// Crysis Wars
-pub mod cw;
-/// Quake 2
-pub mod quake2;
-/// Quake 1
-pub mod quake1;
-/// Quake 3: Arena
-pub mod quake3a;
-/// Hell Let Loose
-pub mod hll;
-/// Soldier of Fortune 2
-pub mod sof2;
