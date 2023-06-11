@@ -17,9 +17,6 @@ use crate::{
     GDResult,
 };
 
-#[cfg(feature = "serde")]
-use serde::{Serialize,Deserialize};
-
 mod bedrock;
 mod java;
 mod legacy_bv1_8;

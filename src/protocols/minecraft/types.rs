@@ -4,7 +4,7 @@
 
 use crate::{
     bufferer::Bufferer,
-    protocols::GenericResponse,
+    protocols::{GenericResponse, types::SpecificResponse},
     GDError::{PacketBad, UnknownEnumCast},
     GDResult,
 };
@@ -44,6 +44,13 @@ pub struct Player {
     pub id: String,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum VersionedExtraResponse {
+    Bedrock(BedrockExtraResponse),
+    Java(JavaExtraResponse),
+}
+
 /// A Java query response.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -71,9 +78,26 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct JavaExtraResponse {
+    /// Version protocol, example: 760 (for 1.19.2). Note that for versions
+    /// below 1.6 this field is always -1.
+    pub version_protocol: i32,
+    /// Some online players (can be missing).
+    pub players_sample: Option<Vec<Player>>,
+    /// The favicon (can be missing).
+    pub favicon: Option<String>,
+    /// Tells if the chat preview is enabled (can be missing).
+    pub previews_chat: Option<bool>,
+    /// Tells if secure chat is enforced (can be missing).
+    pub enforces_secure_chat: Option<bool>,
+    /// Tell's the server type.
+    pub server_type: Server,
+}
+
 impl From<JavaResponse> for GenericResponse {
     fn from(r: JavaResponse) -> Self {
-        let clone = r.clone();
         Self {
             name: None,
             description: Some(r.description),
@@ -84,7 +108,14 @@ impl From<JavaResponse> for GenericResponse {
             players_online: r.players_online.into(),
             players_bots: None,
             has_password: None,
-            inner: crate::protocols::SpecificResponse::Minecraft(clone),
+            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Java(JavaExtraResponse {
+                version_protocol: r.version_protocol,
+                players_sample: r.players_sample,
+                favicon: r.favicon,
+                previews_chat: r.previews_chat,
+                enforces_secure_chat: r.enforces_secure_chat,
+                server_type: r.server_type,
+            })),
         }
     }
 }
@@ -115,6 +146,21 @@ pub struct BedrockResponse {
     pub server_type: Server,
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct BedrockExtraResponse {
+    /// Server's edition.
+    pub edition: String,
+    /// Version protocol, example: 760 (for 1.19.2).
+    pub version_protocol: String,
+    /// Server id.
+    pub id: Option<String>,
+    /// Current game mode.
+    pub game_mode: Option<GameMode>,
+    /// Tells the server type.
+    pub server_type: Server,
+}
+
 impl From<BedrockResponse> for GenericResponse {
     fn from(r: BedrockResponse) -> Self {
         Self {
@@ -127,7 +173,13 @@ impl From<BedrockResponse> for GenericResponse {
             players_online: r.players_online.into(),
             players_bots: None,
             has_password: None,
-            inner: crate::protocols::SpecificResponse::Minecraft(())
+            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Bedrock(BedrockExtraResponse{
+                edition: r.edition,
+                version_protocol: r.version_protocol,
+                id: r.id,
+                game_mode: r.game_mode,
+                server_type: r.server_type,
+            })),
         }
     }
 }

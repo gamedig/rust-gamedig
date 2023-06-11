@@ -109,7 +109,6 @@ pub mod ut;
 pub mod vr;
 
 use crate::protocols::gamespy::GameSpyVersion;
-use crate::protocols::minecraft::{JavaResponse, MinecraftVersion};
 use crate::protocols::quake::QuakeVersion;
 use crate::protocols::{self, Protocol};
 use crate::GDResult;

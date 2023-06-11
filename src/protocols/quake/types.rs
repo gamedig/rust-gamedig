@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::protocols::GenericResponse;
+use crate::protocols::{GenericResponse, types::SpecificResponse};
 
 /// General server information's.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -24,9 +24,15 @@ pub struct Response<P> {
     pub unused_entries: HashMap<String, String>,
 }
 
-impl<T: Clone> From<Response<T>> for GenericResponse {
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtraResponse {
+    /// Other server entries that weren't used.
+    pub unused_entries: HashMap<String, String>,
+}
+
+impl<T> From<Response<T>> for GenericResponse {
     fn from(r: Response<T>) -> Self {
-        let clone = r.clone();
         Self {
             name: Some(r.name),
             description: None,
@@ -37,14 +43,9 @@ impl<T: Clone> From<Response<T>> for GenericResponse {
             players_online: r.players_online.into(),
             players_bots: None,
             has_password: None,
-            inner: crate::protocols::SpecificResponse::Quake(Response::<()> {
-                players: vec![],
-                name: clone.name,
-                map: clone.map,
-                players_maximum: clone.players_maximum,
-                players_online: clone.players_online,
-                version: clone.version,
-                unused_entries: clone.unused_entries,
+            inner: SpecificResponse::Quake(ExtraResponse {
+                // TODO: Players
+                unused_entries: r.unused_entries,
             }),
         }
     }

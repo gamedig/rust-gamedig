@@ -3,10 +3,9 @@ use std::collections::HashMap;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::protocols::{
-    gamespy::{GameSpyVersion, ResponseVersion},
-    GenericResponse,
-};
+
+use crate::protocols::gamespy::VersionedExtraResponse;
+use crate::protocols::{GenericResponse, types::SpecificResponse};
 
 /// A player’s details.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -45,9 +44,20 @@ pub struct Response {
     pub unused_entries: HashMap<String, String>,
 }
 
+/// Non-generic query response
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtraResponse {
+    pub map_title: Option<String>,
+    pub admin_contact: Option<String>,
+    pub admin_name: Option<String>,
+    pub players_minimum: Option<u8>,
+    pub tournament: bool,
+    pub unused_entries: HashMap<String, String>,
+}
+
 impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self {
-        let clone = r.clone();
         Self {
             name: Some(r.name),
             description: None,
@@ -58,7 +68,14 @@ impl From<Response> for GenericResponse {
             players_online: r.players_online.try_into().unwrap(),
             players_bots: None,
             has_password: Some(r.has_password),
-            inner: crate::protocols::SpecificResponse::Gamespy(ResponseVersion::One(clone)),
+            inner: SpecificResponse::Gamespy(VersionedExtraResponse::One(ExtraResponse{
+                map_title: r.map_title,
+                admin_contact: r.admin_contact,
+                admin_name: r.admin_name,
+                players_minimum: r.players_minimum,
+                tournament: r.tournament,
+                unused_entries: r.unused_entries,
+            })),
         }
     }
 }

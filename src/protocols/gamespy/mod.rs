@@ -16,7 +16,7 @@ pub enum GameSpyVersion {
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub enum ResponseVersion {
-    One(protocols::one::Response),
-    Three(protocols::three::Response),
+pub enum VersionedExtraResponse {
+    One(protocols::one::ExtraResponse),
+    Three(protocols::three::ExtraResponse),
 }

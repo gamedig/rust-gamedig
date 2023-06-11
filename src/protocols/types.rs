@@ -1,6 +1,48 @@
 use crate::{GDError::InvalidInput, GDResult};
+use crate::protocols::{gamespy,minecraft,valve,quake};
 
 use std::time::Duration;
+
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
+
+// Enumeration of all valid protocol types
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum Protocol {
+    Gamespy(gamespy::GameSpyVersion),
+    Minecraft(Option<minecraft::types::Server>),
+    Quake(quake::QuakeVersion),
+    Valve(valve::SteamApp),
+}
+
+// A generic version of a response
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct GenericResponse {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub game: Option<String>,
+    pub game_version: Option<String>,
+    pub map: Option<String>,
+    pub players_maximum: u64,
+    pub players_online: u64,
+    pub players_bots: Option<u64>,
+    pub has_password: Option<bool>,
+    // TODO: Add players (+rules?)
+    pub inner: SpecificResponse,
+}
+
+// A specific response containing extra data that isn't generic
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum SpecificResponse {
+    Gamespy(gamespy::VersionedExtraResponse),
+    Minecraft(minecraft::VersionedExtraResponse),
+    Quake(quake::ExtraResponse),
+    Valve(valve::ExtraResponse),
+}
+
 
 /// Timeout settings for socket operations
 #[derive(Clone, Debug)]
