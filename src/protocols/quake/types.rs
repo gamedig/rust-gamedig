@@ -28,11 +28,11 @@ impl<T: Clone> From<Response<T>> for GenericResponse {
     fn from(r: Response<T>) -> Self {
         let clone = r.clone();
         Self {
-            server_name: Some(r.name),
-            server_description: None,
-            server_game: None,
-            server_game_version: Some(r.version),
-            server_map: Some(r.map),
+            name: Some(r.name),
+            description: None,
+            game: None,
+            game_version: Some(r.version),
+            map: Some(r.map),
             players_maximum: Some(r.players_maximum.into()),
             players_online: Some(r.players_online.into()),
             players_bots: None,

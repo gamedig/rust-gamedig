@@ -30,11 +30,11 @@ pub enum Protocol {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct GenericResponse {
-    pub server_name: Option<String>,
-    pub server_description: Option<String>,
-    pub server_game: Option<String>,
-    pub server_game_version: Option<String>,
-    pub server_map: Option<String>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub game: Option<String>,
+    pub game_version: Option<String>,
+    pub map: Option<String>,
     pub players_maximum: Option<u64>,
     pub players_online: Option<u64>,
     pub players_bots: Option<u64>,

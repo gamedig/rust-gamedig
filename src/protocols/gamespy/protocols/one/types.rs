@@ -49,11 +49,11 @@ impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self {
         let clone = r.clone();
         Self {
-            server_name: Some(r.name),
-            server_description: None,
-            server_game: Some(r.game_type),
-            server_game_version: Some(r.game_version),
-            server_map: Some(r.map),
+            name: Some(r.name),
+            description: None,
+            game: Some(r.game_type),
+            game_version: Some(r.game_version),
+            map: Some(r.map),
             players_maximum: Some(r.players_maximum.try_into().unwrap()), // FIXME: usize to u64 may fail
             players_online: Some(r.players_online.try_into().unwrap()),
             players_bots: None,

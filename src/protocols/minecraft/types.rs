@@ -75,11 +75,11 @@ impl From<JavaResponse> for GenericResponse {
     fn from(r: JavaResponse) -> Self {
         let clone = r.clone();
         Self {
-            server_name: None,
-            server_description: Some(r.description),
-            server_game: Some(String::from("Minecraft")),
-            server_game_version: Some(r.version_name),
-            server_map: None,
+            name: None,
+            description: Some(r.description),
+            game: Some(String::from("Minecraft")),
+            game_version: Some(r.version_name),
+            map: None,
             players_maximum: Some(r.players_maximum.into()),
             players_online: Some(r.players_online.into()),
             players_bots: None,

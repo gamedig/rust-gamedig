@@ -59,11 +59,11 @@ impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self {
         let clone = r.clone();
         GenericResponse {
-            server_name: Some(r.info.name),
-            server_description: None, // TODO: Maybe in extra_data
-            server_game: Some(r.info.game),
-            server_game_version: Some(r.info.version),
-            server_map: Some(r.info.map),
+            name: Some(r.info.name),
+            description: None, // TODO: Maybe in extra_data
+            game: Some(r.info.game),
+            game_version: Some(r.info.version),
+            map: Some(r.info.map),
             players_maximum: Some(r.info.players_maximum.into()),
             players_online: Some(r.info.players_online.into()),
             players_bots: Some(r.info.players_bots.into()),
