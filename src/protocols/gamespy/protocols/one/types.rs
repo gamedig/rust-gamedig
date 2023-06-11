@@ -54,8 +54,8 @@ impl From<Response> for GenericResponse {
             game: Some(r.game_type),
             game_version: Some(r.game_version),
             map: Some(r.map),
-            players_maximum: Some(r.players_maximum.try_into().unwrap()), // FIXME: usize to u64 may fail
-            players_online: Some(r.players_online.try_into().unwrap()),
+            players_maximum: r.players_maximum.try_into().unwrap(), // FIXME: usize to u64 may fail
+            players_online: r.players_online.try_into().unwrap(),
             players_bots: None,
             has_password: Some(r.has_password),
             inner: crate::protocols::SpecificResponse::Gamespy(ResponseVersion::One(clone)),

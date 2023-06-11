@@ -35,8 +35,8 @@ pub struct GenericResponse {
     pub game: Option<String>,
     pub game_version: Option<String>,
     pub map: Option<String>,
-    pub players_maximum: Option<u64>,
-    pub players_online: Option<u64>,
+    pub players_maximum: u64,
+    pub players_online: u64,
     pub players_bots: Option<u64>,
     pub has_password: Option<bool>,
     // TODO: Add players (+rules?)

@@ -33,8 +33,8 @@ impl<T: Clone> From<Response<T>> for GenericResponse {
             game: None,
             game_version: Some(r.version),
             map: Some(r.map),
-            players_maximum: Some(r.players_maximum.into()),
-            players_online: Some(r.players_online.into()),
+            players_maximum: r.players_maximum.into(),
+            players_online: r.players_online.into(),
             players_bots: None,
             has_password: None,
             inner: crate::protocols::SpecificResponse::Quake(Response::<()> {
