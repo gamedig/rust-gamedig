@@ -77,7 +77,7 @@ fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String
 fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Client::Player>> {
     let mut players: Vec<Client::Player> = Vec::new();
 
-    while !bufferer.is_remaining_empty() && bufferer.remaining_data() != &[0x00] {
+    while !bufferer.is_remaining_empty() && bufferer.remaining_data() != [0x00] {
         let data = bufferer.get_string_utf8_newline()?;
         let data_split = data.split(' ').collect::<Vec<&str>>();
         let data_iter = data_split.iter();
