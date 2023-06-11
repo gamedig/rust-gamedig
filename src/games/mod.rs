@@ -153,19 +153,11 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
         Protocol::Valve(steam_app) => {
             protocols::valve::query(&socket_addr, steam_app.as_engine(), None, None).map(|r| r.into())?
         }
-        Protocol::Minecraft(version) => {
-            if let Some(version) = version {
-                match version {
-                    MinecraftVersion::Bedrock => {
-                        protocols::minecraft::query_bedrock(&socket_addr, None)
-                            .map(|r| JavaResponse::from_bedrock_response(r).into())?
-                    }
-                    MinecraftVersion::Java => protocols::minecraft::query_java(&socket_addr, None).map(|r| r.into())?,
-                    _ => todo!(),
-                }
-            } else {
-                protocols::minecraft::query(&socket_addr, None).map(|r| r.into())?
-            }
+        Protocol::Minecraft(version) => match version {
+            Some(protocols::minecraft::Server::Java) => protocols::minecraft::query_java(&socket_addr, None).map(|r| r.into())?,
+            Some(protocols::minecraft::Server::Bedrock) => protocols::minecraft::query_bedrock(&socket_addr, None).map(|r| r.into())?,
+            Some(protocols::minecraft::Server::Legacy(group)) => protocols::minecraft::query_legacy_specific(*group, &socket_addr, None).map(|r| r.into())?,
+            None => protocols::minecraft::query(&socket_addr, None).map(|r| r.into())?,
         }
         Protocol::Gamespy(version) => {
             match version {

@@ -115,6 +115,23 @@ pub struct BedrockResponse {
     pub server_type: Server,
 }
 
+impl From<BedrockResponse> for GenericResponse {
+    fn from(r: BedrockResponse) -> Self {
+        Self {
+            name: Some(r.name),
+            description: None,
+            game: None,
+            game_version: Some(r.version_name),
+            map: r.map,
+            players_maximum: r.players_maximum.into(),
+            players_online: r.players_online.into(),
+            players_bots: None,
+            has_password: None,
+            inner: crate::protocols::SpecificResponse::Minecraft(())
+        }
+    }
+}
+
 impl JavaResponse {
     pub fn from_bedrock_response(response: BedrockResponse) -> Self {
         Self {

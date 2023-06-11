@@ -22,7 +22,7 @@ pub mod valve;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Protocol {
     Gamespy(gamespy::GameSpyVersion),
-    Minecraft(Option<minecraft::MinecraftVersion>),
+    Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
 }
