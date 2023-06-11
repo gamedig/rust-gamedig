@@ -123,28 +123,10 @@ pub struct Game {
 }
 
 #[cfg(feature = "game_defs")]
-pub static GAMES: phf::Map<&'static str, Game> = phf::phf_map! {
-    "bf1942" => Game {
-        name: "Battlefield 1942",
-        default_port: 23000,
-        protocol: Protocol::Gamespy(protocols::gamespy::GameSpyVersion::One),
-    },
-    "mc" => Game {
-        name: "Minecraft (any)",
-        default_port: 25565,
-        protocol: Protocol::Minecraft(None),
-    },
-    "tf2" => Game {
-        name: "Team Fortress 2",
-        default_port: 27015,
-        protocol: Protocol::Valve(protocols::valve::SteamApp::TF2),
-    },
-    "quake3a" => Game {
-        name: "Quake 3: Arena",
-        default_port: 27960,
-        protocol: Protocol::Quake(QuakeVersion::Three),
-    }
-};
+mod definitions;
+
+#[cfg(feature = "game_defs")]
+pub use definitions::GAMES;
 
 pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<protocols::GenericResponse> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
