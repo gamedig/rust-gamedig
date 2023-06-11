@@ -1,5 +1,8 @@
 //! Currently supported games.
 
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
+
 /// Alien Swarm
 pub mod aliens;
 /// Age of Chivalry

@@ -4,6 +4,9 @@
 //! implementation will be in that specific needed place, a protocol can be
 //! independently queried.
 
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
+
 /// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/gamespy1.js)
 pub mod gamespy;
 /// Reference: [Server List Ping](https://wiki.vg/Server_List_Ping)

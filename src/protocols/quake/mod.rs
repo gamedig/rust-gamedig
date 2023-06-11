@@ -1,3 +1,6 @@
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
+
 pub mod one;
 pub mod three;
 pub mod two;

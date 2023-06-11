@@ -1,3 +1,6 @@
+#[cfg(feature = "serde")]
+use serde::{Serialize,Deserialize};
+
 mod common;
 /// The implementations.
 pub mod protocols;
