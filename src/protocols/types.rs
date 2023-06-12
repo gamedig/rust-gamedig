@@ -6,7 +6,7 @@ use std::time::Duration;
 #[cfg(feature = "serde")]
 use serde::{Serialize,Deserialize};
 
-// Enumeration of all valid protocol types
+/// Enumeration of all valid protocol types
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Protocol {
@@ -16,24 +16,33 @@ pub enum Protocol {
     Valve(valve::SteamApp),
 }
 
-// A generic version of a response
+/// A generic version of a response
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct GenericResponse {
+    /// The name of the server
     pub name: Option<String>,
+    /// Description of the server
     pub description: Option<String>,
+    /// Name of the current game or game mode
     pub game: Option<String>,
+    /// Version of the game being run on the server
     pub game_version: Option<String>,
+    /// The current map name
     pub map: Option<String>,
+    /// Maximum number of players allowed to connect
     pub players_maximum: u64,
+    /// Number of players currently connected
     pub players_online: u64,
+    /// Number of bots currently connected
     pub players_bots: Option<u64>,
+    /// Whether the server requires a password to join
     pub has_password: Option<bool>,
-    // TODO: Add players (+rules?)
+    /// Data specific to non-generic responses
     pub inner: SpecificResponse,
 }
 
-// A specific response containing extra data that isn't generic
+/// A specific response containing extra data that isn't generic
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum SpecificResponse {
