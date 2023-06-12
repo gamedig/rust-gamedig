@@ -43,7 +43,7 @@ fn data_as_table(data: &mut Bufferer) -> GDResult<(HashMap<String, Vec<String>>,
 
     let mut current_column = data.get_string_utf8()?;
     while !current_column.is_empty() {
-        column_heads.push(current_column.clone());
+        column_heads.push(current_column);
         current_column = data.get_string_utf8()?;
     }
 
@@ -151,6 +151,7 @@ fn get_players(bufferer: &mut Bufferer) -> GDResult<Vec<Player>> {
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut client = GameSpy2::new(address, timeout_settings)?;
     let mut data = client.request_data()?;
+
     let mut server_vars = get_server_vars(&mut data)?;
     let players = get_players(&mut data)?;
 
