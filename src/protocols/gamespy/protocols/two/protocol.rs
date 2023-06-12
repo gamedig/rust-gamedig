@@ -182,5 +182,6 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .map_err(|_| GDError::PacketBad)?,
         teams: client.get_teams()?,
         players: client.get_players()?,
+        unused_entries: server_vars,
     })
 }
