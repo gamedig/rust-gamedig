@@ -14,6 +14,8 @@ pub enum Protocol {
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
+    TheShip,
+    FFOW,
 }
 
 /// A generic version of a response
@@ -50,6 +52,10 @@ pub enum SpecificResponse {
     Minecraft(minecraft::VersionedExtraResponse),
     Quake(quake::ExtraResponse),
     Valve(valve::ExtraResponse),
+    #[cfg(not(feature = "no_games"))]
+    TheShip(crate::games::ts::ExtraResponse),
+    #[cfg(not(feature = "no_games"))]
+    FFOW(crate::games::ffow::ExtraResponse),
 }
 
 

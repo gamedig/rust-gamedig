@@ -1,5 +1,6 @@
 use std::net::{IpAddr, SocketAddr};
-use crate::protocols::types::TimeoutSettings;
+use crate::protocols::GenericResponse;
+use crate::protocols::types::{TimeoutSettings, SpecificResponse};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::GDResult;
 #[cfg(feature = "serde")]
@@ -41,6 +42,53 @@ pub struct Response {
     pub rounds_maximum: u8,
     /// Time left for the current round in seconds.
     pub time_left: u16,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct ExtraResponse {
+    /// Protocol used by the server.
+    pub protocol: u8,
+    /// Map name.
+    pub active_mod: String,
+    /// Dedicated, NonDedicated or SourceTV
+    pub server_type: Server,
+    /// The Operating System that the server is on.
+    pub environment_type: Environment,
+    /// Indicates whether the server uses VAC.
+    pub vac_secured: bool,
+    /// Current round index.
+    pub round: u8,
+    /// Maximum amount of rounds.
+    pub rounds_maximum: u8,
+    /// Time left for the current round in seconds.
+    pub time_left: u16,
+}
+
+impl From<Response> for GenericResponse {
+    fn from(r: Response) -> Self {
+       Self{
+           name: Some(r.name),
+           description: Some(r.description),
+           game: Some(r.game_mode),
+           game_version: Some(r.version),
+           map: Some(r.map),
+           players_maximum: r.players_maximum.into(),
+           players_online: r.players_online.into(),
+           players_bots: None,
+           has_password: Some(r.has_password),
+           inner: SpecificResponse::FFOW(ExtraResponse {
+               protocol: r.protocol,
+               active_mod: r.active_mod,
+               server_type: r.server_type,
+               environment_type: r.environment_type,
+               vac_secured: r.vac_secured,
+               round: r.round,
+               rounds_maximum: r.rounds_maximum,
+               time_left: r.time_left,
+           }),
+       }
+    }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {

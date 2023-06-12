@@ -153,5 +153,7 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(|r| r.into())?,
             }
         }
+        Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,
+        Protocol::FFOW => ffow::query(address, port).map(|r| r.into())?,
     })
 }

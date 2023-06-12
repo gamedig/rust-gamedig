@@ -51,8 +51,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "dods" => game!("Day of Defeat: Source", 27015, Protocol::Valve(SteamApp::DODS)),
     "doi" => game!("Day of Infamy", 27015, Protocol::Valve(SteamApp::DOI)),
     "dst" => game!("Don't Starve Together", 27016, Protocol::Valve(SteamApp::DST)),
-    // FIXME: FFOW requires its own protocol
-    //"ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::Valve(SteamApp::ALIENS)),
+    "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::FFOW),
     "gm" => game!("Garry's Mod", 27016, Protocol::Valve(SteamApp::GM)),
     "hl2dm" => game!("Half-Life 2 Deathmatch", 27015, Protocol::Valve(SteamApp::HL2DM)),
     "hldms" => game!("Half-Life Deathmatch: Source", 27015, Protocol::Valve(SteamApp::HLDMS)),
@@ -77,8 +76,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "tf" => game!("The Forest", 27016, Protocol::Valve(SteamApp::TF)),
     "tf2" => game!("Team Fortress 2", 27015, Protocol::Valve(SteamApp::TF2)),
     "tfc" => game!("Team Fortress Classic", 27015, Protocol::Valve(SteamApp::TFC)),
-    // FIXME: The ship needs custom return type
-    "ts" => game!("The Ship", 27015, Protocol::Valve(SteamApp::TS)),
+    "ts" => game!("The Ship", 27015, Protocol::TheShip),
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "ut" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
     "vr" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VR)),
