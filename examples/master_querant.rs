@@ -27,6 +27,7 @@ use gamedig::{
     dst,
     ffow,
     gm,
+    haloce,
     hl2dm,
     hldms,
     hll,
@@ -187,6 +188,7 @@ fn main() -> GDResult<()> {
         "hll" => println!("{:#?}", hll::query(ip, port)?),
         "sof2" => println!("{:#?}", sof2::query(ip, port)?),
         "_gamespy2" => println!("{:#?}", gamespy::two::query(address, None)),
+        "haloce" => println!("{:#?}", haloce::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
