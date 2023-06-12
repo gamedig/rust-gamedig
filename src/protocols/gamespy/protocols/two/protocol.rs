@@ -54,12 +54,9 @@ fn data_as_table(data: &mut Bufferer) -> GDResult<(HashMap<String, Vec<String>>,
     }
 
     for _ in 0 .. rows {
-        for column_index in 0 .. columns {
+        for column in column_heads.iter() {
             let value = data.get_string_utf8()?;
-            table
-                .get_mut(&*column_heads[column_index])
-                .ok_or(GDError::PacketBad)?
-                .push(value);
+            table.get_mut(column).ok_or(GDError::PacketBad)?.push(value);
         }
     }
 
