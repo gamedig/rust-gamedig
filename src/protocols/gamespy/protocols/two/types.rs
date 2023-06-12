@@ -25,8 +25,10 @@ pub struct Response {
     pub name: String,
     pub map: String,
     pub has_password: bool,
-    pub max_players: u8,
     pub teams: Vec<Team>,
+    pub players_maximum: usize,
+    pub players_online: usize,
+    pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
     pub unused_entries: HashMap<String, String>,
 }

@@ -10,12 +10,6 @@ struct GameSpy2 {
     socket: UdpSocket,
 }
 
-enum RequestType {
-    INFO,
-    PLAYERS,
-    TEAMS,
-}
-
 macro_rules! table_extract {
     ($table:expr, $name:literal, $index:expr) => {
         $table
@@ -34,17 +28,7 @@ macro_rules! table_extract_parse {
     };
 }
 
-impl RequestType {
-    pub fn to_bytes(&self) -> [u8; 3] {
-        match self {
-            RequestType::INFO => [0xFF, 0x00, 0x00],
-            RequestType::PLAYERS => [0x00, 0xFF, 0x00],
-            RequestType::TEAMS => [0x00, 0x00, 0xFF],
-        }
-    }
-}
-
-fn data_as_table(mut data: Bufferer) -> GDResult<(HashMap<String, Vec<String>>, usize)> {
+fn data_as_table(data: &mut Bufferer) -> GDResult<(HashMap<String, Vec<String>>, usize)> {
     if data.get_u8()? != 0 {
         Err(GDError::PacketBad)?
     }
@@ -90,15 +74,9 @@ impl GameSpy2 {
         Ok(Self { socket })
     }
 
-    fn request(&mut self, request: RequestType) -> GDResult<Bufferer> {
-        self.socket.send(
-            &*[
-                vec![0xFE, 0xFD, 0x00],
-                vec![0x00, 0x00, 0x00, 0x01],
-                request.to_bytes().to_vec(),
-            ]
-            .concat(),
-        )?;
+    fn request_data(&mut self) -> GDResult<Bufferer> {
+        self.socket
+            .send(&[0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF])?;
 
         let received = self.socket.receive(None)?;
         let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
@@ -113,75 +91,97 @@ impl GameSpy2 {
 
         Ok(buf)
     }
+}
 
-    fn get_server_info(&mut self) -> GDResult<HashMap<String, String>> {
-        let mut values = HashMap::new();
+fn get_server_vars(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String>> {
+    let mut values = HashMap::new();
 
-        let mut data = self.request(RequestType::INFO)?;
-        while data.remaining_length() > 0 {
-            let key = data.get_string_utf8()?;
-            let value = data.get_string_utf8_optional()?;
+    let mut done_processing_vars = false;
+    while !done_processing_vars && bufferer.remaining_length() > 0 {
+        let key = bufferer.get_string_utf8()?;
+        let value = bufferer.get_string_utf8_optional()?;
 
-            if key.is_empty() {
-                continue;
+        if key.is_empty() {
+            if value.is_empty() {
+                bufferer.move_position_backward(1);
+                done_processing_vars = true;
             }
 
-            values.insert(key, value);
+            continue;
         }
 
-        Ok(values)
+        values.insert(key, value);
     }
 
-    fn get_teams(&mut self) -> GDResult<Vec<Team>> {
-        let mut teams = Vec::new();
+    Ok(values)
+}
 
-        let data = self.request(RequestType::TEAMS)?;
-        let (table, entries) = data_as_table(data)?;
+fn get_teams(bufferer: &mut Bufferer) -> GDResult<Vec<Team>> {
+    let mut teams = Vec::new();
 
-        for index in 0 .. entries {
-            teams.push(Team {
-                name: table_extract!(table, "team_t", index).clone(),
-                score: table_extract_parse!(table, "score_t", index),
-            })
-        }
+    let (table, entries) = data_as_table(bufferer)?;
 
-        Ok(teams)
+    for index in 0 .. entries {
+        teams.push(Team {
+            name: table_extract!(table, "team_t", index).clone(),
+            score: table_extract_parse!(table, "score_t", index),
+        })
     }
 
-    fn get_players(&mut self) -> GDResult<Vec<Player>> {
-        let mut players = Vec::new();
+    Ok(teams)
+}
 
-        let data = self.request(RequestType::PLAYERS)?;
-        let (table, entries) = data_as_table(data)?;
+fn get_players(bufferer: &mut Bufferer) -> GDResult<Vec<Player>> {
+    let mut players = Vec::new();
 
-        for index in 0 .. entries {
-            players.push(Player {
-                name: table_extract!(table, "player_", index).clone(),
-                score: table_extract_parse!(table, "score_", index),
-                ping: table_extract_parse!(table, "ping_", index),
-                team_index: table_extract_parse!(table, "team_", index),
-            })
-        }
+    let (table, entries) = data_as_table(bufferer)?;
 
-        Ok(players)
+    for index in 0 .. entries {
+        players.push(Player {
+            name: table_extract!(table, "player_", index).clone(),
+            score: table_extract_parse!(table, "score_", index),
+            ping: table_extract_parse!(table, "ping_", index),
+            team_index: table_extract_parse!(table, "team_", index),
+        })
     }
+
+    Ok(players)
 }
 
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut client = GameSpy2::new(address, timeout_settings)?;
-    let mut server_vars = client.get_server_info()?;
+    let mut data = client.request_data()?;
+    let mut server_vars = get_server_vars(&mut data)?;
+    let players = get_players(&mut data)?;
+
+    let players_online = match server_vars.remove("numplayers") {
+        None => players.len(),
+        Some(v) => {
+            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            match reported_players < players.len() {
+                true => players.len(),
+                false => reported_players,
+            }
+        }
+    };
+    let players_minimum = match server_vars.remove("minplayers") {
+        None => None,
+        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+    };
 
     Ok(Response {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
         map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
         has_password: server_vars.remove("password").ok_or(GDError::PacketBad)? == "1",
-        max_players: server_vars
+        teams: get_teams(&mut data)?,
+        players_maximum: server_vars
             .remove("maxplayers")
             .ok_or(GDError::PacketBad)?
             .parse()
             .map_err(|_| GDError::PacketBad)?,
-        teams: client.get_teams()?,
-        players: client.get_players()?,
+        players_online,
+        players_minimum,
+        players,
         unused_entries: server_vars,
     })
 }
