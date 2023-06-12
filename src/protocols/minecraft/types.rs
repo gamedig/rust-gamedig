@@ -4,7 +4,7 @@
 
 use crate::{
     bufferer::Bufferer,
-    protocols::{GenericResponse, types::SpecificResponse},
+    protocols::{types::SpecificResponse, GenericResponse},
     GDError::{PacketBad, UnknownEnumCast},
     GDResult,
 };
@@ -173,7 +173,7 @@ impl From<BedrockResponse> for GenericResponse {
             players_online: r.players_online.into(),
             players_bots: None,
             has_password: None,
-            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Bedrock(BedrockExtraResponse{
+            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Bedrock(BedrockExtraResponse {
                 edition: r.edition,
                 version_protocol: r.version_protocol,
                 id: r.id,

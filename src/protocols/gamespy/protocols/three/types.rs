@@ -1,5 +1,5 @@
 use crate::protocols::gamespy::VersionedExtraResponse;
-use crate::protocols::{GenericResponse, types::SpecificResponse};
+use crate::protocols::{types::SpecificResponse, GenericResponse};
 use std::collections::HashMap;
 
 #[cfg(feature = "serde")]
@@ -50,7 +50,7 @@ pub struct ExtraResponse {
     pub players_minimum: Option<u8>,
     pub teams: Vec<Team>,
     pub tournament: bool,
-    pub unused_entries: HashMap<String,String>,
+    pub unused_entries: HashMap<String, String>,
     pub players: Vec<Player>,
 }
 
@@ -66,7 +66,7 @@ impl From<Response> for GenericResponse {
             players_online: r.players_online.try_into().unwrap(),
             players_bots: None,
             has_password: Some(r.has_password),
-            inner: SpecificResponse::Gamespy(VersionedExtraResponse::Three(ExtraResponse{
+            inner: SpecificResponse::Gamespy(VersionedExtraResponse::Three(ExtraResponse {
                 players_minimum: r.players_minimum,
                 teams: r.teams,
                 tournament: r.tournament,

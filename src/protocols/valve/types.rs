@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
-use crate::{bufferer::Bufferer, protocols::{GenericResponse, types::SpecificResponse}};
+use crate::{
+    bufferer::Bufferer,
+    protocols::{types::SpecificResponse, GenericResponse},
+};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -94,7 +97,7 @@ impl From<Response> for GenericResponse {
             players_online: r.info.players_online.into(),
             players_bots: Some(r.info.players_bots.into()),
             has_password: Some(r.info.has_password),
-            inner: SpecificResponse::Valve(ExtraResponse{
+            inner: SpecificResponse::Valve(ExtraResponse {
                 players: r.players,
                 rules: r.rules,
                 protocol: r.info.protocol,

@@ -1,10 +1,10 @@
+use crate::protocols::{gamespy, minecraft, quake, valve};
 use crate::{GDError::InvalidInput, GDResult};
-use crate::protocols::{gamespy,minecraft,valve,quake};
 
 use std::time::Duration;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Enumeration of all valid protocol types
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -57,7 +57,6 @@ pub enum SpecificResponse {
     #[cfg(not(feature = "no_games"))]
     FFOW(crate::games::ffow::ExtraResponse),
 }
-
 
 /// Timeout settings for socket operations
 #[derive(Clone, Debug)]

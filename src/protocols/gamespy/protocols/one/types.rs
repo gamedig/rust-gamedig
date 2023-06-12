@@ -3,9 +3,8 @@ use std::collections::HashMap;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-
 use crate::protocols::gamespy::VersionedExtraResponse;
-use crate::protocols::{GenericResponse, types::SpecificResponse};
+use crate::protocols::{types::SpecificResponse, GenericResponse};
 
 /// A player’s details.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

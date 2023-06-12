@@ -1,5 +1,5 @@
 #[cfg(feature = "serde")]
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 
 pub mod one;
 pub mod three;

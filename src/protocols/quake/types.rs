@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::protocols::{GenericResponse, types::SpecificResponse};
+use crate::protocols::{types::SpecificResponse, GenericResponse};
 
 /// General server information's.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
