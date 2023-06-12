@@ -15,8 +15,8 @@
 //! # Crate features:
 //! Enabled by default: None
 //!
-//! `serde` - enables json serialization/deserialization for all response types. <br>
-//! `no_games` - disables the included games support. <br>
+//! `serde` - enables json serialization/deserialization for all response types.
+//! <br> `no_games` - disables the included games support. <br>
 //! `no_services` - disables the included services support.
 
 pub mod errors;

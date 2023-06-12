@@ -1,4 +1,3 @@
-use std::net::SocketAddr;
 use crate::{
     bufferer::{Bufferer, Endianess},
     protocols::{
@@ -10,6 +9,7 @@ use crate::{
     GDError::{PacketBad, ProtocolFormat},
     GDResult,
 };
+use std::net::SocketAddr;
 
 pub struct LegacyV1_6 {
     socket: TcpSocket,

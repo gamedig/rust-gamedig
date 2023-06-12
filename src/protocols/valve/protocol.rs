@@ -418,12 +418,7 @@ pub fn query(
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response> {
     let response_gather_settings = gather_settings.unwrap_or_default();
-    get_response(
-        address,
-        engine,
-        response_gather_settings,
-        timeout_settings,
-    )
+    get_response(address, engine, response_gather_settings, timeout_settings)
 }
 
 fn get_response(

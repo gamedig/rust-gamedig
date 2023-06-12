@@ -15,7 +15,8 @@ pub enum Filter {
     HasTags(Vec<String>),
     MatchName(String),
     MatchVersion(String),
-    /// Restrict to only a server if an IP hosts (on different ports) multiple servers.
+    /// Restrict to only a server if an IP hosts (on different ports) multiple
+    /// servers.
     RestrictUniqueIP(bool),
     /// Query for servers on a specific address.
     OnAddress(String),
@@ -133,7 +134,8 @@ impl Filter {
 ///             .insert(Filter::IsEmpty(false))
 ///             .insert(Filter::CanHavePassword(false));
 /// ```
-/// This will construct filters that search for servers that can't have a password, are not empty and run App ID 440.
+/// This will construct filters that search for servers that can't have a
+/// password, are not empty and run App ID 440.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SearchFilters {
     filters: HashMap<Discriminant<Filter>, Filter>,
@@ -208,8 +210,14 @@ impl SearchFilters {
             bytes.extend(filter.to_bytes())
         }
 
-        bytes.extend(SearchFilters::special_filter_to_bytes("nand", &self.nand_filters));
-        bytes.extend(SearchFilters::special_filter_to_bytes("nor", &self.nor_filters));
+        bytes.extend(SearchFilters::special_filter_to_bytes(
+            "nand",
+            &self.nand_filters,
+        ));
+        bytes.extend(SearchFilters::special_filter_to_bytes(
+            "nor",
+            &self.nor_filters,
+        ));
 
         bytes.extend([0x00]);
         bytes

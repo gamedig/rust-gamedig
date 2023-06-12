@@ -4,11 +4,11 @@ use crate::{
     GDResult,
 };
 
+use std::net::SocketAddr;
 use std::{
     io::{Read, Write},
     net,
 };
-use std::net::SocketAddr;
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
@@ -67,7 +67,7 @@ impl Socket for UdpSocket {
 
         Ok(Self {
             socket,
-            address: address.clone(),
+            address: *address,
         })
     }
 
@@ -81,8 +81,9 @@ impl Socket for UdpSocket {
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
         self.socket
-            .send_to(data, &self.address)
+            .send_to(data, self.address)
             .map_err(|_| PacketSend)?;
+
         Ok(())
     }
 
