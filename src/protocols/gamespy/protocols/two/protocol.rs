@@ -1,5 +1,5 @@
 use crate::bufferer::{Bufferer, Endianess};
-use crate::protocols::gamespy::two::{Response, Team};
+use crate::protocols::gamespy::two::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::{GDError, GDResult};
@@ -14,7 +14,24 @@ enum RequestType {
     INFO,
     PLAYERS,
     TEAMS,
-    ALL,
+}
+
+macro_rules! table_extract {
+    ($table:expr, $name:literal, $index:expr) => {
+        $table
+            .get($name)
+            .ok_or(GDError::PacketBad)?
+            .get($index)
+            .ok_or(GDError::PacketBad)?
+    };
+}
+
+macro_rules! table_extract_parse {
+    ($table:expr, $name:literal, $index:expr) => {
+        table_extract!($table, $name, $index)
+            .parse()
+            .map_err(|_| GDError::PacketBad)?
+    };
 }
 
 impl RequestType {
@@ -23,7 +40,6 @@ impl RequestType {
             RequestType::INFO => [0xFF, 0x00, 0x00],
             RequestType::PLAYERS => [0x00, 0xFF, 0x00],
             RequestType::TEAMS => [0x00, 0x00, 0xFF],
-            RequestType::ALL => [0xFF, 0xFF, 0xFF],
         }
     }
 }
@@ -124,23 +140,30 @@ impl GameSpy2 {
 
         for index in 0 .. entries {
             teams.push(Team {
-                name: table
-                    .get("team_t")
-                    .ok_or(GDError::PacketBad)?
-                    .get(index)
-                    .ok_or(GDError::PacketBad)?
-                    .clone(),
-                score: table
-                    .get("score_t")
-                    .ok_or(GDError::PacketBad)?
-                    .get(index)
-                    .ok_or(GDError::PacketBad)?
-                    .parse()
-                    .map_err(|_| GDError::PacketBad)?,
+                name: table_extract!(table, "team_t", index).clone(),
+                score: table_extract_parse!(table, "score_t", index),
             })
         }
 
         Ok(teams)
+    }
+
+    fn get_players(&mut self) -> GDResult<Vec<Player>> {
+        let mut players = Vec::new();
+
+        let data = self.request(RequestType::PLAYERS)?;
+        let (table, entries) = data_as_table(data)?;
+
+        for index in 0 .. entries {
+            players.push(Player {
+                name: table_extract!(table, "player_", index).clone(),
+                score: table_extract_parse!(table, "score_", index),
+                ping: table_extract_parse!(table, "ping_", index),
+                team_index: table_extract_parse!(table, "team_", index),
+            })
+        }
+
+        Ok(players)
     }
 }
 
@@ -158,5 +181,6 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .parse()
             .map_err(|_| GDError::PacketBad)?,
         teams: client.get_teams()?,
+        players: client.get_players()?,
     })
 }
