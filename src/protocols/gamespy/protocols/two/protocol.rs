@@ -50,7 +50,7 @@ fn data_as_table(data: &mut Bufferer) -> GDResult<(HashMap<String, Vec<String>>,
     let columns = column_heads.len();
     let mut table = HashMap::with_capacity(columns);
     for head in &column_heads {
-        table.insert(head.clone(), Vec::new());
+        table.insert(head.clone(), Vec::new()); // TODO: This doesn't look good nor it is performant, fix later
     }
 
     for _ in 0 .. rows {
