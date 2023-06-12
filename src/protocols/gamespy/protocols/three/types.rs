@@ -51,6 +51,7 @@ pub struct ExtraResponse {
     pub teams: Vec<Team>,
     pub tournament: bool,
     pub unused_entries: HashMap<String,String>,
+    pub players: Vec<Player>,
 }
 
 impl From<Response> for GenericResponse {
@@ -70,6 +71,7 @@ impl From<Response> for GenericResponse {
                 teams: r.teams,
                 tournament: r.tournament,
                 unused_entries: r.unused_entries,
+                players: r.players,
             })),
         }
     }

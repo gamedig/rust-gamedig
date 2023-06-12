@@ -54,6 +54,7 @@ pub struct ExtraResponse {
     pub players_minimum: Option<u8>,
     pub tournament: bool,
     pub unused_entries: HashMap<String, String>,
+    pub players: Vec<Player>,
 }
 
 impl From<Response> for GenericResponse {
@@ -68,13 +69,14 @@ impl From<Response> for GenericResponse {
             players_online: r.players_online.try_into().unwrap(),
             players_bots: None,
             has_password: Some(r.has_password),
-            inner: SpecificResponse::Gamespy(VersionedExtraResponse::One(ExtraResponse{
+            inner: SpecificResponse::Gamespy(VersionedExtraResponse::One(ExtraResponse {
                 map_title: r.map_title,
                 admin_contact: r.admin_contact,
                 admin_name: r.admin_name,
                 players_minimum: r.players_minimum,
                 tournament: r.tournament,
                 unused_entries: r.unused_entries,
+                players: r.players,
             })),
         }
     }
