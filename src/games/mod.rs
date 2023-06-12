@@ -48,6 +48,8 @@ pub mod dst;
 pub mod ffow;
 /// Garry's Mod
 pub mod gm;
+/// Halo: Combat Evolved
+pub mod haloce;
 /// Half-Life 2 Deathmatch
 pub mod hl2dm;
 /// Half-Life Deathmatch: Source

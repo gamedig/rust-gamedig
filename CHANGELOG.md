@@ -3,7 +3,11 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
-To be made...
+Protocols:
+- GameSpy 2 support.
+
+Games:
+- [Halo: Combat Evolved](https://en.wikipedia.org/wiki/Halo:_Combat_Evolved) support.
 
 ### Breaking...
 Crate:
