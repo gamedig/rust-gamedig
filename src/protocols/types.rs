@@ -1,6 +1,62 @@
+use crate::protocols::{gamespy, minecraft, quake, valve};
 use crate::{GDError::InvalidInput, GDResult};
 
 use std::time::Duration;
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+/// Enumeration of all valid protocol types
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum Protocol {
+    Gamespy(gamespy::GameSpyVersion),
+    Minecraft(Option<minecraft::types::Server>),
+    Quake(quake::QuakeVersion),
+    Valve(valve::SteamApp),
+    TheShip,
+    FFOW,
+}
+
+/// A generic version of a response
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct GenericResponse {
+    /// The name of the server
+    pub name: Option<String>,
+    /// Description of the server
+    pub description: Option<String>,
+    /// Name of the current game or game mode
+    pub game: Option<String>,
+    /// Version of the game being run on the server
+    pub game_version: Option<String>,
+    /// The current map name
+    pub map: Option<String>,
+    /// Maximum number of players allowed to connect
+    pub players_maximum: u64,
+    /// Number of players currently connected
+    pub players_online: u64,
+    /// Number of bots currently connected
+    pub players_bots: Option<u64>,
+    /// Whether the server requires a password to join
+    pub has_password: Option<bool>,
+    /// Data specific to non-generic responses
+    pub inner: SpecificResponse,
+}
+
+/// A specific response containing extra data that isn't generic
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum SpecificResponse {
+    Gamespy(gamespy::VersionedExtraResponse),
+    Minecraft(minecraft::VersionedExtraResponse),
+    Quake(quake::ExtraResponse),
+    Valve(valve::ExtraResponse),
+    #[cfg(not(feature = "no_games"))]
+    TheShip(crate::games::ts::ExtraResponse),
+    #[cfg(not(feature = "no_games"))]
+    FFOW(crate::games::ffow::ExtraResponse),
+}
 
 /// Timeout settings for socket operations
 #[derive(Clone, Debug)]

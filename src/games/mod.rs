@@ -1,5 +1,8 @@
 //! Currently supported games.
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// Alien Swarm
 pub mod aliens;
 /// Age of Chivalry
@@ -106,3 +109,61 @@ pub mod unturned;
 pub mod ut;
 /// V Rising
 pub mod vr;
+
+use crate::protocols::gamespy::GameSpyVersion;
+use crate::protocols::quake::QuakeVersion;
+use crate::protocols::{self, Protocol};
+use crate::GDResult;
+use std::net::{IpAddr, SocketAddr};
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct Game {
+    pub name: &'static str,
+    pub default_port: u16,
+    pub protocol: Protocol,
+}
+
+#[cfg(feature = "game_defs")]
+mod definitions;
+
+#[cfg(feature = "game_defs")]
+pub use definitions::GAMES;
+
+pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<protocols::GenericResponse> {
+    let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
+    Ok(match &game.protocol {
+        Protocol::Valve(steam_app) => {
+            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, None).map(|r| r.into())?
+        }
+        Protocol::Minecraft(version) => {
+            match version {
+                Some(protocols::minecraft::Server::Java) => {
+                    protocols::minecraft::query_java(&socket_addr, None).map(|r| r.into())?
+                }
+                Some(protocols::minecraft::Server::Bedrock) => {
+                    protocols::minecraft::query_bedrock(&socket_addr, None).map(|r| r.into())?
+                }
+                Some(protocols::minecraft::Server::Legacy(group)) => {
+                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, None).map(|r| r.into())?
+                }
+                None => protocols::minecraft::query(&socket_addr, None).map(|r| r.into())?,
+            }
+        }
+        Protocol::Gamespy(version) => {
+            match version {
+                GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, None).map(|r| r.into())?,
+                GameSpyVersion::Three => protocols::gamespy::three::query(&socket_addr, None).map(|r| r.into())?,
+            }
+        }
+        Protocol::Quake(version) => {
+            match version {
+                QuakeVersion::One => protocols::quake::one::query(&socket_addr, None).map(|r| r.into())?,
+                QuakeVersion::Two => protocols::quake::two::query(&socket_addr, None).map(|r| r.into())?,
+                QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(|r| r.into())?,
+            }
+        }
+        Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,
+        Protocol::FFOW => ffow::query(address, port).map(|r| r.into())?,
+    })
+}

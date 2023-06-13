@@ -1,5 +1,9 @@
 use crate::{
-    protocols::valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
+    protocols::{
+        types::SpecificResponse,
+        valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
+        GenericResponse,
+    },
     GDResult,
 };
 use std::net::{IpAddr, SocketAddr};
@@ -55,6 +59,55 @@ pub struct Response {
     pub mode: u8,
     pub witnesses: u8,
     pub duration: u8,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct ExtraResponse {
+    pub protocol: u8,
+    pub player_details: Vec<TheShipPlayer>,
+    pub server_type: Server,
+    pub vac_secured: bool,
+    pub port: Option<u16>,
+    pub steam_id: Option<u64>,
+    pub tv_port: Option<u16>,
+    pub tv_name: Option<String>,
+    pub keywords: Option<String>,
+    pub rules: HashMap<String, String>,
+    pub mode: u8,
+    pub witnesses: u8,
+    pub duration: u8,
+}
+
+impl From<Response> for GenericResponse {
+    fn from(r: Response) -> Self {
+        Self {
+            name: Some(r.name),
+            description: None,
+            game: Some(r.game),
+            game_version: Some(r.version),
+            map: Some(r.map),
+            players_maximum: r.max_players.into(),
+            players_online: r.players.into(),
+            players_bots: Some(r.bots.into()),
+            has_password: Some(r.has_password),
+            inner: SpecificResponse::TheShip(ExtraResponse {
+                protocol: r.protocol,
+                player_details: r.players_details,
+                server_type: r.server_type,
+                vac_secured: r.vac_secured,
+                steam_id: r.steam_id,
+                port: r.port,
+                tv_port: r.tv_port,
+                tv_name: r.tv_name,
+                keywords: r.keywords,
+                rules: r.rules,
+                mode: r.mode,
+                witnesses: r.witnesses,
+                duration: r.duration,
+            }),
+        }
+    }
 }
 
 impl Response {
