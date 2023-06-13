@@ -89,7 +89,7 @@ impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self {
         GenericResponse {
             name: Some(r.info.name),
-            description: None, // TODO: Maybe in extra_data
+            description: None,
             game: Some(r.info.game),
             game_version: Some(r.info.version),
             map: Some(r.info.map),

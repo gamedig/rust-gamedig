@@ -16,4 +16,3 @@ pub mod types;
 pub mod valve;
 
 pub use types::{GenericResponse, Protocol};
-
