@@ -21,6 +21,17 @@ jobs:
       run: cargo check --verbose
     - name: Run Tests
       run: cargo test --verbose
+    - name: Install Formatting nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        components: rustfmt
+    - name: Run Formatting check
+      run: cargo +nightly fmt --check --verbose
+    - name: Install Audit
+      run: cargo install cargo-audit
+    - name: Run Audit
+      run: cargo audit --deny warnings
     - name: Install MSRV
       uses: actions-rs/toolchain@v1
       with:
@@ -28,12 +39,3 @@ jobs:
         override: true
     - name: Run MSRV
       run: cargo build
-    - name: Install nightly
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        components: rustfmt
-    - name: Run formatting check
-      run: cargo +nightly fmt --check --verbose
-    - name: Run audit
-      run: cargo audit --deny warnings
