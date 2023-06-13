@@ -5,11 +5,11 @@ use std::net::IpAddr;
 fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<GenericResponse> {
     let game = GAMES.get(game_name).expect("Game doesn't exist");
 
-    println!("Querying {:?} with {:?}", addr, game);
+    println!("Querying {:#?} with game {:#?}.", addr, game.name);
 
     let response = query(game, addr, port)?;
 
-    println!("{:?}", response);
+    println!("{:#?}", response);
 
     Ok(response)
 }
