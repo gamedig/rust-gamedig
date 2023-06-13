@@ -54,6 +54,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::FFOW),
     "gm" => game!("Garry's Mod", 27016, Protocol::Valve(SteamApp::GM)),
     "hl2dm" => game!("Half-Life 2 Deathmatch", 27015, Protocol::Valve(SteamApp::HL2DM)),
+    "haloce" => game!("Halo: Combat Evolved", 2302, Protocol::Gamespy(GameSpyVersion::Two)),
     "hldms" => game!("Half-Life Deathmatch: Source", 27015, Protocol::Valve(SteamApp::HLDMS)),
     "hll" => game!("Hell Let Loose", 26420, Protocol::Valve(SteamApp::HLL)),
     "ins" => game!("Insurgency", 27015, Protocol::Valve(SteamApp::INS)),

@@ -11,12 +11,14 @@ pub use protocols::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameSpyVersion {
     One,
+    Two,
     Three,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum VersionedExtraResponse {
-    One(protocols::one::ExtraResponse),
-    Three(protocols::three::ExtraResponse),
+    One(one::ExtraResponse),
+    Two(two::ExtraResponse),
+    Three(three::ExtraResponse),
 }

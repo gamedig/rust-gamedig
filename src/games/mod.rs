@@ -153,6 +153,7 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
         Protocol::Gamespy(version) => {
             match version {
                 GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, None).map(|r| r.into())?,
+                GameSpyVersion::Two => protocols::gamespy::two::query(&socket_addr, None).map(|r| r.into())?,
                 GameSpyVersion::Three => protocols::gamespy::three::query(&socket_addr, None).map(|r| r.into())?,
             }
         }
