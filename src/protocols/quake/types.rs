@@ -24,6 +24,7 @@ pub struct Response<P> {
     pub unused_entries: HashMap<String, String>,
 }
 
+/// Non-generic quake response
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtraResponse {

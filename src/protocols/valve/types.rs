@@ -58,6 +58,7 @@ pub struct Response {
     pub rules: Option<HashMap<String, String>>,
 }
 
+/// Non-generic valve response
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExtraResponse {

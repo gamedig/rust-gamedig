@@ -78,6 +78,7 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
+/// Non-generic java response
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaExtraResponse {
@@ -146,6 +147,7 @@ pub struct BedrockResponse {
     pub server_type: Server,
 }
 
+/// Non-generic bedrock response
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BedrockExtraResponse {
