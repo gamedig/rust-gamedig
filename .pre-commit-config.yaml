@@ -1,0 +1,17 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: local
+    hooks:
+      - id: clippy
+        name: Check clippy
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: rustup run --install nightly cargo-clippy -- -- -D warnings
+      - id: format
+        name: Check rustfmt
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: rustup run --install nightly cargo-fmt --check
