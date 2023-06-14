@@ -47,9 +47,9 @@ pub struct GenericResponse {
 impl GenericResponse {
     /// Get a list of connected player names
     ///
-    /// This requires cloning so it is a good idea to cache this if you would
-    /// like to re-use
-    pub fn get_player_names(&self) -> Option<Vec<String>> {
+    /// This requires iterating the player list so it is a good idea to cache
+    /// this for re-use
+    pub fn get_player_names(&self) -> Option<Vec<&String>> {
         match &self.inner {
             SpecificResponse::Valve(extra) => {
                 extra.players.as_ref().map(|players| {
@@ -59,7 +59,7 @@ impl GenericResponse {
                             if player.name.is_empty() {
                                 None
                             } else {
-                                Some(player.name.clone())
+                                Some(&player.name)
                             }
                         })
                         .collect()
@@ -68,31 +68,13 @@ impl GenericResponse {
             SpecificResponse::Gamespy(versioned) => {
                 match versioned {
                     gamespy::VersionedExtraResponse::One(extra) => {
-                        Some(
-                            extra
-                                .players
-                                .iter()
-                                .map(|player| player.name.clone())
-                                .collect(),
-                        )
+                        Some(extra.players.iter().map(|player| &player.name).collect())
                     }
                     gamespy::VersionedExtraResponse::Two(extra) => {
-                        Some(
-                            extra
-                                .players
-                                .iter()
-                                .map(|player| player.name.clone())
-                                .collect(),
-                        )
+                        Some(extra.players.iter().map(|player| &player.name).collect())
                     }
                     gamespy::VersionedExtraResponse::Three(extra) => {
-                        Some(
-                            extra
-                                .players
-                                .iter()
-                                .map(|player| player.name.clone())
-                                .collect(),
-                        )
+                        Some(extra.players.iter().map(|player| &player.name).collect())
                     }
                 }
             }
@@ -102,7 +84,7 @@ impl GenericResponse {
                         extra
                             .players_sample
                             .as_ref()
-                            .map(|players| players.iter().map(|player| player.name.clone()).collect())
+                            .map(|players| players.iter().map(|player| &player.name).collect())
                     }
                     minecraft::VersionedExtraResponse::Bedrock(_) => None,
                 }
@@ -112,7 +94,7 @@ impl GenericResponse {
                     extra
                         .player_details
                         .iter()
-                        .map(|player| player.name.clone())
+                        .map(|player| &player.name)
                         .collect(),
                 )
             }
