@@ -116,11 +116,15 @@ use crate::protocols::{self, Protocol};
 use crate::GDResult;
 use std::net::{IpAddr, SocketAddr};
 
+/// Definition of a game
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Game {
+    /// Full name of the game
     pub name: &'static str,
+    /// Default port used by game
     pub default_port: u16,
+    /// The protocol the game's query uses
     pub protocol: Protocol,
 }
 
@@ -130,6 +134,7 @@ mod definitions;
 #[cfg(feature = "game_defs")]
 pub use definitions::GAMES;
 
+/// Make a query given a game definition
 pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<protocols::GenericResponse> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
