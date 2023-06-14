@@ -44,6 +44,83 @@ pub struct GenericResponse {
     pub inner: SpecificResponse,
 }
 
+impl GenericResponse {
+    /// Get a list of connected player names
+    ///
+    /// This requires cloning so it is a good idea to cache this if you would
+    /// like to re-use
+    pub fn get_player_names(&self) -> Option<Vec<String>> {
+        match &self.inner {
+            SpecificResponse::Valve(extra) => {
+                extra.players.as_ref().map(|players| {
+                    players
+                        .iter()
+                        .filter_map(|player| {
+                            if player.name.is_empty() {
+                                None
+                            } else {
+                                Some(player.name.clone())
+                            }
+                        })
+                        .collect()
+                })
+            }
+            SpecificResponse::Gamespy(versioned) => {
+                match versioned {
+                    gamespy::VersionedExtraResponse::One(extra) => {
+                        Some(
+                            extra
+                                .players
+                                .iter()
+                                .map(|player| player.name.clone())
+                                .collect(),
+                        )
+                    }
+                    gamespy::VersionedExtraResponse::Two(extra) => {
+                        Some(
+                            extra
+                                .players
+                                .iter()
+                                .map(|player| player.name.clone())
+                                .collect(),
+                        )
+                    }
+                    gamespy::VersionedExtraResponse::Three(extra) => {
+                        Some(
+                            extra
+                                .players
+                                .iter()
+                                .map(|player| player.name.clone())
+                                .collect(),
+                        )
+                    }
+                }
+            }
+            SpecificResponse::Minecraft(versioned) => {
+                match versioned {
+                    minecraft::VersionedExtraResponse::Java(extra) => {
+                        extra
+                            .players_sample
+                            .as_ref()
+                            .map(|players| players.iter().map(|player| player.name.clone()).collect())
+                    }
+                    minecraft::VersionedExtraResponse::Bedrock(_) => None,
+                }
+            }
+            SpecificResponse::TheShip(extra) => {
+                Some(
+                    extra
+                        .player_details
+                        .iter()
+                        .map(|player| player.name.clone())
+                        .collect(),
+                )
+            }
+            _ => None,
+        }
+    }
+}
+
 /// A specific response containing extra data that isn't generic
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]

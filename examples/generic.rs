@@ -11,6 +11,9 @@ fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<
 
     println!("{:#?}", response);
 
+    let players = response.get_player_names();
+    println!("{:#?}", players);
+
     Ok(response)
 }
 
