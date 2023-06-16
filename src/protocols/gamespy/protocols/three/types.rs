@@ -1,5 +1,5 @@
-use crate::protocols::gamespy::VersionedExtraResponse;
-use crate::protocols::{types::SpecificResponse, GenericResponse};
+use crate::protocols::gamespy::VersionedResponse;
+use crate::protocols::GenericResponse;
 use std::collections::HashMap;
 
 #[cfg(feature = "serde")]
@@ -43,36 +43,6 @@ pub struct Response {
     pub unused_entries: HashMap<String, String>,
 }
 
-/// Non-generic query response
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtraResponse {
-    pub players_minimum: Option<u8>,
-    pub teams: Vec<Team>,
-    pub tournament: bool,
-    pub unused_entries: HashMap<String, String>,
-    pub players: Vec<Player>,
-}
-
 impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self {
-        Self {
-            name: Some(r.name),
-            description: None,
-            game: Some(r.game_type),
-            game_version: Some(r.game_version),
-            map: Some(r.map),
-            players_maximum: r.players_maximum.try_into().unwrap(), // FIXME: usize to u64 may fail
-            players_online: r.players_online.try_into().unwrap(),
-            players_bots: None,
-            has_password: Some(r.has_password),
-            inner: SpecificResponse::Gamespy(VersionedExtraResponse::Three(ExtraResponse {
-                players_minimum: r.players_minimum,
-                teams: r.teams,
-                tournament: r.tournament,
-                unused_entries: r.unused_entries,
-                players: r.players,
-            })),
-        }
-    }
+    fn from(r: Response) -> Self { GenericResponse::GameSpy(VersionedResponse::Three(r)) }
 }

@@ -16,11 +16,11 @@ pub enum GameSpyVersion {
     Three,
 }
 
-/// Enum of versions and their ExtraResponse data
+/// Versioned response type
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub enum VersionedExtraResponse {
-    One(one::ExtraResponse),
-    Two(two::ExtraResponse),
-    Three(three::ExtraResponse),
+pub enum VersionedResponse {
+    One(one::Response),
+    Two(two::Response),
+    Three(three::Response),
 }

@@ -14,48 +14,110 @@ pub enum Protocol {
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
+    #[cfg(not(feature = "no_games"))]
     TheShip,
+    #[cfg(not(feature = "no_games"))]
     FFOW,
 }
 
-/// A generic version of a response
+// A generic version of a response
+// #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct GenericResponse {
+// The name of the server
+// pub name: Option<String>,
+// Description of the server
+// pub description: Option<String>,
+// Name of the current game or game mode
+// pub game: Option<String>,
+// Version of the game being run on the server
+// pub game_version: Option<String>,
+// The current map name
+// pub map: Option<String>,
+// Maximum number of players allowed to connect
+// pub players_maximum: u64,
+// Number of players currently connected
+// pub players_online: u64,
+// Number of bots currently connected
+// pub players_bots: Option<u64>,
+// Whether the server requires a password to join
+// pub has_password: Option<bool>,
+// Data specific to non-generic responses
+// pub inner: SpecificResponse,
+// }
+
+/// All response types
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub struct GenericResponse {
-    /// The name of the server
-    pub name: Option<String>,
-    /// Description of the server
-    pub description: Option<String>,
-    /// Name of the current game or game mode
-    pub game: Option<String>,
-    /// Version of the game being run on the server
-    pub game_version: Option<String>,
-    /// The current map name
-    pub map: Option<String>,
-    /// Maximum number of players allowed to connect
-    pub players_maximum: u64,
-    /// Number of players currently connected
-    pub players_online: u64,
-    /// Number of bots currently connected
-    pub players_bots: Option<u64>,
-    /// Whether the server requires a password to join
-    pub has_password: Option<bool>,
-    /// Data specific to non-generic responses
-    pub inner: SpecificResponse,
+pub enum GenericResponse {
+    GameSpy(gamespy::VersionedResponse),
+    Minecraft(minecraft::VersionedResponse),
+    Quake(quake::VersionedResponse),
+    Valve(valve::Response),
+    #[cfg(not(feature = "no_games"))]
+    TheShip(crate::games::ts::Response),
+    #[cfg(not(feature = "no_games"))]
+    FFOW(crate::games::ffow::Response),
 }
 
-/// A specific response containing extra data that isn't generic
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
-pub enum SpecificResponse {
-    Gamespy(gamespy::VersionedExtraResponse),
-    Minecraft(minecraft::VersionedExtraResponse),
-    Quake(quake::ExtraResponse),
-    Valve(valve::ExtraResponse),
-    #[cfg(not(feature = "no_games"))]
-    TheShip(crate::games::ts::ExtraResponse),
-    #[cfg(not(feature = "no_games"))]
-    FFOW(crate::games::ffow::ExtraResponse),
+impl GenericResponse {
+    /// The name of the server
+    pub fn name(&self) -> Option<&String> {
+        todo!();
+    }
+    /// Description of the server
+    pub fn description(&self) -> Option<&String> {
+        match self {
+            GenericResponse::Minecraft(minecraft::VersionedResponse::Java(r)) => Some(&r.description),
+            GenericResponse::FFOW(r) => Some(&r.description),
+            _ => None,
+        }
+    }
+    /// Name of the current game or game mode
+    pub fn game(&self) -> Option<String> {
+        todo!();
+    }
+    /// Version of the game being run on the server
+    pub fn game_version(&self) -> Option<String> {
+        todo!();
+    }
+    /// The current map name
+    pub fn map(&self) -> Option<String> {
+        todo!();
+    }
+    /// Maximum number of players allowed to connect
+    pub fn players_maximum(&self) -> u64 {
+        match self {
+            GenericResponse::FFOW(r) => r.players_maximum.into(),
+            GenericResponse::Quake(r) => match r {
+                quake::VersionedResponse::One(r) => r.players_maximum.into(),
+                quake::VersionedResponse::TwoAndThree(r) => r.players_maximum.into(),
+            },
+            GenericResponse::GameSpy(r) => match r {
+                gamespy::VersionedResponse::One(r) => r.players_maximum.try_into().unwrap(),
+                gamespy::VersionedResponse::Two(r) => r.players_maximum.try_into().unwrap(),
+                gamespy::VersionedResponse::Three(r) => r.players_maximum.try_into().unwrap(),
+            },
+            GenericResponse::TheShip(r) => r.max_players.into(),
+            GenericResponse::Minecraft(r) => match r {
+                minecraft::VersionedResponse::Java(r) => r.players_maximum.into(),
+                minecraft::VersionedResponse::Bedrock(r) => r.players_maximum.into(),
+            },
+            GenericResponse::Valve(r) => r.info.players_maximum.into(),
+        }
+    }
+    /// Number of players currently connected
+    pub fn players_online(&self) -> u64 {
+        todo!();
+    }
+    /// Number of bots currently connected
+    pub fn players_bots(&self) -> Option<u64> {
+        todo!();
+    }
+    /// Whether the server requires a password to join
+    pub fn has_password(&self) -> Option<bool> {
+        todo!();
+    }
 }
 
 /// Timeout settings for socket operations

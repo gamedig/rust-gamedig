@@ -164,9 +164,18 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
         }
         Protocol::Quake(version) => {
             match version {
-                QuakeVersion::One => protocols::quake::one::query(&socket_addr, None).map(|r| r.into())?,
-                QuakeVersion::Two => protocols::quake::two::query(&socket_addr, None).map(|r| r.into())?,
-                QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(|r| r.into())?,
+                QuakeVersion::One => {
+                    protocols::quake::one::query(&socket_addr, None)
+                        .map(|r| protocols::quake::VersionedResponse::One(r).into())?
+                }
+                QuakeVersion::Two => {
+                    protocols::quake::two::query(&socket_addr, None)
+                        .map(|r| protocols::quake::VersionedResponse::TwoAndThree(r).into())?
+                }
+                QuakeVersion::Three => {
+                    protocols::quake::three::query(&socket_addr, None)
+                        .map(|r| protocols::quake::VersionedResponse::TwoAndThree(r).into())?
+                }
             }
         }
         Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,

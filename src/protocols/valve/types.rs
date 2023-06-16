@@ -2,10 +2,7 @@ use std::collections::HashMap;
 
 use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
-use crate::{
-    bufferer::Bufferer,
-    protocols::{types::SpecificResponse, GenericResponse},
-};
+use crate::{bufferer::Bufferer, protocols::GenericResponse};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -58,62 +55,8 @@ pub struct Response {
     pub rules: Option<HashMap<String, String>>,
 }
 
-/// Non-generic valve response
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ExtraResponse {
-    pub players: Option<Vec<ServerPlayer>>,
-    pub rules: Option<HashMap<String, String>>,
-    /// Protocol used by the server.
-    pub protocol: u8,
-    /// Name of the folder containing the game files.
-    pub folder: String,
-    /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
-    pub appid: u32,
-    /// Dedicated, NonDedicated or SourceTV
-    pub server_type: Server,
-    /// The Operating System that the server is on.
-    pub environment_type: Environment,
-    /// Indicates whether the server uses VAC.
-    pub vac_secured: bool,
-    /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
-    pub the_ship: Option<TheShip>,
-    /// Some extra data that the server might provide or not.
-    pub extra_data: Option<ExtraData>,
-    /// GoldSrc only: Indicates whether the hosted game is a mod.
-    pub is_mod: bool,
-    /// GoldSrc only: If the game is a mod, provide additional data.
-    pub mod_data: Option<ModData>,
-}
-
 impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self {
-        GenericResponse {
-            name: Some(r.info.name),
-            description: None,
-            game: Some(r.info.game),
-            game_version: Some(r.info.version),
-            map: Some(r.info.map),
-            players_maximum: r.info.players_maximum.into(),
-            players_online: r.info.players_online.into(),
-            players_bots: Some(r.info.players_bots.into()),
-            has_password: Some(r.info.has_password),
-            inner: SpecificResponse::Valve(ExtraResponse {
-                players: r.players,
-                rules: r.rules,
-                protocol: r.info.protocol,
-                folder: r.info.folder,
-                appid: r.info.appid,
-                server_type: r.info.server_type,
-                environment_type: r.info.environment_type,
-                vac_secured: r.info.vac_secured,
-                the_ship: r.info.the_ship,
-                extra_data: r.info.extra_data,
-                is_mod: r.info.is_mod,
-                mod_data: r.info.mod_data,
-            }),
-        }
-    }
+    fn from(r: Response) -> Self { GenericResponse::Valve(r) }
 }
 
 /// General server information's.
