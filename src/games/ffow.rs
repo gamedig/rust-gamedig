@@ -1,4 +1,4 @@
-use crate::protocols::types::TimeoutSettings;
+use crate::protocols::types::{CommonResponse, TimeoutSettings};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::protocols::GenericResponse;
 use crate::GDResult;
@@ -46,6 +46,23 @@ pub struct Response {
 
 impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self { GenericResponse::FFOW(r) }
+}
+
+impl From<Response> for CommonResponse {
+    fn from(r: Response) -> Self {
+        CommonResponse {
+            name: Some(r.name),
+            description: Some(r.description),
+            game: Some(r.game_mode),
+            game_version: Some(r.version),
+            map: Some(r.map),
+            players_maximum: r.players_maximum.into(),
+            players_online: r.players_online.into(),
+            players_bots: None,
+            has_password: Some(r.has_password),
+            players: vec![], // TODO: Implement
+        }
+    }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {

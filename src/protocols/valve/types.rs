@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::protocols::types::{CommonBorrowedPlayer, CommonBorrowedResponse, CommonPlayer, CommonResponse};
 use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
 use crate::{bufferer::Bufferer, protocols::GenericResponse};
@@ -59,6 +60,47 @@ impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self { GenericResponse::Valve(r) }
 }
 
+impl From<Response> for CommonResponse {
+    fn from(r: Response) -> Self {
+        CommonResponse {
+            name: Some(r.info.name),
+            description: None,
+            game: Some(r.info.game),
+            game_version: Some(r.info.version),
+            map: Some(r.info.map),
+            players_maximum: r.info.players_maximum.into(),
+            players_online: r.info.players_online.into(),
+            players_bots: Some(r.info.players_bots.into()),
+            has_password: Some(r.info.has_password),
+            players: r
+                .players
+                .map(|players| players.into_iter().map(ServerPlayer::into).collect())
+                .unwrap_or(vec![]),
+        }
+    }
+}
+
+impl<'a> From<&'a Response> for CommonBorrowedResponse<'a> {
+    fn from(r: &'a Response) -> Self {
+        CommonBorrowedResponse {
+            name: Some(&r.info.name),
+            description: None,
+            game: Some(&r.info.game),
+            game_version: Some(&r.info.version),
+            map: Some(&r.info.map),
+            players_maximum: r.info.players_maximum.into(),
+            players_online: r.info.players_online.into(),
+            players_bots: Some(r.info.players_bots.into()),
+            has_password: Some(r.info.has_password),
+            players: r
+                .players
+                .as_ref()
+                .map(|players| players.iter().map(|p| p.into()).collect())
+                .unwrap_or(vec![]),
+        }
+    }
+}
+
 /// General server information's.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -115,6 +157,24 @@ pub struct ServerPlayer {
     pub deaths: Option<u32>, // the_ship
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): money amount
     pub money: Option<u32>, // the_ship
+}
+
+impl From<ServerPlayer> for CommonPlayer {
+    fn from(p: ServerPlayer) -> Self {
+        CommonPlayer {
+            name: p.name,
+            score: p.score,
+        }
+    }
+}
+
+impl<'a> From<&'a ServerPlayer> for CommonBorrowedPlayer<'a> {
+    fn from(p: &'a ServerPlayer) -> Self {
+        CommonBorrowedPlayer {
+            name: &p.name,
+            score: p.score,
+        }
+    }
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).

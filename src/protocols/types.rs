@@ -60,63 +60,93 @@ pub enum GenericResponse {
     FFOW(crate::games::ffow::Response),
 }
 
-impl GenericResponse {
+/// Common response fields
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonResponse {
     /// The name of the server
-    pub fn name(&self) -> Option<&String> {
-        todo!();
-    }
+    pub name: Option<String>,
     /// Description of the server
-    pub fn description(&self) -> Option<&String> {
-        match self {
-            GenericResponse::Minecraft(minecraft::VersionedResponse::Java(r)) => Some(&r.description),
-            GenericResponse::FFOW(r) => Some(&r.description),
-            _ => None,
-        }
-    }
+    pub description: Option<String>,
     /// Name of the current game or game mode
-    pub fn game(&self) -> Option<String> {
-        todo!();
-    }
+    pub game: Option<String>,
     /// Version of the game being run on the server
-    pub fn game_version(&self) -> Option<String> {
-        todo!();
-    }
+    pub game_version: Option<String>,
     /// The current map name
-    pub fn map(&self) -> Option<String> {
-        todo!();
-    }
+    pub map: Option<String>,
     /// Maximum number of players allowed to connect
-    pub fn players_maximum(&self) -> u64 {
+    pub players_maximum: u64,
+    /// Number of players currently connected
+    pub players_online: u64,
+    /// Number of bots currently connected
+    pub players_bots: Option<u64>,
+    /// Whether the server requires a password to join
+    pub has_password: Option<bool>,
+    /// Currently connected players
+    pub players: Vec<CommonPlayer>,
+}
+
+/// Common response fields (not owned)
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonBorrowedResponse<'a> {
+    /// The name of the server
+    pub name: Option<&'a String>,
+    /// Description of the server
+    pub description: Option<&'a String>,
+    /// Name of the current game or game mode
+    pub game: Option<&'a String>,
+    /// Version of the game being run on the server
+    pub game_version: Option<&'a String>,
+    /// The current map name
+    pub map: Option<&'a String>,
+    /// Maximum number of players allowed to connect
+    pub players_maximum: u64,
+    /// Number of players currently connected
+    pub players_online: u64,
+    /// Number of bots currently connected
+    pub players_bots: Option<u64>,
+    /// Whether the server requires a password to join
+    pub has_password: Option<bool>,
+    /// Currently connected players
+    pub players: Vec<CommonBorrowedPlayer<'a>>,
+}
+
+/// Common player fields
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonPlayer {
+    /// Player's name.
+    pub name: String,
+    /// General score.
+    pub score: u32,
+}
+
+/// Common player fields
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonBorrowedPlayer<'a> {
+    /// Player's name.
+    pub name: &'a String,
+    /// General score.
+    pub score: u32,
+}
+
+impl GenericResponse {
+    pub fn into_common(self) -> CommonResponse {
         match self {
-            GenericResponse::FFOW(r) => r.players_maximum.into(),
-            GenericResponse::Quake(r) => match r {
-                quake::VersionedResponse::One(r) => r.players_maximum.into(),
-                quake::VersionedResponse::TwoAndThree(r) => r.players_maximum.into(),
-            },
-            GenericResponse::GameSpy(r) => match r {
-                gamespy::VersionedResponse::One(r) => r.players_maximum.try_into().unwrap(),
-                gamespy::VersionedResponse::Two(r) => r.players_maximum.try_into().unwrap(),
-                gamespy::VersionedResponse::Three(r) => r.players_maximum.try_into().unwrap(),
-            },
-            GenericResponse::TheShip(r) => r.max_players.into(),
-            GenericResponse::Minecraft(r) => match r {
-                minecraft::VersionedResponse::Java(r) => r.players_maximum.into(),
-                minecraft::VersionedResponse::Bedrock(r) => r.players_maximum.into(),
-            },
-            GenericResponse::Valve(r) => r.info.players_maximum.into(),
+            GenericResponse::FFOW(r) => r.into(),
+            GenericResponse::Valve(r) => r.into(),
+            _ => todo!(),
         }
     }
-    /// Number of players currently connected
-    pub fn players_online(&self) -> u64 {
-        todo!();
-    }
-    /// Number of bots currently connected
-    pub fn players_bots(&self) -> Option<u64> {
-        todo!();
-    }
-    /// Whether the server requires a password to join
-    pub fn has_password(&self) -> Option<bool> {
-        todo!();
+
+    pub fn as_common(&self) -> CommonBorrowedResponse {
+        match self {
+            GenericResponse::Valve(r) => r.into(),
+            GenericResponse::GameSpy(gamespy::VersionedResponse::Two(r)) => r.into(),
+            _ => todo!(),
+        }
     }
 }
 

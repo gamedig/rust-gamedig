@@ -8,8 +8,10 @@ fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<
     println!("Querying {:#?} with game {:#?}.", addr, game.name);
 
     let response = query(game, addr, port)?;
+    println!("Response: {:#?}", response);
 
-    println!("{:#?}", response);
+    let common = response.as_common();
+    println!("Common response: {:#?}", common);
 
     Ok(response)
 }
