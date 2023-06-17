@@ -102,22 +102,25 @@ pub struct CommonPlayerImpl<StringType> {
 pub type CommonPlayer = CommonPlayerImpl<String>;
 pub type CommonBorrowedPlayer<'a> = CommonPlayerImpl<&'a String>;
 
-impl GenericResponse {
-    pub fn into_common(self) -> CommonResponse {
-        match self {
-            GenericResponse::FFOW(r) => r.into(),
+macro_rules! common_conversion {
+    ($self:ident) => {
+        match $self {
             GenericResponse::Valve(r) => r.into(),
+            GenericResponse::GameSpy(v) => {
+                match v {
+                    gamespy::VersionedResponse::One(r) => r.try_into().unwrap(),
+                    gamespy::VersionedResponse::Two(r) => r.try_into().unwrap(),
+                    gamespy::VersionedResponse::Three(r) => r.try_into().unwrap(),
+                }
+            }
             _ => todo!(),
         }
-    }
+    };
+}
 
-    pub fn as_common(&self) -> CommonBorrowedResponse {
-        match self {
-            GenericResponse::Valve(r) => r.into(),
-            GenericResponse::GameSpy(gamespy::VersionedResponse::Two(r)) => r.into(),
-            _ => todo!(),
-        }
-    }
+impl GenericResponse {
+    pub fn into_common(self) -> CommonResponse { common_conversion!(self) }
+    pub fn as_common(&self) -> CommonBorrowedResponse { common_conversion!(self) }
 }
 
 /// Timeout settings for socket operations

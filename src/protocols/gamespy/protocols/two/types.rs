@@ -58,36 +58,38 @@ impl From<Response> for GenericResponse {
     fn from(r: Response) -> Self { GenericResponse::GameSpy(VersionedResponse::Two(r)) }
 }
 
-impl From<Response> for CommonResponse {
-    fn from(r: Response) -> Self {
-        CommonResponse {
+impl TryFrom<Response> for CommonResponse {
+    type Error = <u64 as TryFrom<usize>>::Error;
+    fn try_from(r: Response) -> Result<Self, Self::Error> {
+        Ok(CommonResponse {
             name: Some(r.name),
             description: None,
             game: None,
             game_version: None,
             map: Some(r.map),
-            players_maximum: r.players_maximum.try_into().unwrap(),
-            players_online: r.players_online.try_into().unwrap(),
+            players_maximum: r.players_maximum.try_into()?,
+            players_online: r.players_online.try_into()?,
             players_bots: None,
             has_password: None,
             players: r.players.into_iter().map(Player::into).collect(),
-        }
+        })
     }
 }
 
-impl<'a> From<&'a Response> for CommonBorrowedResponse<'a> {
-    fn from(r: &'a Response) -> Self {
-        CommonBorrowedResponse {
+impl<'a> TryFrom<&'a Response> for CommonBorrowedResponse<'a> {
+    type Error = <u64 as TryFrom<usize>>::Error;
+    fn try_from(r: &'a Response) -> Result<Self, Self::Error> {
+        Ok(CommonBorrowedResponse {
             name: Some(&r.name),
             description: None,
             game: None,
             game_version: None,
             map: Some(&r.map),
-            players_maximum: r.players_maximum.try_into().unwrap(),
-            players_online: r.players_online.try_into().unwrap(),
+            players_maximum: r.players_maximum.try_into()?,
+            players_online: r.players_online.try_into()?,
             players_bots: None,
             has_password: None,
             players: r.players.iter().map(|p| p.into()).collect(),
-        }
+        })
     }
 }
