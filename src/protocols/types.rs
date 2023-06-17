@@ -63,17 +63,17 @@ pub enum GenericResponse {
 /// Common response fields
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub struct CommonResponse {
+pub struct CommonResponseImpl<StringType> {
     /// The name of the server
-    pub name: Option<String>,
+    pub name: Option<StringType>,
     /// Description of the server
-    pub description: Option<String>,
+    pub description: Option<StringType>,
     /// Name of the current game or game mode
-    pub game: Option<String>,
+    pub game: Option<StringType>,
     /// Version of the game being run on the server
-    pub game_version: Option<String>,
+    pub game_version: Option<StringType>,
     /// The current map name
-    pub map: Option<String>,
+    pub map: Option<StringType>,
     /// Maximum number of players allowed to connect
     pub players_maximum: u64,
     /// Number of players currently connected
@@ -83,54 +83,24 @@ pub struct CommonResponse {
     /// Whether the server requires a password to join
     pub has_password: Option<bool>,
     /// Currently connected players
-    pub players: Vec<CommonPlayer>,
+    pub players: Vec<CommonPlayerImpl<StringType>>,
 }
 
-/// Common response fields (not owned)
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
-pub struct CommonBorrowedResponse<'a> {
-    /// The name of the server
-    pub name: Option<&'a String>,
-    /// Description of the server
-    pub description: Option<&'a String>,
-    /// Name of the current game or game mode
-    pub game: Option<&'a String>,
-    /// Version of the game being run on the server
-    pub game_version: Option<&'a String>,
-    /// The current map name
-    pub map: Option<&'a String>,
-    /// Maximum number of players allowed to connect
-    pub players_maximum: u64,
-    /// Number of players currently connected
-    pub players_online: u64,
-    /// Number of bots currently connected
-    pub players_bots: Option<u64>,
-    /// Whether the server requires a password to join
-    pub has_password: Option<bool>,
-    /// Currently connected players
-    pub players: Vec<CommonBorrowedPlayer<'a>>,
-}
+pub type CommonResponse = CommonResponseImpl<String>;
+pub type CommonBorrowedResponse<'a> = CommonResponseImpl<&'a String>;
 
 /// Common player fields
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub struct CommonPlayer {
+pub struct CommonPlayerImpl<StringType> {
     /// Player's name.
-    pub name: String,
+    pub name: StringType,
     /// General score.
     pub score: u32,
 }
 
-/// Common player fields
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
-pub struct CommonBorrowedPlayer<'a> {
-    /// Player's name.
-    pub name: &'a String,
-    /// General score.
-    pub score: u32,
-}
+pub type CommonPlayer = CommonPlayerImpl<String>;
+pub type CommonBorrowedPlayer<'a> = CommonPlayerImpl<&'a String>;
 
 impl GenericResponse {
     pub fn into_common(self) -> CommonResponse {
