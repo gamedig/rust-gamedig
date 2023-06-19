@@ -12,6 +12,7 @@ Generic query:
 
 Games:
 - [Halo: Combat Evolved](https://en.wikipedia.org/wiki/Halo:_Combat_Evolved) support.
+- [Just Cause 2: Multiplayer](https://store.steampowered.com/app/259080/Just_Cause_2_Multiplayer_Mod/) support.
 
 ### Breaking...
 Crate:
