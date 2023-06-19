@@ -6,6 +6,10 @@ Who knows what the future holds...
 Protocols:
 - GameSpy 2 support.
 
+Generic query:
+- Added generic queries (by [@Douile](https://github.com/Douile)) which come with a common struct for the response fields.
+- The supported games list is available programmatically.
+
 Games:
 - [Halo: Combat Evolved](https://en.wikipedia.org/wiki/Halo:_Combat_Evolved) support.
 
