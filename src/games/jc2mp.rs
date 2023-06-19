@@ -1,6 +1,8 @@
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
+use crate::protocols::types::SpecificResponse;
+use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -19,9 +21,26 @@ pub struct Player {
 pub struct Response {
     version: String,
     description: String,
-    hostname: String,
-    password: bool,
+    name: String,
+    has_password: bool,
     players: Vec<Player>,
+}
+
+impl From<Response> for GenericResponse {
+    fn from(r: Response) -> Self {
+        Self {
+            name: Some(r.name),
+            description: Some(r.description),
+            game: None,
+            game_version: Some(r.version),
+            map: None,
+            players_maximum: 0, // todo: fuck!
+            players_online: r.players.len() as u64,
+            players_bots: None,
+            has_password: Some(r.has_password),
+            inner: SpecificResponse::JC2MP,
+        }
+    }
 }
 
 fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
@@ -61,8 +80,8 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
         description: server_vars
             .remove("description")
             .ok_or(GDError::PacketBad)?,
-        hostname: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
-        password: has_password(&mut server_vars)?,
+        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
+        has_password: has_password(&mut server_vars)?,
         players,
     })
 }

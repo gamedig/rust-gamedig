@@ -173,5 +173,6 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
         }
         Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,
         Protocol::FFOW => ffow::query(address, port).map(|r| r.into())?,
+        Protocol::JC2MP => jc2mp::query(address, port).map(|r| r.into())?,
     })
 }
