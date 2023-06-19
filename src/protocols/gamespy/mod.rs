@@ -1,7 +1,7 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-mod common;
+pub(crate) mod common;
 /// The implementations.
 pub mod protocols;
 

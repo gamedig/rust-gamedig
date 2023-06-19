@@ -65,6 +65,8 @@ pub mod ins;
 pub mod insmic;
 /// Insurgency: Sandstorm
 pub mod inss;
+/// Just Cause 2: Multiplayer
+pub mod jc2mp;
 /// Left 4 Dead
 pub mod l4d;
 /// Left 4 Dead 2
