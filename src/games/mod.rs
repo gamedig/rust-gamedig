@@ -65,6 +65,8 @@ pub mod ins;
 pub mod insmic;
 /// Insurgency: Sandstorm
 pub mod inss;
+/// Just Cause 2: Multiplayer
+pub mod jc2mp;
 /// Left 4 Dead
 pub mod l4d;
 /// Left 4 Dead 2
@@ -171,5 +173,6 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<proto
         }
         Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,
         Protocol::FFOW => ffow::query(address, port).map(|r| r.into())?,
+        Protocol::JC2MP => jc2mp::query(address, port).map(|r| r.into())?,
     })
 }

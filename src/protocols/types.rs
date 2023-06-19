@@ -16,6 +16,7 @@ pub enum Protocol {
     Valve(valve::SteamApp),
     TheShip,
     FFOW,
+    JC2MP,
 }
 
 /// A generic version of a response
@@ -56,6 +57,8 @@ pub enum SpecificResponse {
     TheShip(crate::games::ts::ExtraResponse),
     #[cfg(not(feature = "no_games"))]
     FFOW(crate::games::ffow::ExtraResponse),
+    #[cfg(not(feature = "no_games"))]
+    JC2MP,
 }
 
 /// Timeout settings for socket operations
