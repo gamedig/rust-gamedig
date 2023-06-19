@@ -24,6 +24,8 @@ pub struct Response {
     name: String,
     has_password: bool,
     players: Vec<Player>,
+    players_maximum: usize,
+    players_online: usize,
 }
 
 impl From<Response> for GenericResponse {
@@ -34,8 +36,8 @@ impl From<Response> for GenericResponse {
             game: None,
             game_version: Some(r.version),
             map: None,
-            players_maximum: 0, // todo: fuck!
-            players_online: r.players.len() as u64,
+            players_maximum: r.players_maximum as u64,
+            players_online: r.players_online as u64,
             players_bots: None,
             has_password: Some(r.has_password),
             inner: SpecificResponse::JC2MP,
@@ -72,8 +74,23 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
     let data = packets.get(0).ok_or(GDError::PacketBad)?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;
-
     let players = parse_players_and_teams(remaining_data)?;
+
+    let players_maximum = server_vars
+        .remove("maxplayers")
+        .ok_or(GDError::PacketBad)?
+        .parse()
+        .map_err(|_| GDError::TypeParse)?;
+    let players_online = match server_vars.remove("numplayers") {
+        None => players.len(),
+        Some(v) => {
+            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            match reported_players < players.len() {
+                true => players.len(),
+                false => reported_players,
+            }
+        }
+    };
 
     Ok(Response {
         version: server_vars.remove("version").ok_or(GDError::PacketBad)?,
@@ -83,5 +100,7 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
         name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
         has_password: has_password(&mut server_vars)?,
         players,
+        players_maximum,
+        players_online,
     })
 }
