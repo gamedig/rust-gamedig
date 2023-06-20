@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use crate::protocols::types::{CommonBorrowedPlayer, CommonBorrowedResponse, CommonPlayer};
+use crate::protocols::gamespy::{VersionedPlayer, VersionedResponse};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
-use crate::protocols::{gamespy::VersionedResponse, types::CommonResponse};
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -22,22 +23,11 @@ pub struct Player {
     pub team_index: u16,
 }
 
-impl From<Player> for CommonPlayer {
-    fn from(p: Player) -> Self {
-        CommonPlayer {
-            name: p.name,
-            score: p.score.into(),
-        }
-    }
-}
+impl CommonPlayer for Player {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::Two(self)) }
 
-impl<'a> From<&'a Player> for CommonBorrowedPlayer<'a> {
-    fn from(p: &'a Player) -> Self {
-        CommonBorrowedPlayer {
-            name: &p.name,
-            score: p.score.into(),
-        }
-    }
+    fn name(&self) -> &str { &self.name }
+    fn score(&self) -> Option<u32> { Some(self.score.into()) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -54,42 +44,21 @@ pub struct Response {
     pub unused_entries: HashMap<String, String>,
 }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self { GenericResponse::GameSpy(VersionedResponse::Two(r)) }
-}
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::GameSpy(VersionedResponse::Two(self)) }
 
-impl TryFrom<Response> for CommonResponse {
-    type Error = <u64 as TryFrom<usize>>::Error;
-    fn try_from(r: Response) -> Result<Self, Self::Error> {
-        Ok(CommonResponse {
-            name: Some(r.name),
-            description: None,
-            game: None,
-            game_version: None,
-            map: Some(r.map),
-            players_maximum: r.players_maximum.try_into()?,
-            players_online: r.players_online.try_into()?,
-            players_bots: None,
-            has_password: None,
-            players: r.players.into_iter().map(Player::into).collect(),
-        })
-    }
-}
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
+    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
 
-impl<'a> TryFrom<&'a Response> for CommonBorrowedResponse<'a> {
-    type Error = <u64 as TryFrom<usize>>::Error;
-    fn try_from(r: &'a Response) -> Result<Self, Self::Error> {
-        Ok(CommonBorrowedResponse {
-            name: Some(&r.name),
-            description: None,
-            game: None,
-            game_version: None,
-            map: Some(&r.map),
-            players_maximum: r.players_maximum.try_into()?,
-            players_online: r.players_online.try_into()?,
-            players_bots: None,
-            has_password: None,
-            players: r.players.iter().map(|p| p.into()).collect(),
-        })
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        Some(
+            self.players
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
     }
 }

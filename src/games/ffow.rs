@@ -44,25 +44,17 @@ pub struct Response {
     pub time_left: u16,
 }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self { GenericResponse::FFOW(r) }
-}
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
-impl From<Response> for CommonResponse {
-    fn from(r: Response) -> Self {
-        CommonResponse {
-            name: Some(r.name),
-            description: Some(r.description),
-            game: Some(r.game_mode),
-            game_version: Some(r.version),
-            map: Some(r.map),
-            players_maximum: r.players_maximum.into(),
-            players_online: r.players_online.into(),
-            players_bots: None,
-            has_password: Some(r.has_password),
-            players: vec![], // TODO: Implement
-        }
-    }
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {

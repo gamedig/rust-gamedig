@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::protocols::types::{CommonBorrowedPlayer, CommonBorrowedResponse, CommonPlayer, CommonResponse};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
 use crate::{bufferer::Bufferer, protocols::GenericResponse};
@@ -56,48 +56,22 @@ pub struct Response {
     pub rules: Option<HashMap<String, String>>,
 }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self { GenericResponse::Valve(r) }
-}
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Valve(self) }
 
-impl From<Response> for CommonResponse {
-    fn from(r: Response) -> Self {
-        CommonResponse {
-            name: Some(r.info.name),
-            description: None,
-            game: Some(r.info.game),
-            game_version: Some(r.info.version),
-            map: Some(r.info.map),
-            players_maximum: r.info.players_maximum.into(),
-            players_online: r.info.players_online.into(),
-            players_bots: Some(r.info.players_bots.into()),
-            has_password: Some(r.info.has_password),
-            players: r
-                .players
-                .map(|players| players.into_iter().map(ServerPlayer::into).collect())
-                .unwrap_or(vec![]),
-        }
-    }
-}
+    fn name(&self) -> Option<&str> { Some(&self.info.name) }
+    fn game(&self) -> Option<&str> { Some(&self.info.game) }
+    fn game_version(&self) -> Option<&str> { Some(&self.info.version) }
+    fn map(&self) -> Option<&str> { Some(&self.info.map) }
+    fn players_maximum(&self) -> u64 { self.info.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.info.players_online.into() }
+    fn players_bots(&self) -> Option<u64> { Some(self.info.players_bots.into()) }
+    fn has_password(&self) -> Option<bool> { Some(self.info.has_password) }
 
-impl<'a> From<&'a Response> for CommonBorrowedResponse<'a> {
-    fn from(r: &'a Response) -> Self {
-        CommonBorrowedResponse {
-            name: Some(&r.info.name),
-            description: None,
-            game: Some(&r.info.game),
-            game_version: Some(&r.info.version),
-            map: Some(&r.info.map),
-            players_maximum: r.info.players_maximum.into(),
-            players_online: r.info.players_online.into(),
-            players_bots: Some(r.info.players_bots.into()),
-            has_password: Some(r.info.has_password),
-            players: r
-                .players
-                .as_ref()
-                .map(|players| players.iter().map(|p| p.into()).collect())
-                .unwrap_or(vec![]),
-        }
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        self.players
+            .as_ref()
+            .map(|p| p.iter().map(|p| p as &dyn CommonPlayer).collect())
     }
 }
 
@@ -159,22 +133,10 @@ pub struct ServerPlayer {
     pub money: Option<u32>, // the_ship
 }
 
-impl From<ServerPlayer> for CommonPlayer {
-    fn from(p: ServerPlayer) -> Self {
-        CommonPlayer {
-            name: p.name,
-            score: p.score,
-        }
-    }
-}
-
-impl<'a> From<&'a ServerPlayer> for CommonBorrowedPlayer<'a> {
-    fn from(p: &'a ServerPlayer) -> Self {
-        CommonBorrowedPlayer {
-            name: &p.name,
-            score: p.score,
-        }
-    }
+impl CommonPlayer for ServerPlayer {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::Valve(self) }
+    fn name(&self) -> &str { &self.name }
+    fn score(&self) -> Option<u32> { Some(self.score) }
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).

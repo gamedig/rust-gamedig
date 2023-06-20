@@ -4,7 +4,10 @@
 
 use crate::{
     bufferer::Bufferer,
-    protocols::GenericResponse,
+    protocols::{
+        types::{CommonPlayer, CommonResponse, GenericPlayer},
+        GenericResponse,
+    },
     GDError::{PacketBad, UnknownEnumCast},
     GDResult,
 };
@@ -44,12 +47,17 @@ pub struct Player {
     pub id: String,
 }
 
+impl CommonPlayer for Player {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::Minecraft(self) }
+
+    fn name(&self) -> &str { &self.name }
+}
+
 /// Versioned response type
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub enum VersionedResponse {
-    Bedrock(BedrockResponse),
-    Java(JavaResponse),
+pub enum VersionedResponse<'a> {
+    Bedrock(&'a BedrockResponse),
+    Java(&'a JavaResponse),
 }
 
 /// A Java query response.
@@ -79,8 +87,19 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
-impl From<JavaResponse> for GenericResponse {
-    fn from(r: JavaResponse) -> Self { GenericResponse::Minecraft(VersionedResponse::Java(r)) }
+impl CommonResponse for JavaResponse {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
+
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        self.players_sample
+            .as_ref()
+            .map(|players| players.iter().map(|p| p as &dyn CommonPlayer).collect())
+    }
 }
 
 /// A Bedrock Edition query response.
@@ -109,8 +128,14 @@ pub struct BedrockResponse {
     pub server_type: Server,
 }
 
-impl From<BedrockResponse> for GenericResponse {
-    fn from(r: BedrockResponse) -> Self { GenericResponse::Minecraft(VersionedResponse::Bedrock(r)) }
+impl CommonResponse for BedrockResponse {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Bedrock(self)) }
+
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { self.map.as_deref() }
+    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
 }
 
 impl JavaResponse {

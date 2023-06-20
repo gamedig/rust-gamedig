@@ -2,7 +2,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::protocols::GenericResponse;
+use crate::protocols::{
+    types::{CommonPlayer, CommonResponse},
+    GenericResponse,
+};
 
 /// General server information's.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -24,14 +27,32 @@ pub struct Response<P> {
     pub unused_entries: HashMap<String, String>,
 }
 
-/// Versioned response type
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VersionedResponse {
-    One(Response<crate::protocols::quake::one::Player>),
-    TwoAndThree(Response<crate::protocols::quake::two::Player>),
+pub trait QuakePlayerType: Sized + CommonPlayer {
+    fn version(response: &Response<Self>) -> VersionedResponse;
 }
 
-impl From<VersionedResponse> for GenericResponse {
-    fn from(r: VersionedResponse) -> Self { GenericResponse::Quake(r) }
+impl<P: QuakePlayerType> CommonResponse for Response<P> {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Quake(P::version(self)) }
+
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        Some(
+            self.players
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
+    }
+}
+
+/// Versioned response type
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VersionedResponse<'a> {
+    One(&'a Response<crate::protocols::quake::one::Player>),
+    TwoAndThree(&'a Response<crate::protocols::quake::two::Player>),
 }

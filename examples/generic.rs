@@ -1,16 +1,16 @@
-use gamedig::{protocols::GenericResponse, query, GDResult, GAMES};
+use gamedig::{protocols::types::CommonResponse, query, GDResult, GAMES};
 
 use std::net::IpAddr;
 
-fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<GenericResponse> {
+fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn CommonResponse>> {
     let game = GAMES.get(game_name).expect("Game doesn't exist");
 
-    println!("Querying {:#?} with game {:#?}.", addr, game.name);
+    println!("Querying {:#?} with game {:#?}.", addr, game);
 
     let response = query(game, addr, port)?;
-    println!("Response: {:#?}", response);
+    println!("Response: {:#?}", response.as_json());
 
-    let common = response.as_common();
+    let common = response.as_original();
     println!("Common response: {:#?}", common);
 
     Ok(response)

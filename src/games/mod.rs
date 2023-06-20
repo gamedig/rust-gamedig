@@ -112,6 +112,7 @@ pub mod vr;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
+use crate::protocols::types::CommonResponse;
 use crate::protocols::{self, Protocol};
 use crate::GDResult;
 use std::net::{IpAddr, SocketAddr};
@@ -135,50 +136,41 @@ mod definitions;
 pub use definitions::GAMES;
 
 /// Make a query given a game definition
-pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<protocols::GenericResponse> {
+pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn CommonResponse>> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
         Protocol::Valve(steam_app) => {
-            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, None).map(|r| r.into())?
+            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, None).map(Box::new)?
         }
         Protocol::Minecraft(version) => {
             match version {
                 Some(protocols::minecraft::Server::Java) => {
-                    protocols::minecraft::query_java(&socket_addr, None).map(|r| r.into())?
+                    protocols::minecraft::query_java(&socket_addr, None).map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Bedrock) => {
-                    protocols::minecraft::query_bedrock(&socket_addr, None).map(|r| r.into())?
+                    protocols::minecraft::query_bedrock(&socket_addr, None).map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Legacy(group)) => {
-                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, None).map(|r| r.into())?
+                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, None).map(Box::new)?
                 }
-                None => protocols::minecraft::query(&socket_addr, None).map(|r| r.into())?,
+                None => protocols::minecraft::query(&socket_addr, None).map(Box::new)?,
             }
         }
         Protocol::Gamespy(version) => {
             match version {
-                GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, None).map(|r| r.into())?,
-                GameSpyVersion::Two => protocols::gamespy::two::query(&socket_addr, None).map(|r| r.into())?,
-                GameSpyVersion::Three => protocols::gamespy::three::query(&socket_addr, None).map(|r| r.into())?,
+                GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, None).map(Box::new)?,
+                GameSpyVersion::Two => protocols::gamespy::two::query(&socket_addr, None).map(Box::new)?,
+                GameSpyVersion::Three => protocols::gamespy::three::query(&socket_addr, None).map(Box::new)?,
             }
         }
         Protocol::Quake(version) => {
             match version {
-                QuakeVersion::One => {
-                    protocols::quake::one::query(&socket_addr, None)
-                        .map(|r| protocols::quake::VersionedResponse::One(r).into())?
-                }
-                QuakeVersion::Two => {
-                    protocols::quake::two::query(&socket_addr, None)
-                        .map(|r| protocols::quake::VersionedResponse::TwoAndThree(r).into())?
-                }
-                QuakeVersion::Three => {
-                    protocols::quake::three::query(&socket_addr, None)
-                        .map(|r| protocols::quake::VersionedResponse::TwoAndThree(r).into())?
-                }
+                QuakeVersion::One => protocols::quake::one::query(&socket_addr, None).map(Box::new)?,
+                QuakeVersion::Two => protocols::quake::two::query(&socket_addr, None).map(Box::new)?,
+                QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(Box::new)?,
             }
         }
-        Protocol::TheShip => ts::query(address, port).map(|r| r.into())?,
-        Protocol::FFOW => ffow::query(address, port).map(|r| r.into())?,
+        Protocol::TheShip => ts::query(address, port).map(Box::new)?,
+        Protocol::FFOW => ffow::query(address, port).map(Box::new)?,
     })
 }

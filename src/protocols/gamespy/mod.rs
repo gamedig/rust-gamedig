@@ -17,10 +17,17 @@ pub enum GameSpyVersion {
 }
 
 /// Versioned response type
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub enum VersionedResponse {
-    One(one::Response),
-    Two(two::Response),
-    Three(three::Response),
+pub enum VersionedResponse<'a> {
+    One(&'a one::Response),
+    Two(&'a two::Response),
+    Three(&'a three::Response),
+}
+
+/// Versioned player type
+#[derive(Debug, Clone, PartialEq)]
+pub enum VersionedPlayer<'a> {
+    One(&'a one::Player),
+    Two(&'a two::Player),
+    Three(&'a three::Player),
 }

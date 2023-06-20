@@ -1,12 +1,14 @@
 use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, QuakeClient};
 use crate::protocols::quake::one::QuakeOne;
 use crate::protocols::quake::Response;
-use crate::protocols::types::TimeoutSettings;
+use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
 use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::slice::Iter;
+
+use super::QuakePlayerType;
 
 /// Quake 2 player data.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -15,6 +17,19 @@ pub struct Player {
     pub frags: i16,
     pub ping: u16,
     pub name: String,
+}
+
+impl QuakePlayerType for Player {
+    fn version(response: &Response<Self>) -> super::VersionedResponse {
+        super::VersionedResponse::TwoAndThree(response)
+    }
+}
+
+impl CommonPlayer for Player {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::QuakeTwo(self) }
+
+    fn name(&self) -> &str { &self.name }
+    // TODO: Maybe frags is score?
 }
 
 pub(crate) struct QuakeTwo;

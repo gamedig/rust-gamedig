@@ -1,5 +1,6 @@
 use crate::{
     protocols::{
+        types::{CommonPlayer, CommonResponse, GenericPlayer},
         valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
         GenericResponse,
     },
@@ -34,6 +35,13 @@ impl TheShipPlayer {
     }
 }
 
+impl CommonPlayer for TheShipPlayer {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::TheShip(self) }
+
+    fn name(&self) -> &str { &self.name }
+    fn score(&self) -> Option<u32> { Some(self.score) }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Response {
@@ -60,8 +68,25 @@ pub struct Response {
     pub duration: u8,
 }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self { GenericResponse::TheShip(r) }
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::TheShip(self) }
+
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn game(&self) -> Option<&str> { Some(&self.game) }
+    fn players_maximum(&self) -> u64 { self.max_players.into() }
+    fn players_online(&self) -> u64 { self.players.into() }
+    fn players_bots(&self) -> Option<u64> { Some(self.bots.into()) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        Some(
+            self.players_details
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
+    }
 }
 
 impl Response {
