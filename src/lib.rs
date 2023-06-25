@@ -21,7 +21,7 @@
 //! let response = query(game, &"127.0.0.1".parse().unwrap(), None); // None will use the default port
 //! match response {
 //!     Err(error) => println!("Couldn't query, error: {}", error),
-//!     Ok(r) => println!("{:#?}", r),
+//!     Ok(r) => println!("{:#?}", r.as_json()),
 //! }
 //! ```
 //!
