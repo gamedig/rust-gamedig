@@ -19,7 +19,6 @@ use crate::{
             SteamApp,
         },
     },
-
     socket::{Socket, UdpSocket},
     utils::u8_lower_upper,
     GDError::{BadGame, Decompress, UnknownEnumCast},

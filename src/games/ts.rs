@@ -1,6 +1,6 @@
 use crate::{
     protocols::{
-        types::SpecificResponse,
+        types::{CommonPlayer, CommonResponse, GenericPlayer},
         valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
         GenericResponse,
     },
@@ -35,6 +35,13 @@ impl TheShipPlayer {
     }
 }
 
+impl CommonPlayer for TheShipPlayer {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::TheShip(self) }
+
+    fn name(&self) -> &str { &self.name }
+    fn score(&self) -> Option<u32> { Some(self.score) }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Response {
@@ -61,52 +68,24 @@ pub struct Response {
     pub duration: u8,
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ExtraResponse {
-    pub protocol: u8,
-    pub player_details: Vec<TheShipPlayer>,
-    pub server_type: Server,
-    pub vac_secured: bool,
-    pub port: Option<u16>,
-    pub steam_id: Option<u64>,
-    pub tv_port: Option<u16>,
-    pub tv_name: Option<String>,
-    pub keywords: Option<String>,
-    pub rules: HashMap<String, String>,
-    pub mode: u8,
-    pub witnesses: u8,
-    pub duration: u8,
-}
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::TheShip(self) }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self {
-        Self {
-            name: Some(r.name),
-            description: None,
-            game: Some(r.game),
-            game_version: Some(r.version),
-            map: Some(r.map),
-            players_maximum: r.max_players.into(),
-            players_online: r.players.into(),
-            players_bots: Some(r.bots.into()),
-            has_password: Some(r.has_password),
-            inner: SpecificResponse::TheShip(ExtraResponse {
-                protocol: r.protocol,
-                player_details: r.players_details,
-                server_type: r.server_type,
-                vac_secured: r.vac_secured,
-                steam_id: r.steam_id,
-                port: r.port,
-                tv_port: r.tv_port,
-                tv_name: r.tv_name,
-                keywords: r.keywords,
-                rules: r.rules,
-                mode: r.mode,
-                witnesses: r.witnesses,
-                duration: r.duration,
-            }),
-        }
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn game(&self) -> Option<&str> { Some(&self.game) }
+    fn players_maximum(&self) -> u64 { self.max_players.into() }
+    fn players_online(&self) -> u64 { self.players.into() }
+    fn players_bots(&self) -> Option<u64> { Some(self.bots.into()) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        Some(
+            self.players_details
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
     }
 }
 

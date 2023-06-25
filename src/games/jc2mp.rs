@@ -1,7 +1,7 @@
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
-use crate::protocols::types::SpecificResponse;
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
@@ -16,6 +16,12 @@ pub struct Player {
     ping: u16,
 }
 
+impl CommonPlayer for Player {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::JCMP2(self) }
+
+    fn name(&self) -> &str { &self.name }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Response {
@@ -28,20 +34,27 @@ pub struct Response {
     players_online: usize,
 }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self {
-        Self {
-            name: Some(r.name),
-            description: Some(r.description),
-            game: None,
-            game_version: Some(r.version),
-            map: None,
-            players_maximum: r.players_maximum as u64,
-            players_online: r.players_online as u64,
-            players_bots: None,
-            has_password: Some(r.has_password),
-            inner: SpecificResponse::JC2MP,
-        }
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::JC2MP(self) }
+
+    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+    fn players_maximum(&self) -> u64 {
+        // If usize doesn't fit in u64 silently return 0 as this is extremely unlikely
+        // for a player count
+        self.players_maximum.try_into().unwrap_or(0)
+    }
+    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+
+    fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
+        Some(
+            self.players
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
     }
 }
 

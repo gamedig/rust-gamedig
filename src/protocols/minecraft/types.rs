@@ -4,7 +4,10 @@
 
 use crate::{
     bufferer::Bufferer,
-    protocols::{types::SpecificResponse, GenericResponse},
+    protocols::{
+        types::{CommonPlayer, CommonResponse, GenericPlayer},
+        GenericResponse,
+    },
     GDError::{PacketBad, UnknownEnumCast},
     GDResult,
 };
@@ -44,11 +47,17 @@ pub struct Player {
     pub id: String,
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum VersionedExtraResponse {
-    Bedrock(BedrockExtraResponse),
-    Java(JavaExtraResponse),
+impl CommonPlayer for Player {
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::Minecraft(self) }
+
+    fn name(&self) -> &str { &self.name }
+}
+
+/// Versioned response type
+#[derive(Debug, Clone, PartialEq)]
+pub enum VersionedResponse<'a> {
+    Bedrock(&'a BedrockResponse),
+    Java(&'a JavaResponse),
 }
 
 /// A Java query response.
@@ -78,46 +87,18 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
-/// Non-generic java response
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct JavaExtraResponse {
-    /// Version protocol, example: 760 (for 1.19.2). Note that for versions
-    /// below 1.6 this field is always -1.
-    pub version_protocol: i32,
-    /// Some online players (can be missing).
-    pub players_sample: Option<Vec<Player>>,
-    /// The favicon (can be missing).
-    pub favicon: Option<String>,
-    /// Tells if the chat preview is enabled (can be missing).
-    pub previews_chat: Option<bool>,
-    /// Tells if secure chat is enforced (can be missing).
-    pub enforces_secure_chat: Option<bool>,
-    /// Tell's the server type.
-    pub server_type: Server,
-}
+impl CommonResponse for JavaResponse {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
 
-impl From<JavaResponse> for GenericResponse {
-    fn from(r: JavaResponse) -> Self {
-        Self {
-            name: None,
-            description: Some(r.description),
-            game: Some(String::from("Minecraft")),
-            game_version: Some(r.version_name),
-            map: None,
-            players_maximum: r.players_maximum.into(),
-            players_online: r.players_online.into(),
-            players_bots: None,
-            has_password: None,
-            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Java(JavaExtraResponse {
-                version_protocol: r.version_protocol,
-                players_sample: r.players_sample,
-                favicon: r.favicon,
-                previews_chat: r.previews_chat,
-                enforces_secure_chat: r.enforces_secure_chat,
-                server_type: r.server_type,
-            })),
-        }
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        self.players_sample
+            .as_ref()
+            .map(|players| players.iter().map(|p| p as &dyn CommonPlayer).collect())
     }
 }
 
@@ -147,43 +128,14 @@ pub struct BedrockResponse {
     pub server_type: Server,
 }
 
-/// Non-generic bedrock response
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct BedrockExtraResponse {
-    /// Server's edition.
-    pub edition: String,
-    /// Version protocol, example: 760 (for 1.19.2).
-    pub version_protocol: String,
-    /// Server id.
-    pub id: Option<String>,
-    /// Current game mode.
-    pub game_mode: Option<GameMode>,
-    /// Tells the server type.
-    pub server_type: Server,
-}
+impl CommonResponse for BedrockResponse {
+    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Bedrock(self)) }
 
-impl From<BedrockResponse> for GenericResponse {
-    fn from(r: BedrockResponse) -> Self {
-        Self {
-            name: Some(r.name),
-            description: None,
-            game: None,
-            game_version: Some(r.version_name),
-            map: r.map,
-            players_maximum: r.players_maximum.into(),
-            players_online: r.players_online.into(),
-            players_bots: None,
-            has_password: None,
-            inner: SpecificResponse::Minecraft(VersionedExtraResponse::Bedrock(BedrockExtraResponse {
-                edition: r.edition,
-                version_protocol: r.version_protocol,
-                id: r.id,
-                game_mode: r.game_mode,
-                server_type: r.server_type,
-            })),
-        }
-    }
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn map(&self) -> Option<&str> { self.map.as_deref() }
+    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
 }
 
 impl JavaResponse {

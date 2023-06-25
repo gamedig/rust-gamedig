@@ -1,4 +1,4 @@
-use crate::protocols::types::{SpecificResponse, TimeoutSettings};
+use crate::protocols::types::{CommonResponse, TimeoutSettings};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::protocols::GenericResponse;
 use crate::GDResult;
@@ -44,51 +44,17 @@ pub struct Response {
     pub time_left: u16,
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct ExtraResponse {
-    /// Protocol used by the server.
-    pub protocol: u8,
-    /// Map name.
-    pub active_mod: String,
-    /// Dedicated, NonDedicated or SourceTV
-    pub server_type: Server,
-    /// The Operating System that the server is on.
-    pub environment_type: Environment,
-    /// Indicates whether the server uses VAC.
-    pub vac_secured: bool,
-    /// Current round index.
-    pub round: u8,
-    /// Maximum amount of rounds.
-    pub rounds_maximum: u8,
-    /// Time left for the current round in seconds.
-    pub time_left: u16,
-}
+impl CommonResponse for Response {
+    fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
-impl From<Response> for GenericResponse {
-    fn from(r: Response) -> Self {
-        Self {
-            name: Some(r.name),
-            description: Some(r.description),
-            game: Some(r.game_mode),
-            game_version: Some(r.version),
-            map: Some(r.map),
-            players_maximum: r.players_maximum.into(),
-            players_online: r.players_online.into(),
-            players_bots: None,
-            has_password: Some(r.has_password),
-            inner: SpecificResponse::FFOW(ExtraResponse {
-                protocol: r.protocol,
-                active_mod: r.active_mod,
-                server_type: r.server_type,
-                environment_type: r.environment_type,
-                vac_secured: r.vac_secured,
-                round: r.round,
-                rounds_maximum: r.rounds_maximum,
-                time_left: r.time_left,
-            }),
-        }
-    }
+    fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+    fn map(&self) -> Option<&str> { Some(&self.map) }
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
+    fn players_online(&self) -> u64 { self.players_online.into() }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {

@@ -14,51 +14,124 @@ pub enum Protocol {
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
+    #[cfg(not(feature = "no_games"))]
     TheShip,
+    #[cfg(not(feature = "no_games"))]
     FFOW,
     JC2MP,
 }
 
-/// A generic version of a response
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+/// All response types
 #[derive(Debug, Clone, PartialEq)]
-pub struct GenericResponse {
-    /// The name of the server
-    pub name: Option<String>,
-    /// Description of the server
-    pub description: Option<String>,
-    /// Name of the current game or game mode
-    pub game: Option<String>,
-    /// Version of the game being run on the server
-    pub game_version: Option<String>,
-    /// The current map name
-    pub map: Option<String>,
-    /// Maximum number of players allowed to connect
-    pub players_maximum: u64,
-    /// Number of players currently connected
-    pub players_online: u64,
-    /// Number of bots currently connected
-    pub players_bots: Option<u64>,
-    /// Whether the server requires a password to join
-    pub has_password: Option<bool>,
-    /// Data specific to non-generic responses
-    pub inner: SpecificResponse,
+pub enum GenericResponse<'a> {
+    GameSpy(gamespy::VersionedResponse<'a>),
+    Minecraft(minecraft::VersionedResponse<'a>),
+    Quake(quake::VersionedResponse<'a>),
+    Valve(&'a valve::Response),
+    #[cfg(not(feature = "no_games"))]
+    TheShip(&'a crate::games::ts::Response),
+    #[cfg(not(feature = "no_games"))]
+    FFOW(&'a crate::games::ffow::Response),
+    #[cfg(not(feature = "no_games"))]
+    JC2MP(&'a crate::games::jc2mp::Response),
 }
 
-/// A specific response containing extra data that isn't generic
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+/// All player types
 #[derive(Debug, Clone, PartialEq)]
-pub enum SpecificResponse {
-    Gamespy(gamespy::VersionedExtraResponse),
-    Minecraft(minecraft::VersionedExtraResponse),
-    Quake(quake::ExtraResponse),
-    Valve(valve::ExtraResponse),
+pub enum GenericPlayer<'a> {
+    Valve(&'a valve::ServerPlayer),
+    QuakeOne(&'a quake::one::Player),
+    QuakeTwo(&'a quake::two::Player),
+    Minecraft(&'a minecraft::Player),
+    Gamespy(gamespy::VersionedPlayer<'a>),
     #[cfg(not(feature = "no_games"))]
-    TheShip(crate::games::ts::ExtraResponse),
+    TheShip(&'a crate::games::ts::TheShipPlayer),
     #[cfg(not(feature = "no_games"))]
-    FFOW(crate::games::ffow::ExtraResponse),
-    #[cfg(not(feature = "no_games"))]
-    JC2MP,
+    JCMP2(&'a crate::games::jc2mp::Player),
+}
+
+pub trait CommonResponse {
+    /// Get the original response type
+    fn as_original(&self) -> GenericResponse;
+    /// Get a struct that can be stored as JSON (you don't need to override
+    /// this)
+    fn as_json(&self) -> CommonResponseJson {
+        CommonResponseJson {
+            name: self.name(),
+            description: self.description(),
+            game: self.game(),
+            game_version: self.game_version(),
+            has_password: self.has_password(),
+            map: self.map(),
+            players_maximum: self.players_maximum(),
+            players_online: self.players_online(),
+            players_bots: self.players_bots(),
+            players: self
+                .players()
+                .map(|players| players.iter().map(|p| p.as_json()).collect()),
+        }
+    }
+
+    /// The name of the server
+    fn name(&self) -> Option<&str> { None }
+    /// Description of the server
+    fn description(&self) -> Option<&str> { None }
+    /// Name of the current game or game mode
+    fn game(&self) -> Option<&str> { None }
+    /// Version of the game being run on the server
+    fn game_version(&self) -> Option<&str> { None }
+    /// The current map name
+    fn map(&self) -> Option<&str> { None }
+    /// Maximum number of players allowed to connect
+    fn players_maximum(&self) -> u64;
+    /// Number of players currently connected
+    fn players_online(&self) -> u64;
+    /// Number of bots currently connected
+    fn players_bots(&self) -> Option<u64> { None }
+    /// Whether the server requires a password to join
+    fn has_password(&self) -> Option<bool> { None }
+    /// Currently connected players
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { None }
+}
+
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonResponseJson<'a> {
+    pub name: Option<&'a str>,
+    pub description: Option<&'a str>,
+    pub game: Option<&'a str>,
+    pub game_version: Option<&'a str>,
+    pub map: Option<&'a str>,
+    pub players_maximum: u64,
+    pub players_online: u64,
+    pub players_bots: Option<u64>,
+    pub has_password: Option<bool>,
+    pub players: Option<Vec<CommonPlayerJson<'a>>>,
+}
+
+pub trait CommonPlayer {
+    /// Get the original player type
+    fn as_original(&self) -> GenericPlayer;
+    /// Get a struct that can be stored as JSON (you don't need to override
+    /// this)
+    fn as_json(&self) -> CommonPlayerJson {
+        CommonPlayerJson {
+            name: self.name(),
+            score: self.score(),
+        }
+    }
+
+    /// Player name
+    fn name(&self) -> &str;
+    /// Player score
+    fn score(&self) -> Option<u32> { None }
+}
+
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommonPlayerJson<'a> {
+    pub name: &'a str,
+    pub score: Option<u32>,
 }
 
 /// Timeout settings for socket operations
