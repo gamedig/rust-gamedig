@@ -46,6 +46,8 @@ pub enum GenericPlayer<'a> {
     Gamespy(gamespy::VersionedPlayer<'a>),
     #[cfg(not(feature = "no_games"))]
     TheShip(&'a crate::games::ts::TheShipPlayer),
+    #[cfg(not(feature = "no_games"))]
+    JCMP2(&'a crate::games::jc2mp::Player),
 }
 
 pub trait CommonResponse {
