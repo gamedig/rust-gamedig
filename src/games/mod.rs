@@ -114,7 +114,7 @@ pub mod vr;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
-use crate::protocols::types::CommonResponse;
+use crate::protocols::types::{CommonResponse, CustomProtocol};
 use crate::protocols::{self, Protocol};
 use crate::GDResult;
 use std::net::{IpAddr, SocketAddr};
@@ -172,8 +172,12 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<Box<d
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(Box::new)?,
             }
         }
-        Protocol::TheShip => ts::query(address, port).map(Box::new)?,
-        Protocol::FFOW => ffow::query(address, port).map(Box::new)?,
-        Protocol::JC2MP => jc2mp::query(address, port).map(Box::new)?,
+        Protocol::CUSTOM(protocol) => {
+            match protocol {
+                CustomProtocol::TheShip => ts::query(address, port).map(Box::new)?,
+                CustomProtocol::FFOW => ffow::query(address, port).map(Box::new)?,
+                CustomProtocol::JC2MP => jc2mp::query(address, port).map(Box::new)?,
+            }
+        }
     })
 }
