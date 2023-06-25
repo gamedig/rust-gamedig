@@ -11,7 +11,7 @@ within the library or want to request a feature, it's better to do so here rathe
 on Discord.
 
 ## Usage
-Minimum Supported Rust Version is `1.56.1` and the code is cross-platform.
+Minimum Supported Rust Version is `1.60.0` and the code is cross-platform.
 
 Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
 
