@@ -161,14 +161,10 @@ impl TimeoutSettings {
     }
 
     /// Get the read timeout.
-    pub fn get_read(&self) -> Option<Duration> {
-        self.read
-    }
+    pub fn get_read(&self) -> Option<Duration> { self.read }
 
     /// Get the write timeout.
-    pub fn get_write(&self) -> Option<Duration> {
-        self.write
-    }
+    pub fn get_write(&self) -> Option<Duration> { self.write }
 }
 
 impl Default for TimeoutSettings {
