@@ -24,7 +24,7 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
     #[cfg(not(feature = "no_games"))]
-    CUSTOM(CustomProtocol),
+    PROPRIETARY(CustomProtocol),
 }
 
 /// All response types

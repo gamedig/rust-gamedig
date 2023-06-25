@@ -172,7 +172,7 @@ pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<Box<d
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(Box::new)?,
             }
         }
-        Protocol::CUSTOM(protocol) => {
+        Protocol::PROPRIETARY(protocol) => {
             match protocol {
                 CustomProtocol::TheShip => ts::query(address, port).map(Box::new)?,
                 CustomProtocol::FFOW => ffow::query(address, port).map(Box::new)?,
