@@ -81,4 +81,5 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "ut" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
     "vr" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VR)),
+    "jc2mp" => game!("Just Cause 2: Multiplayer", 7777, Protocol::JC2MP),
 };

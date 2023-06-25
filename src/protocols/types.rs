@@ -18,6 +18,7 @@ pub enum Protocol {
     TheShip,
     #[cfg(not(feature = "no_games"))]
     FFOW,
+    JC2MP,
 }
 
 /// All response types
@@ -31,6 +32,8 @@ pub enum GenericResponse<'a> {
     TheShip(&'a crate::games::ts::Response),
     #[cfg(not(feature = "no_games"))]
     FFOW(&'a crate::games::ffow::Response),
+    #[cfg(not(feature = "no_games"))]
+    JC2MP(&'a crate::games::jc2mp::Response),
 }
 
 /// All player types
@@ -68,25 +71,41 @@ pub trait CommonResponse {
     }
 
     /// The name of the server
-    fn name(&self) -> Option<&str> { None }
+    fn name(&self) -> Option<&str> {
+        None
+    }
     /// Description of the server
-    fn description(&self) -> Option<&str> { None }
+    fn description(&self) -> Option<&str> {
+        None
+    }
     /// Name of the current game or game mode
-    fn game(&self) -> Option<&str> { None }
+    fn game(&self) -> Option<&str> {
+        None
+    }
     /// Version of the game being run on the server
-    fn game_version(&self) -> Option<&str> { None }
+    fn game_version(&self) -> Option<&str> {
+        None
+    }
     /// The current map name
-    fn map(&self) -> Option<&str> { None }
+    fn map(&self) -> Option<&str> {
+        None
+    }
     /// Maximum number of players allowed to connect
     fn players_maximum(&self) -> u64;
     /// Number of players currently connected
     fn players_online(&self) -> u64;
     /// Number of bots currently connected
-    fn players_bots(&self) -> Option<u64> { None }
+    fn players_bots(&self) -> Option<u64> {
+        None
+    }
     /// Whether the server requires a password to join
-    fn has_password(&self) -> Option<bool> { None }
+    fn has_password(&self) -> Option<bool> {
+        None
+    }
     /// Currently connected players
-    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { None }
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        None
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -119,7 +138,9 @@ pub trait CommonPlayer {
     /// Player name
     fn name(&self) -> &str;
     /// Player score
-    fn score(&self) -> Option<u32> { None }
+    fn score(&self) -> Option<u32> {
+        None
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -156,10 +177,14 @@ impl TimeoutSettings {
     }
 
     /// Get the read timeout.
-    pub fn get_read(&self) -> Option<Duration> { self.read }
+    pub fn get_read(&self) -> Option<Duration> {
+        self.read
+    }
 
     /// Get the write timeout.
-    pub fn get_write(&self) -> Option<Duration> { self.write }
+    pub fn get_write(&self) -> Option<Duration> {
+        self.write
+    }
 }
 
 impl Default for TimeoutSettings {

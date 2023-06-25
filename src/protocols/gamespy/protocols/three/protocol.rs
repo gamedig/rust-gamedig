@@ -36,18 +36,41 @@ impl RequestPacket {
     }
 }
 
-struct GameSpy3 {
+pub(crate) struct GameSpy3 {
     socket: UdpSocket,
+    payload: [u8; 4],
+    single_packets: bool,
 }
 
 const PACKET_SIZE: usize = 2048;
+const DEFAULT_PAYLOAD: [u8; 4] = [0xFF, 0xFF, 0xFF, 0x01];
 
 impl GameSpy3 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
         socket.apply_timeout(timeout_settings)?;
 
-        Ok(Self { socket })
+        Ok(Self {
+            socket,
+            payload: DEFAULT_PAYLOAD,
+            single_packets: false,
+        })
+    }
+
+    pub(crate) fn new_custom(
+        address: &SocketAddr,
+        timeout_settings: Option<TimeoutSettings>,
+        payload: [u8; 4],
+        single_packets: bool,
+    ) -> GDResult<Self> {
+        let socket = UdpSocket::new(address)?;
+        socket.apply_timeout(timeout_settings)?;
+
+        Ok(Self {
+            socket,
+            payload,
+            single_packets,
+        })
     }
 
     fn receive(&mut self, size: Option<usize>, kind: u8) -> GDResult<Bufferer> {
@@ -97,54 +120,57 @@ impl GameSpy3 {
                 kind: 0,
                 session_id: THIS_SESSION_ID,
                 challenge,
-                payload: Some([0xff, 0xff, 0xff, 0x01]),
+                payload: Some(self.payload),
             }
             .to_bytes(),
         )
     }
-}
 
-fn get_server_packets(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<Vec<u8>>> {
-    let mut gs3 = GameSpy3::new(address, timeout_settings)?;
+    pub(crate) fn get_server_packets(&mut self) -> GDResult<Vec<Vec<u8>>> {
+        let challenge = self.make_initial_handshake()?;
+        self.send_data_request(challenge)?;
 
-    let challenge = gs3.make_initial_handshake()?;
-    gs3.send_data_request(challenge)?;
+        let mut values: Vec<Vec<u8>> = Vec::new();
 
-    let mut values: Vec<Vec<u8>> = Vec::new();
+        let mut expected_number_of_packets: Option<usize> = None;
 
-    let mut expected_number_of_packets: Option<usize> = None;
+        while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
+            let mut buf = self.receive(None, 0)?;
 
-    while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
-        let mut buf = gs3.receive(None, 0)?;
+            if self.single_packets {
+                buf.move_position_ahead(11);
+                return Ok(vec![buf.remaining_data_vec()]);
+            }
 
-        if buf.get_string_utf8()? != "splitnum" {
+            if buf.get_string_utf8()? != "splitnum" {
+                return Err(GDError::PacketBad);
+            }
+
+            let id = buf.get_u8()?;
+            let is_last = (id & 0x80) > 0;
+            let packet_id = (id & 0x7f) as usize;
+            buf.move_position_ahead(1); //unknown byte regarding packet no.
+
+            if is_last {
+                expected_number_of_packets = Some(packet_id + 1);
+            }
+
+            while values.len() <= packet_id {
+                values.push(Vec::new());
+            }
+
+            values[packet_id] = buf.remaining_data_vec();
+        }
+
+        if values.iter().any(|v| v.is_empty()) {
             return Err(GDError::PacketBad);
         }
 
-        let id = buf.get_u8()?;
-        let is_last = (id & 0x80) > 0;
-        let packet_id = (id & 0x7f) as usize;
-        buf.move_position_ahead(1); //unknown byte regarding packet no.
-
-        if is_last {
-            expected_number_of_packets = Some(packet_id + 1);
-        }
-
-        while values.len() <= packet_id {
-            values.push(Vec::new());
-        }
-
-        values[packet_id] = buf.remaining_data_vec();
+        Ok(values)
     }
-
-    if values.iter().any(|v| v.is_empty()) {
-        return Err(GDError::PacketBad);
-    }
-
-    Ok(values)
 }
 
-fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
+pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
     let mut vars = HashMap::new();
 
     let mut buf = Bufferer::new_with_data(Endianess::Big, packet);
@@ -168,7 +194,8 @@ pub fn query_vars(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    let packets = get_server_packets(address, timeout_settings)?;
+    let mut client = GameSpy3::new(address, timeout_settings)?;
+    let packets = client.get_server_packets()?;
 
     let mut vars = HashMap::new();
 
@@ -308,7 +335,8 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let packets = get_server_packets(address, timeout_settings)?;
+    let mut client = GameSpy3::new(address, timeout_settings)?;
+    let packets = client.get_server_packets()?;
 
     let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
 

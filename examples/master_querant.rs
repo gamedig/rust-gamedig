@@ -34,6 +34,7 @@ use gamedig::{
     ins,
     insmic,
     inss,
+    jc2mp,
     l4d,
     l4d2,
     mc,
@@ -189,6 +190,7 @@ fn main() -> GDResult<()> {
         "sof2" => println!("{:#?}", sof2::query(ip, port)?),
         "_gamespy2" => println!("{:#?}", gamespy::two::query(address, None)),
         "haloce" => println!("{:#?}", haloce::query(ip, port)?),
+        "jc2mp" => println!("{:#?}", jc2mp::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1]),
     };
 
