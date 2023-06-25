@@ -14,28 +14,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Run Build
-      run: cargo build --verbose
-    - name: Run Clippy
-      run: cargo clippy --verbose
-    - name: Run Tests
-      run: cargo test --verbose
-    - name: Install Formatting nightly
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        components: rustfmt
-    - name: Run Formatting check
-      run: cargo +nightly fmt --check --verbose
-    - name: Install Audit
-      run: cargo install cargo-audit
-    - name: Run Audit
-      run: cargo audit --deny warnings
-    - name: Install MSRV
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: 1.60.0
-        override: true
-    - name: Run MSRV
-      run: cargo build
+      - uses: actions/checkout@v3
+      - name: Run Build
+        run: cargo build --verbose
+      - name: Run Clippy
+        run: cargo clippy --verbose
+      - name: Run Tests
+        run: cargo test --verbose
+      - name: Install Audit
+        run: cargo install cargo-audit
+      - name: Run Audit
+        run: cargo audit --deny warnings
+      - name: Install Formatting nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-03-01
+          components: rustfmt
+      - name: Run Formatting check
+        run: cargo +nightly-2023-03-01 fmt --check --verbose
+      - name: Install MSRV
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.60.0
+          override: true
+      - name: Run MSRV
+        run: cargo build
