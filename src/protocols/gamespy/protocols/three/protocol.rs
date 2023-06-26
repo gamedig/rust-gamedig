@@ -139,7 +139,7 @@ impl GameSpy3 {
 
             if self.single_packets {
                 buf.move_position_ahead(11);
-                return Ok(vec![buf.remaining_data_vec()]);
+                return Ok(vec![buf.remaining_data().to_vec()]);
             }
 
             if buf.get_string_utf8()? != "splitnum" {
@@ -159,7 +159,7 @@ impl GameSpy3 {
                 values.push(Vec::new());
             }
 
-            values[packet_id] = buf.remaining_data_vec();
+            values[packet_id] = buf.remaining_data().to_vec();
         }
 
         if values.iter().any(|v| v.is_empty()) {
@@ -185,7 +185,7 @@ pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, V
         vars.insert(key, value);
     }
 
-    Ok((vars, buf.remaining_data_vec()))
+    Ok((vars, buf.remaining_data().to_vec()))
 }
 
 /// If there are parsing problems using the `query` function, you can directly

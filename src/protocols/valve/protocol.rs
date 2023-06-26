@@ -87,7 +87,7 @@ impl SplitPacket {
             compressed,
             decompressed_size,
             uncompressed_crc32,
-            payload: buffer.remaining_data_vec(),
+            payload: buffer.remaining_data().to_vec(),
         })
     }
 

@@ -166,8 +166,6 @@ impl Bufferer {
 
     pub fn remaining_data(&self) -> &[u8] { &self.data[self.position ..] }
 
-    pub fn remaining_data_vec(&self) -> Vec<u8> { self.remaining_data().to_vec() }
-
     pub fn remaining_length(&self) -> usize { self.data.len() - self.position }
 
     pub fn is_remaining_empty(&self) -> bool { self.remaining_length() == 0 }
