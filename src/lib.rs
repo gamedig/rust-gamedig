@@ -26,19 +26,19 @@
 //! ```
 //!
 //! # Crate features:
-//! Enabled by default: `game_defs`
+//! Enabled by default: `games`, `game_defs`, `services`
 //!
 //! `serde` - enables json serialization/deserialization for all response types.
-//! <br> `no_games` - disables the included games support. <br>
-//! `no_services` - disables the included services support. <br>
+//! <br> `games` - include games support. <br>
+//! `services` - include services support. <br>
 //! `game_defs` - Include game definitions for programmatic access (enabled by
 //! default).
 
 pub mod errors;
-#[cfg(not(feature = "no_games"))]
+#[cfg(feature = "games")]
 pub mod games;
 pub mod protocols;
-#[cfg(not(feature = "no_services"))]
+#[cfg(feature = "services")]
 pub mod services;
 
 mod bufferer;
@@ -46,7 +46,7 @@ mod socket;
 mod utils;
 
 pub use errors::*;
-#[cfg(not(feature = "no_games"))]
+#[cfg(feature = "games")]
 pub use games::*;
-#[cfg(not(feature = "no_services"))]
+#[cfg(feature = "services")]
 pub use services::*;

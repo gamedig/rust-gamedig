@@ -23,7 +23,7 @@ pub enum Protocol {
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
 }
 
@@ -34,11 +34,11 @@ pub enum GenericResponse<'a> {
     Minecraft(minecraft::VersionedResponse<'a>),
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     TheShip(&'a crate::games::ts::Response),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     FFOW(&'a crate::games::ffow::Response),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     JC2MP(&'a crate::games::jc2mp::Response),
 }
 
@@ -50,9 +50,9 @@ pub enum GenericPlayer<'a> {
     QuakeTwo(&'a quake::two::Player),
     Minecraft(&'a minecraft::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     TheShip(&'a crate::games::ts::TheShipPlayer),
-    #[cfg(not(feature = "no_games"))]
+    #[cfg(feature = "games")]
     JCMP2(&'a crate::games::jc2mp::Player),
 }
 
