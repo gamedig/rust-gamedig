@@ -19,12 +19,12 @@
 // buffer.read::<i64>();
 // buffer.read::<f32>();
 // buffer.read::<f64>();
-// buffer.read_string::<Utf8Decoder>(None, false);
-// buffer.read_string::<Utf16Decoder<LittleEndian>>(None, false);
+// buffer.read_string::<Utf8Decoder>();
+// buffer.read_string::<Utf16Decoder<LittleEndian>>();
 // }
 //
 // // Error because the buffer isnt big endian
-// buffer.read_string::<Utf16Decoder<BigEndian>>(None, false);
+// buffer.read_string::<Utf16Decoder<BigEndian>>();
 // }
 
 use byteorder::{ByteOrder, LittleEndian};
@@ -60,7 +60,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
                 ))
             }
 
-            Some(x) if x < 0 || x > self.remaining_length() as isize => {
+            Some(x) if x < 0 || x as usize > self.remaining_length() => {
                 Err(BufferError(format!(
                     "Cursor out of bounds, tried to move cursor to {}",
                     x
@@ -81,8 +81,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         if size > remaining {
             return Err(BufferError(format!(
                 "Packet underflow, expected {} bytes, got {}",
-                size,
-                self.remaining_length()
+                size, remaining
             )));
         }
 
@@ -96,35 +95,11 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     pub(crate) fn read_string<D: StringDecoder<ByteOrder = B>>(
         &mut self,
         until: Option<D::Delimiter>,
-        optional: bool,
     ) -> Result<String, BufferError> {
+        let data_slice = &self.data[self.cursor ..];
         let delimiter = until.unwrap_or(D::DELIMITER);
 
-        let position = match self.data[self.cursor ..]
-            .windows(delimiter.as_ref().len())
-            .position(|window| window == delimiter.as_ref())
-        {
-            Some(pos) => pos,
-            None => {
-                if optional {
-                    self.data.len() - self.cursor
-                } else {
-                    return Err(BufferError("Delimiter not found".to_string()));
-                }
-            }
-        };
-
-        let mut data_slice = self.data[self.cursor .. self.cursor + position].to_vec();
-
-        if data_slice.len() % 2 != 0 {
-            // TODO: This is a bit of a hack, but it works for now.
-            // We should probably find a better way to handle this.
-            data_slice.push(0);
-        }
-
-        let result = D::decode_string(&data_slice)?;
-
-        self.cursor += position + delimiter.as_ref().len();
+        let result = D::decode_string(data_slice, &mut self.cursor, delimiter)?;
 
         Ok(result)
     }
@@ -132,6 +107,18 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
 
 pub(crate) trait BufferRead<B: ByteOrder>: Sized {
     fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError>;
+}
+
+macro_rules! impl_buffer_read_byte {
+    ($type:ty, $map_func:expr) => {
+        impl<B: ByteOrder> BufferRead<B> for $type {
+            fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
+                data.first()
+                    .map($map_func)
+                    .ok_or_else(|| BufferError(format!("Failed to read {} from buffer", stringify!($type))))
+            }
+        }
+    };
 }
 
 macro_rules! impl_buffer_read {
@@ -152,21 +139,8 @@ macro_rules! impl_buffer_read {
     };
 }
 
-impl<B: ByteOrder> BufferRead<B> for u8 {
-    fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
-        data.first()
-            .copied()
-            .ok_or_else(|| BufferError("Failed to read u8 from buffer".to_string()))
-    }
-}
-
-impl<B: ByteOrder> BufferRead<B> for i8 {
-    fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
-        data.first()
-            .map(|&b| b as i8)
-            .ok_or_else(|| BufferError("Failed to read i8 from buffer".to_string()))
-    }
-}
+impl_buffer_read_byte!(u8, |&b| b);
+impl_buffer_read_byte!(i8, |&b| b as i8);
 
 impl_buffer_read!(u16, read_u16);
 impl_buffer_read!(i16, read_i16);
@@ -183,7 +157,7 @@ pub(crate) trait StringDecoder {
 
     const DELIMITER: Self::Delimiter;
 
-    fn decode_string(data: &[u8]) -> Result<String, BufferError>;
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError>;
 }
 
 pub(crate) struct Utf8Decoder;
@@ -194,8 +168,19 @@ impl StringDecoder for Utf8Decoder {
 
     const DELIMITER: Self::Delimiter = [0x00];
 
-    fn decode_string(data: &[u8]) -> Result<String, BufferError> {
-        String::from_utf8(data.to_vec()).map_err(|_| BufferError("Failed to decode string as UTF-8".to_string()))
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+        let position = data
+            .iter()
+            .position(|&b| b == delimiter.as_ref()[0])
+            .unwrap_or(data.len());
+
+        let result = std::str::from_utf8(&data[.. position])
+            .map_err(|_| BufferError("Failed to decode string as UTF-8".to_string()))?
+            .to_owned();
+
+        *cursor += position + 1;
+
+        Ok(result)
     }
 }
 
@@ -209,84 +194,140 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
 
     const DELIMITER: Self::Delimiter = [0x00, 0x00];
 
-    fn decode_string(data: &[u8]) -> Result<String, BufferError> {
-        let paired_buf: Vec<u16> = data.chunks_exact(2).map(B::read_u16).collect();
-        String::from_utf16(&paired_buf).map_err(|_| BufferError("Failed to decode string as UTF-16".to_string()))
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+        let position = data
+            .chunks_exact(2)
+            .position(|chunk| chunk == delimiter.as_ref())
+            .map_or(data.len(), |pos| pos * 2);
+
+        let mut paired_buf: Vec<u16> = vec![0; position / 2];
+
+        B::read_u16_into(&data[.. position], &mut paired_buf);
+
+        let result = String::from_utf16(&paired_buf)
+            .map_err(|_| BufferError("Failed to decode string as UTF-16".to_string()))?;
+
+        *cursor += position + 2;
+
+        Ok(result)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use byteorder::LittleEndian;
+    use byteorder::BigEndian;
 
     #[test]
-    fn test_move_cursor_within_bounds() {
-        let data = [1, 2, 3, 4, 5];
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
+    fn test_new_buffer() {
+        let data: &[u8] = &[1, 2, 3, 4];
+        let buffer = Buffer::<LittleEndian>::new(data);
 
-        assert_eq!(buffer.move_cursor(3), Ok(()));
-        assert_eq!(buffer.cursor, 3);
+        assert_eq!(buffer.data, data);
+        assert_eq!(buffer.cursor, 0);
     }
 
     #[test]
-    fn test_move_cursor_out_of_bounds() {
-        let data = [1, 2, 3, 4, 5];
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
-
-        assert!(buffer.move_cursor(10).is_err());
-    }
-
-    #[test]
-    fn test_read_u8() {
-        let data = [1, 2, 3, 4, 5];
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
-
-        assert_eq!(buffer.read::<u8>(), Ok(1));
-    }
-
-    #[test]
-    fn test_read_u16() {
-        let data = [1, 2, 3, 4, 5];
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
-
-        assert_eq!(buffer.read::<u16>(), Ok(513));
-    }
-
-    #[test]
-    fn test_read_string_utf8_delimiter_not_found() {
-        let data = b"Hello, World!";
+    fn test_remaining_length() {
+        let data: &[u8] = &[1, 2, 3, 4];
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
-        assert!(
-            buffer
-                .read_string::<Utf8Decoder>(Some([b'?']), false)
-                .is_err()
-        );
+        assert_eq!(buffer.remaining_length(), 4);
+
+        buffer.cursor = 2;
+        assert_eq!(buffer.remaining_length(), 2);
     }
 
     #[test]
-    fn test_read_string_utf8() {
-        let data = b"Hello, World!";
+    fn test_move_cursor() {
+        let data: &[u8] = &[1, 2, 3, 4];
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
-        assert_eq!(
-            buffer.read_string::<Utf8Decoder>(Some([b'!']), false),
-            Ok("Hello, World".to_string()) // remove '!' from the expected result
-        );
+        // Test moving forward
+        assert!(buffer.move_cursor(2).is_ok());
+        assert_eq!(buffer.cursor, 2);
+
+        // Test moving backward
+        assert!(buffer.move_cursor(-1).is_ok());
+        assert_eq!(buffer.cursor, 1);
+
+        // Test moving beyond data limits
+        assert!(buffer.move_cursor(5).is_err());
+        assert!(buffer.move_cursor(-2).is_err());
     }
 
     #[test]
-    fn test_read_string_utf16() {
-        // show hello in utf16 null terminated
-        let data = [
-            0x68, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f, 0x00, 0x00, 0x00,
-        ];
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
+    fn test_buffer_read_u8() {
+        let data: &[u8] = &[1, 2, 3, 4];
+        let mut buffer = Buffer::<LittleEndian>::new(data);
 
+        let result: Result<u8, _> = buffer.read();
+        assert_eq!(result.unwrap(), 1);
+        assert_eq!(buffer.cursor, 1);
+    }
+
+    #[test]
+    fn test_buffer_read_u16() {
+        let data: &[u8] = &[1, 2, 3, 4];
+        let mut buffer = Buffer::<LittleEndian>::new(data);
+
+        let result: Result<u16, _> = buffer.read();
+        assert_eq!(result.unwrap(), 0x0201);
+        assert_eq!(buffer.cursor, 2);
+    }
+
+    #[test]
+    fn test_buffer_read_u16_big_endian() {
+        let data: &[u8] = &[1, 2, 3, 4];
+        let mut buffer = Buffer::<BigEndian>::new(data);
+
+        let result: Result<u16, _> = buffer.read();
+        assert_eq!(result.unwrap(), 0x0102);
+        assert_eq!(buffer.cursor, 2);
+    }
+
+    #[test]
+    fn test_decode_string_utf8() {
+        let data: &[u8] = b"Hello\0World\0";
+        let mut cursor = 0;
+        let delimiter = [0x00];
+
+        let result = Utf8Decoder::decode_string(data, &mut cursor, delimiter);
+        assert_eq!(result.unwrap(), "Hello");
+        assert_eq!(cursor, 6);
+    }
+
+    #[test]
+    fn test_decode_string_utf16_le() {
+        let data: &[u8] = &[0x48, 0x00, 0x65, 0x00, 0x00, 0x00];
+        let mut cursor = 0;
+        let delimiter = [0x00, 0x00];
+
+        let result = Utf16Decoder::<LittleEndian>::decode_string(data, &mut cursor, delimiter);
+        assert_eq!(result.unwrap(), "He");
+        assert_eq!(cursor, 6);
+    }
+
+    #[test]
+    fn test_decode_string_utf16_be() {
+        let data: &[u8] = &[0x00, 0x48, 0x00, 0x65, 0x00, 0x00];
+        let mut cursor = 0;
+        let delimiter = [0x00, 0x00];
+
+        let result = Utf16Decoder::<BigEndian>::decode_string(data, &mut cursor, delimiter);
+        assert_eq!(result.unwrap(), "He");
+        assert_eq!(cursor, 6);
+    }
+
+    #[test]
+    fn test_buffer_underflow_error() {
+        let data: &[u8] = &[1, 2];
+        let mut buffer = Buffer::<LittleEndian>::new(data);
+
+        let result: Result<u32, _> = buffer.read();
         assert_eq!(
-            buffer.read_string::<Utf16Decoder<LittleEndian>>(None, false),
-            Ok("hello".to_string())
+            result.unwrap_err(),
+            BufferError("Packet underflow, expected 4 bytes, got 2".to_string())
         );
     }
 }
