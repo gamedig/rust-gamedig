@@ -27,13 +27,6 @@ pub enum Protocol {
     PROPRIETARY(ProprietaryProtocol),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProprietaryResponse<'a> {
-    TheShip(&'a crate::games::ts::Response),
-    FFOW(&'a crate::games::ffow::Response),
-    JC2MP(&'a crate::games::jc2mp::Response),
-}
-
 /// All response types
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
@@ -42,7 +35,11 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     #[cfg(not(feature = "no_games"))]
-    PROPRIETARY(ProprietaryResponse<'a>),
+    TheShip(&'a crate::games::ts::Response),
+    #[cfg(not(feature = "no_games"))]
+    FFOW(&'a crate::games::ffow::Response),
+    #[cfg(not(feature = "no_games"))]
+    JC2MP(&'a crate::games::jc2mp::Response),
 }
 
 /// All player types

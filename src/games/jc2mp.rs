@@ -1,7 +1,7 @@
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, ProprietaryResponse};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
@@ -35,7 +35,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::PROPRIETARY(ProprietaryResponse::JC2MP(self)) }
+    fn as_original(&self) -> GenericResponse { GenericResponse::JC2MP(self) }
 
     fn game_version(&self) -> Option<&str> { Some(&self.version) }
     fn description(&self) -> Option<&str> { Some(&self.description) }

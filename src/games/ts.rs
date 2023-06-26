@@ -10,7 +10,6 @@ use std::net::{IpAddr, SocketAddr};
 
 use std::collections::HashMap;
 
-use crate::protocols::types::ProprietaryResponse;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -70,7 +69,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::PROPRIETARY(ProprietaryResponse::TheShip(self)) }
+    fn as_original(&self) -> GenericResponse { GenericResponse::TheShip(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }

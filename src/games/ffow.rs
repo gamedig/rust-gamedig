@@ -1,4 +1,4 @@
-use crate::protocols::types::{CommonResponse, ProprietaryResponse, TimeoutSettings};
+use crate::protocols::types::{CommonResponse, TimeoutSettings};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::protocols::GenericResponse;
 use crate::GDResult;
@@ -45,7 +45,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::PROPRIETARY(ProprietaryResponse::FFOW(self)) }
+    fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn game(&self) -> Option<&str> { Some(&self.game_mode) }
