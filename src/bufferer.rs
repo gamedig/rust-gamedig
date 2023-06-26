@@ -1,45 +1,35 @@
-// TODO: Comments and docs
-//
-// Example usage:
-//
-// mod example {
-// use super::*;
-// use byteorder::{BigEndian, LittleEndian};
-//
-// fn example(data: &[u8]) {
-// let mut buffer = Buffer::<LittleEndian>::new(data);
-//
-// buffer.read::<u8>();
-// buffer.read::<i8>();
-// buffer.read::<u16>();
-// buffer.read::<i16>();
-// buffer.read::<u32>();
-// buffer.read::<i32>();
-// buffer.read::<u64>();
-// buffer.read::<i64>();
-// buffer.read::<f32>();
-// buffer.read::<f64>();
-// buffer.read_string::<Utf8Decoder>();
-// buffer.read_string::<Utf16Decoder<LittleEndian>>();
-// }
-//
-// // Error because the buffer isnt big endian
-// buffer.read_string::<Utf16Decoder<BigEndian>>();
-// }
-
 use byteorder::{ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
 
+// This will be removed later and replaced with a error type from the crate.
 #[derive(Debug, PartialEq)]
 struct BufferError(String);
 
+/// A struct representing a buffer with a specific byte order.
+///
+/// It's comprised of a byte slice that it reads from, a cursor to keep track of
+/// the current position within the byte slice, and a `PhantomData` marker to
+/// bind it to a specific byte order (BigEndian or LittleEndian).
+///
+/// The byte order is defined by the `B: ByteOrder` generic parameter.
 pub(crate) struct Buffer<'a, B: ByteOrder> {
+    /// The byte slice that the buffer reads from.
     data: &'a [u8],
+    /// The cursor marking our current position in the buffer.
     cursor: usize,
+    /// A phantom field used to bind the `Buffer` to a specific `ByteOrder`.
     _marker: PhantomData<B>,
 }
 
 impl<'a, B: ByteOrder> Buffer<'a, B> {
+    /// Creates and returns a new `Buffer` with the given data.
+    ///
+    /// The cursor is set to the start of the buffer (position 0) upon
+    /// initialization.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - A byte slice that the buffer will read from.
     pub(crate) fn new(data: &'a [u8]) -> Self {
         Self {
             data,
@@ -48,18 +38,39 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         }
     }
 
+    /// Returns the length of the remaining bytes from the current cursor
+    /// position.
     pub(crate) fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
 
+    /// Moves the cursor forward or backward by a specified offset.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - The amount to move the cursor. Use a negative value to move
+    ///   backwards.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `BufferError` if the attempted move would position the cursor
+    /// out of bounds.
     pub(crate) fn move_cursor(&mut self, offset: isize) -> Result<(), BufferError> {
+        // Compute the new cursor position by adding the offset to the current cursor
+        // position. The checked_add method is used for safe addition,
+        // preventing overflow and underflow.
         let new_cursor = (self.cursor as isize).checked_add(offset);
 
         match new_cursor {
+            // If the addition was not successful (i.e., it resulted in an overflow or underflow),
+            // return an error indicating that the cursor is out of bounds.
             None => {
                 Err(BufferError(
                     "Checked add failed, cursor out of bounds".to_string(),
                 ))
             }
 
+            // If the new cursor position is either less than zero (i.e., before the start of the buffer)
+            // or greater than the remaining length of the buffer (i.e., past the end of the buffer),
+            // return an error indicating that the cursor is out of bounds.
             Some(x) if x < 0 || x as usize > self.remaining_length() => {
                 Err(BufferError(format!(
                     "Cursor out of bounds, tried to move cursor to {}",
@@ -67,6 +78,8 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
                 )))
             }
 
+            // If the new cursor position is within the bounds of the buffer, update the cursor
+            // position and return Ok.
             Some(x) => {
                 self.cursor = x as usize;
                 Ok(())
@@ -74,10 +87,27 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         }
     }
 
+    /// Reads a value of type `T` from the buffer, and advances the cursor by
+    /// the size of `T`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `T` - The type of value to be read from the buffer. This type must
+    ///   implement the `BufferRead` trait with the same byte order as the
+    ///   buffer.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `BufferError` if there is not enough data remaining in the
+    /// buffer to read a value of type `T`.
     pub(crate) fn read<T: Sized + BufferRead<B>>(&mut self) -> Result<T, BufferError> {
+        // Get the size of `T` in bytes.
         let size = std::mem::size_of::<T>();
+        // Calculate remaining length of the buffer.
         let remaining = self.remaining_length();
 
+        // If the size of `T` is larger than the remaining length, return an error
+        // because we don't have enough data left to read.
         if size > remaining {
             return Err(BufferError(format!(
                 "Packet underflow, expected {} bytes, got {}",
@@ -85,47 +115,113 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
             )));
         }
 
+        // Slice the data array from the current cursor position for `size` amount of
+        // bytes.
         let bytes = &self.data[self.cursor .. self.cursor + size];
 
+        // Move the cursor forward by `size`.
         self.cursor += size;
 
+        // Use the `read_from_buffer` function of the `BufferRead` implementation for
+        // `T` to convert the bytes into an instance of `T`.
         T::read_from_buffer(bytes)
     }
 
+    /// Reads a string from the buffer using a specified `StringDecoder`, until
+    /// an optional delimiter.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `D` - The type of string decoder to use. This type must implement the
+    /// `StringDecoder` trait with the same byte order as the buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `until` - An optional delimiter. If provided, the method will read
+    ///   until this
+    /// delimiter is encountered. If not provided, the method will read until
+    /// the default delimiter of the decoder.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `BufferError` if there is an error decoding the string.
     pub(crate) fn read_string<D: StringDecoder<ByteOrder = B>>(
         &mut self,
         until: Option<D::Delimiter>,
     ) -> Result<String, BufferError> {
+        // Slice the data array from the current cursor position to the end.
         let data_slice = &self.data[self.cursor ..];
+
+        // Use the provided delimiter if one was given, or default to the
+        // delimiter specified by the StringDecoder.
         let delimiter = until.unwrap_or(D::DELIMITER);
 
+        // Invoke the decode_string function of the provided StringDecoder,
+        // passing in the remaining data slice, the mutable reference to the
+        // cursor, and the delimiter.
         let result = D::decode_string(data_slice, &mut self.cursor, delimiter)?;
 
+        // If decoding was successful, return the decoded string. The cursor
+        // position has been updated within the decode_string call to reflect
+        // the new position after reading.
         Ok(result)
     }
 }
 
+/// A trait defining a protocol for reading values of a certain type from a
+/// buffer.
+///
+/// Implementors of this trait provide a method for reading their type from a
+/// byte buffer with a specific byte order.
 pub(crate) trait BufferRead<B: ByteOrder>: Sized {
     fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError>;
 }
 
+/// Macro to implement the `BufferRead` trait for byte types.
+///
+/// This macro generates an implementation of the `BufferRead` trait for a
+/// specified byte type. The implementation will read a single byte from the
+/// buffer and convert it to the target type using the provided map function.
+///
+/// # Arguments
+///
+/// * `$type` - The target type to implement `BufferRead` for.
+/// * `$map_func` - The function to map a byte to the target type.
 macro_rules! impl_buffer_read_byte {
     ($type:ty, $map_func:expr) => {
         impl<B: ByteOrder> BufferRead<B> for $type {
             fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
+                // Use the `first` method to get the first byte from the data array.
                 data.first()
+                    // Apply the $map_func function to convert the raw byte to the $type.
                     .map($map_func)
+                    // If the data array is empty (and thus `first` returns None),
+                    // `ok_or_else` will return a BufferError.
                     .ok_or_else(|| BufferError(format!("Failed to read {} from buffer", stringify!($type))))
             }
         }
     };
 }
 
+/// Macro to implement the `BufferRead` trait for multi-byte types.
+///
+/// This macro generates an implementation of the `BufferRead` trait for a
+/// specified multi-byte type. The implementation will read the appropriate
+/// number of bytes from the buffer and convert them to the target type using
+/// the provided read function.
+///
+/// # Arguments
+///
+/// * `$type` - The target type to implement `BufferRead` for.
+/// * `$read_func` - The function to read the bytes into the target type.
 macro_rules! impl_buffer_read {
     ($type:ty, $read_func:ident) => {
         impl<B: ByteOrder> BufferRead<B> for $type {
             fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
+                // Convert the byte slice into an array of the appropriate type.
                 let array = data.try_into().map_err(|_| {
+                    // If conversion fails, return an error indicating the required and provided
+                    // lengths.
                     BufferError(format!(
                         "Failed to convert {} bytes into {}",
                         data.len(),
@@ -133,6 +229,8 @@ macro_rules! impl_buffer_read {
                     ))
                 })?;
 
+                // Use the provided function to read the data from the array into the given
+                // type.
                 Ok(B::$read_func(array))
             }
         }
@@ -151,15 +249,37 @@ impl_buffer_read!(i64, read_i64);
 impl_buffer_read!(f32, read_f32);
 impl_buffer_read!(f64, read_f64);
 
+/// A trait defining a protocol for decoding strings from a buffer.
+///
+/// This trait should be implemented by types that can decode strings from a
+/// byte buffer with a specific byte order and delimiter.
 pub(crate) trait StringDecoder {
+    /// The byte order used by the decoder.
     type ByteOrder: ByteOrder;
+    /// The type of the delimiter used by the decoder.
     type Delimiter: AsRef<[u8]>;
 
+    /// The default delimiter used by the decoder.
     const DELIMITER: Self::Delimiter;
 
+    /// Decodes a string from the provided byte slice, and updates the cursor
+    /// position accordingly.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - The byte slice to decode the string from.
+    /// * `cursor` - The current position in the byte slice.
+    /// * `delimiter` - The delimiter to use for decoding the string.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `BufferError` if there is an error decoding the string.
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError>;
 }
 
+/// A decoder for UTF-8 encoded strings.
+///
+/// This decoder uses a single null byte (`0x00`) as the default delimiter.
 pub(crate) struct Utf8Decoder;
 
 impl StringDecoder for Utf8Decoder {
@@ -168,22 +288,45 @@ impl StringDecoder for Utf8Decoder {
 
     const DELIMITER: Self::Delimiter = [0x00];
 
+    /// Decodes a UTF-8 string from the given data, updating the cursor position
+    /// accordingly.
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+        // Find the position of the delimiter in the data. If the delimiter is not
+        // found, the length of the data is returned.
         let position = data
+        // Create an iterator over the data.
             .iter()
+            // Find the position of the delimiter
             .position(|&b| b == delimiter.as_ref()[0])
+            // If the delimiter is not found, use the whole data slice.
             .unwrap_or(data.len());
 
-        let result = std::str::from_utf8(&data[.. position])
+        // Convert the data until the found position into a UTF-8 string.
+        let result = std::str::from_utf8(
+            // Take a slice of data until the position.
+            &data[.. position]
+        )
+        // If the data cannot be converted into a UTF-8 string, return an error
             .map_err(|_| BufferError("Failed to decode string as UTF-8".to_string()))?
+            // Convert the resulting &str into a String
             .to_owned();
 
+        // Update the cursor position
+        // The +1 is to skip the delimiter
         *cursor += position + 1;
 
         Ok(result)
     }
 }
 
+/// A decoder for UTF-16 encoded strings.
+///
+/// This decoder uses a pair of null bytes (`0x00, 0x00`) as the default
+/// delimiter.
+///
+/// # Type Parameters
+///
+/// * `B` - The byte order to use when decoding the string.
 pub(crate) struct Utf16Decoder<B: ByteOrder> {
     _marker: PhantomData<B>,
 }
@@ -194,19 +337,30 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
 
     const DELIMITER: Self::Delimiter = [0x00, 0x00];
 
+    /// Decodes a UTF-16 string from the given data, updating the cursor
+    /// position accordingly.
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+        // Try to find the position of the delimiter in the data
         let position = data
+        // Split the data into 2-byte chunks (as UTF-16 uses 2 bytes per character)
             .chunks_exact(2)
+            // Find the position of the delimiter
             .position(|chunk| chunk == delimiter.as_ref())
+            // If the delimiter is not found, use the whole data, otherwise use the position of the delimiter
             .map_or(data.len(), |pos| pos * 2);
 
+        // Create a buffer of u16 values to hold the decoded characters
         let mut paired_buf: Vec<u16> = vec![0; position / 2];
 
+        // Decode the data into the buffer
         B::read_u16_into(&data[.. position], &mut paired_buf);
 
+        // Convert the buffer of u16 values into a String
         let result = String::from_utf16(&paired_buf)
             .map_err(|_| BufferError("Failed to decode string as UTF-16".to_string()))?;
 
+        // Update the cursor position
+        // The +2 accounts for the delimiter
         *cursor += position + 2;
 
         Ok(result)
