@@ -5,6 +5,7 @@ Who knows what the future holds...
 ### Changes:
 Protocols:
 - GameSpy 2 support.
+- Quake 2: Added Optional address field to Player.
 
 Generic query:
 - Added generic queries (by [@Douile](https://github.com/Douile)) which come with a common struct for the response fields.

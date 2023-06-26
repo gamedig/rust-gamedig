@@ -17,6 +17,7 @@ pub struct Player {
     pub frags: i16,
     pub ping: u16,
     pub name: String,
+    pub address: Option<String>,
 }
 
 impl QuakePlayerType for Player {
@@ -53,6 +54,10 @@ impl QuakeClient for QuakeTwo {
             name: match data.next() {
                 None => Err(GDError::PacketBad)?,
                 Some(v) => remove_wrapping_quotes(v).to_string(),
+            },
+            address: match data.next() {
+                None => None,
+                Some(v) => Some(remove_wrapping_quotes(v).to_string()),
             },
         })
     }
