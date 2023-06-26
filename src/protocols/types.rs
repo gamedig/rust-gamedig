@@ -6,6 +6,15 @@ use std::time::Duration;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+/// Enumeration of all custom protocols
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+pub enum ProprietaryProtocol {
+    TheShip,
+    FFOW,
+    JC2MP,
+}
+
 /// Enumeration of all valid protocol types
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
@@ -15,10 +24,7 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
     #[cfg(not(feature = "no_games"))]
-    TheShip,
-    #[cfg(not(feature = "no_games"))]
-    FFOW,
-    JC2MP,
+    PROPRIETARY(ProprietaryProtocol),
 }
 
 /// All response types
