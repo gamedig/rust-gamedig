@@ -16,6 +16,9 @@ Games:
 - [Just Cause 2: Multiplayer](https://store.steampowered.com/app/259080/Just_Cause_2_Multiplayer_Mod/) support.
 
 ### Breaking...
+Protocols:
+- Quake 2: Renamed the players frags field to score to be more inline with the other protocols.
+
 Crate:
 - Fixed crate's `rust-version`, it is now `1.60.0` (was `1.56.1`)
 

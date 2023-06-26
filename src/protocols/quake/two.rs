@@ -14,7 +14,7 @@ use super::QuakePlayerType;
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
-    pub frags: i16,
+    pub score: i32,
     pub ping: u16,
     pub name: String,
     pub address: Option<String>,
@@ -30,7 +30,8 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::QuakeTwo(self) }
 
     fn name(&self) -> &str { &self.name }
-    // TODO: Maybe frags is score?
+
+    fn score(&self) -> Option<u32> { Some(self.score.into()) }
 }
 
 pub(crate) struct QuakeTwo;
@@ -43,7 +44,7 @@ impl QuakeClient for QuakeTwo {
 
     fn parse_player_string(mut data: Iter<&str>) -> GDResult<Self::Player> {
         Ok(Player {
-            frags: match data.next() {
+            score: match data.next() {
                 None => Err(GDError::PacketBad)?,
                 Some(v) => v.parse().map_err(|_| GDError::PacketBad)?,
             },
