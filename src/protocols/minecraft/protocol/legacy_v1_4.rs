@@ -28,14 +28,15 @@ impl LegacyV1_4 {
     fn get_info(&mut self) -> GDResult<JavaResponse> {
         self.send_initial_request()?;
 
-        let mut buffer = Bufferer::new_with_data(Endianess::Big, &self.socket.receive(None)?);
+        let data = self.socket.receive(None)?;
+        let mut buffer = Bufferer::new_with_data(Endianess::Big, &data);
 
         if buffer.get_u8()? != 0xFF {
             return Err(ProtocolFormat);
         }
 
         let length = buffer.get_u16()? * 2;
-        error_by_expected_size((length + 3) as usize, buffer.data_length())?;
+        error_by_expected_size((length + 3) as usize, data.len())?;
 
         if LegacyV1_6::is_protocol(&mut buffer)? {
             return LegacyV1_6::get_response(&mut buffer);

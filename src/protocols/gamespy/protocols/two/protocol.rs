@@ -94,7 +94,7 @@ fn get_server_vars(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String>>
     let mut values = HashMap::new();
 
     let mut done_processing_vars = false;
-    while !done_processing_vars && bufferer.remaining_length() > 0 {
+    while !done_processing_vars && !bufferer.is_remaining_empty() {
         let key = bufferer.get_string_utf8()?;
         let value = bufferer.get_string_utf8_optional()?;
 

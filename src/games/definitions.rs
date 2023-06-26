@@ -9,6 +9,7 @@ use crate::protocols::{
 };
 use crate::Game;
 
+use crate::protocols::types::ProprietaryProtocol;
 use phf::{phf_map, Map};
 
 macro_rules! game {
@@ -51,7 +52,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "dods" => game!("Day of Defeat: Source", 27015, Protocol::Valve(SteamApp::DODS)),
     "doi" => game!("Day of Infamy", 27015, Protocol::Valve(SteamApp::DOI)),
     "dst" => game!("Don't Starve Together", 27016, Protocol::Valve(SteamApp::DST)),
-    "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::FFOW),
+    "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::PROPRIETARY(ProprietaryProtocol::FFOW)),
     "gm" => game!("Garry's Mod", 27016, Protocol::Valve(SteamApp::GM)),
     "hl2dm" => game!("Half-Life 2 Deathmatch", 27015, Protocol::Valve(SteamApp::HL2DM)),
     "haloce" => game!("Halo: Combat Evolved", 2302, Protocol::Gamespy(GameSpyVersion::Two)),
@@ -77,9 +78,9 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "tf" => game!("The Forest", 27016, Protocol::Valve(SteamApp::TF)),
     "tf2" => game!("Team Fortress 2", 27015, Protocol::Valve(SteamApp::TF2)),
     "tfc" => game!("Team Fortress Classic", 27015, Protocol::Valve(SteamApp::TFC)),
-    "ts" => game!("The Ship", 27015, Protocol::TheShip),
+    "ts" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "ut" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
     "vr" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VR)),
-    "jc2mp" => game!("Just Cause 2: Multiplayer", 7777, Protocol::JC2MP),
+    "jc2mp" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2MP)),
 };

@@ -139,7 +139,7 @@ impl GameSpy3 {
 
             if self.single_packets {
                 buf.move_position_ahead(11);
-                return Ok(vec![buf.remaining_data_vec()]);
+                return Ok(vec![buf.remaining_data().to_vec()]);
             }
 
             if buf.get_string_utf8()? != "splitnum" {
@@ -159,7 +159,7 @@ impl GameSpy3 {
                 values.push(Vec::new());
             }
 
-            values[packet_id] = buf.remaining_data_vec();
+            values[packet_id] = buf.remaining_data().to_vec();
         }
 
         if values.iter().any(|v| v.is_empty()) {
@@ -174,7 +174,7 @@ pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, V
     let mut vars = HashMap::new();
 
     let mut buf = Bufferer::new_with_data(Endianess::Big, packet);
-    while buf.remaining_length() > 0 {
+    while !buf.is_remaining_empty() {
         let key = buf.get_string_utf8()?;
         if key.is_empty() {
             break;
@@ -185,7 +185,7 @@ pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, V
         vars.insert(key, value);
     }
 
-    Ok((vars, buf.remaining_data_vec()))
+    Ok((vars, buf.remaining_data().to_vec()))
 }
 
 /// If there are parsing problems using the `query` function, you can directly
@@ -214,7 +214,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
     for packet in packets {
         let mut buf = Bufferer::new_with_data(Endianess::Little, &packet);
 
-        while buf.remaining_length() > 0 {
+        while !buf.is_remaining_empty() {
             if buf.get_u8()? < 3 {
                 continue;
             }
@@ -255,7 +255,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 false => &mut teams_data,
             };
 
-            while buf.remaining_length() > 0 {
+            while !buf.is_remaining_empty() {
                 let item = buf.get_string_utf8()?;
                 if item.is_empty() {
                     break;
