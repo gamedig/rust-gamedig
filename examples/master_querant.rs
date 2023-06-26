@@ -57,6 +57,7 @@ use gamedig::{
     unturned,
     ut,
     vr,
+    warsow,
     GDResult,
 };
 use std::env;
@@ -191,6 +192,7 @@ fn main() -> GDResult<()> {
         "_gamespy2" => println!("{:#?}", gamespy::two::query(address, None)),
         "haloce" => println!("{:#?}", haloce::query(ip, port)?),
         "jc2mp" => println!("{:#?}", jc2mp::query(ip, port)?),
+        "warsow" => println!("{:#?}", warsow::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1]),
     };
 

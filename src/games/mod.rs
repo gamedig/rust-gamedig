@@ -111,6 +111,8 @@ pub mod unturned;
 pub mod ut;
 /// V Rising
 pub mod vr;
+/// Warsow
+pub mod warsow;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
