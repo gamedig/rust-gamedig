@@ -174,7 +174,7 @@ pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, V
     let mut vars = HashMap::new();
 
     let mut buf = Bufferer::new_with_data(Endianess::Big, packet);
-    while buf.remaining_length() > 0 {
+    while !buf.is_remaining_empty() {
         let key = buf.get_string_utf8()?;
         if key.is_empty() {
             break;
@@ -214,7 +214,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
     for packet in packets {
         let mut buf = Bufferer::new_with_data(Endianess::Little, &packet);
 
-        while buf.remaining_length() > 0 {
+        while !buf.is_remaining_empty() {
             if buf.get_u8()? < 3 {
                 continue;
             }
@@ -255,7 +255,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 false => &mut teams_data,
             };
 
-            while buf.remaining_length() > 0 {
+            while !buf.is_remaining_empty() {
                 let item = buf.get_string_utf8()?;
                 if item.is_empty() {
                     break;

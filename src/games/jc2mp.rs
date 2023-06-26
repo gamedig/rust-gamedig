@@ -64,7 +64,7 @@ fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
     let count = buf.get_u16()?;
     let mut players = Vec::with_capacity(count as usize);
 
-    while buf.remaining_length() > 0 {
+    while !buf.is_remaining_empty() {
         players.push(Player {
             name: buf.get_string_utf8()?,
             steam_id: buf.get_string_utf8()?,
