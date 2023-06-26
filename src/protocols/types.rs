@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// Enumeration of all custom protocols
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
-pub enum CustomProtocol {
+pub enum ProprietaryProtocol {
     TheShip,
     FFOW,
     JC2MP,
@@ -24,7 +24,14 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::SteamApp),
     #[cfg(not(feature = "no_games"))]
-    PROPRIETARY(CustomProtocol),
+    PROPRIETARY(ProprietaryProtocol),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ProprietaryResponse<'a> {
+    TheShip(&'a crate::games::ts::Response),
+    FFOW(&'a crate::games::ffow::Response),
+    JC2MP(&'a crate::games::jc2mp::Response),
 }
 
 /// All response types
@@ -35,11 +42,7 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     #[cfg(not(feature = "no_games"))]
-    TheShip(&'a crate::games::ts::Response),
-    #[cfg(not(feature = "no_games"))]
-    FFOW(&'a crate::games::ffow::Response),
-    #[cfg(not(feature = "no_games"))]
-    JC2MP(&'a crate::games::jc2mp::Response),
+    PROPRIETARY(ProprietaryResponse<'a>),
 }
 
 /// All player types
