@@ -31,7 +31,7 @@ impl CommonPlayer for Player {
 
     fn name(&self) -> &str { &self.name }
 
-    fn score(&self) -> Option<u32> { Some(self.score.into()) }
+    fn score(&self) -> Option<u32> { Some(self.score.try_into().unwrap_or(0)) }
 }
 
 pub(crate) struct QuakeTwo;
