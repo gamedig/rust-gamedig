@@ -1,13 +1,23 @@
-use gamedig::{protocols::types::CommonResponse, query, GDResult, GAMES};
+use gamedig::{
+    protocols::types::{CommonResponse, TimeoutSettings},
+    query_with_timeout,
+    GDResult,
+    GAMES,
+};
 
 use std::net::IpAddr;
 
-fn generic_query(game_name: &str, addr: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn CommonResponse>> {
+fn generic_query(
+    game_name: &str,
+    addr: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Box<dyn CommonResponse>> {
     let game = GAMES.get(game_name).expect("Game doesn't exist");
 
     println!("Querying {:#?} with game {:#?}.", addr, game);
 
-    let response = query(game, addr, port)?;
+    let response = query_with_timeout(game, addr, port, timeout_settings)?;
     println!("Response: {:#?}", response.as_json());
 
     let common = response.as_original();
@@ -26,20 +36,25 @@ fn main() {
         .expect("Must provide address");
     let port: Option<u16> = args.next().map(|s| s.parse().unwrap());
 
-    generic_query(&game_name, &addr, port).unwrap();
+    generic_query(&game_name, &addr, port, None).unwrap();
 }
 
 #[cfg(test)]
 mod test {
-    use gamedig::GAMES;
-    use std::net::{IpAddr, Ipv4Addr};
+    use gamedig::{protocols::types::TimeoutSettings, GAMES};
+    use std::{
+        net::{IpAddr, Ipv4Addr},
+        time::Duration,
+    };
 
     use super::generic_query;
 
     const ADDR: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
     fn test_game(game_name: &str) {
-        assert!(generic_query(game_name, &ADDR, None).is_err());
+        let timeout_settings =
+            Some(TimeoutSettings::new(Some(Duration::from_nanos(1)), Some(Duration::from_nanos(1))).unwrap());
+        assert!(generic_query(game_name, &ADDR, None, timeout_settings).is_err());
     }
 
     #[test]

@@ -17,10 +17,10 @@ keywords = ["server", "query", "game", "check", "status"]
 rust-version = "1.60.0"
 
 [features]
-default = ["game_defs"]
-no_games = []
-no_services = []
-game_defs = ["dep:phf"]
+default = ["games", "services", "game_defs"]
+games = []
+services = []
+game_defs = ["dep:phf", "games"]
 serde = ["dep:serde", "serde/derive"]
 
 [dependencies]

@@ -58,6 +58,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Soldier of Fortune 2               | SOF2     | Quake 3              |                                                                                                                                                                           |
 | Halo: Combat Evolved               | HALOCE   | GameSpy 2            |                                                                                                                                                                           |
 | Just Cause 2: Multiplayer          | JC2MP    | GameSpy 3 (*Altered) |                                                                                                                                                                           |
+| Warsow                             | WARSOW   | Quake 3              |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

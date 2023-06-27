@@ -111,10 +111,12 @@ pub mod unturned;
 pub mod ut;
 /// V Rising
 pub mod vr;
+/// Warsow
+pub mod warsow;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
-use crate::protocols::types::{CommonResponse, ProprietaryProtocol};
+use crate::protocols::types::{CommonResponse, ProprietaryProtocol, TimeoutSettings};
 use crate::protocols::{self, Protocol};
 use crate::GDResult;
 use std::net::{IpAddr, SocketAddr};
@@ -139,39 +141,52 @@ pub use definitions::GAMES;
 
 /// Make a query given a game definition
 pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn CommonResponse>> {
+    query_with_timeout(game, address, port, None)
+}
+
+/// Make a query given a game definition and timeout settings
+pub fn query_with_timeout(
+    game: &Game,
+    address: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Box<dyn CommonResponse>> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
         Protocol::Valve(steam_app) => {
-            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, None).map(Box::new)?
+            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, timeout_settings).map(Box::new)?
         }
         Protocol::Minecraft(version) => {
             match version {
                 Some(protocols::minecraft::Server::Java) => {
-                    protocols::minecraft::query_java(&socket_addr, None).map(Box::new)?
+                    protocols::minecraft::query_java(&socket_addr, timeout_settings).map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Bedrock) => {
-                    protocols::minecraft::query_bedrock(&socket_addr, None).map(Box::new)?
+                    protocols::minecraft::query_bedrock(&socket_addr, timeout_settings).map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Legacy(group)) => {
-                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, None).map(Box::new)?
+                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, timeout_settings).map(Box::new)?
                 }
-                None => protocols::minecraft::query(&socket_addr, None).map(Box::new)?,
+                None => protocols::minecraft::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
         }
         Protocol::Gamespy(version) => {
             match version {
-                GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, None).map(Box::new)?,
-                GameSpyVersion::Two => protocols::gamespy::two::query(&socket_addr, None).map(Box::new)?,
-                GameSpyVersion::Three => protocols::gamespy::three::query(&socket_addr, None).map(Box::new)?,
+                GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, timeout_settings).map(Box::new)?,
+                GameSpyVersion::Two => protocols::gamespy::two::query(&socket_addr, timeout_settings).map(Box::new)?,
+                GameSpyVersion::Three => {
+                    protocols::gamespy::three::query(&socket_addr, timeout_settings).map(Box::new)?
+                }
             }
         }
         Protocol::Quake(version) => {
             match version {
-                QuakeVersion::One => protocols::quake::one::query(&socket_addr, None).map(Box::new)?,
-                QuakeVersion::Two => protocols::quake::two::query(&socket_addr, None).map(Box::new)?,
-                QuakeVersion::Three => protocols::quake::three::query(&socket_addr, None).map(Box::new)?,
+                QuakeVersion::One => protocols::quake::one::query(&socket_addr, timeout_settings).map(Box::new)?,
+                QuakeVersion::Two => protocols::quake::two::query(&socket_addr, timeout_settings).map(Box::new)?,
+                QuakeVersion::Three => protocols::quake::three::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
         }
+        // TODO: No way to query proprietary games with timeout
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
                 ProprietaryProtocol::TheShip => ts::query(address, port).map(Box::new)?,
