@@ -1,9 +1,7 @@
+use crate::GDError::{PacketBad, PacketUnderflow};
+use crate::GDResult;
 use byteorder::{ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
-
-// This will be removed later and replaced with a error type from the crate.
-#[derive(Debug, PartialEq)]
-struct BufferError(String);
 
 /// A struct representing a buffer with a specific byte order.
 ///
@@ -53,7 +51,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     ///
     /// Returns a `BufferError` if the attempted move would position the cursor
     /// out of bounds.
-    pub(crate) fn move_cursor(&mut self, offset: isize) -> Result<(), BufferError> {
+    pub(crate) fn move_cursor(&mut self, offset: isize) -> GDResult<()> {
         // Compute the new cursor position by adding the offset to the current cursor
         // position. The checked_add method is used for safe addition,
         // preventing overflow and underflow.
@@ -62,21 +60,12 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         match new_cursor {
             // If the addition was not successful (i.e., it resulted in an overflow or underflow),
             // return an error indicating that the cursor is out of bounds.
-            None => {
-                Err(BufferError(
-                    "Checked add failed, cursor out of bounds".to_string(),
-                ))
-            }
+            None => Err(PacketBad),
 
             // If the new cursor position is either less than zero (i.e., before the start of the buffer)
             // or greater than the remaining length of the buffer (i.e., past the end of the buffer),
             // return an error indicating that the cursor is out of bounds.
-            Some(x) if x < 0 || x as usize > self.remaining_length() => {
-                Err(BufferError(format!(
-                    "Cursor out of bounds, tried to move cursor to {}",
-                    x
-                )))
-            }
+            Some(x) if x < 0 || x as usize > self.remaining_length() => Err(PacketBad),
 
             // If the new cursor position is within the bounds of the buffer, update the cursor
             // position and return Ok.
@@ -100,7 +89,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     ///
     /// Returns a `BufferError` if there is not enough data remaining in the
     /// buffer to read a value of type `T`.
-    pub(crate) fn read<T: Sized + BufferRead<B>>(&mut self) -> Result<T, BufferError> {
+    pub(crate) fn read<T: Sized + BufferRead<B>>(&mut self) -> GDResult<T> {
         // Get the size of `T` in bytes.
         let size = std::mem::size_of::<T>();
         // Calculate remaining length of the buffer.
@@ -109,10 +98,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // If the size of `T` is larger than the remaining length, return an error
         // because we don't have enough data left to read.
         if size > remaining {
-            return Err(BufferError(format!(
-                "Packet underflow, expected {} bytes, got {}",
-                size, remaining
-            )));
+            return Err(PacketUnderflow);
         }
 
         // Slice the data array from the current cursor position for `size` amount of
@@ -148,7 +134,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     pub(crate) fn read_string<D: StringDecoder<ByteOrder = B>>(
         &mut self,
         until: Option<D::Delimiter>,
-    ) -> Result<String, BufferError> {
+    ) -> GDResult<String> {
         // Slice the data array from the current cursor position to the end.
         let data_slice = &self.data[self.cursor ..];
 
@@ -174,7 +160,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
 /// Implementors of this trait provide a method for reading their type from a
 /// byte buffer with a specific byte order.
 pub(crate) trait BufferRead<B: ByteOrder>: Sized {
-    fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError>;
+    fn read_from_buffer(data: &[u8]) -> GDResult<Self>;
 }
 
 /// Macro to implement the `BufferRead` trait for byte types.
@@ -190,14 +176,14 @@ pub(crate) trait BufferRead<B: ByteOrder>: Sized {
 macro_rules! impl_buffer_read_byte {
     ($type:ty, $map_func:expr) => {
         impl<B: ByteOrder> BufferRead<B> for $type {
-            fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
+            fn read_from_buffer(data: &[u8]) -> GDResult<Self> {
                 // Use the `first` method to get the first byte from the data array.
                 data.first()
                     // Apply the $map_func function to convert the raw byte to the $type.
                     .map($map_func)
                     // If the data array is empty (and thus `first` returns None),
                     // `ok_or_else` will return a BufferError.
-                    .ok_or_else(|| BufferError(format!("Failed to read {} from buffer", stringify!($type))))
+                    .ok_or_else(|| PacketBad)
             }
         }
     };
@@ -217,16 +203,12 @@ macro_rules! impl_buffer_read_byte {
 macro_rules! impl_buffer_read {
     ($type:ty, $read_func:ident) => {
         impl<B: ByteOrder> BufferRead<B> for $type {
-            fn read_from_buffer(data: &[u8]) -> Result<Self, BufferError> {
+            fn read_from_buffer(data: &[u8]) -> GDResult<Self> {
                 // Convert the byte slice into an array of the appropriate type.
                 let array = data.try_into().map_err(|_| {
                     // If conversion fails, return an error indicating the required and provided
                     // lengths.
-                    BufferError(format!(
-                        "Failed to convert {} bytes into {}",
-                        data.len(),
-                        stringify!($type)
-                    ))
+                    PacketBad
                 })?;
 
                 // Use the provided function to read the data from the array into the given
@@ -274,7 +256,7 @@ pub(crate) trait StringDecoder {
     /// # Errors
     ///
     /// Returns a `BufferError` if there is an error decoding the string.
-    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError>;
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String>;
 }
 
 /// A decoder for UTF-8 encoded strings.
@@ -290,7 +272,7 @@ impl StringDecoder for Utf8Decoder {
 
     /// Decodes a UTF-8 string from the given data, updating the cursor position
     /// accordingly.
-    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
         // Find the position of the delimiter in the data. If the delimiter is not
         // found, the length of the data is returned.
         let position = data
@@ -307,7 +289,7 @@ impl StringDecoder for Utf8Decoder {
             &data[.. position]
         )
         // If the data cannot be converted into a UTF-8 string, return an error
-            .map_err(|_| BufferError("Failed to decode string as UTF-8".to_string()))?
+            .map_err(|_| PacketBad)?
             // Convert the resulting &str into a String
             .to_owned();
 
@@ -339,7 +321,7 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
 
     /// Decodes a UTF-16 string from the given data, updating the cursor
     /// position accordingly.
-    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> Result<String, BufferError> {
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
         // Try to find the position of the delimiter in the data
         let position = data
         // Split the data into 2-byte chunks (as UTF-16 uses 2 bytes per character)
@@ -356,8 +338,7 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
         B::read_u16_into(&data[.. position], &mut paired_buf);
 
         // Convert the buffer of u16 values into a String
-        let result = String::from_utf16(&paired_buf)
-            .map_err(|_| BufferError("Failed to decode string as UTF-16".to_string()))?;
+        let result = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
 
         // Update the cursor position
         // The +2 accounts for the delimiter
@@ -479,9 +460,6 @@ mod tests {
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
         let result: Result<u32, _> = buffer.read();
-        assert_eq!(
-            result.unwrap_err(),
-            BufferError("Packet underflow, expected 4 bytes, got 2".to_string())
-        );
+        assert_eq!(result.unwrap_err(), PacketUnderflow);
     }
 }
