@@ -10,16 +10,30 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  build_first:
+    name: "Build, check, and test with all features"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
+      - name: Run Build
+        run: cargo build --verbose --bins --lib --examples --all-features
+      - name: Run Clippy
+        run: cargo clippy --verbose --bins --lib --examples --all-features
+      - name: Run Tests
+        run: cargo test --verbose --bins --lib --examples --all-features
   build:
     runs-on: ubuntu-latest
+    needs: [ "build_first" ]
     strategy:
       fail-fast: false
       matrix:
         include:
           - build_type: ""
             build_name: "Default"
-          - build_type: "--all-features --examples"
-            build_name: "All features (+ examples)"
           - build_type: "--no-default-features"
             build_name: "No features"
           - build_type: "--no-default-features --features games"
@@ -31,12 +45,12 @@ jobs:
     name: "Build ${{ matrix.build_name }}"
     steps:
       - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
       - name: Run Build
         run: cargo build --verbose --bins --lib ${{ matrix.build_type }}
-      - name: Run Clippy
-        run: cargo clippy --verbose --bins --lib ${{ matrix.build_type }}
-      - name: Run Tests
-        run: cargo test --verbose --bins --lib ${{ matrix.build_type }}
   build_msrv:
     name: "Build using MSRV"
     runs-on: ubuntu-latest
