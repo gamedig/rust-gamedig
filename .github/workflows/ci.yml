@@ -22,6 +22,12 @@ jobs:
             build_name: "All features (+ examples)"
           - build_type: "--no-default-features"
             build_name: "No features"
+          - build_type: "--no-default-features --features games"
+            build_name: "Games no services"
+          - build_type: "--no-default-features --features services"
+            build_name: "Services no games"
+          - build_type: "--no-default-features --features game_defs"
+            build_name: "Game defs"
     name: "Build ${{ matrix.build_name }}"
     steps:
       - uses: actions/checkout@v3
