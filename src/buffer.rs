@@ -450,6 +450,34 @@ mod tests {
     }
 
     #[test]
+    fn test_switch_endian_chunk_le_be() {
+        let data = [0x01, 0x02, 0x03, 0x04];
+        let buffer = Buffer::<LittleEndian>::new(&data[..]);
+
+        let switched_buffer = buffer.switch_endian_chunk(2);
+
+        assert_eq!(switched_buffer.data, [0x02, 0x01]);
+        assert_eq!(switched_buffer.cursor, 0);
+
+        assert_eq!(buffer.data, [0x03, 0x04]);
+        assert_eq!(buffer.cursor, 2);
+    }
+
+    #[test]
+    fn test_switch_endian_chunk_be_le() {
+        let data = [0x01, 0x02, 0x03, 0x04];
+        let buffer = Buffer::<BigEndian>::new(&data[..]);
+
+        let switched_buffer = buffer.switch_endian_chunk(2);
+
+        assert_eq!(switched_buffer.data, [0x02, 0x01]);
+        assert_eq!(switched_buffer.cursor, 0);
+
+        assert_eq!(buffer.data, [0x03, 0x04]);
+        assert_eq!(buffer.cursor, 2);
+    }
+
+    #[test]
     fn test_buffer_read_u8() {
         let data: &[u8] = &[1, 2, 3, 4];
         let mut buffer = Buffer::<LittleEndian>::new(data);
