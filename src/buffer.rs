@@ -199,7 +199,6 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
     /// # Parameters
     ///
     /// * `size`: The size of the chunk to be taken from the original buffer.
-    // TODO: Add tests for this method.
     pub(crate) fn switch_endian_chunk(mut self, size: usize) -> Buffer<'a, B::Output> {
         let old_cursor = self.cursor;
         self.move_cursor(size as isize);
