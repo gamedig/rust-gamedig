@@ -1,8 +1,7 @@
 // This file has code that has been documented by the NodeJS GameDig library
 // (MIT) from https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
-
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::{Buffer, Utf8Decoder},
     protocols::{
         minecraft::{BedrockResponse, GameMode, Server},
         types::TimeoutSettings,
@@ -12,7 +11,10 @@ use crate::{
     GDError::{PacketBad, TypeParse},
     GDResult,
 };
+
 use std::net::SocketAddr;
+
+use byteorder::LittleEndian;
 
 pub struct Bedrock {
     socket: UdpSocket,
@@ -40,35 +42,36 @@ impl Bedrock {
     fn get_info(&mut self) -> GDResult<BedrockResponse> {
         self.send_status_request()?;
 
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
+        let mut buffer = Buffer::<LittleEndian>::new(&self.socket.receive(None)?);
 
-        if buffer.get_u8()? != 0x1c {
+        if buffer.read::<u8>()? != 0x1c {
             return Err(PacketBad);
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
-        if buffer.get_u64()? != 9833440827789222417 {
+        if buffer.read::<u64>()? != 9833440827789222417 {
             return Err(PacketBad);
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal
         // below
-        buffer.move_position_ahead(8);
+        buffer.move_cursor(8);
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
-        if buffer.get_u64()? != 18374403896610127616 {
+        if buffer.read::<u64>()? != 18374403896610127616 {
             return Err(PacketBad);
         }
 
-        if buffer.get_u64()? != 8671175388723805693 {
+        if buffer.read::<u64>()? != 8671175388723805693 {
             return Err(PacketBad);
         }
 
-        let remaining_length = buffer.as_endianess(Endianess::Big).get_u16()? as usize;
-        buffer.move_position_ahead(2);
+        let remaining_length = buffer.switch_endian_chunk(2).read::<u16>()? as usize;
+
+        buffer.move_cursor(2);
         error_by_expected_size(remaining_length, buffer.remaining_length())?;
 
-        let binding = buffer.get_string_utf8_unended()?;
+        let binding = buffer.read_string::<Utf8Decoder>(None)?;
         let status: Vec<&str> = binding.split(';').collect();
 
         // We must have at least 6 values
