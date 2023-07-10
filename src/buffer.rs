@@ -206,7 +206,7 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
 
         Buffer {
             data: &self.data[old_cursor .. old_cursor + size],
-            cursor: old_cursor,
+            cursor: 0,
             _marker: PhantomData,
         }
     }
