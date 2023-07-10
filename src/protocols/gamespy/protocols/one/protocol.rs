@@ -1,6 +1,9 @@
+use byteorder::LittleEndian;
+
+use crate::buffer::Utf8Decoder;
 use crate::protocols::gamespy::common::has_password;
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::Buffer,
     protocols::{
         gamespy::one::{Player, Response},
         types::TimeoutSettings,
@@ -29,9 +32,9 @@ fn get_server_values(
 
     while !is_finished {
         let data = socket.receive(None)?;
-        let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
+        let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
-        let mut as_string = bufferer.get_string_utf8_unended()?;
+        let mut as_string = bufferer.read_string::<Utf8Decoder>(None)?;
         as_string.remove(0);
 
         let splited: Vec<String> = as_string.split('\\').map(str::to_string).collect();
