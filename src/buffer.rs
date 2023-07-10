@@ -1,6 +1,6 @@
 use crate::GDError::{PacketBad, PacketUnderflow};
 use crate::GDResult;
-use byteorder::{ByteOrder, LittleEndian};
+use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
 
 /// A struct representing a buffer with a specific byte order.
@@ -39,6 +39,10 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// Returns the length of the remaining bytes from the current cursor
     /// position.
     pub(crate) fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
+
+    // Added for legacy support just for the refactoring
+    // Not Tested
+    pub(crate) fn remaining_bytes(&self) -> &[u8] { &self.data[self.cursor ..] }
 
     /// Moves the cursor forward or backward by a specified offset.
     ///
@@ -151,6 +155,57 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // position has been updated within the decode_string call to reflect
         // the new position after reading.
         Ok(result)
+    }
+}
+
+/// A trait that provides an interface to switch endianness.
+///
+/// The trait `SwitchEndian` is used for types that have a specific
+/// byte order (endianness) and can switch to another byte order.
+/// The type of the switched endianness is determined by the associated
+/// type `Output`.
+///
+/// The associated type `Output` must implement the `ByteOrder` trait.
+pub(crate) trait SwitchEndian {
+    type Output: ByteOrder;
+}
+
+/// An implementation of `SwitchEndian` for `LittleEndian`.
+///
+/// The switched endianness type is `BigEndian`.
+impl SwitchEndian for LittleEndian {
+    type Output = BigEndian;
+}
+
+/// An implementation of `SwitchEndian` for `BigEndian`.
+///
+/// The switched endianness type is `LittleEndian`.
+impl SwitchEndian for BigEndian {
+    type Output = LittleEndian;
+}
+
+impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
+    /// Switches the byte order of a chunk in the buffer.
+    ///
+    /// This method consumes the buffer and returns a new buffer
+    /// with a chunk of the original buffer's data, starting from the
+    /// current cursor position and of the given size, where the byte
+    /// order is switched according to the implementation
+    /// of `SwitchEndian` for `B`.
+    ///
+    /// Note: The data and cursor of the original buffer
+    /// are preserved.
+    ///
+    /// # Parameters
+    ///
+    /// * `size`: The size of the chunk to be taken from the original buffer.
+    // TODO: Add tests for this method.
+    pub(crate) fn switch_endian_chunk(self, size: usize) -> Buffer<'a, B::Output> {
+        Buffer {
+            data: &self.data[self.cursor .. self.cursor + size],
+            cursor: self.cursor,
+            _marker: PhantomData,
+        }
     }
 }
 
