@@ -135,10 +135,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Errors
     ///
     /// Returns a `BufferError` if there is an error decoding the string.
-    pub(crate) fn read_string<D: StringDecoder<ByteOrder = B>>(
-        &mut self,
-        until: Option<D::Delimiter>,
-    ) -> GDResult<String> {
+    pub(crate) fn read_string<D: StringDecoder>(&mut self, until: Option<D::Delimiter>) -> GDResult<String> {
         // Slice the data array from the current cursor position to the end.
         let data_slice = &self.data[self.cursor ..];
 
@@ -199,15 +196,15 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
     /// # Parameters
     ///
     /// * `size`: The size of the chunk to be taken from the original buffer.
-    pub(crate) fn switch_endian_chunk(mut self, size: usize) -> Buffer<'a, B::Output> {
+    pub(crate) fn switch_endian_chunk(mut self, size: usize) -> GDResult<Buffer<'a, B::Output>> {
         let old_cursor = self.cursor;
-        self.move_cursor(size as isize);
+        self.move_cursor(size as isize)?;
 
-        Buffer {
+        Ok(Buffer {
             data: &self.data[old_cursor .. old_cursor + size],
             cursor: 0,
             _marker: PhantomData,
-        }
+        })
     }
 }
 
@@ -293,8 +290,6 @@ impl_buffer_read!(f64, read_f64);
 /// This trait should be implemented by types that can decode strings from a
 /// byte buffer with a specific byte order and delimiter.
 pub(crate) trait StringDecoder {
-    /// The byte order used by the decoder.
-    type ByteOrder: ByteOrder;
     /// The type of the delimiter used by the decoder.
     type Delimiter: AsRef<[u8]>;
 
@@ -322,7 +317,6 @@ pub(crate) trait StringDecoder {
 pub(crate) struct Utf8Decoder;
 
 impl StringDecoder for Utf8Decoder {
-    type ByteOrder = LittleEndian;
     type Delimiter = [u8; 1];
 
     const DELIMITER: Self::Delimiter = [0x00];
@@ -371,7 +365,6 @@ pub(crate) struct Utf16Decoder<B: ByteOrder> {
 }
 
 impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
-    type ByteOrder = B;
     type Delimiter = [u8; 2];
 
     const DELIMITER: Self::Delimiter = [0x00, 0x00];
@@ -453,7 +446,7 @@ mod tests {
         let data = [0x01, 0x02, 0x03, 0x04];
         let buffer = Buffer::<LittleEndian>::new(&data[..]);
 
-        let switched_buffer = buffer.switch_endian_chunk(2);
+        let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
         assert_eq!(switched_buffer.data, [0x02, 0x01]);
         assert_eq!(switched_buffer.cursor, 0);
@@ -467,7 +460,7 @@ mod tests {
         let data = [0x01, 0x02, 0x03, 0x04];
         let buffer = Buffer::<BigEndian>::new(&data[..]);
 
-        let switched_buffer = buffer.switch_endian_chunk(2);
+        let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
         assert_eq!(switched_buffer.data, [0x02, 0x01]);
         assert_eq!(switched_buffer.cursor, 0);
