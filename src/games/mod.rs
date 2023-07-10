@@ -186,12 +186,15 @@ pub fn query_with_timeout(
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
         }
-        // TODO: No way to query proprietary games with timeout
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
-                ProprietaryProtocol::TheShip => ts::query(address, port).map(Box::new)?,
-                ProprietaryProtocol::FFOW => ffow::query(address, port).map(Box::new)?,
-                ProprietaryProtocol::JC2MP => jc2mp::query(address, port).map(Box::new)?,
+                ProprietaryProtocol::TheShip => {
+                    ts::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                }
+                ProprietaryProtocol::FFOW => ffow::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
+                ProprietaryProtocol::JC2MP => {
+                    jc2mp::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                }
             }
         }
     })

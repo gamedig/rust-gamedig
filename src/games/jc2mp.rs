@@ -1,7 +1,7 @@
 use crate::bufferer::{Bufferer, Endianess};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
@@ -75,10 +75,16 @@ fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
     Ok(players)
 }
 
-pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
+pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
+
+pub fn query_with_timeout(
+    address: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Response> {
     let mut client = GameSpy3::new_custom(
         &SocketAddr::new(*address, port.unwrap_or(7777)),
-        None,
+        timeout_settings,
         [0xFF, 0xFF, 0xFF, 0x02],
         true,
     )?;
