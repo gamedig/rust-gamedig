@@ -8,10 +8,10 @@ repos:
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: rustup run --install nightly-2023-03-01 cargo-clippy -- -- -D warnings
+        entry: rustup run --install nightly-2023-07-09 cargo-clippy -- -- -D warnings
       - id: format
         name: Check rustfmt
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: rustup run --install nightly-2023-03-01 cargo-fmt --check
+        entry: rustup run --install nightly-2023-07-09 cargo-fmt --check
