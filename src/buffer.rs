@@ -189,21 +189,24 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
     ///
     /// This method consumes the buffer and returns a new buffer
     /// with a chunk of the original buffer's data, starting from the
-    /// current cursor position and of the given size, where the byte
+    /// original cursor position and of the given size, where the byte
     /// order is switched according to the implementation
     /// of `SwitchEndian` for `B`.
     ///
-    /// Note: The data and cursor of the original buffer
-    /// are preserved.
+    /// Note: The method also advances the cursor of the original buffer
+    /// by `size`.
     ///
     /// # Parameters
     ///
     /// * `size`: The size of the chunk to be taken from the original buffer.
     // TODO: Add tests for this method.
-    pub(crate) fn switch_endian_chunk(self, size: usize) -> Buffer<'a, B::Output> {
+    pub(crate) fn switch_endian_chunk(mut self, size: usize) -> Buffer<'a, B::Output> {
+        let old_cursor = self.cursor;
+        self.move_cursor(size as isize);
+
         Buffer {
-            data: &self.data[self.cursor .. self.cursor + size],
-            cursor: self.cursor,
+            data: &self.data[old_cursor .. old_cursor + size],
+            cursor: old_cursor,
             _marker: PhantomData,
         }
     }
