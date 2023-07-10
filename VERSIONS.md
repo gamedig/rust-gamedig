@@ -9,7 +9,7 @@ Places to update:
 
 # rustfmt version
 
-Current: `1.5.2`
+Current: `1.6.0`
 
 Places to update:
 - `.rustfmt.toml`
@@ -19,7 +19,7 @@ Places to update:
 
 The toolchain version used to run rustfmt in CI
 
-Current: `nightly-2023-03-01`
+Current: `nightly-2023-07-09`
 
 Places to update:
 - `./.github/workflows/ci.yml`
