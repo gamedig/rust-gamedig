@@ -1,5 +1,5 @@
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::Buffer,
     protocols::{
         minecraft::{as_varint, get_string, get_varint, JavaResponse, Player, Server},
         types::TimeoutSettings,
@@ -8,8 +8,10 @@ use crate::{
     GDError::{JsonParse, PacketBad},
     GDResult,
 };
+
 use std::net::SocketAddr;
 
+use byteorder::LittleEndian;
 use serde_json::Value;
 
 #[rustfmt::skip]
@@ -43,8 +45,8 @@ impl Java {
             .send(&[as_varint(data.len() as i32), data].concat())
     }
 
-    fn receive(&mut self) -> GDResult<Bufferer> {
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
+    fn receive(&mut self) -> GDResult<Buffer<LittleEndian>> {
+        let mut buffer = Buffer::<LittleEndian>::new(&self.socket.receive(None)?);
 
         let _packet_length = get_varint(&mut buffer)? as usize;
         // this declared 'packet length' from within the packet might be wrong (?), not
