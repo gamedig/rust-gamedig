@@ -38,4 +38,4 @@ repos:
         language: system
         files: '^[.]github/workflows/'
         pass_filenames: false
-        entry: act -q -s GITHUB_TOKEN=fake
+        entry: act -q
