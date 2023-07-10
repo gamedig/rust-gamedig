@@ -1,0 +1,5 @@
+# Configuration file for act (run github actions locally using docker)
+# https://github.com/nektos/act
+
+# Swap docker image for the one containing the rust toolchain
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:rust-latest

@@ -12,22 +12,30 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_type: ""
+            build_name: "Default"
+          - build_type: "--all-features --examples"
+            build_name: "All features (+ examples)"
+          - build_type: "--no-default-features"
+            build_name: "No features"
+    name: "Build ${{ matrix.build_name }}"
     steps:
       - uses: actions/checkout@v3
       - name: Run Build
-        run: cargo build --verbose
+        run: cargo build --verbose --bins --lib ${{ matrix.build_type }}
       - name: Run Clippy
-        run: cargo clippy --verbose
+        run: cargo clippy --verbose --bins --lib ${{ matrix.build_type }}
       - name: Run Tests
-        run: cargo test --verbose
-      - name: Install Formatting nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2023-07-09
-          components: rustfmt
-      - name: Run Formatting check
-        run: cargo +nightly-2023-07-09 fmt --check --verbose
+        run: cargo test --verbose --bins --lib ${{ matrix.build_type }}
+  build_msrv:
+    name: "Build using MSRV"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: Install MSRV
         uses: actions-rs/toolchain@v1
         with:
@@ -35,3 +43,16 @@ jobs:
           override: true
       - name: Run MSRV
         run: cargo build
+  formatting:
+    name: "Check code formatting"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Formatting nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-07-09
+          components: rustfmt
+          override: true
+      - name: Run Formatting check
+        run: cargo fmt --check --verbose
