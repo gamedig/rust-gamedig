@@ -1,5 +1,5 @@
 use crate::{
-    bufferer::Buffer,
+    buffer::Buffer,
     protocols::{
         types::TimeoutSettings,
         valve::{
@@ -27,7 +27,7 @@ use crate::{
 
 use bzip2_rs::decoder::Decoder;
 
-use crate::bufferer::{BufferRead, Utf8Decoder};
+use crate::buffer::Utf8Decoder;
 use crate::protocols::valve::Packet;
 use byteorder::LittleEndian;
 use std::collections::HashMap;
@@ -64,7 +64,8 @@ impl SplitPacket {
                     false => buffer.read()?,
                     true => 1248,
                 };
-                let compressed = ((id >> 31) & 1) == 1;
+                let compressed = ((id >> 31) & 1u32) == 1u32;
+
                 let (decompressed_size, uncompressed_crc32) = match compressed {
                     false => (None, None),
                     true => (Some(buffer.read()?), Some(buffer.read()?)),
@@ -89,7 +90,7 @@ impl SplitPacket {
             compressed,
             decompressed_size,
             uncompressed_crc32,
-            payload: buffer.remaining_data().to_vec(),
+            payload: buffer.remaining_bytes().to_vec(),
         })
     }
 
@@ -210,11 +211,11 @@ impl ValveProtocol {
 
     fn get_goldsrc_server_info(buffer: &mut Buffer<LittleEndian>) -> GDResult<ServerInfo> {
         let _header: u8 = buffer.read()?; //get the header (useless info)
-        let _address: String = buffer.read_string(None)?; //get the server address (useless info)
-        let name = buffer.read_string(None)?;
-        let map = buffer.read_string(None)?;
-        let folder = buffer.read_string(None)?;
-        let game = buffer.read_string(None)?;
+        let _address: String = buffer.read_string::<Utf8Decoder>(None)?; //get the server address (useless info)
+        let name = buffer.read_string::<Utf8Decoder>(None)?;
+        let map = buffer.read_string::<Utf8Decoder>(None)?;
+        let folder = buffer.read_string::<Utf8Decoder>(None)?;
+        let game = buffer.read_string::<Utf8Decoder>(None)?;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
         let protocol = buffer.read()?;
@@ -235,8 +236,8 @@ impl ValveProtocol {
             false => None,
             true => {
                 Some(ModData {
-                    link: buffer.read_string(None)?,
-                    download_link: buffer.read_string(None)?,
+                    link: buffer.read_string::<Utf8Decoder>(None)?,
+                    download_link: buffer.read_string::<Utf8Decoder>(None)?,
                     version: buffer.read()?,
                     size: buffer.read()?,
                     multiplayer_only: buffer.read::<u8>()? == 1,
@@ -280,10 +281,10 @@ impl ValveProtocol {
         }
 
         let protocol = buffer.read()?;
-        let name = buffer.read_string(None)?;
-        let map = buffer.read_string(None)?;
-        let folder = buffer.read_string(None)?;
-        let game = buffer.read_string(None)?;
+        let name = buffer.read_string::<Utf8Decoder>(None)?;
+        let map = buffer.read_string::<Utf8Decoder>(None)?;
+        let folder = buffer.read_string::<Utf8Decoder>(None)?;
+        let game = buffer.read_string::<Utf8Decoder>(None)?;
         let mut appid = buffer.read::<u16>()? as u32;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
@@ -302,7 +303,7 @@ impl ValveProtocol {
                 })
             }
         };
-        let version = buffer.read_string(None)?;
+        let version = buffer.read_string::<Utf8Decoder>(None)?;
         let extra_data = match buffer.read::<u8>() {
             Err(_) => None,
             Ok(value) => {
@@ -321,11 +322,11 @@ impl ValveProtocol {
                     },
                     tv_name: match (value & 0x40) > 0 {
                         false => None,
-                        true => Some(buffer.read_string(None)?),
+                        true => Some(buffer.read_string::<Utf8Decoder>(None)?),
                     },
                     keywords: match (value & 0x20) > 0 {
                         false => None,
-                        true => Some(buffer.read_string(None)?),
+                        true => Some(buffer.read_string::<Utf8Decoder>(None)?),
                     },
                     game_id: match (value & 0x01) > 0 {
                         false => None,
@@ -373,7 +374,7 @@ impl ValveProtocol {
             buffer.move_cursor(1)?; //skip the index byte
 
             players.push(ServerPlayer {
-                name: buffer.read_string(None)?,
+                name: buffer.read_string::<Utf8Decoder>(None)?,
                 score: buffer.read()?,
                 duration: buffer.read()?,
                 deaths: match *engine == SteamApp::TS.as_engine() {
@@ -398,8 +399,8 @@ impl ValveProtocol {
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
 
         for _ in 0 .. count {
-            let name = buffer.read_string(None)?;
-            let value = buffer.read_string(None)?;
+            let name = buffer.read_string::<Utf8Decoder>(None)?;
+            let value = buffer.read_string::<Utf8Decoder>(None)?;
 
             rules.insert(name, value);
         }
