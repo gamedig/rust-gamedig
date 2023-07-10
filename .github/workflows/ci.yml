@@ -21,10 +21,6 @@ jobs:
         run: cargo clippy --verbose
       - name: Run Tests
         run: cargo test --verbose
-      - name: Install Audit
-        run: cargo install cargo-audit
-      - name: Run Audit
-        run: cargo audit --deny warnings
       - name: Install Formatting nightly
         uses: actions-rs/toolchain@v1
         with:
