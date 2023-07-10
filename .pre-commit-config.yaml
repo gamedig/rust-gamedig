@@ -33,3 +33,9 @@ repos:
         files: '[.]rs$'
         pass_filenames: false
         entry: rustup run --install 1.60 cargo build
+      - id: actions
+        name: Check actions work
+        language: system
+        files: '^[.]github/workflows/'
+        pass_filenames: false
+        entry: act -q -s GITHUB_TOKEN=fake
