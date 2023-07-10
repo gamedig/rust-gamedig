@@ -1,4 +1,6 @@
-use crate::bufferer::{Bufferer, Endianess};
+use byteorder::LittleEndian;
+
+use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
@@ -18,7 +20,7 @@ pub(crate) trait QuakeClient {
 fn get_data<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<Bufferer> {
+) -> GDResult<Buffer<LittleEndian>> {
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
 
@@ -32,24 +34,24 @@ fn get_data<Client: QuakeClient>(
     )?;
 
     let data = socket.receive(None)?;
-    let mut bufferer = Bufferer::new_with_data(Endianess::Little, &data);
+    let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
-    if bufferer.get_u32()? != 4294967295 {
+    if bufferer.read::<u32>()? != 4294967295 {
         return Err(GDError::PacketBad);
     }
 
     let response_header = Client::get_response_header().as_bytes();
-    if !bufferer.remaining_data().starts_with(response_header) {
+    if !bufferer.remaining_bytes().starts_with(response_header) {
         Err(GDError::PacketBad)?
     }
 
-    bufferer.move_position_ahead(response_header.len());
+    bufferer.move_cursor(response_header.len() as isize);
 
     Ok(bufferer)
 }
 
-fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String>> {
-    let data = bufferer.get_string_utf8_newline()?;
+fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<String, String>> {
+    let data = bufferer.read_string::<Utf8Decoder>(Some([0x0A]))?; 
     let mut data_split = data.split('\\').collect::<Vec<&str>>();
     if let Some(first) = data_split.first() {
         if first == &"" {
@@ -74,11 +76,14 @@ fn get_server_values(bufferer: &mut Bufferer) -> GDResult<HashMap<String, String
     Ok(vars)
 }
 
-fn get_players<Client: QuakeClient>(bufferer: &mut Bufferer) -> GDResult<Vec<Client::Player>> {
+fn get_players<Client: QuakeClient>(bufferer: &mut Buffer<LittleEndian>) -> GDResult<Vec<Client::Player>> {
     let mut players: Vec<Client::Player> = Vec::new();
 
-    while !bufferer.is_remaining_empty() && bufferer.remaining_data() != [0x00] {
-        let data = bufferer.get_string_utf8_newline()?;
+    // this needs to be looked at again as theres no way to check if the buffer has a remaining null byte
+    // the original code was:
+    // while !bufferer.is_remaining_empty() && bufferer.remaining_data() != [0x00]
+    while !bufferer.remaining_length() == 0 {
+        let data = bufferer.read_string::<Utf8Decoder>(Some([0x0A]))?;
         let data_split = data.split(' ').collect::<Vec<&str>>();
         let data_iter = data_split.iter();
 
