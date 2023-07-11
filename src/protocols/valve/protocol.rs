@@ -158,30 +158,21 @@ impl ValveProtocol {
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
-            let mut new_packet_buffer = Buffer::<LittleEndian>::new(&main_packet.get_payload()?);
+            let payload = main_packet.get_payload()?; // Creating a non-temporary value here
+            let mut new_packet_buffer = Buffer::<LittleEndian>::new(&payload); // Using the non-temporary value here
             Ok(Packet::new_from_bufferer(&mut new_packet_buffer)?)
         } else {
             Packet::new_from_bufferer(&mut buffer)
         }
     }
 
-    pub fn get_kind_request_data(
-        &mut self,
-        engine: &Engine,
-        protocol: u8,
-        kind: Request,
-    ) -> GDResult<Buffer<LittleEndian>> {
-        self.get_request_data(engine, protocol, kind as u8, kind.get_default_payload())
+    pub fn get_kind_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
+        let data = self.get_request_data(engine, protocol, kind as u8, kind.get_default_payload())?;
+        Ok(data)
     }
 
     /// Ask for a specific request only.
-    pub fn get_request_data(
-        &mut self,
-        engine: &Engine,
-        protocol: u8,
-        kind: u8,
-        payload: Vec<u8>,
-    ) -> GDResult<Buffer<LittleEndian>> {
+    pub fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: u8, payload: Vec<u8>) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::new(kind, payload).to_bytes();
         self.socket.send(&request_initial_packet)?;
 
@@ -190,7 +181,7 @@ impl ValveProtocol {
             // 'A'
             let challenge = packet.payload;
 
-            const INFO: u8 = Request::Info as u8; // hmm, this could be unwanted and problematic
+            const INFO: u8 = Request::Info as u8;
             let challenge_packet = Packet::new(
                 kind,
                 match kind {
@@ -205,8 +196,7 @@ impl ValveProtocol {
             packet = self.receive(engine, protocol, PACKET_SIZE)?;
         }
 
-        let data = packet.payload;
-        Ok(Buffer::<LittleEndian>::new(&data))
+        Ok(packet.payload)
     }
 
     fn get_goldsrc_server_info(buffer: &mut Buffer<LittleEndian>) -> GDResult<ServerInfo> {
@@ -272,7 +262,8 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
-        let mut buffer = self.get_kind_request_data(engine, 0, Request::Info)?;
+        let data = self.get_kind_request_data(engine, 0, Request::Info)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         if let Engine::GoldSrc(force) = engine {
             if *force {
@@ -365,7 +356,8 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Players)?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Players)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         let count = buffer.read::<u8>()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
@@ -393,7 +385,8 @@ impl ValveProtocol {
 
     /// Get the server's rules.
     fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Rules)?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Rules)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         let count = buffer.read::<u16>()? as usize;
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
