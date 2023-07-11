@@ -36,6 +36,8 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         }
     }
 
+    pub(crate) fn current_position(&self) -> usize { self.cursor }
+
     /// Returns the length of the remaining bytes from the current cursor
     /// position.
     pub(crate) fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
@@ -196,7 +198,7 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
     /// # Parameters
     ///
     /// * `size`: The size of the chunk to be taken from the original buffer.
-    pub(crate) fn switch_endian_chunk(mut self, size: usize) -> GDResult<Buffer<'a, B::Output>> {
+    pub(crate) fn switch_endian_chunk(&mut self, size: usize) -> GDResult<Buffer<'a, B::Output>> {
         let old_cursor = self.cursor;
         self.move_cursor(size as isize)?;
 
@@ -444,7 +446,7 @@ mod tests {
     #[test]
     fn test_switch_endian_chunk_le_be() {
         let data = [0x01, 0x02, 0x03, 0x04];
-        let buffer = Buffer::<LittleEndian>::new(&data[..]);
+        let mut buffer = Buffer::<LittleEndian>::new(&data[..]);
 
         let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
@@ -458,7 +460,7 @@ mod tests {
     #[test]
     fn test_switch_endian_chunk_be_le() {
         let data = [0x01, 0x02, 0x03, 0x04];
-        let buffer = Buffer::<BigEndian>::new(&data[..]);
+        let mut buffer = Buffer::<BigEndian>::new(&data[..]);
 
         let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
