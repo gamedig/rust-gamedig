@@ -17,10 +17,7 @@ pub(crate) trait QuakeClient {
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
-fn get_data<Client: QuakeClient>(
-    address: &SocketAddr,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<Buffer<LittleEndian>> {
+fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<u8>> {
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
 
@@ -45,13 +42,13 @@ fn get_data<Client: QuakeClient>(
         Err(GDError::PacketBad)?
     }
 
-    bufferer.move_cursor(response_header.len() as isize);
+    bufferer.move_cursor(response_header.len() as isize)?;
 
-    Ok(bufferer)
+    Ok(data)
 }
 
 fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<String, String>> {
-    let data = bufferer.read_string::<Utf8Decoder>(Some([0x0A]))?; 
+    let data = bufferer.read_string::<Utf8Decoder>(Some([0x0A]))?;
     let mut data_split = data.split('\\').collect::<Vec<&str>>();
     if let Some(first) = data_split.first() {
         if first == &"" {
@@ -79,8 +76,8 @@ fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<St
 fn get_players<Client: QuakeClient>(bufferer: &mut Buffer<LittleEndian>) -> GDResult<Vec<Client::Player>> {
     let mut players: Vec<Client::Player> = Vec::new();
 
-    // this needs to be looked at again as theres no way to check if the buffer has a remaining null byte
-    // the original code was:
+    // this needs to be looked at again as theres no way to check if the buffer has
+    // a remaining null byte the original code was:
     // while !bufferer.is_remaining_empty() && bufferer.remaining_data() != [0x00]
     while !bufferer.remaining_length() == 0 {
         let data = bufferer.read_string::<Utf8Decoder>(Some([0x0A]))?;
@@ -97,7 +94,8 @@ pub(crate) fn client_query<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response<Client::Player>> {
-    let mut bufferer = get_data::<Client>(address, timeout_settings)?;
+    let data = get_data::<Client>(address, timeout_settings)?;
+    let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
     let mut server_vars = get_server_values(&mut bufferer)?;
     let players = get_players::<Client>(&mut bufferer)?;
