@@ -1,9 +1,10 @@
-use crate::bufferer::{Bufferer, Endianess};
+use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
+use byteorder::BigEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, SocketAddr};
@@ -59,16 +60,16 @@ impl CommonResponse for Response {
 }
 
 fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
-    let mut buf = Bufferer::new_with_data(Endianess::Big, &packet);
+    let mut buf = Buffer::<BigEndian>::new(&packet);
 
-    let count = buf.get_u16()?;
+    let count = buf.read::<u16>()?;
     let mut players = Vec::with_capacity(count as usize);
 
-    while !buf.is_remaining_empty() {
+    while buf.remaining_length() != 0 {
         players.push(Player {
-            name: buf.get_string_utf8()?,
-            steam_id: buf.get_string_utf8()?,
-            ping: buf.get_u16()?,
+            name: buf.read_string::<Utf8Decoder>(None)?,
+            steam_id: buf.read_string::<Utf8Decoder>(None)?,
+            ping: buf.read::<u16>()?,
         })
     }
 
