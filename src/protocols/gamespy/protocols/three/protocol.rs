@@ -1,4 +1,6 @@
-use crate::bufferer::{Bufferer, Endianess};
+use byteorder::{BigEndian, LittleEndian};
+
+use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
@@ -73,20 +75,7 @@ impl GameSpy3 {
         })
     }
 
-    fn receive(&mut self, size: Option<usize>, kind: u8) -> GDResult<Bufferer> {
-        let received = self.socket.receive(size.or(Some(PACKET_SIZE)))?;
-        let mut buf = Bufferer::new_with_data(Endianess::Big, &received);
-
-        if buf.get_u8()? != kind {
-            return Err(GDError::PacketBad);
-        }
-
-        if buf.get_u32()? != THIS_SESSION_ID {
-            return Err(GDError::PacketBad);
-        }
-
-        Ok(buf)
-    }
+    fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> { self.socket.receive(size.or(Some(PACKET_SIZE))) }
 
     fn make_initial_handshake(&mut self) -> GDResult<Option<i32>> {
         self.socket.send(
@@ -100,9 +89,9 @@ impl GameSpy3 {
             .to_bytes(),
         )?;
 
-        let mut buf = self.receive(Some(16), 9)?;
+        let buf = self.receive(None)?;
 
-        let challenge_as_string = buf.get_string_utf8()?;
+        let challenge_as_string = std::str::from_utf8(&buf).map_err(|_| GDError::TypeParse)?;
         let challenge = challenge_as_string
             .parse()
             .map_err(|_| GDError::TypeParse)?;
@@ -135,21 +124,31 @@ impl GameSpy3 {
         let mut expected_number_of_packets: Option<usize> = None;
 
         while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
-            let mut buf = self.receive(None, 0)?;
+            let received_data = self.receive(None)?;
 
-            if self.single_packets {
-                buf.move_position_ahead(11);
-                return Ok(vec![buf.remaining_data().to_vec()]);
-            }
+            let mut buf = Buffer::<BigEndian>::new(&received_data);
 
-            if buf.get_string_utf8()? != "splitnum" {
+            if buf.read::<u8>()? != 0 {
                 return Err(GDError::PacketBad);
             }
 
-            let id = buf.get_u8()?;
+            if buf.read::<u32>()? != THIS_SESSION_ID {
+                return Err(GDError::PacketBad);
+            }
+
+            if self.single_packets {
+                buf.move_cursor(11)?;
+                return Ok(vec![buf.remaining_bytes().to_vec()]);
+            }
+
+            if buf.read_string::<Utf8Decoder>(None)? != "splitnum" {
+                return Err(GDError::PacketBad);
+            }
+
+            let id = buf.read::<u8>()?;
             let is_last = (id & 0x80) > 0;
             let packet_id = (id & 0x7f) as usize;
-            buf.move_position_ahead(1); //unknown byte regarding packet no.
+            buf.move_cursor(1)?; //unknown byte regarding packet no.
 
             if is_last {
                 expected_number_of_packets = Some(packet_id + 1);
@@ -159,7 +158,7 @@ impl GameSpy3 {
                 values.push(Vec::new());
             }
 
-            values[packet_id] = buf.remaining_data().to_vec();
+            values[packet_id] = buf.remaining_bytes().to_vec();
         }
 
         if values.iter().any(|v| v.is_empty()) {
@@ -173,19 +172,19 @@ impl GameSpy3 {
 pub(crate) fn data_to_map(packet: &[u8]) -> GDResult<(HashMap<String, String>, Vec<u8>)> {
     let mut vars = HashMap::new();
 
-    let mut buf = Bufferer::new_with_data(Endianess::Big, packet);
-    while !buf.is_remaining_empty() {
-        let key = buf.get_string_utf8()?;
+    let mut buf = Buffer::<BigEndian>::new(packet);
+    while buf.remaining_length() != 0 {
+        let key = buf.read_string::<Utf8Decoder>(None)?;
         if key.is_empty() {
             break;
         }
 
-        let value = buf.get_string_utf8_optional()?;
+        let value = buf.read_string::<Utf8Decoder>(None)?;
 
         vars.insert(key, value);
     }
 
-    Ok((vars, buf.remaining_data().to_vec()))
+    Ok((vars, buf.remaining_bytes().to_vec()))
 }
 
 /// If there are parsing problems using the `query` function, you can directly
@@ -212,16 +211,16 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
     let mut teams_data: Vec<HashMap<String, String>> = vec![HashMap::new()];
 
     for packet in packets {
-        let mut buf = Bufferer::new_with_data(Endianess::Little, &packet);
+        let mut buf = Buffer::<LittleEndian>::new(&packet);
 
-        while !buf.is_remaining_empty() {
-            if buf.get_u8()? < 3 {
+        while buf.remaining_length() != 0 {
+            if buf.read::<u8>()? < 3 {
                 continue;
             }
 
-            buf.move_position_backward(1);
+            buf.move_cursor(1)?;
 
-            let field = buf.get_string_utf8()?;
+            let field = buf.read_string::<Utf8Decoder>(None)?;
             if field.is_empty() {
                 continue;
             }
@@ -248,15 +247,15 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 }
             };
 
-            let mut offset = buf.get_u8()? as usize;
+            let mut offset = buf.read::<u8>()? as usize;
 
             let data = match field_type.is_none() {
                 true => &mut players_data,
                 false => &mut teams_data,
             };
 
-            while !buf.is_remaining_empty() {
-                let item = buf.get_string_utf8()?;
+            while buf.remaining_length() != 0 {
+                let item = buf.read_string::<Utf8Decoder>(None)?;
                 if item.is_empty() {
                     break;
                 }
