@@ -45,15 +45,7 @@ impl Java {
             .send(&[as_varint(data.len() as i32), data].concat())
     }
 
-    fn receive(&mut self) -> GDResult<Buffer<LittleEndian>> {
-        let mut buffer = Buffer::<LittleEndian>::new(&self.socket.receive(None)?);
-
-        let _packet_length = get_varint(&mut buffer)? as usize;
-        // this declared 'packet length' from within the packet might be wrong (?), not
-        // checking with it...
-
-        Ok(buffer)
-    }
+    fn receive(&mut self) -> GDResult<Vec<u8>> { self.socket.receive(None) }
 
     fn send_handshake(&mut self) -> GDResult<()> {
         self.send(PAYLOAD.to_vec())?;
@@ -84,7 +76,8 @@ impl Java {
         self.send_status_request()?;
         self.send_ping_request()?;
 
-        let mut buffer = self.receive()?;
+        let socket_data = self.receive()?;
+        let mut buffer = Buffer::<LittleEndian>::new(&socket_data);
 
         if get_varint(&mut buffer)? != 0 {
             // first var int is the packet id
