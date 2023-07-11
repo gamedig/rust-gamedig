@@ -1,7 +1,9 @@
+use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::types::{CommonResponse, TimeoutSettings};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::protocols::GenericResponse;
 use crate::GDResult;
+use byteorder::LittleEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, SocketAddr};
@@ -70,31 +72,33 @@ pub fn query_with_timeout(
         &SocketAddr::new(*address, port.unwrap_or(5478)),
         Some(timeout_settings),
     )?;
-    let mut buffer = client.get_request_data(
+    let data = client.get_request_data(
         &Engine::GoldSrc(true),
         0,
         0x46,
         String::from("LSQ").into_bytes(),
     )?;
 
-    let protocol = buffer.get_u8()?;
-    let name = buffer.get_string_utf8()?;
-    let map = buffer.get_string_utf8()?;
-    let active_mod = buffer.get_string_utf8()?;
-    let game_mode = buffer.get_string_utf8()?;
-    let description = buffer.get_string_utf8()?;
-    let version = buffer.get_string_utf8()?;
-    buffer.move_position_ahead(2);
-    let players_online = buffer.get_u8()?;
-    let players_maximum = buffer.get_u8()?;
-    let server_type = Server::from_gldsrc(buffer.get_u8()?)?;
-    let environment_type = Environment::from_gldsrc(buffer.get_u8()?)?;
-    let has_password = buffer.get_u8()? == 1;
-    let vac_secured = buffer.get_u8()? == 1;
-    buffer.move_position_ahead(1); //average fps
-    let round = buffer.get_u8()?;
-    let rounds_maximum = buffer.get_u8()?;
-    let time_left = buffer.get_u16()?;
+    let mut buffer = Buffer::<LittleEndian>::new(&data);
+
+    let protocol = buffer.read::<u8>()?;
+    let name = buffer.read_string::<Utf8Decoder>(None)?;
+    let map = buffer.read_string::<Utf8Decoder>(None)?;
+    let active_mod = buffer.read_string::<Utf8Decoder>(None)?;
+    let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
+    let description = buffer.read_string::<Utf8Decoder>(None)?;
+    let version = buffer.read_string::<Utf8Decoder>(None)?;
+    buffer.move_cursor(2)?;
+    let players_online = buffer.read::<u8>()?;
+    let players_maximum = buffer.read::<u8>()?;
+    let server_type = Server::from_gldsrc(buffer.read::<u8>()?)?;
+    let environment_type = Environment::from_gldsrc(buffer.read::<u8>()?)?;
+    let has_password = buffer.read::<u8>()? == 1;
+    let vac_secured = buffer.read::<u8>()? == 1;
+    buffer.move_cursor(1)?; //average fps
+    let round = buffer.read::<u8>()?;
+    let rounds_maximum = buffer.read::<u8>()?;
+    let time_left = buffer.read::<u16>()?;
 
     Ok(Response {
         protocol,
