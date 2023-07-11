@@ -450,10 +450,10 @@ mod tests {
 
         let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
-        assert_eq!(switched_buffer.data, [0x02, 0x01]);
+        assert_eq!(switched_buffer.data, [0x01, 0x02]);
         assert_eq!(switched_buffer.cursor, 0);
 
-        assert_eq!(buffer.data, [0x03, 0x04]);
+        assert_eq!(buffer.remaining_bytes(), [0x03, 0x04]);
         assert_eq!(buffer.cursor, 2);
     }
 
@@ -464,10 +464,10 @@ mod tests {
 
         let switched_buffer = buffer.switch_endian_chunk(2).unwrap();
 
-        assert_eq!(switched_buffer.data, [0x02, 0x01]);
+        assert_eq!(switched_buffer.data, [0x01, 0x02]);
         assert_eq!(switched_buffer.cursor, 0);
 
-        assert_eq!(buffer.data, [0x03, 0x04]);
+        assert_eq!(buffer.remaining_bytes(), [0x03, 0x04]);
         assert_eq!(buffer.cursor, 2);
     }
 
