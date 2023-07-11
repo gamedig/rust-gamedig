@@ -42,7 +42,8 @@ impl Bedrock {
     fn get_info(&mut self) -> GDResult<BedrockResponse> {
         self.send_status_request()?;
 
-        let mut buffer = Buffer::<LittleEndian>::new(&self.socket.receive(None)?);
+        let received = self.socket.receive(None)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&received);
 
         if buffer.read::<u8>()? != 0x1c {
             return Err(PacketBad);
@@ -55,7 +56,7 @@ impl Bedrock {
 
         // These 8 bytes are identical to the serverId string we receive in decimal
         // below
-        buffer.move_cursor(8);
+        buffer.move_cursor(8)?;
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
         if buffer.read::<u64>()? != 18374403896610127616 {
@@ -68,7 +69,7 @@ impl Bedrock {
 
         let remaining_length = buffer.switch_endian_chunk(2)?.read::<u16>()? as usize;
 
-        buffer.move_cursor(2);
+        buffer.move_cursor(2)?;
         error_by_expected_size(remaining_length, buffer.remaining_length())?;
 
         let binding = buffer.read_string::<Utf8Decoder>(None)?;
