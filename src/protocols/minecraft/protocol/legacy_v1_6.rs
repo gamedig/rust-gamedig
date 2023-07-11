@@ -38,19 +38,19 @@ impl LegacyV1_6 {
         Ok(())
     }
 
-    pub fn is_protocol(buffer: &mut Buffer<BigEndian>) -> GDResult<bool> {
+    pub(crate) fn is_protocol(buffer: &mut Buffer<BigEndian>) -> GDResult<bool> {
         let state = buffer
             .remaining_bytes()
             .starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
 
         if state {
-            buffer.move_cursor(6);
+            buffer.move_cursor(6)?;
         }
 
         Ok(state)
     }
 
-    pub fn get_response(buffer: &mut Buffer<BigEndian>) -> GDResult<JavaResponse> {
+    pub(crate) fn get_response(buffer: &mut Buffer<BigEndian>) -> GDResult<JavaResponse> {
         let packet_string = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
 
         let split: Vec<&str> = packet_string.split('\x00').collect();
