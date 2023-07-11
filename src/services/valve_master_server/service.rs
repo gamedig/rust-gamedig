@@ -1,7 +1,7 @@
 use crate::{
-    valve_master_server::{Region, SearchFilters},
     buffer::Buffer,
     socket::{Socket, UdpSocket},
+    valve_master_server::{Region, SearchFilters},
     GDError,
     GDResult,
 };
