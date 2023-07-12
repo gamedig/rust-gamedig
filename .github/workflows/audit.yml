@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/softprops/github-actions-schemas/master/workflow.json
 name: Security audit
 on:
   push:
@@ -12,3 +13,4 @@ jobs:
       - uses: rustsec/audit-check@v1.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ !env.ACT }} # skip during local actions testing

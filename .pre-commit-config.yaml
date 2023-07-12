@@ -9,9 +9,33 @@ repos:
         files: '[.]rs$'
         pass_filenames: false
         entry: rustup run --install nightly-2023-07-09 cargo-clippy -- -- -D warnings
+      - id: build-no-features
+        name: Check crate build with no features
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: cargo build --no-default-features
+      - id: build-all-features
+        name: Check crate builds with all features
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: cargo build --all-features --lib --bins --examples
       - id: format
         name: Check rustfmt
         language: system
         files: '[.]rs$'
         pass_filenames: false
         entry: rustup run --install nightly-2023-07-09 cargo-fmt --check
+      - id: msrv
+        name: Check MSRV compiles
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: rustup run --install 1.60 cargo build
+      - id: actions
+        name: Check actions work
+        language: system
+        files: '^[.]github/workflows/'
+        pass_filenames: false
+        entry: act -q
