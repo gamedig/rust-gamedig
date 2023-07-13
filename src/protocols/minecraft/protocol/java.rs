@@ -45,7 +45,16 @@ impl Java {
             .send(&[as_varint(data.len() as i32), data].concat())
     }
 
-    fn receive(&mut self) -> GDResult<Vec<u8>> { self.socket.receive(None) }
+    fn receive(&mut self) -> GDResult<Vec<u8>> {
+        let data = &self.socket.receive(None)?;
+        let mut buffer = Buffer::<LittleEndian>::new(data);
+
+        let _packet_length = get_varint(&mut buffer)? as usize;
+        // this declared 'packet length' from within the packet might be wrong (?), not
+        // checking with it...
+
+        Ok(buffer.remaining_bytes().to_vec())
+    }
 
     fn send_handshake(&mut self) -> GDResult<()> {
         self.send(PAYLOAD.to_vec())?;
