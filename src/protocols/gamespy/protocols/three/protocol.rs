@@ -75,7 +75,20 @@ impl GameSpy3 {
         })
     }
 
-    fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> { self.socket.receive(size.or(Some(PACKET_SIZE))) }
+    fn receive(&mut self, size: Option<usize>, kind: u8) -> GDResult<Vec<u8>> {
+        let received = self.socket.receive(size.or(Some(PACKET_SIZE)))?;
+        let mut buf = Buffer::<BigEndian>::new(&received);
+
+        if buf.read::<u8>()? != kind {
+            return Err(GDError::PacketBad);
+        }
+
+        if buf.read::<u32>()? != THIS_SESSION_ID {
+            return Err(GDError::PacketBad);
+        }
+
+        Ok(buf.remaining_bytes().to_vec())
+    }
 
     fn make_initial_handshake(&mut self) -> GDResult<Option<i32>> {
         self.socket.send(
@@ -89,9 +102,10 @@ impl GameSpy3 {
             .to_bytes(),
         )?;
 
-        let buf = self.receive(None)?;
+        let data = self.receive(Some(16), 9)?;
+        let mut buf = Buffer::<LittleEndian>::new(&data);
 
-        let challenge_as_string = std::str::from_utf8(&buf).map_err(|_| GDError::TypeParse)?;
+        let challenge_as_string = buf.read_string::<Utf8Decoder>(None)?;
         let challenge = challenge_as_string
             .parse()
             .map_err(|_| GDError::TypeParse)?;
@@ -124,8 +138,7 @@ impl GameSpy3 {
         let mut expected_number_of_packets: Option<usize> = None;
 
         while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
-            let received_data = self.receive(None)?;
-
+            let received_data = self.receive(None, 0)?;
             let mut buf = Buffer::<BigEndian>::new(&received_data);
 
             if buf.read::<u8>()? != 0 {
