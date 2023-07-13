@@ -42,6 +42,9 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// position.
     pub(crate) fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
 
+    /// Returns the length of the buffer data.
+    pub(crate) fn data_length(&self) -> usize { self.data.len() }
+
     // Added for legacy support just for the refactoring
     // Not Tested
     pub(crate) fn remaining_bytes(&self) -> &[u8] { &self.data[self.cursor ..] }
@@ -71,7 +74,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
             // If the new cursor position is either less than zero (i.e., before the start of the buffer)
             // or greater than the remaining length of the buffer (i.e., past the end of the buffer),
             // return an error indicating that the cursor is out of bounds.
-            Some(x) if x < 0 || x as usize > self.remaining_length() => Err(PacketBad),
+            Some(x) if x < 0 || x as usize > self.data_length() => Err(PacketBad),
 
             // If the new cursor position is within the bounds of the buffer, update the cursor
             // position and return Ok.
