@@ -69,7 +69,6 @@ impl Bedrock {
 
         let remaining_length = buffer.switch_endian_chunk(2)?.read::<u16>()? as usize;
 
-        buffer.move_cursor(2)?;
         error_by_expected_size(remaining_length, buffer.remaining_length())?;
 
         let binding = buffer.read_string::<Utf8Decoder>(None)?;
