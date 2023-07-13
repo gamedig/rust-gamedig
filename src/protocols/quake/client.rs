@@ -44,7 +44,7 @@ fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<
 
     bufferer.move_cursor(response_header.len() as isize)?;
 
-    Ok(data)
+    Ok(bufferer.remaining_bytes().to_vec()) //TODO: Maybe fix?
 }
 
 fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<String, String>> {
