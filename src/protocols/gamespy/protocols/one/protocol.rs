@@ -50,8 +50,7 @@ fn get_server_values(
             server_values.insert(key, value);
         }
 
-        is_finished = server_values.contains_key("final");
-        server_values.remove("final");
+        is_finished = server_values.remove("final").is_some();
 
         let query_data = server_values.get("queryid");
 
