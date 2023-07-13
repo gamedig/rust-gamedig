@@ -141,14 +141,6 @@ impl GameSpy3 {
             let received_data = self.receive(None, 0)?;
             let mut buf = Buffer::<BigEndian>::new(&received_data);
 
-            if buf.read::<u8>()? != 0 {
-                return Err(GDError::PacketBad);
-            }
-
-            if buf.read::<u32>()? != THIS_SESSION_ID {
-                return Err(GDError::PacketBad);
-            }
-
             if self.single_packets {
                 buf.move_cursor(11)?;
                 return Ok(vec![buf.remaining_bytes().to_vec()]);
