@@ -51,16 +51,21 @@ impl LegacyV1_6 {
     }
 
     pub(crate) fn get_response(buffer: &mut Buffer<BigEndian>) -> GDResult<JavaResponse> {
-        let packet_string = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
-
-        let split: Vec<&str> = packet_string.split('\x00').collect();
-        error_by_expected_size(5, split.len())?;
-
-        let version_protocol = split[0].parse().map_err(|_| PacketBad)?;
-        let version_name = split[1].to_string();
-        let description = split[2].to_string();
-        let online_players = split[3].parse().map_err(|_| PacketBad)?;
-        let max_players = split[4].parse().map_err(|_| PacketBad)?;
+        // This is a specific order!
+        let version_protocol = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
+        let version_name = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
+        let description = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
+        let online_players = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
+        let max_players = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
 
         Ok(JavaResponse {
             version_name,
