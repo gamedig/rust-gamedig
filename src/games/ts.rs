@@ -1,6 +1,6 @@
 use crate::{
     protocols::{
-        types::{CommonPlayer, CommonResponse, GenericPlayer},
+        types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings},
         valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
         GenericResponse,
     },
@@ -126,12 +126,18 @@ impl Response {
     }
 }
 
-pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
+pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
+
+pub fn query_with_timeout(
+    address: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Response> {
     let valve_response = valve::query(
         &SocketAddr::new(*address, port.unwrap_or(27015)),
         SteamApp::TS.as_engine(),
         None,
-        None,
+        timeout_settings,
     )?;
 
     Ok(Response::new_from_valve_response(valve_response))

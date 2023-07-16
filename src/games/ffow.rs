@@ -59,18 +59,16 @@ impl CommonResponse for Response {
     fn players_online(&self) -> u64 { self.players_online.into() }
 }
 
-pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
-    query_with_timeout(address, port, TimeoutSettings::default())
-}
+pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
 
 pub fn query_with_timeout(
     address: &IpAddr,
     port: Option<u16>,
-    timeout_settings: TimeoutSettings,
+    timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response> {
     let mut client = ValveProtocol::new(
         &SocketAddr::new(*address, port.unwrap_or(5478)),
-        Some(timeout_settings),
+        timeout_settings,
     )?;
     let data = client.get_request_data(
         &Engine::GoldSrc(true),

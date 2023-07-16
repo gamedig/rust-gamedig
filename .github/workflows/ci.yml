@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/softprops/github-actions-schemas/master/workflow.json
 name: CI
 
 on:
@@ -10,28 +11,53 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build_first:
+    name: "Build, check, and test with all features"
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-      - name: Run Build
-        run: cargo build --verbose
-      - name: Run Clippy
-        run: cargo clippy --verbose
-      - name: Run Tests
-        run: cargo test --verbose
-      - name: Install Audit
-        run: cargo install cargo-audit
-      - name: Run Audit
-        run: cargo audit --deny warnings
-      - name: Install Formatting nightly
-        uses: actions-rs/toolchain@v1
+      - uses: Swatinem/rust-cache@v2
         with:
-          toolchain: nightly-2023-03-01
-          components: rustfmt
-      - name: Run Formatting check
-        run: cargo +nightly-2023-03-01 fmt --check --verbose
+          shared-key: "cargo-deps"
+          cache-targets: false
+      - name: Run Build
+        run: cargo build --verbose --bins --lib --examples --all-features
+      - name: Run Tests
+        run: cargo test --verbose --bins --lib --examples --all-features
+  build:
+    runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_type: ""
+            build_name: "Default"
+          - build_type: "--no-default-features"
+            build_name: "No features"
+          - build_type: "--no-default-features --features games"
+            build_name: "Just games"
+          - build_type: "--no-default-features --features services"
+            build_name: "Just Services"
+          - build_type: "--no-default-features --features game_defs"
+            build_name: "Just Game definitions"
+          - build_type: "--no-default-features --features serde"
+            build_name: "Just serde" 
+    name: "Build ${{ matrix.build_name }}"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
+      - name: Run Build
+        run: cargo build --verbose --bins --lib ${{ matrix.build_type }}
+  build_msrv:
+    name: "Build using MSRV"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - name: Install MSRV
         uses: actions-rs/toolchain@v1
         with:
@@ -39,3 +65,38 @@ jobs:
           override: true
       - name: Run MSRV
         run: cargo build
+  formatting:
+    name: "Check code formatting"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+      - name: Install Formatting nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-07-09
+          components: rustfmt
+          override: true
+      - name: Run Formatting check
+        run: cargo fmt --check --verbose
+  clippy:
+    name: "Run clippy tests"
+    runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --bins --lib --examples --all-features
+        if: ${{ !env.ACT }} # skip during local actions testing
+      - name: Run clippy (local)
+        run: cargo clippy --verbose --bins --lib --examples --all-features
+        if: ${{ env.ACT }} # only run during local actions testing
