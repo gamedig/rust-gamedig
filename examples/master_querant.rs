@@ -88,7 +88,7 @@ fn main() -> GDResult<()> {
         }
         true => Some(args[3].parse::<u16>().expect("Invalid port!")),
     };
-    let address = &SocketAddr::new(ip.clone(), port.unwrap_or(0));
+    let address = &SocketAddr::new(*ip, port.unwrap_or(0));
 
     match args[1].as_str() {
         "aliens" => println!("{:#?}", aliens::query(ip, port)?),

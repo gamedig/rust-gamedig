@@ -109,8 +109,8 @@ mod tests {
         let server_thread = thread::spawn(move || {
             let (mut stream, _) = listener.accept().unwrap();
             let mut buf = [0; 1024];
-            stream.read(&mut buf).unwrap();
-            stream.write(&buf).unwrap();
+            let _ = stream.read(&mut buf).unwrap();
+            let _ = stream.write(&buf).unwrap();
         });
 
         // Create a TCP socket and send a message to the server
