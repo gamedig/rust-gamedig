@@ -1,8 +1,14 @@
-use crate::bufferer::{Bufferer, Endianess};
-use crate::socket::{Socket, UdpSocket};
-use crate::valve_master_server::{Region, SearchFilters};
-use crate::{GDError, GDResult};
+use crate::{
+    buffer::Buffer,
+    socket::{Socket, UdpSocket},
+    valve_master_server::{Region, SearchFilters},
+    GDError,
+    GDResult,
+};
+
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+use byteorder::BigEndian;
 
 /// The default master ip, which is the one for Source.
 pub fn default_master_address() -> SocketAddr {
@@ -63,21 +69,22 @@ impl ValveMasterServer {
         self.socket.send(&payload)?;
 
         let received_data = self.socket.receive(Some(1400))?;
-        let mut buf = Bufferer::new_with_data(Endianess::Big, &received_data);
+        let mut buf = Buffer::<BigEndian>::new(&received_data);
 
-        if buf.get_u32()? != 4294967295 || buf.get_u16()? != 26122 {
+        if buf.read::<u32>()? != 4294967295 || buf.read::<u16>()? != 26122 {
             return Err(GDError::PacketBad);
         }
 
         let mut ips: Vec<(IpAddr, u16)> = Vec::new();
-        while !buf.is_remaining_empty() {
+
+        while !buf.remaining_length() == 0 {
             let ip = IpAddr::V4(Ipv4Addr::new(
-                buf.get_u8()?,
-                buf.get_u8()?,
-                buf.get_u8()?,
-                buf.get_u8()?,
+                buf.read::<u8>()?,
+                buf.read::<u8>()?,
+                buf.read::<u8>()?,
+                buf.read::<u8>()?,
             ));
-            let port = buf.get_u16()?;
+            let port = buf.read::<u16>()?;
 
             ips.push((ip, port));
         }

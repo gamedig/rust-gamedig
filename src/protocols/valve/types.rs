@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::GDError::UnknownEnumCast;
 use crate::GDResult;
-use crate::{bufferer::Bufferer, protocols::GenericResponse};
+use crate::{buffer::Buffer, protocols::GenericResponse};
+use byteorder::LittleEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -209,11 +210,11 @@ impl Packet {
         }
     }
 
-    pub fn new_from_bufferer(buffer: &mut Bufferer) -> GDResult<Self> {
+    pub fn new_from_bufferer(buffer: &mut Buffer<LittleEndian>) -> GDResult<Self> {
         Ok(Self {
-            header: buffer.get_u32()?,
-            kind: buffer.get_u8()?,
-            payload: buffer.remaining_data().to_vec(),
+            header: buffer.read::<u32>()?,
+            kind: buffer.read::<u8>()?,
+            payload: buffer.remaining_bytes().to_vec(),
         })
     }
 

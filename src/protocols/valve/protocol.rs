@@ -1,5 +1,5 @@
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::Buffer,
     protocols::{
         types::TimeoutSettings,
         valve::{
@@ -27,7 +27,9 @@ use crate::{
 
 use bzip2_rs::decoder::Decoder;
 
+use crate::buffer::Utf8Decoder;
 use crate::protocols::valve::Packet;
+use byteorder::LittleEndian;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
@@ -46,26 +48,27 @@ struct SplitPacket {
 }
 
 impl SplitPacket {
-    fn new(engine: &Engine, protocol: u8, buffer: &mut Bufferer) -> GDResult<Self> {
-        let header = buffer.get_u32()?;
-        let id = buffer.get_u32()?;
+    fn new(engine: &Engine, protocol: u8, buffer: &mut Buffer<LittleEndian>) -> GDResult<Self> {
+        let header = buffer.read()?; //buffer.get_u32()?;
+        let id = buffer.read()?;
         let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match engine {
             Engine::GoldSrc(_) => {
-                let (lower, upper) = u8_lower_upper(buffer.get_u8()?);
+                let (lower, upper) = u8_lower_upper(buffer.read()?);
                 (lower, upper, 0, false, None, None)
             }
             Engine::Source(_) => {
-                let total = buffer.get_u8()?;
-                let number = buffer.get_u8()?;
+                let total = buffer.read()?;
+                let number = buffer.read()?;
                 let size = match protocol == 7 && (*engine == SteamApp::CSS.as_engine()) {
                     // certain apps with protocol = 7 dont have this field
-                    false => buffer.get_u16()?,
+                    false => buffer.read()?,
                     true => 1248,
                 };
-                let compressed = ((id >> 31) & 1) == 1;
+                let compressed = ((id >> 31) & 1u32) == 1u32;
+
                 let (decompressed_size, uncompressed_crc32) = match compressed {
                     false => (None, None),
-                    true => (Some(buffer.get_u32()?), Some(buffer.get_u32()?)),
+                    true => (Some(buffer.read()?), Some(buffer.read()?)),
                 };
                 (
                     total,
@@ -87,7 +90,7 @@ impl SplitPacket {
             compressed,
             decompressed_size,
             uncompressed_crc32,
-            payload: buffer.remaining_data().to_vec(),
+            payload: buffer.remaining_bytes().to_vec(),
         })
     }
 
@@ -133,10 +136,10 @@ impl ValveProtocol {
 
     fn receive(&mut self, engine: &Engine, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
         let data = self.socket.receive(Some(buffer_size))?;
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &data);
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
-        let header = buffer.get_u8()?;
-        buffer.move_position_backward(1);
+        let header: u8 = buffer.read()?;
+        buffer.move_cursor(-1)?;
         if header == 0xFE {
             // the packet is split
             let mut main_packet = SplitPacket::new(engine, protocol, &mut buffer)?;
@@ -144,7 +147,7 @@ impl ValveProtocol {
 
             for _ in 1 .. main_packet.total {
                 let new_data = self.socket.receive(Some(buffer_size))?;
-                buffer = Bufferer::new_with_data(Endianess::Little, &new_data);
+                buffer = Buffer::<LittleEndian>::new(&new_data);
                 let chunk_packet = SplitPacket::new(engine, protocol, &mut buffer)?;
                 chunk_packets.push(chunk_packet);
             }
@@ -155,25 +158,21 @@ impl ValveProtocol {
                 main_packet.payload.extend(chunk_packet.payload);
             }
 
-            let mut new_packet_buffer = Bufferer::new_with_data(Endianess::Little, &main_packet.get_payload()?);
+            let payload = main_packet.get_payload()?; // Creating a non-temporary value here
+            let mut new_packet_buffer = Buffer::<LittleEndian>::new(&payload); // Using the non-temporary value here
             Ok(Packet::new_from_bufferer(&mut new_packet_buffer)?)
         } else {
             Packet::new_from_bufferer(&mut buffer)
         }
     }
 
-    pub fn get_kind_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Bufferer> {
-        self.get_request_data(engine, protocol, kind as u8, kind.get_default_payload())
+    pub fn get_kind_request_data(&mut self, engine: &Engine, protocol: u8, kind: Request) -> GDResult<Vec<u8>> {
+        let data = self.get_request_data(engine, protocol, kind as u8, kind.get_default_payload())?;
+        Ok(data)
     }
 
     /// Ask for a specific request only.
-    pub fn get_request_data(
-        &mut self,
-        engine: &Engine,
-        protocol: u8,
-        kind: u8,
-        payload: Vec<u8>,
-    ) -> GDResult<Bufferer> {
+    pub fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: u8, payload: Vec<u8>) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::new(kind, payload).to_bytes();
         self.socket.send(&request_initial_packet)?;
 
@@ -182,7 +181,7 @@ impl ValveProtocol {
             // 'A'
             let challenge = packet.payload;
 
-            const INFO: u8 = Request::Info as u8; // hmm, this could be unwanted and problematic
+            const INFO: u8 = Request::Info as u8;
             let challenge_packet = Packet::new(
                 kind,
                 match kind {
@@ -197,48 +196,47 @@ impl ValveProtocol {
             packet = self.receive(engine, protocol, PACKET_SIZE)?;
         }
 
-        let data = packet.payload;
-        Ok(Bufferer::new_with_data(Endianess::Little, &data))
+        Ok(packet.payload)
     }
 
-    fn get_goldsrc_server_info(buffer: &mut Bufferer) -> GDResult<ServerInfo> {
-        buffer.get_u8()?; //get the header (useless info)
-        buffer.get_string_utf8()?; //get the server address (useless info)
-        let name = buffer.get_string_utf8()?;
-        let map = buffer.get_string_utf8()?;
-        let folder = buffer.get_string_utf8()?;
-        let game = buffer.get_string_utf8()?;
-        let players = buffer.get_u8()?;
-        let max_players = buffer.get_u8()?;
-        let protocol = buffer.get_u8()?;
-        let server_type = match buffer.get_u8()? {
+    fn get_goldsrc_server_info(buffer: &mut Buffer<LittleEndian>) -> GDResult<ServerInfo> {
+        let _header: u8 = buffer.read()?; //get the header (useless info)
+        let _address: String = buffer.read_string::<Utf8Decoder>(None)?; //get the server address (useless info)
+        let name = buffer.read_string::<Utf8Decoder>(None)?;
+        let map = buffer.read_string::<Utf8Decoder>(None)?;
+        let folder = buffer.read_string::<Utf8Decoder>(None)?;
+        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let players = buffer.read()?;
+        let max_players = buffer.read()?;
+        let protocol = buffer.read()?;
+        let server_type = match buffer.read::<u8>()? {
             68 => Server::Dedicated,    //'D'
             76 => Server::NonDedicated, //'L'
             80 => Server::TV,           //'P'
             _ => Err(UnknownEnumCast)?,
         };
-        let environment_type = match buffer.get_u8()? {
+        let environment_type = match buffer.read::<u8>()? {
             76 => Environment::Linux,   //'L'
             87 => Environment::Windows, //'W'
             _ => Err(UnknownEnumCast)?,
         };
-        let has_password = buffer.get_u8()? == 1;
-        let is_mod = buffer.get_u8()? == 1;
+        let has_password = buffer.read::<u8>()? == 1;
+        let is_mod = buffer.read::<u8>()? == 1;
         let mod_data = match is_mod {
             false => None,
             true => {
                 Some(ModData {
-                    link: buffer.get_string_utf8()?,
-                    download_link: buffer.get_string_utf8()?,
-                    version: buffer.get_u32()?,
-                    size: buffer.get_u32()?,
-                    multiplayer_only: buffer.get_u8()? == 1,
-                    has_own_dll: buffer.get_u8()? == 1,
+                    link: buffer.read_string::<Utf8Decoder>(None)?,
+                    download_link: buffer.read_string::<Utf8Decoder>(None)?,
+                    version: buffer.read()?,
+                    size: buffer.read()?,
+                    multiplayer_only: buffer.read::<u8>()? == 1,
+                    has_own_dll: buffer.read::<u8>()? == 1,
                 })
             }
         };
-        let vac_secured = buffer.get_u8()? == 1;
-        let bots = buffer.get_u8()?;
+        let vac_secured = buffer.read::<u8>()? == 1;
+        let bots = buffer.read::<u8>()?;
 
         Ok(ServerInfo {
             protocol,
@@ -264,7 +262,8 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
-        let mut buffer = self.get_kind_request_data(engine, 0, Request::Info)?;
+        let data = self.get_kind_request_data(engine, 0, Request::Info)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         if let Engine::GoldSrc(force) = engine {
             if *force {
@@ -272,58 +271,58 @@ impl ValveProtocol {
             }
         }
 
-        let protocol = buffer.get_u8()?;
-        let name = buffer.get_string_utf8()?;
-        let map = buffer.get_string_utf8()?;
-        let folder = buffer.get_string_utf8()?;
-        let game = buffer.get_string_utf8()?;
-        let mut appid = buffer.get_u16()? as u32;
-        let players = buffer.get_u8()?;
-        let max_players = buffer.get_u8()?;
-        let bots = buffer.get_u8()?;
-        let server_type = Server::from_gldsrc(buffer.get_u8()?)?;
-        let environment_type = Environment::from_gldsrc(buffer.get_u8()?)?;
-        let has_password = buffer.get_u8()? == 1;
-        let vac_secured = buffer.get_u8()? == 1;
+        let protocol = buffer.read()?;
+        let name = buffer.read_string::<Utf8Decoder>(None)?;
+        let map = buffer.read_string::<Utf8Decoder>(None)?;
+        let folder = buffer.read_string::<Utf8Decoder>(None)?;
+        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let mut appid = buffer.read::<u16>()? as u32;
+        let players = buffer.read()?;
+        let max_players = buffer.read()?;
+        let bots = buffer.read()?;
+        let server_type = Server::from_gldsrc(buffer.read()?)?;
+        let environment_type = Environment::from_gldsrc(buffer.read()?)?;
+        let has_password = buffer.read::<u8>()? == 1;
+        let vac_secured = buffer.read::<u8>()? == 1;
         let the_ship = match *engine == SteamApp::TS.as_engine() {
             false => None,
             true => {
                 Some(TheShip {
-                    mode: buffer.get_u8()?,
-                    witnesses: buffer.get_u8()?,
-                    duration: buffer.get_u8()?,
+                    mode: buffer.read()?,
+                    witnesses: buffer.read()?,
+                    duration: buffer.read()?,
                 })
             }
         };
-        let version = buffer.get_string_utf8()?;
-        let extra_data = match buffer.get_u8() {
+        let version = buffer.read_string::<Utf8Decoder>(None)?;
+        let extra_data = match buffer.read::<u8>() {
             Err(_) => None,
             Ok(value) => {
                 Some(ExtraData {
                     port: match (value & 0x80) > 0 {
                         false => None,
-                        true => Some(buffer.get_u16()?),
+                        true => Some(buffer.read()?),
                     },
                     steam_id: match (value & 0x10) > 0 {
                         false => None,
-                        true => Some(buffer.get_u64()?),
+                        true => Some(buffer.read()?),
                     },
                     tv_port: match (value & 0x40) > 0 {
                         false => None,
-                        true => Some(buffer.get_u16()?),
+                        true => Some(buffer.read()?),
                     },
                     tv_name: match (value & 0x40) > 0 {
                         false => None,
-                        true => Some(buffer.get_string_utf8()?),
+                        true => Some(buffer.read_string::<Utf8Decoder>(None)?),
                     },
                     keywords: match (value & 0x20) > 0 {
                         false => None,
-                        true => Some(buffer.get_string_utf8()?),
+                        true => Some(buffer.read_string::<Utf8Decoder>(None)?),
                     },
                     game_id: match (value & 0x01) > 0 {
                         false => None,
                         true => {
-                            let gid = buffer.get_u64()?;
+                            let gid = buffer.read()?;
                             appid = (gid & ((1 << 24) - 1)) as u32;
 
                             Some(gid)
@@ -357,25 +356,26 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Players)?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Players)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
-        let count = buffer.get_u8()? as usize;
+        let count = buffer.read::<u8>()? as usize;
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
 
         for _ in 0 .. count {
-            buffer.move_position_ahead(1); //skip the index byte
+            buffer.move_cursor(1)?; //skip the index byte
 
             players.push(ServerPlayer {
-                name: buffer.get_string_utf8()?,
-                score: buffer.get_u32()?,
-                duration: buffer.get_f32()?,
+                name: buffer.read_string::<Utf8Decoder>(None)?,
+                score: buffer.read()?,
+                duration: buffer.read()?,
                 deaths: match *engine == SteamApp::TS.as_engine() {
                     false => None,
-                    true => Some(buffer.get_u32()?),
+                    true => Some(buffer.read()?),
                 },
                 money: match *engine == SteamApp::TS.as_engine() {
                     false => None,
-                    true => Some(buffer.get_u32()?),
+                    true => Some(buffer.read()?),
                 },
             });
         }
@@ -385,14 +385,15 @@ impl ValveProtocol {
 
     /// Get the server's rules.
     fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let mut buffer = self.get_kind_request_data(engine, protocol, Request::Rules)?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Rules)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
 
-        let count = buffer.get_u16()? as usize;
+        let count = buffer.read::<u16>()? as usize;
         let mut rules: HashMap<String, String> = HashMap::with_capacity(count);
 
         for _ in 0 .. count {
-            let name = buffer.get_string_utf8()?;
-            let value = buffer.get_string_utf8()?;
+            let name = buffer.read_string::<Utf8Decoder>(None)?;
+            let value = buffer.read_string::<Utf8Decoder>(None)?;
 
             rules.insert(name, value);
         }

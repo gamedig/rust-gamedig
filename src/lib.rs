@@ -41,7 +41,7 @@ pub mod protocols;
 #[cfg(feature = "services")]
 pub mod services;
 
-mod bufferer;
+mod buffer;
 mod socket;
 mod utils;
 

@@ -3,7 +3,7 @@
 // https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 
 use crate::{
-    bufferer::Bufferer,
+    buffer::Buffer,
     protocols::{
         types::{CommonPlayer, CommonResponse, GenericPlayer},
         GenericResponse,
@@ -12,6 +12,7 @@ use crate::{
     GDResult,
 };
 
+use byteorder::ByteOrder;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -179,14 +180,14 @@ impl GameMode {
     }
 }
 
-pub(crate) fn get_varint(buffer: &mut Bufferer) -> GDResult<i32> {
+pub(crate) fn get_varint<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<i32> {
     let mut result = 0;
 
     let msb: u8 = 0b10000000;
     let mask: u8 = !msb;
 
     for i in 0 .. 5 {
-        let current_byte = buffer.get_u8()?;
+        let current_byte = buffer.read::<u8>()?;
 
         result |= ((current_byte & mask) as i32) << (7 * i);
 
@@ -227,12 +228,12 @@ pub(crate) fn as_varint(value: i32) -> Vec<u8> {
     bytes
 }
 
-pub(crate) fn get_string(buffer: &mut Bufferer) -> GDResult<String> {
+pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<String> {
     let length = get_varint(buffer)? as usize;
     let mut text = Vec::with_capacity(length);
 
     for _ in 0 .. length {
-        text.push(buffer.get_u8()?)
+        text.push(buffer.read::<u8>()?)
     }
 
     String::from_utf8(text).map_err(|_| PacketBad)

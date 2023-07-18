@@ -56,10 +56,7 @@ impl QuakeClient for QuakeTwo {
                 None => Err(GDError::PacketBad)?,
                 Some(v) => remove_wrapping_quotes(v).to_string(),
             },
-            address: match data.next() {
-                None => None,
-                Some(v) => Some(remove_wrapping_quotes(v).to_string()),
-            },
+            address: data.next().map(|v| remove_wrapping_quotes(v).to_string()),
         })
     }
 }

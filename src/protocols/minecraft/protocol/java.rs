@@ -1,5 +1,5 @@
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::Buffer,
     protocols::{
         minecraft::{as_varint, get_string, get_varint, JavaResponse, Player, Server},
         types::TimeoutSettings,
@@ -8,8 +8,10 @@ use crate::{
     GDError::{JsonParse, PacketBad},
     GDResult,
 };
+
 use std::net::SocketAddr;
 
+use byteorder::LittleEndian;
 use serde_json::Value;
 
 #[rustfmt::skip]
@@ -43,14 +45,15 @@ impl Java {
             .send(&[as_varint(data.len() as i32), data].concat())
     }
 
-    fn receive(&mut self) -> GDResult<Bufferer> {
-        let mut buffer = Bufferer::new_with_data(Endianess::Little, &self.socket.receive(None)?);
+    fn receive(&mut self) -> GDResult<Vec<u8>> {
+        let data = &self.socket.receive(None)?;
+        let mut buffer = Buffer::<LittleEndian>::new(data);
 
         let _packet_length = get_varint(&mut buffer)? as usize;
         // this declared 'packet length' from within the packet might be wrong (?), not
         // checking with it...
 
-        Ok(buffer)
+        Ok(buffer.remaining_bytes().to_vec())
     }
 
     fn send_handshake(&mut self) -> GDResult<()> {
@@ -82,7 +85,8 @@ impl Java {
         self.send_status_request()?;
         self.send_ping_request()?;
 
-        let mut buffer = self.receive()?;
+        let socket_data = self.receive()?;
+        let mut buffer = Buffer::<LittleEndian>::new(&socket_data);
 
         if get_varint(&mut buffer)? != 0 {
             // first var int is the packet id

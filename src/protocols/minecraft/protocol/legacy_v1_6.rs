@@ -1,5 +1,7 @@
+use byteorder::BigEndian;
+
 use crate::{
-    bufferer::{Bufferer, Endianess},
+    buffer::{Buffer, Utf16Decoder},
     protocols::{
         minecraft::{JavaResponse, LegacyGroup, Server},
         types::TimeoutSettings,
@@ -36,29 +38,34 @@ impl LegacyV1_6 {
         Ok(())
     }
 
-    pub fn is_protocol(buffer: &mut Bufferer) -> GDResult<bool> {
+    pub(crate) fn is_protocol(buffer: &mut Buffer<BigEndian>) -> GDResult<bool> {
         let state = buffer
-            .remaining_data()
+            .remaining_bytes()
             .starts_with(&[0x00, 0xA7, 0x00, 0x31, 0x00, 0x00]);
 
         if state {
-            buffer.move_position_ahead(6);
+            buffer.move_cursor(6)?;
         }
 
         Ok(state)
     }
 
-    pub fn get_response(buffer: &mut Bufferer) -> GDResult<JavaResponse> {
-        let packet_string = buffer.get_string_utf16()?;
-
-        let split: Vec<&str> = packet_string.split('\x00').collect();
-        error_by_expected_size(5, split.len())?;
-
-        let version_protocol = split[0].parse().map_err(|_| PacketBad)?;
-        let version_name = split[1].to_string();
-        let description = split[2].to_string();
-        let online_players = split[3].parse().map_err(|_| PacketBad)?;
-        let max_players = split[4].parse().map_err(|_| PacketBad)?;
+    pub(crate) fn get_response(buffer: &mut Buffer<BigEndian>) -> GDResult<JavaResponse> {
+        // This is a specific order!
+        let version_protocol = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
+        let version_name = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
+        let description = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
+        let online_players = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
+        let max_players = buffer
+            .read_string::<Utf16Decoder<BigEndian>>(None)?
+            .parse()
+            .map_err(|_| PacketBad)?;
 
         Ok(JavaResponse {
             version_name,
@@ -78,13 +85,13 @@ impl LegacyV1_6 {
         self.send_initial_request()?;
 
         let data = self.socket.receive(None)?;
-        let mut buffer = Bufferer::new_with_data(Endianess::Big, &data);
+        let mut buffer = Buffer::<BigEndian>::new(&data);
 
-        if buffer.get_u8()? != 0xFF {
+        if buffer.read::<u8>()? != 0xFF {
             return Err(ProtocolFormat);
         }
 
-        let length = buffer.get_u16()? * 2;
+        let length = buffer.read::<u16>()? * 2;
         error_by_expected_size((length + 3) as usize, data.len())?;
 
         if !LegacyV1_6::is_protocol(&mut buffer)? {

@@ -16,6 +16,9 @@ Games:
 - [Just Cause 2: Multiplayer](https://store.steampowered.com/app/259080/Just_Cause_2_Multiplayer_Mod/) support.
 - [Warsow](https://warsow.net/) support.
 
+Internal:
+- Buffer reader rewrite, resulting in more data checks and better code quality (thanks [@cainthebest](https://github.com/cainthebest)).
+
 ### Breaking...
 Protocols:
 - Quake 2: Renamed the players frags field to score to be more inline with the other protocols.
