@@ -3,6 +3,13 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
+To be made...
+
+### Breaking...
+Nothing, yet...
+
+# 0.3.0 - 18/07/2023
+### Changes:
 Protocols:
 - GameSpy 2 support.
 - Quake 2: Added Optional address field to Player.
