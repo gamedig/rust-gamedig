@@ -18,12 +18,14 @@ Games:
 
 Internal:
 - Buffer reader rewrite, resulting in more data checks and better code quality (thanks [@cainthebest](https://github.com/cainthebest)).
+- Better CI to never break accidentally MSRV again (thanks [@Douile](https://github.com/Douile)).
 
 ### Breaking...
 Protocols:
-- Quake 2: Renamed the players frags field to score to be more inline with the other protocols.
+- Quake 2: Renamed the players `frags` field to `score` to be more inline with the other protocols.
 
 Crate:
+- `no_games` and `no_services` have been changed to `games` and `services`, this better represents that they are present by default (by [@Douile](https://github.com/Douile)).
 - Fixed crate's `rust-version`, it is now `1.60.0` (was `1.56.1`)
 
 # 0.2.3 - 02/06/2023
