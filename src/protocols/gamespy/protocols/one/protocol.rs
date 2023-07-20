@@ -147,7 +147,7 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
             face: player_data.get("face").ok_or(GDError::PacketBad)?.clone(),
             skin: player_data.get("skin").ok_or(GDError::PacketBad)?.clone(),
             mesh: player_data.get("mesh").ok_or(GDError::PacketBad)?.clone(),
-            frags: player_data
+            score: player_data
                 .get("frags")
                 .ok_or(GDError::PacketBad)?
                 .trim()
