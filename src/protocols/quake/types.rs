@@ -22,7 +22,7 @@ pub struct Response<P> {
     /// Maximum number of players the server reports it can hold.
     pub players_maximum: u8,
     /// The server version.
-    pub version: String,
+    pub version: Option<String>,
     /// Other server entries that weren't used.
     pub unused_entries: HashMap<String, String>,
 }
@@ -35,10 +35,10 @@ impl<P: QuakePlayerType> CommonResponse for Response<P> {
     fn as_original(&self) -> GenericResponse { GenericResponse::Quake(P::version(self)) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
+    fn game_version(&self) -> Option<&str> { self.version.as_deref() }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn players_maximum(&self) -> u64 { self.players_maximum.into() }
     fn players_online(&self) -> u64 { self.players_online.into() }
-    fn game_version(&self) -> Option<&str> { Some(&self.version) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

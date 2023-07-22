@@ -3,11 +3,13 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
-To be made...
+Protocols:
+- Quake 2: Fixed a bug where the version tag wouldn't always be present.
 
 ### Breaking...
 Protocols:
 - Gamespy 1: Renamed the players `frags` field to `score` to be more inline with the other protocols.
+- Quake: The `version` field has been changed from `String`to `Option<String>`.
 
 # 0.3.0 - 18/07/2023
 ### Changes:

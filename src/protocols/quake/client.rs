@@ -119,8 +119,7 @@ pub(crate) fn client_query<Client: QuakeClient>(
         players,
         version: server_vars
             .remove("version")
-            .or(server_vars.remove("*version"))
-            .ok_or(GDError::PacketBad)?,
+            .or(server_vars.remove("*version")),
         unused_entries: server_vars,
     })
 }
