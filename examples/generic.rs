@@ -5,15 +5,18 @@ use gamedig::{
     GAMES,
 };
 
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
+/// Make a query given the name of a game
 fn generic_query(
     game_name: &str,
     addr: &IpAddr,
     port: Option<u16>,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Box<dyn CommonResponse>> {
-    let game = GAMES.get(game_name).expect("Game doesn't exist");
+    let game = GAMES
+        .get(game_name)
+        .expect("Game doesn't exist, run without arguments to see a list of games");
 
     println!("Querying {:#?} with game {:#?}.", addr, game);
 
@@ -29,14 +32,25 @@ fn generic_query(
 fn main() {
     let mut args = std::env::args().skip(1);
 
-    let game_name = args.next().expect("Must provide a game name");
-    let addr: IpAddr = args
-        .next()
-        .map(|s| s.parse().unwrap())
-        .expect("Must provide address");
-    let port: Option<u16> = args.next().map(|s| s.parse().unwrap());
+    // Handle arguments
+    if let Some(game_name) = args.next() {
+        // Use to_socket_addrs to resolve hostname to IP
+        let addr: SocketAddr = args
+            .next()
+            .map(|s| format!("{}:0", s).to_socket_addrs().unwrap())
+            .expect("Must provide address")
+            .next()
+            .expect("Could not lookup host");
+        let port: Option<u16> = args.next().map(|s| s.parse().unwrap());
 
-    generic_query(&game_name, &addr, port, None).unwrap();
+        generic_query(&game_name, &addr.ip(), port, None).unwrap();
+    } else {
+        // Without arguments print a list of games
+
+        for (name, game) in gamedig::games::GAMES.entries() {
+            println!("{}\t{}", name, game.name);
+        }
+    }
 }
 
 #[cfg(test)]
