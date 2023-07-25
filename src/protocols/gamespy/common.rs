@@ -1,4 +1,4 @@
-use crate::{GDError, GDResult};
+use crate::{GDError, GDResult, GDRichError};
 use std::collections::HashMap;
 
 pub fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
@@ -11,7 +11,9 @@ pub fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool>
         return Ok(has);
     }
 
-    let as_numeral: u8 = password_value.parse().map_err(|_| GDError::TypeParse)?;
+    let as_numeral: u8 = password_value
+        .parse()
+        .map_err(GDRichError::type_parse_from_into)?;
 
     Ok(as_numeral != 0)
 }

@@ -8,8 +8,9 @@ use crate::{
     },
     socket::{Socket, UdpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, TypeParse},
+    GDError::TypeParse,
     GDResult,
+    GDRichError,
 };
 
 use std::net::SocketAddr;
@@ -46,12 +47,12 @@ impl Bedrock {
         let mut buffer = Buffer::<LittleEndian>::new(&received);
 
         if buffer.read::<u8>()? != 0x1c {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
         if buffer.read::<u64>()? != 9833440827789222417 {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal
@@ -60,11 +61,11 @@ impl Bedrock {
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
         if buffer.read::<u64>()? != 18374403896610127616 {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         if buffer.read::<u64>()? != 8671175388723805693 {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         let remaining_length = buffer.switch_endian_chunk(2)?.read::<u16>()? as usize;
@@ -76,7 +77,7 @@ impl Bedrock {
 
         // We must have at least 6 values
         if status.len() < 6 {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         Ok(BedrockResponse {

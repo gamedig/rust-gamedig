@@ -2,6 +2,7 @@ use byteorder::LittleEndian;
 
 use crate::buffer::Utf8Decoder;
 use crate::protocols::gamespy::common::has_password;
+use crate::GDRichError;
 use crate::{
     buffer::Buffer,
     protocols::{
@@ -59,10 +60,18 @@ fn get_server_values(
         if let Some(qid) = query_data {
             let split: Vec<&str> = qid.split('.').collect();
 
-            query_id = Some(split[0].parse().map_err(|_| GDError::TypeParse)?);
+            query_id = Some(
+                split[0]
+                    .parse()
+                    .map_err(GDRichError::type_parse_from_into)?,
+            );
             match split.len() {
                 1 => (),
-                2 => part = split[1].parse().map_err(|_| GDError::TypeParse)?,
+                2 => {
+                    part = split[1]
+                        .parse()
+                        .map_err(GDRichError::type_parse_from_into)?
+                }
                 _ => Err(GDError::PacketBad)?, /* the queryid can't be splitted in more than 2
                                                 * elements */
             };
@@ -71,7 +80,7 @@ fn get_server_values(
         server_values.remove("queryid");
 
         if received_query_id.is_some() && received_query_id != query_id {
-            return Err(GDError::PacketBad); // wrong query id!
+            return Err(GDError::PacketBad.into()); // wrong query id!
         } else {
             received_query_id = query_id;
         }
@@ -137,13 +146,13 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDError::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(GDRichError::type_parse_from_into)?,
             ping: player_data
                 .get("ping")
                 .ok_or(GDError::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(GDRichError::type_parse_from_into)?,
             face: player_data.get("face").ok_or(GDError::PacketBad)?.clone(),
             skin: player_data.get("skin").ok_or(GDError::PacketBad)?.clone(),
             mesh: player_data.get("mesh").ok_or(GDError::PacketBad)?.clone(),
@@ -152,13 +161,25 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDError::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(GDRichError::type_parse_from_into)?,
             deaths: match player_data.get("deaths") {
-                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
+                Some(v) => {
+                    Some(
+                        v.trim()
+                            .parse()
+                            .map_err(GDRichError::type_parse_from_into)?,
+                    )
+                }
                 None => None,
             },
             health: match player_data.get("health") {
-                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
+                Some(v) => {
+                    Some(
+                        v.trim()
+                            .parse()
+                            .map_err(GDRichError::type_parse_from_into)?,
+                    )
+                }
                 None => None,
             },
             secret: player_data
@@ -166,7 +187,7 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDError::PacketBad)?
                 .to_lowercase()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(GDRichError::type_parse_from_into)?,
         };
 
         players.push(new_player);
@@ -194,10 +215,10 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         .remove("maxplayers")
         .ok_or(GDError::PacketBad)?
         .parse()
-        .map_err(|_| GDError::TypeParse)?;
+        .map_err(GDRichError::type_parse_from_into)?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(GDRichError::type_parse_from_into)?),
     };
 
     let players = extract_players(&mut server_vars, players_maximum)?;
@@ -222,7 +243,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|_| GDError::TypeParse)?,
+            .map_err(GDRichError::type_parse_from_into)?,
         unused_entries: server_vars,
     })
 }

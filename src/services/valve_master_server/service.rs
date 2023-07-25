@@ -2,8 +2,8 @@ use crate::{
     buffer::Buffer,
     socket::{Socket, UdpSocket},
     valve_master_server::{Region, SearchFilters},
-    GDError,
     GDResult,
+    GDRichError,
 };
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -72,7 +72,9 @@ impl ValveMasterServer {
         let mut buf = Buffer::<BigEndian>::new(&received_data);
 
         if buf.read::<u32>()? != 4294967295 || buf.read::<u16>()? != 26122 {
-            return Err(GDError::PacketBad);
+            return Err(GDRichError::packet_bad_from_into(
+                "Expected 4294967295 or 26122",
+            ));
         }
 
         let mut ips: Vec<(IpAddr, u16)> = Vec::new();

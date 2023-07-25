@@ -2,7 +2,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::two::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::{GDError, GDResult};
+use crate::{GDError, GDResult, GDRichError};
 use byteorder::BigEndian;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -25,7 +25,7 @@ macro_rules! table_extract_parse {
     ($table:expr, $name:literal, $index:expr) => {
         table_extract!($table, $name, $index)
             .parse()
-            .map_err(|_| GDError::PacketBad)?
+            .map_err(GDRichError::packet_bad_from_into)?
     };
 }
 
@@ -87,7 +87,7 @@ impl GameSpy2 {
 
         let mut buf = Buffer::<BigEndian>::new(&received);
         if buf.read::<u8>()? != 0 || buf.read::<u32>()? != 1 {
-            return Err(GDError::PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         let buf_index = buf.current_position();
@@ -163,7 +163,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            let reported_players = v.parse().map_err(GDRichError::type_parse_from_into)?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -172,7 +172,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     };
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(GDRichError::type_parse_from_into)?),
     };
 
     Ok(Response {
@@ -184,7 +184,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .remove("maxplayers")
             .ok_or(GDError::PacketBad)?
             .parse()
-            .map_err(|_| GDError::PacketBad)?,
+            .map_err(GDRichError::packet_bad_from_into)?,
         players_online,
         players_minimum,
         players,

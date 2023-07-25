@@ -8,8 +8,9 @@ use crate::{
     },
     socket::{Socket, TcpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, ProtocolFormat},
+    GDError::PacketBad,
     GDResult,
+    GDRichError,
 };
 use std::net::SocketAddr;
 
@@ -88,14 +89,16 @@ impl LegacyV1_6 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat);
+            return Err(GDRichError::protocol_format_from_into("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;
         error_by_expected_size((length + 3) as usize, data.len())?;
 
         if !LegacyV1_6::is_protocol(&mut buffer)? {
-            return Err(ProtocolFormat);
+            return Err(GDRichError::protocol_format_from_into(
+                "Not legacy 1.6 protocol",
+            ));
         }
 
         LegacyV1_6::get_response(&mut buffer)

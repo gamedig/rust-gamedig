@@ -1,5 +1,5 @@
-use crate::GDError::{PacketBad, PacketUnderflow};
-use crate::GDResult;
+use crate::GDError::PacketBad;
+use crate::{GDResult, GDRichError};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
 
@@ -69,12 +69,12 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         match new_cursor {
             // If the addition was not successful (i.e., it resulted in an overflow or underflow),
             // return an error indicating that the cursor is out of bounds.
-            None => Err(PacketBad),
+            None => Err(PacketBad.into()),
 
             // If the new cursor position is either less than zero (i.e., before the start of the buffer)
             // or greater than the remaining length of the buffer (i.e., past the end of the buffer),
             // return an error indicating that the cursor is out of bounds.
-            Some(x) if x < 0 || x as usize > self.data_length() => Err(PacketBad),
+            Some(x) if x < 0 || x as usize > self.data_length() => Err(PacketBad.into()),
 
             // If the new cursor position is within the bounds of the buffer, update the cursor
             // position and return Ok.
@@ -107,7 +107,10 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // If the size of `T` is larger than the remaining length, return an error
         // because we don't have enough data left to read.
         if size > remaining {
-            return Err(PacketUnderflow);
+            return Err(GDRichError::packet_underflow_from_into(format!(
+                "Size requested {} was larger than remaining bytes {}",
+                size, remaining
+            )));
         }
 
         // Slice the data array from the current cursor position for `size` amount of
@@ -242,7 +245,7 @@ macro_rules! impl_buffer_read_byte {
                     .map($map_func)
                     // If the data array is empty (and thus `first` returns None),
                     // `ok_or_else` will return a BufferError.
-                    .ok_or_else(|| PacketBad)
+                    .ok_or_else(|| PacketBad.into())
             }
         }
     };
@@ -543,6 +546,6 @@ mod tests {
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
         let result: Result<u32, _> = buffer.read();
-        assert_eq!(result.unwrap_err(), PacketUnderflow);
+        assert_eq!(result.unwrap_err(), crate::GDError::PacketUnderflow.into());
     }
 }

@@ -2,7 +2,7 @@ use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, Quak
 use crate::protocols::quake::one::QuakeOne;
 use crate::protocols::quake::Response;
 use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
-use crate::{GDError, GDResult};
+use crate::{GDError, GDResult, GDRichError};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -46,11 +46,11 @@ impl QuakeClient for QuakeTwo {
         Ok(Player {
             score: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?,
+                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
             },
             ping: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?,
+                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
             },
             name: match data.next() {
                 None => Err(GDError::PacketBad)?,

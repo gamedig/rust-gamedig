@@ -8,8 +8,8 @@ use crate::{
         types::{CommonPlayer, CommonResponse, GenericPlayer},
         GenericResponse,
     },
-    GDError::{PacketBad, UnknownEnumCast},
     GDResult,
+    GDRichError,
 };
 
 use byteorder::ByteOrder;
@@ -175,7 +175,7 @@ impl GameMode {
             "Hardcore" => Ok(GameMode::Hardcore),
             "Spectator" => Ok(GameMode::Spectator),
             "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(UnknownEnumCast),
+            _ => Err(GDRichError::unknown_enum_cast_from_into("Unknown gamemode")),
         }
     }
 }
@@ -187,13 +187,14 @@ pub(crate) fn get_varint<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<i32> 
     let mask: u8 = !msb;
 
     for i in 0 .. 5 {
+        println!("Get varint {}", i);
         let current_byte = buffer.read::<u8>()?;
 
         result |= ((current_byte & mask) as i32) << (7 * i);
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad_from_into("Bad 5th byte"));
         }
 
         if (current_byte & msb) == 0 {
@@ -236,7 +237,7 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
         text.push(buffer.read::<u8>()?)
     }
 
-    String::from_utf8(text).map_err(|_| PacketBad)
+    String::from_utf8(text).map_err(GDRichError::packet_bad_from_into)
 }
 
 #[allow(dead_code)]

@@ -8,8 +8,9 @@ use crate::{
     },
     socket::{Socket, TcpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, ProtocolFormat},
+    GDError::PacketBad,
     GDResult,
+    GDRichError,
 };
 use std::net::SocketAddr;
 
@@ -34,7 +35,7 @@ impl LegacyV1_4 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat);
+            return Err(GDRichError::protocol_format_from_into("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;

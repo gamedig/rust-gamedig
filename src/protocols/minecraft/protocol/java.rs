@@ -7,6 +7,7 @@ use crate::{
     socket::{Socket, TcpSocket},
     GDError::{JsonParse, PacketBad},
     GDResult,
+    GDRichError,
 };
 
 use std::net::SocketAddr;
@@ -90,7 +91,7 @@ impl Java {
 
         if get_varint(&mut buffer)? != 0 {
             // first var int is the packet id
-            return Err(PacketBad);
+            return Err(GDRichError::packet_bad_from_into("Expected 0"));
         }
 
         let json_response = get_string(&mut buffer)?;

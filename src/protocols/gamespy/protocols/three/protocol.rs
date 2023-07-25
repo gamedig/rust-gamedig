@@ -5,7 +5,7 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::{GDError, GDResult};
+use crate::{GDError, GDResult, GDRichError};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
@@ -80,11 +80,11 @@ impl GameSpy3 {
         let mut buf = Buffer::<BigEndian>::new(&received);
 
         if buf.read::<u8>()? != kind {
-            return Err(GDError::PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         if buf.read::<u32>()? != THIS_SESSION_ID {
-            return Err(GDError::PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         Ok(buf.remaining_bytes().to_vec())
@@ -108,7 +108,7 @@ impl GameSpy3 {
         let challenge_as_string = buf.read_string::<Utf8Decoder>(None)?;
         let challenge = challenge_as_string
             .parse()
-            .map_err(|_| GDError::TypeParse)?;
+            .map_err(GDRichError::type_parse_from_into)?;
 
         Ok(match challenge == 0 {
             true => None,
@@ -147,7 +147,7 @@ impl GameSpy3 {
             }
 
             if buf.read_string::<Utf8Decoder>(None)? != "splitnum" {
-                return Err(GDError::PacketBad);
+                return Err(GDRichError::packet_bad(None));
             }
 
             let id = buf.read::<u8>()?;
@@ -167,7 +167,7 @@ impl GameSpy3 {
         }
 
         if values.iter().any(|v| v.is_empty()) {
-            return Err(GDError::PacketBad);
+            return Err(GDRichError::packet_bad(None));
         }
 
         Ok(values)
@@ -292,27 +292,27 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .get("score")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
             ping: player_data
                 .get("ping")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
             team: player_data
                 .get("team")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
             deaths: player_data
                 .get("deaths")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
             skill: player_data
                 .get("skill")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
         })
     }
 
@@ -328,7 +328,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .get("score")
                 .ok_or(GDError::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(GDRichError::packet_bad_from_into)?,
         })
     }
 
@@ -352,15 +352,15 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         .remove("maxplayers")
         .ok_or(GDError::PacketBad)?
         .parse()
-        .map_err(|_| GDError::TypeParse)?;
+        .map_err(GDRichError::type_parse_from_into)?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(GDRichError::type_parse_from_into)?),
     };
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            let reported_players = v.parse().map_err(GDRichError::type_parse_from_into)?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -384,7 +384,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|_| GDError::TypeParse)?,
+            .map_err(GDRichError::type_parse_from_into)?,
         unused_entries: server_vars,
     })
 }

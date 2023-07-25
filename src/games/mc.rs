@@ -20,7 +20,7 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
         return Ok(response);
     }
 
-    Err(GDError::AutoQuery)
+    Err(GDError::AutoQuery.into())
 }
 
 /// Query a Java Server.

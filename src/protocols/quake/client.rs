@@ -4,7 +4,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::{GDError, GDResult};
+use crate::{GDError, GDResult, GDRichError};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::slice::Iter;
@@ -34,7 +34,7 @@ fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<
     let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
     if bufferer.read::<u32>()? != 4294967295 {
-        return Err(GDError::PacketBad);
+        return Err(GDRichError::packet_bad_from_into("Expected 4294967295"));
     }
 
     let response_header = Client::get_response_header().as_bytes();
@@ -115,7 +115,7 @@ pub(crate) fn client_query<Client: QuakeClient>(
             .or(server_vars.remove("sv_maxclients"))
             .ok_or(GDError::PacketBad)?
             .parse()
-            .map_err(|_| GDError::TypeParse)?,
+            .map_err(GDRichError::type_parse_from_into)?,
         players,
         version: server_vars
             .remove("version")
