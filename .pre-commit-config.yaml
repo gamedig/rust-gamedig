@@ -38,7 +38,7 @@ repos:
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: rustup run --install 1.60 cargo build
+        entry: rustup run --install 1.65 cargo build
       - id: docs
         name: Check rustdoc compiles
         language: system
