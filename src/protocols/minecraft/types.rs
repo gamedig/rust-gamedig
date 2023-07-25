@@ -187,7 +187,6 @@ pub(crate) fn get_varint<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<i32> 
     let mask: u8 = !msb;
 
     for i in 0 .. 5 {
-        println!("Get varint {}", i);
         let current_byte = buffer.read::<u8>()?;
 
         result |= ((current_byte & mask) as i32) << (7 * i);
