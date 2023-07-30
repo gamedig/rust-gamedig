@@ -50,7 +50,9 @@ impl Error for GDError {}
 
 impl GDError {
     /// Convert error kind into a rich error with a source (and implicit
-    /// backtrace) ```
+    /// backtrace)
+    ///
+    /// ```
     /// thing.parse().map_err(|e| GDError::TypeParse.rich(e))
     /// ```
     pub fn rich<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDRichError {
