@@ -3,7 +3,8 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings};
 use crate::protocols::GenericResponse;
-use crate::{GDError, GDResult, GDRichError};
+use crate::GDError::{PacketBad, TypeParse};
+use crate::{GDError, GDResult};
 use byteorder::BigEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -93,20 +94,20 @@ pub fn query_with_timeout(
     let packets = client.get_server_packets()?;
     let data = packets
         .get(0)
-        .ok_or(GDRichError::packet_bad_from_into("First packet missing"))?;
+        .ok_or(PacketBad.rich("First packet missing"))?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;
     let players = parse_players_and_teams(remaining_data)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")
-        .ok_or(GDRichError::packet_bad(None))?
+        .ok_or(PacketBad.rich("Server variables missing maxplayers"))?
         .parse()
-        .map_err(GDRichError::type_parse_from_into)?;
+        .map_err(|e| TypeParse.rich(e))?;
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(GDRichError::type_parse_from_into)?;
+            let reported_players = v.parse().map_err(|e| TypeParse.rich(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,

@@ -48,6 +48,16 @@ impl fmt::Display for GDError {
 
 impl Error for GDError {}
 
+impl GDError {
+    /// Convert error kind into a rich error with a source (and implicit
+    /// backtrace) ```
+    /// thing.parse().map_err(|e| GDError::TypeParse.rich(e))
+    /// ```
+    pub fn rich<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDRichError {
+        GDRichError::from_error(self, source)
+    }
+}
+
 type ErrorSource = Box<dyn std::error::Error + 'static>;
 
 /// Rich gamedig error with backtrace and source
@@ -106,37 +116,10 @@ impl GDRichError {
             backtrace,
         }
     }
-    // Helpers for creating specific kinds of Rich Errors
-    pub fn packet_underflow(source: Option<ErrorSource>) -> Self { Self::new(GDError::PacketUnderflow, source) }
-    pub fn packet_bad(source: Option<ErrorSource>) -> Self { Self::new(GDError::PacketBad, source) }
-    pub fn protocol_format(source: Option<ErrorSource>) -> Self { Self::new(GDError::ProtocolFormat, source) }
-    pub fn unknown_enum_cast(source: Option<ErrorSource>) -> Self { Self::new(GDError::UnknownEnumCast, source) }
-    pub fn invalid_input(source: Option<ErrorSource>) -> Self { Self::new(GDError::InvalidInput, source) }
-    pub fn decompress(source: Option<ErrorSource>) -> Self { Self::new(GDError::Decompress, source) }
-    pub fn type_parse(source: Option<ErrorSource>) -> Self { Self::new(GDError::TypeParse, source) }
 
-    // Helpers for converting source types, these were added as needed feel free to
-    // add your own
-    pub fn packet_underflow_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::packet_underflow(Some(source.into()))
-    }
-    pub fn packet_bad_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::packet_bad(Some(source.into()))
-    }
-    pub fn protocol_format_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::protocol_format(Some(source.into()))
-    }
-    pub fn unknown_enum_cast_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::unknown_enum_cast(Some(source.into()))
-    }
-    pub fn invalid_input_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::invalid_input(Some(source.into()))
-    }
-    pub fn decompress_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::decompress(Some(source.into()))
-    }
-    pub fn type_parse_from_into<E: Into<Box<dyn std::error::Error + 'static>>>(source: E) -> Self {
-        Self::type_parse(Some(source.into()))
+    /// Create a new rich error using any type that can be converted to an error
+    pub fn from_error<E: Into<Box<dyn std::error::Error + 'static>>>(kind: GDError, source: E) -> Self {
+        Self::new(kind, Some(source.into()))
     }
 }
 

@@ -1,5 +1,6 @@
 use crate::GDError::PacketBad;
-use crate::{GDResult, GDRichError};
+use crate::GDError::PacketUnderflow;
+use crate::GDResult;
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
 
@@ -107,7 +108,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // If the size of `T` is larger than the remaining length, return an error
         // because we don't have enough data left to read.
         if size > remaining {
-            return Err(GDRichError::packet_underflow_from_into(format!(
+            return Err(PacketUnderflow.rich(format!(
                 "Size requested {} was larger than remaining bytes {}",
                 size, remaining
             )));

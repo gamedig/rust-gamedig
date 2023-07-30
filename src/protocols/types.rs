@@ -1,6 +1,6 @@
 use crate::protocols::{gamespy, minecraft, quake, valve};
+use crate::GDError::InvalidInput;
 use crate::GDResult;
-use crate::GDRichError;
 
 use std::time::Duration;
 
@@ -155,17 +155,13 @@ impl TimeoutSettings {
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
-                return Err(GDRichError::invalid_input_from_into(
-                    "Read duration must not be 0",
-                ));
+                return Err(InvalidInput.rich("Read duration must not be 0"));
             }
         }
 
         if let Some(write_duration) = write {
             if write_duration == Duration::new(0, 0) {
-                return Err(GDRichError::invalid_input_from_into(
-                    "Write duration must not be 0",
-                ));
+                return Err(InvalidInput.rich("Write duration must not be 0"));
             }
         }
 

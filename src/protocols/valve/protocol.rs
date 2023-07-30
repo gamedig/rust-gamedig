@@ -23,7 +23,6 @@ use crate::{
     utils::u8_lower_upper,
     GDError::{BadGame, Decompress, UnknownEnumCast},
     GDResult,
-    GDRichError,
 };
 
 use bzip2_rs::decoder::Decoder;
@@ -111,9 +110,11 @@ impl SplitPacket {
             if decompressed_payload.len() != decompressed_size
                 || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
             {
-                Err(GDRichError::decompress_from_into(
-                    "Decompressed size was not expected",
-                ))
+                Err(Decompress.rich(format!(
+                    "Decompressed size {} was not expected {}",
+                    decompressed_payload.len(),
+                    decompressed_size
+                )))
             } else {
                 Ok(decompressed_payload)
             }

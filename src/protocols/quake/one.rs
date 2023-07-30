@@ -1,7 +1,8 @@
 use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, QuakeClient};
 use crate::protocols::quake::Response;
 use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
-use crate::{GDError, GDResult, GDRichError};
+use crate::GDError::TypeParse;
+use crate::{GDError, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -47,19 +48,19 @@ impl QuakeClient for QuakeOne {
         Ok(Player {
             id: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             score: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             time: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             ping: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             name: match data.next() {
                 None => Err(GDError::PacketBad)?,
@@ -71,11 +72,11 @@ impl QuakeClient for QuakeOne {
             },
             color_primary: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             color_secondary: match data.next() {
                 None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(GDRichError::packet_bad_from_into)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
         })
     }
