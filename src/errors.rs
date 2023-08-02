@@ -29,7 +29,7 @@ pub enum GDError {
     /// Invalid input.
     InvalidInput,
     /// The server queried is not the queried game server.
-    BadGame(String),
+    BadGame,
     /// Couldn't automatically query.
     AutoQuery,
     /// A protocol-defined expected format was not met.
@@ -160,7 +160,7 @@ mod tests {
     // Testing cloning the GDError type
     #[test]
     fn test_cloning() {
-        let error = GDError::BadGame(String::from("MyGame"));
+        let error = GDError::BadGame;
         let cloned_error = error.clone();
         assert_eq!(error, cloned_error);
     }

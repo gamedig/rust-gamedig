@@ -448,7 +448,7 @@ fn get_response(
         }
 
         if !is_specified_id {
-            return Err(BadGame(format!("AppId: {}", info.appid)).into());
+            return Err(BadGame.rich(format!("AppId: {}", info.appid)));
         }
     }
 
