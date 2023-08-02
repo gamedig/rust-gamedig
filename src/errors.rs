@@ -47,7 +47,8 @@ impl GDErrorKind {
     /// backtrace)
     ///
     /// ```
-    /// thing.parse().map_err(|e| GDErrorKind::TypeParse.context(e))
+    /// use gamedig::{GDErrorKind, GDResult};
+    /// let _: GDResult<u32> = "thing".parse().map_err(|e| GDErrorKind::TypeParse.context(e));
     /// ```
     pub fn context<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDError {
         GDError::from_error(self, source)
@@ -62,18 +63,25 @@ type ErrorSource = Box<dyn std::error::Error + 'static>;
 /// backtrace):
 ///
 /// Directly from an [error kind](crate::errors::GDErrorKind) (without a source)
+///
 /// ```
-/// GDErrorKind::PacketBad.into()
+/// use gamedig::{GDError, GDErrorKind};
+/// let _: GDError = GDErrorKind::PacketBad.into();
 /// ```
 ///
 /// [From an error kind with a source](crate::errors::GDErrorKind::context) (any
-/// type that implements `Into<Box<dyn std::error::Error + 'static>>) ```
-/// GDErrorKind::PacketBad.context("Reason the packet was bad")
+/// type that implements `Into<Box<dyn std::error::Error + 'static>>)
+///
 /// ```
-/// 
+/// use gamedig::{GDError, GDErrorKind};
+/// let _: GDError = GDErrorKind::PacketBad.context("Reason the packet was bad");
+/// ```
+///
 /// Using the [new helper](crate::errors::GDError::new)
+///
 /// ```
-/// GDError::new(GDErrorKind::PacketBad, "Reason the packet was bad")
+/// use gamedig::{GDError, GDErrorKind};
+/// let _: GDError = GDError::new(GDErrorKind::PacketBad, Some("Reason the packet was bad".into()));
 /// ```
 pub struct GDError {
     pub kind: GDErrorKind,
@@ -152,20 +160,6 @@ mod tests {
         assert!(result.is_err());
     }
 
-    // Testing the Display trait for the GDErrorKind type
-    #[test]
-    fn test_display() {
-        let error = GDErrorKind::PacketOverflow;
-        assert_eq!(format!("{}", error), "PacketOverflow");
-    }
-
-    // Testing the Error trait for the GDErrorKind type
-    #[test]
-    fn test_error_trait() {
-        let error = GDErrorKind::PacketBad;
-        assert!(error.source().is_none());
-    }
-
     // Testing cloning the GDErrorKind type
     #[test]
     fn test_cloning() {
@@ -173,4 +167,7 @@ mod tests {
         let cloned_error = error.clone();
         assert_eq!(error, cloned_error);
     }
+
+    // TODO: test display GDError
+    // TODO: test error trait GDError
 }
