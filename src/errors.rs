@@ -42,12 +42,6 @@ pub enum GDErrorKind {
     TypeParse,
 }
 
-impl fmt::Display for GDErrorKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", self) }
-}
-
-impl Error for GDErrorKind {}
-
 impl GDErrorKind {
     /// Convert error kind into a full error with a source (and implicit
     /// backtrace)
