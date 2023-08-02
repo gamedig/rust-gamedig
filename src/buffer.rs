@@ -268,10 +268,10 @@ macro_rules! impl_buffer_read {
         impl<B: ByteOrder> BufferRead<B> for $type {
             fn read_from_buffer(data: &[u8]) -> GDResult<Self> {
                 // Convert the byte slice into an array of the appropriate type.
-                let array = data.try_into().map_err(|_| {
+                let array = data.try_into().map_err(|e| {
                     // If conversion fails, return an error indicating the required and provided
                     // lengths.
-                    PacketBad
+                    PacketBad.context(e)
                 })?;
 
                 // Use the provided function to read the data from the array into the given
@@ -349,7 +349,7 @@ impl StringDecoder for Utf8Decoder {
             &data[.. position]
         )
         // If the data cannot be converted into a UTF-8 string, return an error
-            .map_err(|_| PacketBad)?
+            .map_err(|e| PacketBad.context(e))?
             // Convert the resulting &str into a String
             .to_owned();
 
@@ -397,7 +397,7 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
         B::read_u16_into(&data[.. position], &mut paired_buf);
 
         // Convert the buffer of u16 values into a String
-        let result = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
+        let result = String::from_utf16(&paired_buf).map_err(|e| PacketBad.context(e))?;
 
         // Update the cursor position
         // The +2 accounts for the delimiter

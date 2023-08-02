@@ -97,7 +97,9 @@ impl SplitPacket {
     fn get_payload(&self) -> GDResult<Vec<u8>> {
         if self.compressed {
             let mut decoder = Decoder::new();
-            decoder.write(&self.payload).map_err(|_| Decompress)?;
+            decoder
+                .write(&self.payload)
+                .map_err(|e| Decompress.context(e))?;
 
             let decompressed_size = self.decompressed_size.unwrap() as usize;
 
@@ -105,7 +107,7 @@ impl SplitPacket {
 
             decoder
                 .read(&mut decompressed_payload)
-                .map_err(|_| Decompress)?;
+                .map_err(|e| Decompress.context(e))?;
 
             if decompressed_payload.len() != decompressed_size
                 || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()

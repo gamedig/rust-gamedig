@@ -55,17 +55,17 @@ impl LegacyV1_6 {
         let version_protocol = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
         let version_name = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let description = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let online_players = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
         let max_players = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
             version_name,

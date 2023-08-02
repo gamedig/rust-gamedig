@@ -94,7 +94,7 @@ impl Java {
         }
 
         let json_response = get_string(&mut buffer)?;
-        let value_response: Value = serde_json::from_str(&json_response).map_err(|_| JsonParse)?;
+        let value_response: Value = serde_json::from_str(&json_response).map_err(|e| JsonParse.context(e))?;
 
         let version_name = value_response["version"]["name"]
             .as_str()

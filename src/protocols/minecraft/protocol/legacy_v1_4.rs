@@ -50,8 +50,8 @@ impl LegacyV1_4 {
         error_by_expected_size(3, split.len())?;
 
         let description = split[0].to_string();
-        let online_players = split[1].parse().map_err(|_| PacketBad)?;
-        let max_players = split[2].parse().map_err(|_| PacketBad)?;
+        let online_players = split[1].parse().map_err(|e| PacketBad.context(e))?;
+        let max_players = split[2].parse().map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
             version_name: "1.4+".to_string(),

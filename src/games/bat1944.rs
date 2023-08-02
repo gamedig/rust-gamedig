@@ -15,12 +15,12 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<game::Response> {
 
     if let Some(rules) = &mut valve_response.rules {
         if let Some(bat_max_players) = rules.get("bat_max_players_i") {
-            valve_response.info.players_maximum = bat_max_players.parse().map_err(|_| TypeParse)?;
+            valve_response.info.players_maximum = bat_max_players.parse().map_err(|e| TypeParse.context(e))?;
             rules.remove("bat_max_players_i");
         }
 
         if let Some(bat_player_count) = rules.get("bat_player_count_s") {
-            valve_response.info.players_online = bat_player_count.parse().map_err(|_| TypeParse)?;
+            valve_response.info.players_online = bat_player_count.parse().map_err(|e| TypeParse.context(e))?;
             rules.remove("bat_player_count_s");
         }
 
