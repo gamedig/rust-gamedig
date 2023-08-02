@@ -170,6 +170,59 @@ mod tests {
         assert_eq!(error, cloned_error);
     }
 
-    // TODO: test display GDError
-    // TODO: test error trait GDError
+    // test display GDError
+    #[test]
+    fn test_display() {
+        let err = GDErrorKind::BadGame.context("Rust is not a game");
+        let s = format!("{}", err);
+        println!("{}", s);
+        assert_eq!(
+            s,
+            "GDError{ kind=BadGame\n  source=\"Rust is not a game\"\n  backtrace=<disabled>\n}\n"
+        );
+    }
+
+    // test error trait GDError
+    #[test]
+    fn test_error_trait() {
+        let source: Result<u32, _> = "nan".parse();
+        let source_err = source.unwrap_err();
+
+        let error_with_context = GDErrorKind::TypeParse.context(source_err.clone());
+        assert!(error_with_context.source().is_some());
+        assert_eq!(
+            format!("{}", error_with_context.source().unwrap()),
+            format!("{}", source_err)
+        );
+
+        let error_without_context: GDError = GDErrorKind::TypeParse.into();
+        assert!(error_without_context.source().is_none());
+    }
+
+    // Test creating GDError with GDError::new
+    #[test]
+    fn test_create_new() {
+        let error_from_new = GDError::new(GDErrorKind::InvalidInput, None);
+        assert!(error_from_new.backtrace.is_some());
+        assert_eq!(error_from_new.kind, GDErrorKind::InvalidInput);
+        assert!(error_from_new.source.is_none());
+    }
+
+    // Test creating GDError with GDErrorKind::context
+    #[test]
+    fn test_create_context() {
+        let error_from_context = GDErrorKind::InvalidInput.context("test");
+        assert!(error_from_context.backtrace.is_some());
+        assert_eq!(error_from_context.kind, GDErrorKind::InvalidInput);
+        assert!(error_from_context.source.is_some());
+    }
+
+    // Test creating GDError with From<GDErrorKind> for GDError
+    #[test]
+    fn test_create_into() {
+        let error_from_into: GDError = GDErrorKind::InvalidInput.into();
+        assert!(error_from_into.backtrace.is_some());
+        assert_eq!(error_from_into.kind, GDErrorKind::InvalidInput);
+        assert!(error_from_into.source.is_none());
+    }
 }
