@@ -110,13 +110,15 @@ impl Error for GDError {
 
 impl fmt::Debug for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{:?}", self.kind)?;
+        writeln!(f, "GDError{{ kind={:?}", self.kind)?;
         if let Some(source) = &self.source {
-            writeln!(f, "{:?}", source)?;
+            writeln!(f, "  source={:?}", source)?;
         }
         if let Some(backtrace) = &self.backtrace {
-            writeln!(f, "{:#?}", backtrace)?;
+            let bt = format!("{:#?}", backtrace);
+            writeln!(f, "  backtrace={}", bt.replace('\n', "\n  "))?;
         }
+        writeln!(f, "}}")?;
         Ok(())
     }
 }
