@@ -100,3 +100,17 @@ jobs:
       - name: Run clippy (local)
         run: cargo clippy --verbose --bins --lib --examples --all-features
         if: ${{ env.ACT }} # only run during local actions testing
+  doc:
+    name: "Check rustdoc"
+    runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
+      - name: "Run cargo doc"
+        run: cargo doc
+        env:
+          RUSTDOCFLAGS: "-D warnings"
