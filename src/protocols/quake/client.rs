@@ -35,7 +35,7 @@ fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<
     let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
     if bufferer.read::<u32>()? != 4294967295 {
-        return Err(PacketBad.rich("Expected 4294967295"));
+        return Err(PacketBad.context("Expected 4294967295"));
     }
 
     let response_header = Client::get_response_header().as_bytes();
@@ -116,7 +116,7 @@ pub(crate) fn client_query<Client: QuakeClient>(
             .or(server_vars.remove("sv_maxclients"))
             .ok_or(GDErrorKind::PacketBad)?
             .parse()
-            .map_err(|e| TypeParse.rich(e))?,
+            .map_err(|e| TypeParse.context(e))?,
         players,
         version: server_vars
             .remove("version")

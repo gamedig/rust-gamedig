@@ -61,10 +61,10 @@ fn get_server_values(
         if let Some(qid) = query_data {
             let split: Vec<&str> = qid.split('.').collect();
 
-            query_id = Some(split[0].parse().map_err(|e| TypeParse.rich(e))?);
+            query_id = Some(split[0].parse().map_err(|e| TypeParse.context(e))?);
             match split.len() {
                 1 => (),
-                2 => part = split[1].parse().map_err(|e| TypeParse.rich(e))?,
+                2 => part = split[1].parse().map_err(|e| TypeParse.context(e))?,
                 _ => Err(GDErrorKind::PacketBad)?, /* the queryid can't be splitted in more than 2
                                                     * elements */
             };
@@ -139,13 +139,13 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             ping: player_data
                 .get("ping")
                 .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             face: player_data
                 .get("face")
                 .ok_or(GDErrorKind::PacketBad)?
@@ -163,13 +163,13 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             deaths: match player_data.get("deaths") {
-                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.rich(e))?),
+                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.context(e))?),
                 None => None,
             },
             health: match player_data.get("health") {
-                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.rich(e))?),
+                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.context(e))?),
                 None => None,
             },
             secret: player_data
@@ -177,7 +177,7 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 .ok_or(GDErrorKind::PacketBad)?
                 .to_lowercase()
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
         };
 
         players.push(new_player);
@@ -205,10 +205,10 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         .remove("maxplayers")
         .ok_or(GDErrorKind::PacketBad)?
         .parse()
-        .map_err(|e| TypeParse.rich(e))?;
+        .map_err(|e| TypeParse.context(e))?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.rich(e))?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
 
     let players = extract_players(&mut server_vars, players_maximum)?;
@@ -241,7 +241,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|e| TypeParse.rich(e))?,
+            .map_err(|e| TypeParse.context(e))?,
         unused_entries: server_vars,
     })
 }

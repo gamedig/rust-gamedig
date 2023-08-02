@@ -46,12 +46,12 @@ impl Bedrock {
         let mut buffer = Buffer::<LittleEndian>::new(&received);
 
         if buffer.read::<u8>()? != 0x1c {
-            return Err(PacketBad.rich("Expected 0x1c"));
+            return Err(PacketBad.context("Expected 0x1c"));
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
         if buffer.read::<u64>()? != 9833440827789222417 {
-            return Err(PacketBad.rich("Invalid nonce"));
+            return Err(PacketBad.context("Invalid nonce"));
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal
@@ -60,11 +60,11 @@ impl Bedrock {
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
         if buffer.read::<u64>()? != 18374403896610127616 {
-            return Err(PacketBad.rich("Invalid magic"));
+            return Err(PacketBad.context("Invalid magic"));
         }
 
         if buffer.read::<u64>()? != 8671175388723805693 {
-            return Err(PacketBad.rich("Invalid magic"));
+            return Err(PacketBad.context("Invalid magic"));
         }
 
         let remaining_length = buffer.switch_endian_chunk(2)?.read::<u16>()? as usize;
@@ -76,7 +76,7 @@ impl Bedrock {
 
         // We must have at least 6 values
         if status.len() < 6 {
-            return Err(PacketBad.rich("Not enough values"));
+            return Err(PacketBad.context("Not enough values"));
         }
 
         Ok(BedrockResponse {

@@ -81,11 +81,11 @@ impl GameSpy3 {
         let mut buf = Buffer::<BigEndian>::new(&received);
 
         if buf.read::<u8>()? != kind {
-            return Err(PacketBad.rich("Kind of packet did not match"));
+            return Err(PacketBad.context("Kind of packet did not match"));
         }
 
         if buf.read::<u32>()? != THIS_SESSION_ID {
-            return Err(PacketBad.rich("Session ID did not match"));
+            return Err(PacketBad.context("Session ID did not match"));
         }
 
         Ok(buf.remaining_bytes().to_vec())
@@ -107,7 +107,9 @@ impl GameSpy3 {
         let mut buf = Buffer::<LittleEndian>::new(&data);
 
         let challenge_as_string = buf.read_string::<Utf8Decoder>(None)?;
-        let challenge = challenge_as_string.parse().map_err(|e| TypeParse.rich(e))?;
+        let challenge = challenge_as_string
+            .parse()
+            .map_err(|e| TypeParse.context(e))?;
 
         Ok(match challenge == 0 {
             true => None,
@@ -146,7 +148,7 @@ impl GameSpy3 {
             }
 
             if buf.read_string::<Utf8Decoder>(None)? != "splitnum" {
-                return Err(PacketBad.rich("Expected string \"splitnum\""));
+                return Err(PacketBad.context("Expected string \"splitnum\""));
             }
 
             let id = buf.read::<u8>()?;
@@ -166,7 +168,7 @@ impl GameSpy3 {
         }
 
         if values.iter().any(|v| v.is_empty()) {
-            return Err(PacketBad.rich("One (or more) packets is empty"));
+            return Err(PacketBad.context("One (or more) packets is empty"));
         }
 
         Ok(values)
@@ -288,27 +290,27 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .get("score")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             ping: player_data
                 .get("ping")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             team: player_data
                 .get("team")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             deaths: player_data
                 .get("deaths")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
             skill: player_data
                 .get("skill")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
         })
     }
 
@@ -327,7 +329,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .get("score")
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|e| TypeParse.rich(e))?,
+                .map_err(|e| TypeParse.context(e))?,
         })
     }
 
@@ -351,15 +353,15 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         .remove("maxplayers")
         .ok_or(GDErrorKind::PacketBad)?
         .parse()
-        .map_err(|e| TypeParse.rich(e))?;
+        .map_err(|e| TypeParse.context(e))?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.rich(e))?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|e| TypeParse.rich(e))?;
+            let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -391,7 +393,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|e| TypeParse.rich(e))?,
+            .map_err(|e| TypeParse.context(e))?,
         unused_entries: server_vars,
     })
 }

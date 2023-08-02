@@ -88,14 +88,14 @@ impl LegacyV1_6 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat.rich("Expected 0xFF"));
+            return Err(ProtocolFormat.context("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;
         error_by_expected_size((length + 3) as usize, data.len())?;
 
         if !LegacyV1_6::is_protocol(&mut buffer)? {
-            return Err(ProtocolFormat.rich("Not legacy 1.6 protocol"));
+            return Err(ProtocolFormat.context("Not legacy 1.6 protocol"));
         }
 
         LegacyV1_6::get_response(&mut buffer)

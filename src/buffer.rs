@@ -108,7 +108,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // If the size of `T` is larger than the remaining length, return an error
         // because we don't have enough data left to read.
         if size > remaining {
-            return Err(PacketUnderflow.rich(format!(
+            return Err(PacketUnderflow.context(format!(
                 "Size requested {} was larger than remaining bytes {}",
                 size, remaining
             )));

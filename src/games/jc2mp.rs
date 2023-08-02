@@ -94,20 +94,20 @@ pub fn query_with_timeout(
     let packets = client.get_server_packets()?;
     let data = packets
         .get(0)
-        .ok_or(PacketBad.rich("First packet missing"))?;
+        .ok_or(PacketBad.context("First packet missing"))?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;
     let players = parse_players_and_teams(remaining_data)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")
-        .ok_or(PacketBad.rich("Server variables missing maxplayers"))?
+        .ok_or(PacketBad.context("Server variables missing maxplayers"))?
         .parse()
-        .map_err(|e| TypeParse.rich(e))?;
+        .map_err(|e| TypeParse.context(e))?;
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|e| TypeParse.rich(e))?;
+            let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,

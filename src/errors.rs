@@ -5,7 +5,7 @@ use std::{
 };
 
 /// Result of Type and GDError.
-pub type GDResult<T> = Result<T, GDRichError>;
+pub type GDResult<T> = Result<T, GDError>;
 
 /// GameDig Error.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -49,30 +49,45 @@ impl fmt::Display for GDErrorKind {
 impl Error for GDErrorKind {}
 
 impl GDErrorKind {
-    /// Convert error kind into a rich error with a source (and implicit
+    /// Convert error kind into a full error with a source (and implicit
     /// backtrace)
     ///
     /// ```
-    /// thing.parse().map_err(|e| GDErrorKind::TypeParse.rich(e))
+    /// thing.parse().map_err(|e| GDErrorKind::TypeParse.context(e))
     /// ```
-    pub fn rich<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDRichError {
-        GDRichError::from_error(self, source)
+    pub fn context<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDError {
+        GDError::from_error(self, source)
     }
 }
 
 type ErrorSource = Box<dyn std::error::Error + 'static>;
 
-/// Rich gamedig error with backtrace and source
+/// Gamedig error type
+///
+/// Can be created in three ways (all of which will implicitly generate a
+/// backtrace):
+///
+/// Directly from an [error kind](crate::errors::GDErrorKind) (without a source)
 /// ```
-/// GDRichError::packet_bad_from_into("Reason packet was bad")
+/// GDErrorKind::PacketBad.into()
 /// ```
-pub struct GDRichError {
+///
+/// [From an error kind with a source](crate::errors::GDErrorKind::context) (any
+/// type that implements `Into<Box<dyn std::error::Error + 'static>>) ```
+/// GDErrorKind::PacketBad.context("Reason the packet was bad")
+/// ```
+/// 
+/// Using the [new helper](crate::errors::GDError::new)
+/// ```
+/// GDError::new(GDErrorKind::PacketBad, "Reason the packet was bad")
+/// ```
+pub struct GDError {
     pub kind: GDErrorKind,
     pub source: Option<ErrorSource>,
     pub backtrace: Option<std::backtrace::Backtrace>,
 }
 
-impl From<GDErrorKind> for GDRichError {
+impl From<GDErrorKind> for GDError {
     fn from(value: GDErrorKind) -> Self {
         let backtrace = Some(backtrace::Backtrace::capture());
         Self {
@@ -83,15 +98,15 @@ impl From<GDErrorKind> for GDRichError {
     }
 }
 
-impl PartialEq for GDRichError {
+impl PartialEq for GDError {
     fn eq(&self, other: &Self) -> bool { self.kind == other.kind }
 }
 
-impl Error for GDRichError {
+impl Error for GDError {
     fn source(&self) -> Option<&(dyn Error + 'static)> { self.source.as_ref().map(Box::as_ref) }
 }
 
-impl fmt::Debug for GDRichError {
+impl fmt::Debug for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         writeln!(f, "{:?}", self.kind)?;
         if let Some(source) = &self.source {
@@ -104,12 +119,12 @@ impl fmt::Debug for GDRichError {
     }
 }
 
-impl fmt::Display for GDRichError {
+impl fmt::Display for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
-impl GDRichError {
-    /// Create a new rich error (with automatic backtrace)
+impl GDError {
+    /// Create a new error (with automatic backtrace)
     pub fn new(kind: GDErrorKind, source: Option<ErrorSource>) -> Self {
         let backtrace = Some(std::backtrace::Backtrace::capture());
         Self {
@@ -119,7 +134,7 @@ impl GDRichError {
         }
     }
 
-    /// Create a new rich error using any type that can be converted to an error
+    /// Create a new error using any type that can be converted to an error
     pub fn from_error<E: Into<Box<dyn std::error::Error + 'static>>>(kind: GDErrorKind, source: E) -> Self {
         Self::new(kind, Some(source.into()))
     }

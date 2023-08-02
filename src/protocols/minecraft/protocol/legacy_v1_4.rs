@@ -34,7 +34,7 @@ impl LegacyV1_4 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat.rich("Expected 0xFF"));
+            return Err(ProtocolFormat.context("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;

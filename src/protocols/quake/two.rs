@@ -47,11 +47,11 @@ impl QuakeClient for QuakeTwo {
         Ok(Player {
             score: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             ping: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             name: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,

@@ -48,19 +48,19 @@ impl QuakeClient for QuakeOne {
         Ok(Player {
             id: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             score: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             time: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             ping: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             name: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
@@ -72,11 +72,11 @@ impl QuakeClient for QuakeOne {
             },
             color_primary: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             color_secondary: match data.next() {
                 None => Err(GDErrorKind::PacketBad)?,
-                Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
         })
     }

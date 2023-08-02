@@ -90,7 +90,7 @@ impl Java {
 
         if get_varint(&mut buffer)? != 0 {
             // first var int is the packet id
-            return Err(PacketBad.rich("Expected 0"));
+            return Err(PacketBad.context("Expected 0"));
         }
 
         let json_response = get_string(&mut buffer)?;

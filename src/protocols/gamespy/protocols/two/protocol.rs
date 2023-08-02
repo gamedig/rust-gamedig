@@ -26,7 +26,7 @@ macro_rules! table_extract_parse {
     ($table:expr, $name:literal, $index:expr) => {
         table_extract!($table, $name, $index)
             .parse()
-            .map_err(|e| PacketBad.rich(e))?
+            .map_err(|e| PacketBad.context(e))?
     };
 }
 
@@ -167,7 +167,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|e| TypeParse.rich(e))?;
+            let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -176,7 +176,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     };
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.rich(e))?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
 
     Ok(Response {
@@ -188,7 +188,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .remove("maxplayers")
             .ok_or(PacketBad)?
             .parse()
-            .map_err(|e| TypeParse.rich(e))?,
+            .map_err(|e| TypeParse.context(e))?,
         players_online,
         players_minimum,
         players,

@@ -110,7 +110,7 @@ impl SplitPacket {
             if decompressed_payload.len() != decompressed_size
                 || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
             {
-                Err(Decompress.rich(format!(
+                Err(Decompress.context(format!(
                     "Decompressed size {} was not expected {}",
                     decompressed_payload.len(),
                     decompressed_size
@@ -448,7 +448,7 @@ fn get_response(
         }
 
         if !is_specified_id {
-            return Err(BadGame.rich(format!("AppId: {}", info.appid)));
+            return Err(BadGame.context(format!("AppId: {}", info.appid)));
         }
     }
 
