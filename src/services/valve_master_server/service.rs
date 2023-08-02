@@ -2,7 +2,7 @@ use crate::{
     buffer::Buffer,
     socket::{Socket, UdpSocket},
     valve_master_server::{Region, SearchFilters},
-    GDError::PacketBad,
+    GDErrorKind::PacketBad,
     GDResult,
 };
 

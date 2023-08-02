@@ -8,7 +8,7 @@ use crate::{
     },
     socket::{Socket, TcpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, ProtocolFormat},
+    GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
 };
 use std::net::SocketAddr;

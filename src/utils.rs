@@ -1,4 +1,4 @@
-use crate::GDError::{PacketOverflow, PacketUnderflow};
+use crate::GDErrorKind::{PacketOverflow, PacketUnderflow};
 use crate::GDResult;
 use std::cmp::Ordering;
 

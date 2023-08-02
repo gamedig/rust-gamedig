@@ -1,6 +1,6 @@
 use crate::{
     protocols::valve::{self, game, SteamApp},
-    GDError::TypeParse,
+    GDErrorKind::TypeParse,
     GDResult,
 };
 use std::net::{IpAddr, SocketAddr};

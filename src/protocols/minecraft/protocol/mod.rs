@@ -12,7 +12,7 @@ use crate::{
         LegacyGroup,
     },
     protocols::types::TimeoutSettings,
-    GDError::AutoQuery,
+    GDErrorKind::AutoQuery,
     GDResult,
 };
 use std::net::SocketAddr;

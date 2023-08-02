@@ -5,7 +5,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
-    GDError::{JsonParse, PacketBad},
+    GDErrorKind::{JsonParse, PacketBad},
     GDResult,
 };
 

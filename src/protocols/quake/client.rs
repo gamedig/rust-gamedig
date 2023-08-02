@@ -4,8 +4,8 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::GDError::{PacketBad, TypeParse};
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::{PacketBad, TypeParse};
+use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::slice::Iter;
@@ -40,7 +40,7 @@ fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<
 
     let response_header = Client::get_response_header().as_bytes();
     if !bufferer.remaining_bytes().starts_with(response_header) {
-        Err(GDError::PacketBad)?
+        Err(GDErrorKind::PacketBad)?
     }
 
     bufferer.move_cursor(response_header.len() as isize)?;
@@ -105,16 +105,16 @@ pub(crate) fn client_query<Client: QuakeClient>(
         name: server_vars
             .remove("hostname")
             .or(server_vars.remove("sv_hostname"))
-            .ok_or(GDError::PacketBad)?,
+            .ok_or(GDErrorKind::PacketBad)?,
         map: server_vars
             .remove("mapname")
             .or(server_vars.remove("map"))
-            .ok_or(GDError::PacketBad)?,
+            .ok_or(GDErrorKind::PacketBad)?,
         players_online: players.len() as u8,
         players_maximum: server_vars
             .remove("maxclients")
             .or(server_vars.remove("sv_maxclients"))
-            .ok_or(GDError::PacketBad)?
+            .ok_or(GDErrorKind::PacketBad)?
             .parse()
             .map_err(|e| TypeParse.rich(e))?,
         players,

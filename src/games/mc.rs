@@ -1,6 +1,6 @@
 use crate::{
     protocols::minecraft::{self, BedrockResponse, JavaResponse, LegacyGroup},
-    GDError,
+    GDErrorKind,
     GDResult,
 };
 use std::net::{IpAddr, SocketAddr};
@@ -20,7 +20,7 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
         return Ok(response);
     }
 
-    Err(GDError::AutoQuery.into())
+    Err(GDErrorKind::AutoQuery.into())
 }
 
 /// Query a Java Server.

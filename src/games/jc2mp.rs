@@ -3,8 +3,8 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings};
 use crate::protocols::GenericResponse;
-use crate::GDError::{PacketBad, TypeParse};
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::{PacketBad, TypeParse};
+use crate::{GDErrorKind, GDResult};
 use byteorder::BigEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -116,11 +116,15 @@ pub fn query_with_timeout(
     };
 
     Ok(Response {
-        version: server_vars.remove("version").ok_or(GDError::PacketBad)?,
+        version: server_vars
+            .remove("version")
+            .ok_or(GDErrorKind::PacketBad)?,
         description: server_vars
             .remove("description")
-            .ok_or(GDError::PacketBad)?,
-        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
+            .ok_or(GDErrorKind::PacketBad)?,
+        name: server_vars
+            .remove("hostname")
+            .ok_or(GDErrorKind::PacketBad)?,
         has_password: has_password(&mut server_vars)?,
         players,
         players_maximum,

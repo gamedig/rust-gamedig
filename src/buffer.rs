@@ -1,5 +1,5 @@
-use crate::GDError::PacketBad;
-use crate::GDError::PacketUnderflow;
+use crate::GDErrorKind::PacketBad;
+use crate::GDErrorKind::PacketUnderflow;
 use crate::GDResult;
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
@@ -547,6 +547,9 @@ mod tests {
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
         let result: Result<u32, _> = buffer.read();
-        assert_eq!(result.unwrap_err(), crate::GDError::PacketUnderflow.into());
+        assert_eq!(
+            result.unwrap_err(),
+            crate::GDErrorKind::PacketUnderflow.into()
+        );
     }
 }

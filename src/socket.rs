@@ -1,6 +1,6 @@
 use crate::{
     protocols::types::TimeoutSettings,
-    GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect},
+    GDErrorKind::{PacketReceive, PacketSend, SocketBind, SocketConnect},
     GDResult,
 };
 

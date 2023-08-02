@@ -1,8 +1,8 @@
 use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, QuakeClient};
 use crate::protocols::quake::Response;
 use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
-use crate::GDError::TypeParse;
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::TypeParse;
+use crate::{GDErrorKind, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -47,35 +47,35 @@ impl QuakeClient for QuakeOne {
     fn parse_player_string(mut data: Iter<&str>) -> GDResult<Self::Player> {
         Ok(Player {
             id: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             score: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             time: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             ping: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             name: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => remove_wrapping_quotes(v).to_string(),
             },
             skin: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => remove_wrapping_quotes(v).to_string(),
             },
             color_primary: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
             color_secondary: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => v.parse().map_err(|e| TypeParse.rich(e))?,
             },
         })

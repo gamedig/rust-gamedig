@@ -9,7 +9,7 @@ pub type GDResult<T> = Result<T, GDRichError>;
 
 /// GameDig Error.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GDError {
+pub enum GDErrorKind {
     /// The received packet was bigger than the buffer size.
     PacketOverflow,
     /// The received packet was shorter than the expected one.
@@ -42,18 +42,18 @@ pub enum GDError {
     TypeParse,
 }
 
-impl fmt::Display for GDError {
+impl fmt::Display for GDErrorKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", self) }
 }
 
-impl Error for GDError {}
+impl Error for GDErrorKind {}
 
-impl GDError {
+impl GDErrorKind {
     /// Convert error kind into a rich error with a source (and implicit
     /// backtrace)
     ///
     /// ```
-    /// thing.parse().map_err(|e| GDError::TypeParse.rich(e))
+    /// thing.parse().map_err(|e| GDErrorKind::TypeParse.rich(e))
     /// ```
     pub fn rich<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDRichError {
         GDRichError::from_error(self, source)
@@ -67,13 +67,13 @@ type ErrorSource = Box<dyn std::error::Error + 'static>;
 /// GDRichError::packet_bad_from_into("Reason packet was bad")
 /// ```
 pub struct GDRichError {
-    pub kind: GDError,
+    pub kind: GDErrorKind,
     pub source: Option<ErrorSource>,
     pub backtrace: Option<std::backtrace::Backtrace>,
 }
 
-impl From<GDError> for GDRichError {
-    fn from(value: GDError) -> Self {
+impl From<GDErrorKind> for GDRichError {
+    fn from(value: GDErrorKind) -> Self {
         let backtrace = Some(backtrace::Backtrace::capture());
         Self {
             kind: value,
@@ -110,7 +110,7 @@ impl fmt::Display for GDRichError {
 
 impl GDRichError {
     /// Create a new rich error (with automatic backtrace)
-    pub fn new(kind: GDError, source: Option<ErrorSource>) -> Self {
+    pub fn new(kind: GDErrorKind, source: Option<ErrorSource>) -> Self {
         let backtrace = Some(std::backtrace::Backtrace::capture());
         Self {
             kind,
@@ -120,7 +120,7 @@ impl GDRichError {
     }
 
     /// Create a new rich error using any type that can be converted to an error
-    pub fn from_error<E: Into<Box<dyn std::error::Error + 'static>>>(kind: GDError, source: E) -> Self {
+    pub fn from_error<E: Into<Box<dyn std::error::Error + 'static>>>(kind: GDErrorKind, source: E) -> Self {
         Self::new(kind, Some(source.into()))
     }
 }
@@ -139,28 +139,28 @@ mod tests {
     // Testing Err variant of the GDResult type
     #[test]
     fn test_gdresult_err() {
-        let result: GDResult<u32> = Err(GDError::InvalidInput.into());
+        let result: GDResult<u32> = Err(GDErrorKind::InvalidInput.into());
         assert!(result.is_err());
     }
 
-    // Testing the Display trait for the GDError type
+    // Testing the Display trait for the GDErrorKind type
     #[test]
     fn test_display() {
-        let error = GDError::PacketOverflow;
+        let error = GDErrorKind::PacketOverflow;
         assert_eq!(format!("{}", error), "PacketOverflow");
     }
 
-    // Testing the Error trait for the GDError type
+    // Testing the Error trait for the GDErrorKind type
     #[test]
     fn test_error_trait() {
-        let error = GDError::PacketBad;
+        let error = GDErrorKind::PacketBad;
         assert!(error.source().is_none());
     }
 
-    // Testing cloning the GDError type
+    // Testing cloning the GDErrorKind type
     #[test]
     fn test_cloning() {
-        let error = GDError::BadGame;
+        let error = GDErrorKind::BadGame;
         let cloned_error = error.clone();
         assert_eq!(error, cloned_error);
     }
