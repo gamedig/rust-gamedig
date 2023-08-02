@@ -21,6 +21,12 @@ repos:
         files: '[.]rs$'
         pass_filenames: false
         entry: cargo build --all-features --lib --bins --examples
+      - id: test
+        name: Check tests pass
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: cargo test
       - id: format
         name: Check rustfmt
         language: system
@@ -33,6 +39,12 @@ repos:
         files: '[.]rs$'
         pass_filenames: false
         entry: rustup run --install 1.60 cargo build
+      - id: docs
+        name: Check rustdoc compiles
+        language: system
+        files: '[.]rs$'
+        pass_filenames: false
+        entry: env RUSTDOCFLAGS="-D warnings" cargo doc
       - id: actions
         name: Check actions work
         language: system
