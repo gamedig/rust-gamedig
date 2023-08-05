@@ -8,7 +8,7 @@ use crate::{
     },
     socket::{Socket, TcpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, ProtocolFormat},
+    GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
 };
 use std::net::SocketAddr;
@@ -55,17 +55,17 @@ impl LegacyV1_6 {
         let version_protocol = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
         let version_name = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let description = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let online_players = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
         let max_players = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
-            .map_err(|_| PacketBad)?;
+            .map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
             version_name,
@@ -88,14 +88,14 @@ impl LegacyV1_6 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat);
+            return Err(ProtocolFormat.context("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;
         error_by_expected_size((length + 3) as usize, data.len())?;
 
         if !LegacyV1_6::is_protocol(&mut buffer)? {
-            return Err(ProtocolFormat);
+            return Err(ProtocolFormat.context("Not legacy 1.6 protocol"));
         }
 
         LegacyV1_6::get_response(&mut buffer)

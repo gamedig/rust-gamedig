@@ -6,7 +6,7 @@ use crate::{
     },
     socket::{Socket, TcpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, ProtocolFormat},
+    GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
 };
 
@@ -35,7 +35,7 @@ impl LegacyBV1_8 {
         let mut buffer = Buffer::<BigEndian>::new(&data);
 
         if buffer.read::<u8>()? != 0xFF {
-            return Err(ProtocolFormat);
+            return Err(ProtocolFormat.context("Expected 0xFF"));
         }
 
         let length = buffer.read::<u16>()? * 2;
@@ -47,8 +47,8 @@ impl LegacyBV1_8 {
         error_by_expected_size(3, split.len())?;
 
         let description = split[0].to_string();
-        let online_players = split[1].parse().map_err(|_| PacketBad)?;
-        let max_players = split[2].parse().map_err(|_| PacketBad)?;
+        let online_players = split[1].parse().map_err(|e| PacketBad.context(e))?;
+        let max_players = split[2].parse().map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
             version_name: "Beta 1.8+".to_string(),

@@ -8,7 +8,7 @@ use crate::{
         types::{CommonPlayer, CommonResponse, GenericPlayer},
         GenericResponse,
     },
-    GDError::{PacketBad, UnknownEnumCast},
+    GDErrorKind::{PacketBad, UnknownEnumCast},
     GDResult,
 };
 
@@ -175,7 +175,7 @@ impl GameMode {
             "Hardcore" => Ok(GameMode::Hardcore),
             "Spectator" => Ok(GameMode::Spectator),
             "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(UnknownEnumCast),
+            _ => Err(UnknownEnumCast.context(format!("Unknown gamemode {:?}", value))),
         }
     }
 }
@@ -193,7 +193,7 @@ pub(crate) fn get_varint<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<i32> 
 
         // The 5th byte is only allowed to have the 4 smallest bits set
         if i == 4 && (current_byte & 0xf0 != 0) {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Bad 5th byte"));
         }
 
         if (current_byte & msb) == 0 {
@@ -236,7 +236,7 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
         text.push(buffer.read::<u8>()?)
     }
 
-    String::from_utf8(text).map_err(|_| PacketBad)
+    String::from_utf8(text).map_err(|e| PacketBad.context(e))
 }
 
 #[allow(dead_code)]

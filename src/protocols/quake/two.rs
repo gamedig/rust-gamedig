@@ -2,7 +2,8 @@ use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, Quak
 use crate::protocols::quake::one::QuakeOne;
 use crate::protocols::quake::Response;
 use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::TypeParse;
+use crate::{GDErrorKind, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -45,15 +46,15 @@ impl QuakeClient for QuakeTwo {
     fn parse_player_string(mut data: Iter<&str>) -> GDResult<Self::Player> {
         Ok(Player {
             score: match data.next() {
-                None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             ping: match data.next() {
-                None => Err(GDError::PacketBad)?,
-                Some(v) => v.parse().map_err(|_| GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
+                Some(v) => v.parse().map_err(|e| TypeParse.context(e))?,
             },
             name: match data.next() {
-                None => Err(GDError::PacketBad)?,
+                None => Err(GDErrorKind::PacketBad)?,
                 Some(v) => remove_wrapping_quotes(v).to_string(),
             },
             address: data.next().map(|v| remove_wrapping_quotes(v).to_string()),

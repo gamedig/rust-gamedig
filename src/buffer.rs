@@ -1,4 +1,5 @@
-use crate::GDError::{PacketBad, PacketUnderflow};
+use crate::GDErrorKind::PacketBad;
+use crate::GDErrorKind::PacketUnderflow;
 use crate::GDResult;
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
@@ -69,12 +70,12 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         match new_cursor {
             // If the addition was not successful (i.e., it resulted in an overflow or underflow),
             // return an error indicating that the cursor is out of bounds.
-            None => Err(PacketBad),
+            None => Err(PacketBad.into()),
 
             // If the new cursor position is either less than zero (i.e., before the start of the buffer)
             // or greater than the remaining length of the buffer (i.e., past the end of the buffer),
             // return an error indicating that the cursor is out of bounds.
-            Some(x) if x < 0 || x as usize > self.data_length() => Err(PacketBad),
+            Some(x) if x < 0 || x as usize > self.data_length() => Err(PacketBad.into()),
 
             // If the new cursor position is within the bounds of the buffer, update the cursor
             // position and return Ok.
@@ -107,7 +108,10 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // If the size of `T` is larger than the remaining length, return an error
         // because we don't have enough data left to read.
         if size > remaining {
-            return Err(PacketUnderflow);
+            return Err(PacketUnderflow.context(format!(
+                "Size requested {} was larger than remaining bytes {}",
+                size, remaining
+            )));
         }
 
         // Slice the data array from the current cursor position for `size` amount of
@@ -242,7 +246,7 @@ macro_rules! impl_buffer_read_byte {
                     .map($map_func)
                     // If the data array is empty (and thus `first` returns None),
                     // `ok_or_else` will return a BufferError.
-                    .ok_or_else(|| PacketBad)
+                    .ok_or_else(|| PacketBad.into())
             }
         }
     };
@@ -264,10 +268,10 @@ macro_rules! impl_buffer_read {
         impl<B: ByteOrder> BufferRead<B> for $type {
             fn read_from_buffer(data: &[u8]) -> GDResult<Self> {
                 // Convert the byte slice into an array of the appropriate type.
-                let array = data.try_into().map_err(|_| {
+                let array = data.try_into().map_err(|e| {
                     // If conversion fails, return an error indicating the required and provided
                     // lengths.
-                    PacketBad
+                    PacketBad.context(e)
                 })?;
 
                 // Use the provided function to read the data from the array into the given
@@ -345,7 +349,7 @@ impl StringDecoder for Utf8Decoder {
             &data[.. position]
         )
         // If the data cannot be converted into a UTF-8 string, return an error
-            .map_err(|_| PacketBad)?
+            .map_err(|e| PacketBad.context(e))?
             // Convert the resulting &str into a String
             .to_owned();
 
@@ -393,7 +397,7 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
         B::read_u16_into(&data[.. position], &mut paired_buf);
 
         // Convert the buffer of u16 values into a String
-        let result = String::from_utf16(&paired_buf).map_err(|_| PacketBad)?;
+        let result = String::from_utf16(&paired_buf).map_err(|e| PacketBad.context(e))?;
 
         // Update the cursor position
         // The +2 accounts for the delimiter
@@ -543,6 +547,9 @@ mod tests {
         let mut buffer = Buffer::<LittleEndian>::new(data);
 
         let result: Result<u32, _> = buffer.read();
-        assert_eq!(result.unwrap_err(), PacketUnderflow);
+        assert_eq!(
+            result.unwrap_err(),
+            crate::GDErrorKind::PacketUnderflow.into()
+        );
     }
 }

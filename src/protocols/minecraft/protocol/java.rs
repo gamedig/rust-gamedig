@@ -5,7 +5,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
-    GDError::{JsonParse, PacketBad},
+    GDErrorKind::{JsonParse, PacketBad},
     GDResult,
 };
 
@@ -90,11 +90,11 @@ impl Java {
 
         if get_varint(&mut buffer)? != 0 {
             // first var int is the packet id
-            return Err(PacketBad);
+            return Err(PacketBad.context("Expected 0"));
         }
 
         let json_response = get_string(&mut buffer)?;
-        let value_response: Value = serde_json::from_str(&json_response).map_err(|_| JsonParse)?;
+        let value_response: Value = serde_json::from_str(&json_response).map_err(|e| JsonParse.context(e))?;
 
         let version_name = value_response["version"]["name"]
             .as_str()

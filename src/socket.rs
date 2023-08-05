@@ -1,6 +1,6 @@
 use crate::{
     protocols::types::TimeoutSettings,
-    GDError::{PacketReceive, PacketSend, SocketBind, SocketConnect},
+    GDErrorKind::{PacketReceive, PacketSend, SocketBind, SocketConnect},
     GDResult,
 };
 
@@ -29,7 +29,7 @@ pub struct TcpSocket {
 impl Socket for TcpSocket {
     fn new(address: &SocketAddr) -> GDResult<Self> {
         Ok(Self {
-            socket: net::TcpStream::connect(address).map_err(|_| SocketConnect)?,
+            socket: net::TcpStream::connect(address).map_err(|e| SocketConnect.context(e))?,
         })
     }
 
@@ -42,7 +42,7 @@ impl Socket for TcpSocket {
     }
 
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
-        self.socket.write(data).map_err(|_| PacketSend)?;
+        self.socket.write(data).map_err(|e| PacketSend.context(e))?;
         Ok(())
     }
 
@@ -50,7 +50,7 @@ impl Socket for TcpSocket {
         let mut buf = Vec::with_capacity(size.unwrap_or(DEFAULT_PACKET_SIZE));
         self.socket
             .read_to_end(&mut buf)
-            .map_err(|_| PacketReceive)?;
+            .map_err(|e| PacketReceive.context(e))?;
 
         Ok(buf)
     }
@@ -63,7 +63,7 @@ pub struct UdpSocket {
 
 impl Socket for UdpSocket {
     fn new(address: &SocketAddr) -> GDResult<Self> {
-        let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|_| SocketBind)?;
+        let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| SocketBind.context(e))?;
 
         Ok(Self {
             socket,
@@ -82,14 +82,17 @@ impl Socket for UdpSocket {
     fn send(&mut self, data: &[u8]) -> GDResult<()> {
         self.socket
             .send_to(data, self.address)
-            .map_err(|_| PacketSend)?;
+            .map_err(|e| PacketSend.context(e))?;
 
         Ok(())
     }
 
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>> {
         let mut buf: Vec<u8> = vec![0; size.unwrap_or(DEFAULT_PACKET_SIZE)];
-        let (number_of_bytes_received, _) = self.socket.recv_from(&mut buf).map_err(|_| PacketReceive)?;
+        let (number_of_bytes_received, _) = self
+            .socket
+            .recv_from(&mut buf)
+            .map_err(|e| PacketReceive.context(e))?;
 
         Ok(buf[.. number_of_bytes_received].to_vec())
     }

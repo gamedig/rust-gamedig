@@ -12,7 +12,7 @@ use crate::{
         LegacyGroup,
     },
     protocols::types::TimeoutSettings,
-    GDError::AutoQuery,
+    GDErrorKind::AutoQuery,
     GDResult,
 };
 use std::net::SocketAddr;
@@ -38,7 +38,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         return Ok(response);
     }
 
-    Err(AutoQuery)
+    Err(AutoQuery.into())
 }
 
 /// Query a Java Server.
@@ -60,7 +60,7 @@ pub fn query_legacy(address: &SocketAddr, timeout_settings: Option<TimeoutSettin
         return Ok(response);
     }
 
-    Err(AutoQuery)
+    Err(AutoQuery.into())
 }
 
 /// Query a specific (Java) Legacy Server.

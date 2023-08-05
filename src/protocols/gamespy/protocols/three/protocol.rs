@@ -5,7 +5,8 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::{PacketBad, TypeParse};
+use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
@@ -80,11 +81,11 @@ impl GameSpy3 {
         let mut buf = Buffer::<BigEndian>::new(&received);
 
         if buf.read::<u8>()? != kind {
-            return Err(GDError::PacketBad);
+            return Err(PacketBad.context("Kind of packet did not match"));
         }
 
         if buf.read::<u32>()? != THIS_SESSION_ID {
-            return Err(GDError::PacketBad);
+            return Err(PacketBad.context("Session ID did not match"));
         }
 
         Ok(buf.remaining_bytes().to_vec())
@@ -108,7 +109,7 @@ impl GameSpy3 {
         let challenge_as_string = buf.read_string::<Utf8Decoder>(None)?;
         let challenge = challenge_as_string
             .parse()
-            .map_err(|_| GDError::TypeParse)?;
+            .map_err(|e| TypeParse.context(e))?;
 
         Ok(match challenge == 0 {
             true => None,
@@ -147,7 +148,7 @@ impl GameSpy3 {
             }
 
             if buf.read_string::<Utf8Decoder>(None)? != "splitnum" {
-                return Err(GDError::PacketBad);
+                return Err(PacketBad.context("Expected string \"splitnum\""));
             }
 
             let id = buf.read::<u8>()?;
@@ -167,7 +168,7 @@ impl GameSpy3 {
         }
 
         if values.iter().any(|v| v.is_empty()) {
-            return Err(GDError::PacketBad);
+            return Err(PacketBad.context("One (or more) packets is empty"));
         }
 
         Ok(values)
@@ -231,7 +232,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
             }
 
             let field_split: Vec<&str> = field.split('_').collect();
-            let field_name = field_split.first().ok_or(GDError::PacketBad)?;
+            let field_name = field_split.first().ok_or(GDErrorKind::PacketBad)?;
             if !["player", "score", "ping", "team", "deaths", "pid", "skill"].contains(field_name) {
                 continue;
             }
@@ -243,7 +244,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                         true => None,
                         false => {
                             if v != &"t" {
-                                Err(GDError::PacketBad)?
+                                Err(GDErrorKind::PacketBad)?
                             }
 
                             Some(v)
@@ -284,35 +285,32 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
         }
 
         players.push(Player {
-            name: player_data
-                .get("player")
-                .ok_or(GDError::PacketBad)?
-                .to_string(),
+            name: player_data.get("player").ok_or(PacketBad)?.to_string(),
             score: player_data
                 .get("score")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
             ping: player_data
                 .get("ping")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
             team: player_data
                 .get("team")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
             deaths: player_data
                 .get("deaths")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
             skill: player_data
                 .get("skill")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
         })
     }
 
@@ -323,12 +321,15 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
         }
 
         teams.push(Team {
-            name: team_data.get("team").ok_or(GDError::PacketBad)?.to_string(),
+            name: team_data
+                .get("team")
+                .ok_or(GDErrorKind::PacketBad)?
+                .to_string(),
             score: team_data
                 .get("score")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .parse()
-                .map_err(|_| GDError::PacketBad)?,
+                .map_err(|e| TypeParse.context(e))?,
         })
     }
 
@@ -342,7 +343,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     let mut client = GameSpy3::new(address, timeout_settings)?;
     let packets = client.get_server_packets()?;
 
-    let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDError::PacketBad)?)?;
+    let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDErrorKind::PacketBad)?)?;
 
     let mut remaining_data_packets = vec![remaining_data];
     remaining_data_packets.extend_from_slice(&packets[1 ..]);
@@ -350,17 +351,17 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
 
     let players_maximum = server_vars
         .remove("maxplayers")
-        .ok_or(GDError::PacketBad)?
+        .ok_or(GDErrorKind::PacketBad)?
         .parse()
-        .map_err(|_| GDError::TypeParse)?;
+        .map_err(|e| TypeParse.context(e))?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -369,11 +370,19 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     };
 
     Ok(Response {
-        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
-        map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
+        name: server_vars
+            .remove("hostname")
+            .ok_or(GDErrorKind::PacketBad)?,
+        map: server_vars
+            .remove("mapname")
+            .ok_or(GDErrorKind::PacketBad)?,
         has_password: has_password(&mut server_vars)?,
-        game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
-        game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
+        game_type: server_vars
+            .remove("gametype")
+            .ok_or(GDErrorKind::PacketBad)?,
+        game_version: server_vars
+            .remove("gamever")
+            .ok_or(GDErrorKind::PacketBad)?,
         players_maximum,
         players_online,
         players_minimum,
@@ -384,7 +393,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|_| GDError::TypeParse)?,
+            .map_err(|e| TypeParse.context(e))?,
         unused_entries: server_vars,
     })
 }

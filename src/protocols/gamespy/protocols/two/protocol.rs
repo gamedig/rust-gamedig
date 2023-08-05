@@ -2,7 +2,8 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::two::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::{GDError, GDResult};
+use crate::GDErrorKind::{PacketBad, TypeParse};
+use crate::{GDErrorKind, GDResult};
 use byteorder::BigEndian;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -15,9 +16,9 @@ macro_rules! table_extract {
     ($table:expr, $name:literal, $index:expr) => {
         $table
             .get($name)
-            .ok_or(GDError::PacketBad)?
+            .ok_or(GDErrorKind::PacketBad)?
             .get($index)
-            .ok_or(GDError::PacketBad)?
+            .ok_or(GDErrorKind::PacketBad)?
     };
 }
 
@@ -25,13 +26,13 @@ macro_rules! table_extract_parse {
     ($table:expr, $name:literal, $index:expr) => {
         table_extract!($table, $name, $index)
             .parse()
-            .map_err(|_| GDError::PacketBad)?
+            .map_err(|e| PacketBad.context(e))?
     };
 }
 
 fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<String>>, usize)> {
     if data.read::<u8>()? != 0 {
-        Err(GDError::PacketBad)?
+        Err(GDErrorKind::PacketBad)?
     }
 
     let rows = data.read::<u8>()? as usize;
@@ -64,7 +65,10 @@ fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<
     for _ in 0 .. rows {
         for column in column_heads.iter() {
             let value = data.read_string::<Utf8Decoder>(None)?;
-            table.get_mut(column).ok_or(GDError::PacketBad)?.push(value);
+            table
+                .get_mut(column)
+                .ok_or(GDErrorKind::PacketBad)?
+                .push(value);
         }
     }
 
@@ -87,7 +91,7 @@ impl GameSpy2 {
 
         let mut buf = Buffer::<BigEndian>::new(&received);
         if buf.read::<u8>()? != 0 || buf.read::<u32>()? != 1 {
-            return Err(GDError::PacketBad);
+            return Err(PacketBad.into());
         }
 
         let buf_index = buf.current_position();
@@ -163,7 +167,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     let players_online = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
-            let reported_players = v.parse().map_err(|_| GDError::TypeParse)?;
+            let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
             match reported_players < players.len() {
                 true => players.len(),
                 false => reported_players,
@@ -172,19 +176,19 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     };
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
 
     Ok(Response {
-        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
-        map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
-        has_password: server_vars.remove("password").ok_or(GDError::PacketBad)? == "1",
+        name: server_vars.remove("hostname").ok_or(PacketBad)?,
+        map: server_vars.remove("mapname").ok_or(PacketBad)?,
+        has_password: server_vars.remove("password").ok_or(PacketBad)? == "1",
         teams: get_teams(&mut buffer)?,
         players_maximum: server_vars
             .remove("maxplayers")
-            .ok_or(GDError::PacketBad)?
+            .ok_or(PacketBad)?
             .parse()
-            .map_err(|_| GDError::PacketBad)?,
+            .map_err(|e| TypeParse.context(e))?,
         players_online,
         players_minimum,
         players,

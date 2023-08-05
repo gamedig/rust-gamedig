@@ -21,7 +21,7 @@ use crate::{
     },
     socket::{Socket, UdpSocket},
     utils::u8_lower_upper,
-    GDError::{BadGame, Decompress, UnknownEnumCast},
+    GDErrorKind::{BadGame, Decompress, UnknownEnumCast},
     GDResult,
 };
 
@@ -97,7 +97,9 @@ impl SplitPacket {
     fn get_payload(&self) -> GDResult<Vec<u8>> {
         if self.compressed {
             let mut decoder = Decoder::new();
-            decoder.write(&self.payload).map_err(|_| Decompress)?;
+            decoder
+                .write(&self.payload)
+                .map_err(|e| Decompress.context(e))?;
 
             let decompressed_size = self.decompressed_size.unwrap() as usize;
 
@@ -105,12 +107,16 @@ impl SplitPacket {
 
             decoder
                 .read(&mut decompressed_payload)
-                .map_err(|_| Decompress)?;
+                .map_err(|e| Decompress.context(e))?;
 
             if decompressed_payload.len() != decompressed_size
                 || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
             {
-                Err(Decompress)
+                Err(Decompress.context(format!(
+                    "Decompressed size {} was not expected {}",
+                    decompressed_payload.len(),
+                    decompressed_size
+                )))
             } else {
                 Ok(decompressed_payload)
             }
@@ -444,7 +450,7 @@ fn get_response(
         }
 
         if !is_specified_id {
-            return Err(BadGame(format!("AppId: {}", info.appid)));
+            return Err(BadGame.context(format!("AppId: {}", info.appid)));
         }
     }
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
-use crate::GDError::UnknownEnumCast;
+use crate::GDErrorKind::UnknownEnumCast;
 use crate::GDResult;
 use crate::{buffer::Buffer, protocols::GenericResponse};
 use byteorder::LittleEndian;

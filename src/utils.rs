@@ -1,13 +1,11 @@
-use crate::{
-    GDError::{PacketOverflow, PacketUnderflow},
-    GDResult,
-};
+use crate::GDErrorKind::{PacketOverflow, PacketUnderflow};
+use crate::GDResult;
 use std::cmp::Ordering;
 
 pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     match size.cmp(&expected) {
-        Ordering::Greater => Err(PacketOverflow),
-        Ordering::Less => Err(PacketUnderflow),
+        Ordering::Greater => Err(PacketOverflow.into()),
+        Ordering::Less => Err(PacketUnderflow.into()),
         Ordering::Equal => Ok(()),
     }
 }

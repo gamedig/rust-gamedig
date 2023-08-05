@@ -8,7 +8,7 @@ use crate::{
     },
     socket::{Socket, UdpSocket},
     utils::error_by_expected_size,
-    GDError::{PacketBad, TypeParse},
+    GDErrorKind::{PacketBad, TypeParse},
     GDResult,
 };
 
@@ -46,12 +46,12 @@ impl Bedrock {
         let mut buffer = Buffer::<LittleEndian>::new(&received);
 
         if buffer.read::<u8>()? != 0x1c {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Expected 0x1c"));
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
         if buffer.read::<u64>()? != 9833440827789222417 {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Invalid nonce"));
         }
 
         // These 8 bytes are identical to the serverId string we receive in decimal
@@ -60,11 +60,11 @@ impl Bedrock {
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
         if buffer.read::<u64>()? != 18374403896610127616 {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Invalid magic"));
         }
 
         if buffer.read::<u64>()? != 8671175388723805693 {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Invalid magic"));
         }
 
         let remaining_length = buffer.switch_endian_chunk(2)?.read::<u16>()? as usize;
@@ -76,7 +76,7 @@ impl Bedrock {
 
         // We must have at least 6 values
         if status.len() < 6 {
-            return Err(PacketBad);
+            return Err(PacketBad.context("Not enough values"));
         }
 
         Ok(BedrockResponse {
@@ -84,8 +84,8 @@ impl Bedrock {
             name: status[1].to_string(),
             version_name: status[3].to_string(),
             version_protocol: status[2].to_string(),
-            players_maximum: status[5].parse().map_err(|_| TypeParse)?,
-            players_online: status[4].parse().map_err(|_| TypeParse)?,
+            players_maximum: status[5].parse().map_err(|e| TypeParse.context(e))?,
+            players_online: status[4].parse().map_err(|e| TypeParse.context(e))?,
             id: status.get(6).map(|v| v.to_string()),
             map: status.get(7).map(|v| v.to_string()),
             game_mode: match status.get(8) {

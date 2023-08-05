@@ -2,6 +2,8 @@ use byteorder::LittleEndian;
 
 use crate::buffer::Utf8Decoder;
 use crate::protocols::gamespy::common::has_password;
+use crate::GDErrorKind::TypeParse;
+
 use crate::{
     buffer::Buffer,
     protocols::{
@@ -9,7 +11,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, UdpSocket},
-    GDError,
+    GDErrorKind,
     GDResult,
 };
 use std::collections::HashMap;
@@ -59,25 +61,25 @@ fn get_server_values(
         if let Some(qid) = query_data {
             let split: Vec<&str> = qid.split('.').collect();
 
-            query_id = Some(split[0].parse().map_err(|_| GDError::TypeParse)?);
+            query_id = Some(split[0].parse().map_err(|e| TypeParse.context(e))?);
             match split.len() {
                 1 => (),
-                2 => part = split[1].parse().map_err(|_| GDError::TypeParse)?,
-                _ => Err(GDError::PacketBad)?, /* the queryid can't be splitted in more than 2
-                                                * elements */
+                2 => part = split[1].parse().map_err(|e| TypeParse.context(e))?,
+                _ => Err(GDErrorKind::PacketBad)?, /* the queryid can't be splitted in more than 2
+                                                    * elements */
             };
         }
 
         server_values.remove("queryid");
 
         if received_query_id.is_some() && received_query_id != query_id {
-            return Err(GDError::PacketBad); // wrong query id!
+            return Err(GDErrorKind::PacketBad.into()); // wrong query id!
         } else {
             received_query_id = query_id;
         }
 
         match parts.contains(&part) {
-            true => Err(GDError::PacketBad)?,
+            true => Err(GDErrorKind::PacketBad)?,
             false => parts.push(part),
         }
     }
@@ -128,45 +130,54 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 None => {
                     player_data
                         .get("playername")
-                        .ok_or(GDError::PacketBad)?
+                        .ok_or(GDErrorKind::PacketBad)?
                         .clone()
                 }
             },
             team: player_data
                 .get("team")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(|e| TypeParse.context(e))?,
             ping: player_data
                 .get("ping")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
-            face: player_data.get("face").ok_or(GDError::PacketBad)?.clone(),
-            skin: player_data.get("skin").ok_or(GDError::PacketBad)?.clone(),
-            mesh: player_data.get("mesh").ok_or(GDError::PacketBad)?.clone(),
+                .map_err(|e| TypeParse.context(e))?,
+            face: player_data
+                .get("face")
+                .ok_or(GDErrorKind::PacketBad)?
+                .clone(),
+            skin: player_data
+                .get("skin")
+                .ok_or(GDErrorKind::PacketBad)?
+                .clone(),
+            mesh: player_data
+                .get("mesh")
+                .ok_or(GDErrorKind::PacketBad)?
+                .clone(),
             score: player_data
                 .get("frags")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(|e| TypeParse.context(e))?,
             deaths: match player_data.get("deaths") {
-                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
+                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.context(e))?),
                 None => None,
             },
             health: match player_data.get("health") {
-                Some(v) => Some(v.trim().parse().map_err(|_| GDError::TypeParse)?),
+                Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.context(e))?),
                 None => None,
             },
             secret: player_data
                 .get("ngsecret")
-                .ok_or(GDError::PacketBad)?
+                .ok_or(GDErrorKind::PacketBad)?
                 .to_lowercase()
                 .parse()
-                .map_err(|_| GDError::TypeParse)?,
+                .map_err(|e| TypeParse.context(e))?,
         };
 
         players.push(new_player);
@@ -192,27 +203,35 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
 
     let players_maximum = server_vars
         .remove("maxplayers")
-        .ok_or(GDError::PacketBad)?
+        .ok_or(GDErrorKind::PacketBad)?
         .parse()
-        .map_err(|_| GDError::TypeParse)?;
+        .map_err(|e| TypeParse.context(e))?;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|_| GDError::TypeParse)?),
+        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
 
     let players = extract_players(&mut server_vars, players_maximum)?;
 
     Ok(Response {
-        name: server_vars.remove("hostname").ok_or(GDError::PacketBad)?,
-        map: server_vars.remove("mapname").ok_or(GDError::PacketBad)?,
+        name: server_vars
+            .remove("hostname")
+            .ok_or(GDErrorKind::PacketBad)?,
+        map: server_vars
+            .remove("mapname")
+            .ok_or(GDErrorKind::PacketBad)?,
         map_title: server_vars.remove("maptitle"),
         admin_contact: server_vars.remove("AdminEMail"),
         admin_name: server_vars
             .remove("AdminName")
             .or_else(|| server_vars.remove("admin")),
         has_password: has_password(&mut server_vars)?,
-        game_type: server_vars.remove("gametype").ok_or(GDError::PacketBad)?,
-        game_version: server_vars.remove("gamever").ok_or(GDError::PacketBad)?,
+        game_type: server_vars
+            .remove("gametype")
+            .ok_or(GDErrorKind::PacketBad)?,
+        game_version: server_vars
+            .remove("gamever")
+            .ok_or(GDErrorKind::PacketBad)?,
         players_maximum,
         players_online: players.len(),
         players_minimum,
@@ -222,7 +241,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .unwrap_or_else(|| "true".to_string())
             .to_lowercase()
             .parse()
-            .map_err(|_| GDError::TypeParse)?,
+            .map_err(|e| TypeParse.context(e))?,
         unused_entries: server_vars,
     })
 }

@@ -1,11 +1,12 @@
 # MSRV (Minimum Supported Rust Version)
 
-Current: `1.60.0`
+Current: `1.65.0`
 
 Places to update:
 - `Cargo.toml`
 - `README.md`
 - `.github/workflows/ci.yml`
+- `.pre-commit-config.yaml`
 
 # rustfmt version
 
@@ -22,5 +23,5 @@ The toolchain version used to run rustfmt in CI
 Current: `nightly-2023-07-09`
 
 Places to update:
-- `./.github/workflows/ci.yml`
-- `./.pre-commit-config.yaml`
+- `.github/workflows/ci.yml`
+- `.pre-commit-config.yaml`
