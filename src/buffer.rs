@@ -29,7 +29,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Arguments
     ///
     /// * `data` - A byte slice that the buffer will read from.
-    pub(crate) fn new(data: &'a [u8]) -> Self {
+    pub(crate) const fn new(data: &'a [u8]) -> Self {
         Self {
             data,
             cursor: 0,
@@ -37,14 +37,14 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         }
     }
 
-    pub(crate) fn current_position(&self) -> usize { self.cursor }
+    pub(crate) const fn current_position(&self) -> usize { self.cursor }
 
     /// Returns the length of the remaining bytes from the current cursor
     /// position.
-    pub(crate) fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
+    pub(crate) const fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
 
     /// Returns the length of the buffer data.
-    pub(crate) fn data_length(&self) -> usize { self.data.len() }
+    pub(crate) const fn data_length(&self) -> usize { self.data.len() }
 
     // Added for legacy support just for the refactoring
     // Not Tested
@@ -109,8 +109,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         // because we don't have enough data left to read.
         if size > remaining {
             return Err(PacketUnderflow.context(format!(
-                "Size requested {} was larger than remaining bytes {}",
-                size, remaining
+                "Size requested {size} was larger than remaining bytes {remaining}"
             )));
         }
 
