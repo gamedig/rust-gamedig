@@ -6,10 +6,17 @@ Who knows what the future holds...
 Protocols:
 - Quake 2: Fixed a bug where the version tag wouldn't always be present.
 
+Crate:
+- Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
+
 ### Breaking...
 Protocols:
 - Gamespy 1: Renamed the players `frags` field to `score` to be more inline with the other protocols.
 - Quake: The `version` field has been changed from `String`to `Option<String>`.
+
+Crate:
+- The enum used for errors, `GDError` has been renamed to `GDErrorKind`.
+- `GDError` is now a struct that holds its kind, the source and a backtrace.
 
 # 0.3.0 - 18/07/2023
 ### Changes:
