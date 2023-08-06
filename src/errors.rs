@@ -60,7 +60,8 @@ type ErrorSource = Box<dyn Error + 'static>;
 /// Can be created in three ways (all of which will implicitly generate a
 /// backtrace):
 ///
-/// Directly from an [error kind](crate::errors::GDErrorKind) (without a source)
+/// Directly from an [error kind](crate::errors::GDErrorKind) (without a
+/// source).
 ///
 /// ```
 /// use gamedig::{GDError, GDErrorKind};
@@ -68,14 +69,14 @@ type ErrorSource = Box<dyn Error + 'static>;
 /// ```
 ///
 /// [From an error kind with a source](crate::errors::GDErrorKind::context) (any
-/// type that implements `Into<Box<dyn std::error::Error + 'static>>)
+/// type that implements `Into<Box<dyn std::error::Error + 'static>>`).
 ///
 /// ```
 /// use gamedig::{GDError, GDErrorKind};
 /// let _: GDError = GDErrorKind::PacketBad.context("Reason the packet was bad");
 /// ```
 ///
-/// Using the [new helper](crate::errors::GDError::new)
+/// Using the [new helper](crate::errors::GDError::new).
 ///
 /// ```
 /// use gamedig::{GDError, GDErrorKind};
@@ -110,10 +111,10 @@ impl fmt::Debug for GDError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         writeln!(f, "GDError{{ kind={:?}", self.kind)?;
         if let Some(source) = &self.source {
-            writeln!(f, "  source={:?}", source)?;
+            writeln!(f, "  source={source:?}")?;
         }
         if let Some(backtrace) = &self.backtrace {
-            let bt = format!("{:#?}", backtrace);
+            let bt = format!("{backtrace:#?}");
             writeln!(f, "  backtrace={}", bt.replace('\n', "\n  "))?;
         }
         writeln!(f, "}}")?;
@@ -122,7 +123,7 @@ impl fmt::Debug for GDError {
 }
 
 impl fmt::Display for GDError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{:?}", self) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, "{self:?}") }
 }
 
 impl GDError {
@@ -172,10 +173,8 @@ mod tests {
     #[test]
     fn test_display() {
         let err = GDErrorKind::BadGame.context("Rust is not a game");
-        let s = format!("{}", err);
-        println!("{}", s);
         assert_eq!(
-            s,
+            format!("{err}"),
             "GDError{ kind=BadGame\n  source=\"Rust is not a game\"\n  backtrace=<disabled>\n}\n"
         );
     }
@@ -190,7 +189,7 @@ mod tests {
         assert!(error_with_context.source().is_some());
         assert_eq!(
             format!("{}", error_with_context.source().unwrap()),
-            format!("{}", source_err)
+            format!("{source_err}")
         );
 
         let error_without_context: GDError = GDErrorKind::TypeParse.into();
