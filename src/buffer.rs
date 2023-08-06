@@ -11,7 +11,7 @@ use std::{convert::TryInto, marker::PhantomData};
 /// bind it to a specific byte order (BigEndian or LittleEndian).
 ///
 /// The byte order is defined by the `B: ByteOrder` generic parameter.
-pub(crate) struct Buffer<'a, B: ByteOrder> {
+pub struct Buffer<'a, B: ByteOrder> {
     /// The byte slice that the buffer reads from.
     data: &'a [u8],
     /// The cursor marking our current position in the buffer.
@@ -29,7 +29,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Arguments
     ///
     /// * `data` - A byte slice that the buffer will read from.
-    pub(crate) const fn new(data: &'a [u8]) -> Self {
+    pub const fn new(data: &'a [u8]) -> Self {
         Self {
             data,
             cursor: 0,
@@ -37,18 +37,18 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         }
     }
 
-    pub(crate) const fn current_position(&self) -> usize { self.cursor }
+    pub const fn current_position(&self) -> usize { self.cursor }
 
     /// Returns the length of the remaining bytes from the current cursor
     /// position.
-    pub(crate) const fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
+    pub const fn remaining_length(&self) -> usize { self.data.len() - self.cursor }
 
     /// Returns the length of the buffer data.
-    pub(crate) const fn data_length(&self) -> usize { self.data.len() }
+    pub const fn data_length(&self) -> usize { self.data.len() }
 
     // Added for legacy support just for the refactoring
     // Not Tested
-    pub(crate) fn remaining_bytes(&self) -> &[u8] { &self.data[self.cursor ..] }
+    pub fn remaining_bytes(&self) -> &[u8] { &self.data[self.cursor ..] }
 
     /// Moves the cursor forward or backward by a specified offset.
     ///
@@ -61,7 +61,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     ///
     /// Returns a `BufferError` if the attempted move would position the cursor
     /// out of bounds.
-    pub(crate) fn move_cursor(&mut self, offset: isize) -> GDResult<()> {
+    pub fn move_cursor(&mut self, offset: isize) -> GDResult<()> {
         // Compute the new cursor position by adding the offset to the current cursor
         // position. The checked_add method is used for safe addition,
         // preventing overflow and underflow.
@@ -99,7 +99,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     ///
     /// Returns a `BufferError` if there is not enough data remaining in the
     /// buffer to read a value of type `T`.
-    pub(crate) fn read<T: Sized + BufferRead<B>>(&mut self) -> GDResult<T> {
+    pub fn read<T: Sized + BufferRead<B>>(&mut self) -> GDResult<T> {
         // Get the size of `T` in bytes.
         let size = std::mem::size_of::<T>();
         // Calculate remaining length of the buffer.
@@ -143,7 +143,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Errors
     ///
     /// Returns a `BufferError` if there is an error decoding the string.
-    pub(crate) fn read_string<D: StringDecoder>(&mut self, until: Option<D::Delimiter>) -> GDResult<String> {
+    pub fn read_string<D: StringDecoder>(&mut self, until: Option<D::Delimiter>) -> GDResult<String> {
         // Slice the data array from the current cursor position to the end.
         let data_slice = &self.data[self.cursor ..];
 
@@ -171,7 +171,7 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
 /// type `Output`.
 ///
 /// The associated type `Output` must implement the `ByteOrder` trait.
-pub(crate) trait SwitchEndian {
+pub trait SwitchEndian {
     type Output: ByteOrder;
 }
 
@@ -204,7 +204,7 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
     /// # Parameters
     ///
     /// * `size`: The size of the chunk to be taken from the original buffer.
-    pub(crate) fn switch_endian_chunk(&mut self, size: usize) -> GDResult<Buffer<'a, B::Output>> {
+    pub fn switch_endian_chunk(&mut self, size: usize) -> GDResult<Buffer<'a, B::Output>> {
         let old_cursor = self.cursor;
         self.move_cursor(size as isize)?;
 
@@ -221,7 +221,7 @@ impl<'a, B: SwitchEndian + ByteOrder> Buffer<'a, B> {
 ///
 /// Implementors of this trait provide a method for reading their type from a
 /// byte buffer with a specific byte order.
-pub(crate) trait BufferRead<B: ByteOrder>: Sized {
+pub trait BufferRead<B: ByteOrder>: Sized {
     fn read_from_buffer(data: &[u8]) -> GDResult<Self>;
 }
 
@@ -297,7 +297,7 @@ impl_buffer_read!(f64, read_f64);
 ///
 /// This trait should be implemented by types that can decode strings from a
 /// byte buffer with a specific byte order and delimiter.
-pub(crate) trait StringDecoder {
+pub trait StringDecoder {
     /// The type of the delimiter used by the decoder.
     type Delimiter: AsRef<[u8]>;
 
@@ -322,7 +322,7 @@ pub(crate) trait StringDecoder {
 /// A decoder for UTF-8 encoded strings.
 ///
 /// This decoder uses a single null byte (`0x00`) as the default delimiter.
-pub(crate) struct Utf8Decoder;
+pub struct Utf8Decoder;
 
 impl StringDecoder for Utf8Decoder {
     type Delimiter = [u8; 1];
@@ -368,7 +368,7 @@ impl StringDecoder for Utf8Decoder {
 /// # Type Parameters
 ///
 /// * `B` - The byte order to use when decoding the string.
-pub(crate) struct Utf16Decoder<B: ByteOrder> {
+pub struct Utf16Decoder<B: ByteOrder> {
     _marker: PhantomData<B>,
 }
 
