@@ -50,12 +50,10 @@ impl GDErrorKind {
     /// use gamedig::{GDErrorKind, GDResult};
     /// let _: GDResult<u32> = "thing".parse().map_err(|e| GDErrorKind::TypeParse.context(e));
     /// ```
-    pub fn context<E: Into<Box<dyn std::error::Error + 'static>>>(self, source: E) -> GDError {
-        GDError::from_error(self, source)
-    }
+    pub fn context<E: Into<Box<dyn Error + 'static>>>(self, source: E) -> GDError { GDError::from_error(self, source) }
 }
 
-type ErrorSource = Box<dyn std::error::Error + 'static>;
+type ErrorSource = Box<dyn Error + 'static>;
 
 /// Gamedig error type
 ///
@@ -86,7 +84,7 @@ type ErrorSource = Box<dyn std::error::Error + 'static>;
 pub struct GDError {
     pub kind: GDErrorKind,
     pub source: Option<ErrorSource>,
-    pub backtrace: Option<std::backtrace::Backtrace>,
+    pub backtrace: Option<backtrace::Backtrace>,
 }
 
 impl From<GDErrorKind> for GDError {
@@ -130,7 +128,7 @@ impl fmt::Display for GDError {
 impl GDError {
     /// Create a new error (with automatic backtrace)
     pub fn new(kind: GDErrorKind, source: Option<ErrorSource>) -> Self {
-        let backtrace = Some(std::backtrace::Backtrace::capture());
+        let backtrace = Some(backtrace::Backtrace::capture());
         Self {
             kind,
             source,
@@ -139,7 +137,7 @@ impl GDError {
     }
 
     /// Create a new error using any type that can be converted to an error
-    pub fn from_error<E: Into<Box<dyn std::error::Error + 'static>>>(kind: GDErrorKind, source: E) -> Self {
+    pub fn from_error<E: Into<Box<dyn Error + 'static>>>(kind: GDErrorKind, source: E) -> Self {
         Self::new(kind, Some(source.into()))
     }
 }
