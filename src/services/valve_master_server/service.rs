@@ -77,7 +77,7 @@ impl ValveMasterServer {
 
         let mut ips: Vec<(IpAddr, u16)> = Vec::new();
 
-        while buf.remaining_length() == 0 {
+        while buf.remaining_length() > 0 {
             let ip = IpAddr::V4(Ipv4Addr::new(
                 buf.read::<u8>()?,
                 buf.read::<u8>()?,
