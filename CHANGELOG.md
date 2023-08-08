@@ -18,6 +18,15 @@ Crate:
 - The enum used for errors, `GDError` has been renamed to `GDErrorKind`.
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
 
+Protocol:
+- The Ship:
+1. Renamed `protocol` to `protocol_version`.
+2. Renamed `max_players` to `players_maximum`.
+3. Renamed `bots` to `players_bots`.
+4. Renamed `players` to `players_online`.
+5. Renamed `players_details` to `players`.
+6. Added field `game_version`.
+
 # 0.3.0 - 18/07/2023
 ### Changes:
 Protocols:
