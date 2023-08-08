@@ -27,6 +27,11 @@ Protocol:
 5. Renamed `players_details` to `players`.
 6. Added field `game_version`.
 
+- FFOW:
+1. Renamed `game_mode` to `game`.
+2. Renamed `version` to `game_version`.
+3. Renamed `protocol` to `protocol_version`.
+
 # 0.3.0 - 18/07/2023
 ### Changes:
 Protocols:
