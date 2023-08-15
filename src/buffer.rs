@@ -46,8 +46,9 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// Returns the length of the buffer data.
     pub const fn data_length(&self) -> usize { self.data.len() }
 
-    // Added for legacy support just for the refactoring
-    // Not Tested
+    // TODO: Look into this to make it take ownership of data, not borrowing it
+    // There are many instances where we transform this to a vector.
+    /// Returns the remaining bytes that have not been read.
     pub fn remaining_bytes(&self) -> &[u8] { &self.data[self.cursor ..] }
 
     /// Moves the cursor forward or backward by a specified offset.
