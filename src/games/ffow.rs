@@ -19,7 +19,7 @@ pub struct Response {
     /// Map name.
     pub active_mod: String,
     /// Running game mode.
-    pub game: String,
+    pub game_mode: String,
     /// The version that the server is running on.
     pub game_version: String,
     /// Description of the server.
@@ -50,7 +50,7 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
-    fn game(&self) -> Option<&str> { Some(&self.game) }
+    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
@@ -83,7 +83,7 @@ pub fn query_with_timeout(
     let name = buffer.read_string::<Utf8Decoder>(None)?;
     let map = buffer.read_string::<Utf8Decoder>(None)?;
     let active_mod = buffer.read_string::<Utf8Decoder>(None)?;
-    let game = buffer.read_string::<Utf8Decoder>(None)?;
+    let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
     let description = buffer.read_string::<Utf8Decoder>(None)?;
     let game_version = buffer.read_string::<Utf8Decoder>(None)?;
     buffer.move_cursor(2)?;
@@ -102,7 +102,7 @@ pub fn query_with_timeout(
         protocol_version,
         name,
         active_mod,
-        game,
+        game_mode,
         game_version,
         description,
         map,

@@ -61,7 +61,7 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::Valve(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.info.name) }
-    fn game(&self) -> Option<&str> { Some(&self.info.game) }
+    fn game(&self) -> Option<&str> { Some(&self.info.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.info.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.info.map) }
     fn players_maximum(&self) -> u64 { self.info.players_maximum.into() }
@@ -88,8 +88,8 @@ pub struct ServerInfo {
     pub map: String,
     /// Name of the folder containing the game files.
     pub folder: String,
-    /// The name of the game.
-    pub game: String,
+    /// The server-declared name of the game/game mode.
+    pub game_mode: String,
     /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
     pub appid: u32,
     /// Number of players on the server.
@@ -514,7 +514,7 @@ pub mod game {
                 protocol: response.info.protocol_version,
                 name: response.info.name,
                 map: response.info.map,
-                game: response.info.game,
+                game: response.info.game_mode,
                 appid: response.info.appid,
                 players_online: response.info.players_online,
                 players_details: response

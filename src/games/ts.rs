@@ -48,7 +48,7 @@ pub struct Response {
     pub protocol_version: u8,
     pub name: String,
     pub map: String,
-    pub game: String,
+    pub game_mode: String,
     pub game_version: String,
     pub players: Vec<TheShipPlayer>,
     pub players_online: u8,
@@ -73,7 +73,7 @@ impl CommonResponse for Response {
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
-    fn game(&self) -> Option<&str> { Some(&self.game) }
+    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
     fn players_maximum(&self) -> u64 { self.players_maximum.into() }
     fn players_online(&self) -> u64 { self.players_online.into() }
     fn players_bots(&self) -> Option<u64> { Some(self.players_bots.into()) }
@@ -99,7 +99,7 @@ impl Response {
             protocol_version: response.info.protocol_version,
             name: response.info.name,
             map: response.info.map,
-            game: response.info.game,
+            game_mode: response.info.game_mode,
             game_version: response.info.game_version,
             players_online: response.info.players_online,
             players: response

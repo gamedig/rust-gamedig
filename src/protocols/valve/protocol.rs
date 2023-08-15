@@ -211,7 +211,7 @@ impl ValveProtocol {
         let name = buffer.read_string::<Utf8Decoder>(None)?;
         let map = buffer.read_string::<Utf8Decoder>(None)?;
         let folder = buffer.read_string::<Utf8Decoder>(None)?;
-        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
         let protocol = buffer.read()?;
@@ -249,7 +249,7 @@ impl ValveProtocol {
             name,
             map,
             folder,
-            game,
+            game_mode,
             appid: 0, // not present in the obsolete response
             players_online: players,
             players_maximum: max_players,
@@ -281,7 +281,7 @@ impl ValveProtocol {
         let name = buffer.read_string::<Utf8Decoder>(None)?;
         let map = buffer.read_string::<Utf8Decoder>(None)?;
         let folder = buffer.read_string::<Utf8Decoder>(None)?;
-        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
         let mut appid = buffer.read::<u16>()? as u32;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
@@ -343,7 +343,7 @@ impl ValveProtocol {
             name,
             map,
             folder,
-            game,
+            game_mode,
             appid,
             players_online: players,
             players_maximum: max_players,

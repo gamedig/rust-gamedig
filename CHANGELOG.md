@@ -22,6 +22,7 @@ Protocol:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `version` to `game_version`.
+3. Renamed `game` to `game_mode`.
 
 - Quake (1, 2, 3):
 1. Renamed `version` to `game_version`.
@@ -43,12 +44,14 @@ Protocol:
 3. Renamed `bots` to `players_bots`.
 4. Renamed `players` to `players_online`.
 5. Renamed `players_details` to `players`.
-6. Added field `game_version`.
+6. Renamed `game` to `game_mode`.
+7. Added field `game_version`.
 
 - FFOW:
 1. Renamed `game_mode` to `game`.
 2. Renamed `version` to `game_version`.
 3. Renamed `protocol` to `protocol_version`.
+4. Renamed `game` to `game_mode`.
 
 # 0.3.0 - 18/07/2023
 ### Changes:
