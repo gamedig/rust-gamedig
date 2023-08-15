@@ -19,6 +19,9 @@ Crate:
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
 
 Protocol:
+- Valve:
+1. Renamed `protocol` to `protocol_version`.
+
 - The Ship:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `max_players` to `players_maximum`.

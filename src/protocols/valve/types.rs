@@ -81,7 +81,7 @@ impl CommonResponse for Response {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ServerInfo {
     /// Protocol used by the server.
-    pub protocol: u8,
+    pub protocol_version: u8,
     /// Name of the server.
     pub name: String,
     /// Map name.
@@ -511,7 +511,7 @@ pub mod game {
             let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
             Self {
-                protocol: response.info.protocol,
+                protocol: response.info.protocol_version,
                 name: response.info.name,
                 map: response.info.map,
                 game: response.info.game,

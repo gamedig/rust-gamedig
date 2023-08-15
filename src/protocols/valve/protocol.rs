@@ -245,7 +245,7 @@ impl ValveProtocol {
         let bots = buffer.read::<u8>()?;
 
         Ok(ServerInfo {
-            protocol,
+            protocol_version: protocol,
             name,
             map,
             folder,
@@ -339,7 +339,7 @@ impl ValveProtocol {
         };
 
         Ok(ServerInfo {
-            protocol,
+            protocol_version: protocol,
             name,
             map,
             folder,
@@ -436,7 +436,6 @@ fn get_response(
     let mut client = ValveProtocol::new(address, timeout_settings)?;
 
     let info = client.get_server_info(&engine)?;
-    let protocol = info.protocol;
 
     if let Engine::Source(Some(appids)) = &engine {
         let mut is_specified_id = false;
@@ -453,6 +452,8 @@ fn get_response(
             return Err(BadGame.context(format!("AppId: {}", info.appid)));
         }
     }
+
+    let protocol = info.protocol_version;
 
     Ok(Response {
         info,

@@ -96,7 +96,7 @@ impl Response {
         let the_unwrapped_ship = response.info.the_ship.unwrap();
 
         Self {
-            protocol_version: response.info.protocol,
+            protocol_version: response.info.protocol_version,
             name: response.info.name,
             map: response.info.map,
             game: response.info.game,
