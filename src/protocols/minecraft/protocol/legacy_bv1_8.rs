@@ -55,7 +55,7 @@ impl LegacyBV1_8 {
             protocol_version: -1,
             players_maximum: max_players,
             players_online: online_players,
-            players_sample: None,
+            players: None,
             description,
             favicon: None,
             previews_chat: None,

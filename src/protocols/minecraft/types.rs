@@ -75,7 +75,7 @@ pub struct JavaResponse {
     /// Number of online players.
     pub players_online: u32,
     /// Some online players (can be missing).
-    pub players_sample: Option<Vec<Player>>,
+    pub players: Option<Vec<Player>>,
     /// Server's description or MOTD.
     pub description: String,
     /// The favicon (can be missing).
@@ -97,7 +97,7 @@ impl CommonResponse for JavaResponse {
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
-        self.players_sample
+        self.players
             .as_ref()
             .map(|players| players.iter().map(|p| p as &dyn CommonPlayer).collect())
     }
@@ -146,7 +146,7 @@ impl JavaResponse {
             protocol_version: 0,
             players_maximum: response.players_maximum,
             players_online: response.players_online,
-            players_sample: None,
+            players: None,
             description: response.name,
             favicon: None,
             previews_chat: None,

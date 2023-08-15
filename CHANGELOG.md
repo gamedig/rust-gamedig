@@ -26,6 +26,7 @@ Protocol:
 - Minecraft Java
 1. Renamed `version_protocol` to `protocol_version`.
 2. Renamed `version_name` to `game_version`.
+3. Renamed `players_sample` to `players`.
 
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.

@@ -72,7 +72,7 @@ impl LegacyV1_6 {
             protocol_version,
             players_maximum: max_players,
             players_online: online_players,
-            players_sample: None,
+            players: None,
             description,
             favicon: None,
             previews_chat: None,

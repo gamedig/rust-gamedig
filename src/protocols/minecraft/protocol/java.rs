@@ -108,7 +108,7 @@ impl Java {
         let online_players = value_response["players"]["online"]
             .as_u64()
             .ok_or(PacketBad)? as u32;
-        let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
+        let players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
             true => None,
             false => {
                 Some({
@@ -134,7 +134,7 @@ impl Java {
             protocol_version,
             players_maximum: max_players,
             players_online: online_players,
-            players_sample: sample_players,
+            players,
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),
