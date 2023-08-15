@@ -32,7 +32,7 @@ impl CommonPlayer for Player {
 
     fn name(&self) -> &str { &self.name }
 
-    fn score(&self) -> Option<i32> { Some(self.score.into()) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 pub(crate) struct QuakeTwo;

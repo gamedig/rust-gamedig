@@ -59,8 +59,8 @@ impl CommonResponse for Response {
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
     fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
-    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
-    fn players_online(&self) -> u32 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

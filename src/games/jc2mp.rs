@@ -43,8 +43,8 @@ impl CommonResponse for Response {
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
-    fn players_online(&self) -> u32 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
         Some(
