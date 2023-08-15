@@ -448,7 +448,7 @@ fn get_response(
             }
         }
 
-        if !is_specified_id {
+        if !is_specified_id && gather_settings.check_app_id {
             return Err(BadGame.context(format!("AppId: {}", info.appid)));
         }
     }

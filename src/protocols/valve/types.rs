@@ -417,6 +417,7 @@ impl Engine {
 pub struct GatheringSettings {
     pub players: bool,
     pub rules: bool,
+    pub check_app_id: bool,
 }
 
 impl Default for GatheringSettings {
@@ -425,6 +426,7 @@ impl Default for GatheringSettings {
         Self {
             players: true,
             rules: true,
+            check_app_id: true,
         }
     }
 }
