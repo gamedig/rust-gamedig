@@ -5,6 +5,9 @@ Who knows what the future holds...
 ### Changes:
 Protocols:
 - Quake 2: Fixed a bug where the version tag wouldn't always be present.
+- Valve: Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
+reported by the server are the same, errors if not, enabled by default.
+- Valve: Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 
 Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
