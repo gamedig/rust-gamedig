@@ -26,6 +26,9 @@ Protocol:
 - Quake (1, 2, 3):
 1. Renamed `version` to `game_version`.
 
+- Quake (1, 2):
+1. Renamed `game_type` to `game_mode`.
+
 - Minecraft Java
 1. Renamed `version_protocol` to `protocol_version`.
 2. Renamed `version_name` to `game_version`.

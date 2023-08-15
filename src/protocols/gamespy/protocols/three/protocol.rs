@@ -377,7 +377,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .remove("mapname")
             .ok_or(GDErrorKind::PacketBad)?,
         has_password: has_password(&mut server_vars)?,
-        game_type: server_vars
+        game_mode: server_vars
             .remove("gametype")
             .ok_or(GDErrorKind::PacketBad)?,
         game_version: server_vars

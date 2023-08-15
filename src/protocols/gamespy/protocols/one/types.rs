@@ -41,7 +41,7 @@ pub struct Response {
     pub admin_contact: Option<String>,
     pub admin_name: Option<String>,
     pub has_password: bool,
-    pub game_type: String,
+    pub game_mode: String,
     pub game_version: String,
     pub players_maximum: usize,
     pub players_online: usize,
@@ -57,7 +57,7 @@ impl CommonResponse for Response {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn game(&self) -> Option<&str> { Some(&self.game_type) }
+    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
     fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
