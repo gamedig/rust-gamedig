@@ -23,7 +23,11 @@ Protocol:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `version` to `game_version`.
 
-- Minecraft (both Java and Bedrock)
+- Minecraft Java
+1. Renamed `version_protocol` to `protocol_version`.
+2. Renamed `version_name` to `game_version`.
+
+- Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.
 
 - The Ship:

@@ -96,7 +96,7 @@ impl Java {
         let json_response = get_string(&mut buffer)?;
         let value_response: Value = serde_json::from_str(&json_response).map_err(|e| JsonParse.context(e))?;
 
-        let version_name = value_response["version"]["name"]
+        let game_version = value_response["version"]["name"]
             .as_str()
             .ok_or(PacketBad)?
             .to_string();
@@ -130,7 +130,7 @@ impl Java {
         };
 
         Ok(JavaResponse {
-            version_name,
+            game_version,
             protocol_version,
             players_maximum: max_players,
             players_online: online_players,

@@ -66,9 +66,9 @@ pub enum VersionedResponse<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
-    pub version_name: String,
-    /// Protocol version, example: 760 (for 1.19.2). Note that for versions
-    /// below 1.6 this field is always -1.
+    pub game_version: String,
+    /// Protocol version, example: 760 (for 1.19.1 or 1.19.2).
+    /// Note that for versions below 1.6 this field is always -1.
     pub protocol_version: i32,
     /// Number of server capacity.
     pub players_maximum: u32,
@@ -94,7 +94,7 @@ impl CommonResponse for JavaResponse {
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn players_maximum(&self) -> u64 { self.players_maximum.into() }
     fn players_online(&self) -> u64 { self.players_online.into() }
-    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         self.players_sample
@@ -142,7 +142,7 @@ impl CommonResponse for BedrockResponse {
 impl JavaResponse {
     pub fn from_bedrock_response(response: BedrockResponse) -> Self {
         Self {
-            version_name: response.version_name,
+            game_version: response.version_name,
             protocol_version: 0,
             players_maximum: response.players_maximum,
             players_online: response.players_online,

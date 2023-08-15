@@ -51,7 +51,7 @@ impl LegacyBV1_8 {
         let max_players = split[2].parse().map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
-            version_name: "Beta 1.8+".to_string(),
+            game_version: "Beta 1.8+".to_string(),
             protocol_version: -1,
             players_maximum: max_players,
             players_online: online_players,

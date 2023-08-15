@@ -56,7 +56,7 @@ impl LegacyV1_6 {
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
             .map_err(|e| PacketBad.context(e))?;
-        let version_name = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
+        let game_version = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let description = buffer.read_string::<Utf16Decoder<BigEndian>>(None)?;
         let online_players = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
@@ -68,7 +68,7 @@ impl LegacyV1_6 {
             .map_err(|e| PacketBad.context(e))?;
 
         Ok(JavaResponse {
-            version_name,
+            game_version,
             protocol_version,
             players_maximum: max_players,
             players_online: online_players,
