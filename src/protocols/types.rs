@@ -66,7 +66,7 @@ pub trait CommonResponse {
         CommonResponseJson {
             name: self.name(),
             description: self.description(),
-            game: self.game(),
+            game_mode: self.game_mode(),
             game_version: self.game_version(),
             has_password: self.has_password(),
             map: self.map(),
@@ -84,7 +84,7 @@ pub trait CommonResponse {
     /// Description of the server
     fn description(&self) -> Option<&str> { None }
     /// Name of the current game or game mode
-    fn game(&self) -> Option<&str> { None }
+    fn game_mode(&self) -> Option<&str> { None }
     /// Version of the game being run on the server
     fn game_version(&self) -> Option<&str> { None }
     /// The current map name
@@ -106,7 +106,7 @@ pub trait CommonResponse {
 pub struct CommonResponseJson<'a> {
     pub name: Option<&'a str>,
     pub description: Option<&'a str>,
-    pub game: Option<&'a str>,
+    pub game_mode: Option<&'a str>,
     pub game_version: Option<&'a str>,
     pub map: Option<&'a str>,
     pub players_maximum: u64,

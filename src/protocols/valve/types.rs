@@ -61,7 +61,7 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::Valve(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.info.name) }
-    fn game(&self) -> Option<&str> { Some(&self.info.game_mode) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.info.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.info.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.info.map) }
     fn players_maximum(&self) -> u64 { self.info.players_maximum.into() }

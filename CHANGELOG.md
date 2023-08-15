@@ -18,6 +18,10 @@ Crate:
 - The enum used for errors, `GDError` has been renamed to `GDErrorKind`.
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
 
+Generics:
+- Renamed `CommonResponseJson`'s `game` field to `game_mode`.
+- Renamed `CommonResponse`'s `game` function to `game_mode`.
+
 Protocol:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.

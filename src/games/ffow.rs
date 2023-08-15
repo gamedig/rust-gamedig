@@ -50,7 +50,7 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
-    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
