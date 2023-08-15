@@ -67,9 +67,9 @@ pub enum VersionedResponse<'a> {
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2). Note that for versions
+    /// Protocol version, example: 760 (for 1.19.2). Note that for versions
     /// below 1.6 this field is always -1.
-    pub version_protocol: i32,
+    pub protocol_version: i32,
     /// Number of server capacity.
     pub players_maximum: u32,
     /// Number of online players.
@@ -113,8 +113,8 @@ pub struct BedrockResponse {
     pub name: String,
     /// Version name, example: "1.19.40".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2).
-    pub version_protocol: String,
+    /// Protocol version, example: 760 (for 1.19.2).
+    pub protocol_version: String,
     /// Maximum number of players the server reports it can hold.
     pub players_maximum: u32,
     /// Number of players on the server.
@@ -143,7 +143,7 @@ impl JavaResponse {
     pub fn from_bedrock_response(response: BedrockResponse) -> Self {
         Self {
             version_name: response.version_name,
-            version_protocol: 0,
+            protocol_version: 0,
             players_maximum: response.players_maximum,
             players_online: response.players_online,
             players_sample: None,

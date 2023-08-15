@@ -52,7 +52,7 @@ impl LegacyV1_6 {
 
     pub(crate) fn get_response(buffer: &mut Buffer<BigEndian>) -> GDResult<JavaResponse> {
         // This is a specific order!
-        let version_protocol = buffer
+        let protocol_version = buffer
             .read_string::<Utf16Decoder<BigEndian>>(None)?
             .parse()
             .map_err(|e| PacketBad.context(e))?;
@@ -69,7 +69,7 @@ impl LegacyV1_6 {
 
         Ok(JavaResponse {
             version_name,
-            version_protocol,
+            protocol_version,
             players_maximum: max_players,
             players_online: online_players,
             players_sample: None,

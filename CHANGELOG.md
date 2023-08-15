@@ -22,6 +22,9 @@ Protocol:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.
 
+- Minecraft (both Java and Bedrock)
+1. Renamed `version_protocol` to `protocol_version`.
+
 - The Ship:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `max_players` to `players_maximum`.

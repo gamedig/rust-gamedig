@@ -55,7 +55,7 @@ impl LegacyV1_4 {
 
         Ok(JavaResponse {
             version_name: "1.4+".to_string(),
-            version_protocol: -1,
+            protocol_version: -1,
             players_maximum: max_players,
             players_online: online_players,
             players_sample: None,

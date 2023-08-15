@@ -100,7 +100,7 @@ impl Java {
             .as_str()
             .ok_or(PacketBad)?
             .to_string();
-        let version_protocol = value_response["version"]["protocol"]
+        let protocol_version = value_response["version"]["protocol"]
             .as_i64()
             .ok_or(PacketBad)? as i32;
 
@@ -131,7 +131,7 @@ impl Java {
 
         Ok(JavaResponse {
             version_name,
-            version_protocol,
+            protocol_version,
             players_maximum: max_players,
             players_online: online_players,
             players_sample: sample_players,

@@ -52,7 +52,7 @@ impl LegacyBV1_8 {
 
         Ok(JavaResponse {
             version_name: "Beta 1.8+".to_string(),
-            version_protocol: -1,
+            protocol_version: -1,
             players_maximum: max_players,
             players_online: online_players,
             players_sample: None,
