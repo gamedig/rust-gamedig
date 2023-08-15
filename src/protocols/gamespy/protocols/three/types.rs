@@ -24,7 +24,7 @@ impl CommonPlayer for Player {
     }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score.try_into().unwrap_or(0)) }
+    fn score(&self) -> Option<i32> { Some(self.score.into()) }
 }
 
 /// A team's details

@@ -18,7 +18,7 @@ pub struct Player {
     pub face: String,
     pub skin: String,
     pub mesh: String,
-    pub score: u32,
+    pub score: i32,
     pub deaths: Option<u32>,
     pub health: Option<u32>,
     pub secret: bool,
@@ -28,7 +28,7 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::One(self)) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 /// A query response.

@@ -125,7 +125,7 @@ pub struct ServerPlayer {
     /// Player's name.
     pub name: String,
     /// General score.
-    pub score: u32,
+    pub score: i32,
     /// How long a player has been in the server (seconds).
     pub duration: f32,
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): deaths count
@@ -137,7 +137,7 @@ pub struct ServerPlayer {
 impl CommonPlayer for ServerPlayer {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Valve(self) }
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
@@ -447,7 +447,7 @@ pub mod game {
         /// Player's name.
         pub name: String,
         /// Player's score.
-        pub score: u32,
+        pub score: i32,
         /// How long a player has been in the server (seconds).
         pub duration: f32,
     }

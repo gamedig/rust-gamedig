@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct TheShipPlayer {
     pub name: String,
-    pub score: u32,
+    pub score: i32,
     pub duration: f32,
     pub deaths: u32,
     pub money: u32,
@@ -39,7 +39,7 @@ impl CommonPlayer for TheShipPlayer {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::TheShip(self) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

@@ -27,7 +27,7 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::Two(self)) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score.into()) }
+    fn score(&self) -> Option<i32> { Some(self.score.into()) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

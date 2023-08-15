@@ -21,16 +21,21 @@ Crate:
 Generics:
 - Renamed `CommonResponseJson`'s `game` field (and the function) to `game_mode`.
 - Changed `players_maximum` and `players_online` (and their functions) types from `u64` to `u32`.
+- Changed `score` field (and the function) of a player from `u32` to `i32`.
 
 Protocol:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `version` to `game_version`.
 3. Renamed `game` to `game_mode`.
+4. Changed `score` field of a player from `u32` to `i32`.
 
 - GameSpy (1, 2, 3):
 1. Renamed `version` to `game_version`.
 2. Changed `players_maximum` and `players_online` (and their functions) types from `usize` to `u32`.
+
+- GameSpy 1:
+1. Changed `score` field of a player from `u32` to `i32`.
 
 - Quake (1, 2):
 1. Renamed `game_type` to `game_mode`.
@@ -52,6 +57,7 @@ Protocol:
 6. Renamed `game` to `game_mode`.
 7. Added field `game_version`.
 8. Changed `players_bots` type from `Option<u64>` to `Option<u32>`.
+9. Changed `score` field of a player from `u32` to `i32`.
 
 - Frontlines: Fuel of War:
 1. Renamed `game_mode` to `game`.

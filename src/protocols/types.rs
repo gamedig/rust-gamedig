@@ -131,14 +131,14 @@ pub trait CommonPlayer {
     /// Player name
     fn name(&self) -> &str;
     /// Player score
-    fn score(&self) -> Option<u32> { None }
+    fn score(&self) -> Option<i32> { None }
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct CommonPlayerJson<'a> {
     pub name: &'a str,
-    pub score: Option<u32>,
+    pub score: Option<i32>,
 }
 
 /// Timeout settings for socket operations
