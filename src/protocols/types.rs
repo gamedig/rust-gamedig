@@ -90,11 +90,11 @@ pub trait CommonResponse {
     /// The current map name
     fn map(&self) -> Option<&str> { None }
     /// Maximum number of players allowed to connect
-    fn players_maximum(&self) -> u64;
+    fn players_maximum(&self) -> u32;
     /// Number of players currently connected
-    fn players_online(&self) -> u64;
+    fn players_online(&self) -> u32;
     /// Number of bots currently connected
-    fn players_bots(&self) -> Option<u64> { None }
+    fn players_bots(&self) -> Option<u32> { None }
     /// Whether the server requires a password to join
     fn has_password(&self) -> Option<bool> { None }
     /// Currently connected players
@@ -109,9 +109,9 @@ pub struct CommonResponseJson<'a> {
     pub game_mode: Option<&'a str>,
     pub game_version: Option<&'a str>,
     pub map: Option<&'a str>,
-    pub players_maximum: u64,
-    pub players_online: u64,
-    pub players_bots: Option<u64>,
+    pub players_maximum: u32,
+    pub players_online: u32,
+    pub players_bots: Option<u32>,
     pub has_password: Option<bool>,
     pub players: Option<Vec<CommonPlayerJson<'a>>>,
 }

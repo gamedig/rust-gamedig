@@ -173,10 +173,10 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
                 false => reported_players,
             }
         }
-    };
+    } as u32;
     let players_minimum = match server_vars.remove("minplayers") {
         None => None,
-        Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
+        Some(v) => Some(v.parse::<u32>().map_err(|e| TypeParse.context(e))?),
     };
 
     Ok(Response {

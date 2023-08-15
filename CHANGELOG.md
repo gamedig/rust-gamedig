@@ -19,8 +19,8 @@ Crate:
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
 
 Generics:
-- Renamed `CommonResponseJson`'s `game` field to `game_mode`.
-- Renamed `CommonResponse`'s `game` function to `game_mode`.
+- Renamed `CommonResponseJson`'s `game` field (and the function) to `game_mode`.
+- Changed `players_maximum` and `players_online` (and their functions) types from `u64` to `u32`.
 
 Protocol:
 - Valve:
@@ -28,8 +28,9 @@ Protocol:
 2. Renamed `version` to `game_version`.
 3. Renamed `game` to `game_mode`.
 
-- Quake (1, 2, 3):
+- GameSpy (1, 2, 3):
 1. Renamed `version` to `game_version`.
+2. Changed `players_maximum` and `players_online` (and their functions) types from `usize` to `u32`.
 
 - Quake (1, 2):
 1. Renamed `game_type` to `game_mode`.
@@ -44,18 +45,24 @@ Protocol:
 
 - The Ship:
 1. Renamed `protocol` to `protocol_version`.
-2. Renamed `max_players` to `players_maximum`.
-3. Renamed `bots` to `players_bots`.
+2. Renamed `max_players` to `players_maximum` and changed its type from `u64` to `u32`.
+3. Renamed `bots` to `players_bots`. and changed its type from `u64` to `u32`.
 4. Renamed `players` to `players_online`.
 5. Renamed `players_details` to `players`.
 6. Renamed `game` to `game_mode`.
 7. Added field `game_version`.
+8. Changed `players_bots` type from `Option<u64>` to `Option<u32>`.
 
-- FFOW:
+- Frontlines: Fuel of War:
 1. Renamed `game_mode` to `game`.
 2. Renamed `version` to `game_version`.
 3. Renamed `protocol` to `protocol_version`.
 4. Renamed `game` to `game_mode`.
+5. Changed `players_maximum` and `players_minimum` types from `usize` to `u32`.
+
+- Just Cause 2: Multiplayer:
+1. Renamed `version` to `game_version`.
+2. Changed `players_maximum` and `players_minimum` types from `usize` to `u32`.
 
 # 0.3.0 - 18/07/2023
 ### Changes:

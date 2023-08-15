@@ -92,8 +92,8 @@ impl CommonResponse for JavaResponse {
     fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
 
     fn description(&self) -> Option<&str> { Some(&self.description) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
@@ -135,8 +135,8 @@ impl CommonResponse for BedrockResponse {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { self.map.as_deref() }
     fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
 }
 
 impl JavaResponse {

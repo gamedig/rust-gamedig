@@ -55,8 +55,8 @@ impl CommonResponse for Response {
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }

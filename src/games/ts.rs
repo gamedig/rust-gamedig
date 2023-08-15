@@ -74,9 +74,9 @@ impl CommonResponse for Response {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
-    fn players_bots(&self) -> Option<u64> { Some(self.players_bots.into()) }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
+    fn players_bots(&self) -> Option<u32> { Some(self.players_bots.into()) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {

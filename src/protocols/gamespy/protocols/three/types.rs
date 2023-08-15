@@ -44,8 +44,8 @@ pub struct Response {
     pub has_password: bool,
     pub game_mode: String,
     pub game_version: String,
-    pub players_maximum: usize,
-    pub players_online: usize,
+    pub players_maximum: u32,
+    pub players_online: u32,
     pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
     pub teams: Vec<Team>,
@@ -61,8 +61,8 @@ impl CommonResponse for Response {
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
     fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
-    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

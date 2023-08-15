@@ -358,7 +358,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
         None => None,
         Some(v) => Some(v.parse::<u8>().map_err(|e| TypeParse.context(e))?),
     };
-    let players_online = match server_vars.remove("numplayers") {
+    let players_online: u32 = match server_vars.remove("numplayers") {
         None => players.len(),
         Some(v) => {
             let reported_players = v.parse().map_err(|e| TypeParse.context(e))?;
@@ -367,7 +367,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
                 false => reported_players,
             }
         }
-    };
+    } as u32;
 
     Ok(Response {
         name: server_vars

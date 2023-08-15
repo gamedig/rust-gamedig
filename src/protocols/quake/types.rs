@@ -37,8 +37,8 @@ impl<P: QuakePlayerType> CommonResponse for Response<P> {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn game_version(&self) -> Option<&str> { self.game_version.as_deref() }
     fn map(&self) -> Option<&str> { Some(&self.map) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(
