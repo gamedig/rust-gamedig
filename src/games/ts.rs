@@ -100,7 +100,7 @@ impl Response {
             name: response.info.name,
             map: response.info.map,
             game: response.info.game,
-            game_version: response.info.version,
+            game_version: response.info.game_version,
             players_online: response.info.players_online,
             players: response
                 .players

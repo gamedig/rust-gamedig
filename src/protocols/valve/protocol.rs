@@ -259,7 +259,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship: None,
-            version: "".to_string(), // a version field only for the mod
+            game_version: "".to_string(), // a version field only for the mod
             extra_data: None,
             is_mod,
             mod_data,
@@ -300,7 +300,7 @@ impl ValveProtocol {
                 })
             }
         };
-        let version = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_version = buffer.read_string::<Utf8Decoder>(None)?;
         let extra_data = match buffer.read::<u8>() {
             Err(_) => None,
             Ok(value) => {
@@ -353,7 +353,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship,
-            version,
+            game_version,
             extra_data,
             is_mod: false,
             mod_data: None,

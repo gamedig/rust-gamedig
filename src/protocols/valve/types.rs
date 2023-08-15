@@ -62,7 +62,7 @@ impl CommonResponse for Response {
 
     fn name(&self) -> Option<&str> { Some(&self.info.name) }
     fn game(&self) -> Option<&str> { Some(&self.info.game) }
-    fn game_version(&self) -> Option<&str> { Some(&self.info.version) }
+    fn game_version(&self) -> Option<&str> { Some(&self.info.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.info.map) }
     fn players_maximum(&self) -> u64 { self.info.players_maximum.into() }
     fn players_online(&self) -> u64 { self.info.players_online.into() }
@@ -109,7 +109,7 @@ pub struct ServerInfo {
     /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
     pub the_ship: Option<TheShip>,
     /// Version of the game installed on the server.
-    pub version: String,
+    pub game_version: String,
     /// Some extra data that the server might provide or not.
     pub extra_data: Option<ExtraData>,
     /// GoldSrc only: Indicates whether the hosted game is a mod.
@@ -528,7 +528,7 @@ pub mod game {
                 server_type: response.info.server_type,
                 has_password: response.info.has_password,
                 vac_secured: response.info.vac_secured,
-                version: response.info.version,
+                version: response.info.game_version,
                 port,
                 steam_id,
                 tv_port,
