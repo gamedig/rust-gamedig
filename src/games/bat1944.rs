@@ -35,7 +35,7 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<game::Response> {
         }
 
         if let Some(bat_gamemode) = rules.get("bat_gamemode_s") {
-            valve_response.info.game = bat_gamemode.clone();
+            valve_response.info.game_mode = bat_gamemode.clone();
             rules.remove("bat_gamemode_s");
         }
 

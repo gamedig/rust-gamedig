@@ -96,11 +96,11 @@ impl Java {
         let json_response = get_string(&mut buffer)?;
         let value_response: Value = serde_json::from_str(&json_response).map_err(|e| JsonParse.context(e))?;
 
-        let version_name = value_response["version"]["name"]
+        let game_version = value_response["version"]["name"]
             .as_str()
             .ok_or(PacketBad)?
             .to_string();
-        let version_protocol = value_response["version"]["protocol"]
+        let protocol_version = value_response["version"]["protocol"]
             .as_i64()
             .ok_or(PacketBad)? as i32;
 
@@ -108,7 +108,7 @@ impl Java {
         let online_players = value_response["players"]["online"]
             .as_u64()
             .ok_or(PacketBad)? as u32;
-        let sample_players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
+        let players: Option<Vec<Player>> = match value_response["players"]["sample"].is_null() {
             true => None,
             false => {
                 Some({
@@ -130,11 +130,11 @@ impl Java {
         };
 
         Ok(JavaResponse {
-            version_name,
-            version_protocol,
+            game_version,
+            protocol_version,
             players_maximum: max_players,
             players_online: online_players,
-            players_sample: sample_players,
+            players,
             description: value_response["description"].to_string(),
             favicon: value_response["favicon"].as_str().map(str::to_string),
             previews_chat: value_response["previewsChat"].as_bool(),

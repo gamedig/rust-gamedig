@@ -24,7 +24,7 @@ impl CommonPlayer for Player {
     }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score.try_into().unwrap_or(0)) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 /// A team's details
@@ -42,10 +42,10 @@ pub struct Response {
     pub name: String,
     pub map: String,
     pub has_password: bool,
-    pub game_type: String,
+    pub game_mode: String,
     pub game_version: String,
-    pub players_maximum: usize,
-    pub players_online: usize,
+    pub players_maximum: u32,
+    pub players_online: u32,
     pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
     pub teams: Vec<Team>,
@@ -59,10 +59,10 @@ impl CommonResponse for Response {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn game(&self) -> Option<&str> { Some(&self.game_type) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
-    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

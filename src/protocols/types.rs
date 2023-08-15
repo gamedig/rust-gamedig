@@ -66,7 +66,7 @@ pub trait CommonResponse {
         CommonResponseJson {
             name: self.name(),
             description: self.description(),
-            game: self.game(),
+            game_mode: self.game_mode(),
             game_version: self.game_version(),
             has_password: self.has_password(),
             map: self.map(),
@@ -84,17 +84,17 @@ pub trait CommonResponse {
     /// Description of the server
     fn description(&self) -> Option<&str> { None }
     /// Name of the current game or game mode
-    fn game(&self) -> Option<&str> { None }
+    fn game_mode(&self) -> Option<&str> { None }
     /// Version of the game being run on the server
     fn game_version(&self) -> Option<&str> { None }
     /// The current map name
     fn map(&self) -> Option<&str> { None }
     /// Maximum number of players allowed to connect
-    fn players_maximum(&self) -> u64;
+    fn players_maximum(&self) -> u32;
     /// Number of players currently connected
-    fn players_online(&self) -> u64;
+    fn players_online(&self) -> u32;
     /// Number of bots currently connected
-    fn players_bots(&self) -> Option<u64> { None }
+    fn players_bots(&self) -> Option<u32> { None }
     /// Whether the server requires a password to join
     fn has_password(&self) -> Option<bool> { None }
     /// Currently connected players
@@ -106,12 +106,12 @@ pub trait CommonResponse {
 pub struct CommonResponseJson<'a> {
     pub name: Option<&'a str>,
     pub description: Option<&'a str>,
-    pub game: Option<&'a str>,
+    pub game_mode: Option<&'a str>,
     pub game_version: Option<&'a str>,
     pub map: Option<&'a str>,
-    pub players_maximum: u64,
-    pub players_online: u64,
-    pub players_bots: Option<u64>,
+    pub players_maximum: u32,
+    pub players_online: u32,
+    pub players_bots: Option<u32>,
     pub has_password: Option<bool>,
     pub players: Option<Vec<CommonPlayerJson<'a>>>,
 }
@@ -131,14 +131,14 @@ pub trait CommonPlayer {
     /// Player name
     fn name(&self) -> &str;
     /// Player score
-    fn score(&self) -> Option<u32> { None }
+    fn score(&self) -> Option<i32> { None }
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct CommonPlayerJson<'a> {
     pub name: &'a str,
-    pub score: Option<u32>,
+    pub score: Option<i32>,
 }
 
 /// Timeout settings for socket operations

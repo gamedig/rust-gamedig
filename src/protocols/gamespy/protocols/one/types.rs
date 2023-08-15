@@ -18,7 +18,7 @@ pub struct Player {
     pub face: String,
     pub skin: String,
     pub mesh: String,
-    pub score: u32,
+    pub score: i32,
     pub deaths: Option<u32>,
     pub health: Option<u32>,
     pub secret: bool,
@@ -28,7 +28,7 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::One(self)) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 /// A query response.
@@ -41,10 +41,10 @@ pub struct Response {
     pub admin_contact: Option<String>,
     pub admin_name: Option<String>,
     pub has_password: bool,
-    pub game_type: String,
+    pub game_mode: String,
     pub game_version: String,
-    pub players_maximum: usize,
-    pub players_online: usize,
+    pub players_maximum: u32,
+    pub players_online: u32,
     pub players_minimum: Option<u8>,
     pub players: Vec<Player>,
     pub tournament: bool,
@@ -57,10 +57,10 @@ impl CommonResponse for Response {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn game(&self) -> Option<&str> { Some(&self.game_type) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
-    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

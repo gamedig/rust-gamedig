@@ -27,28 +27,24 @@ impl CommonPlayer for Player {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Response {
-    version: String,
+    game_version: String,
     description: String,
     name: String,
     has_password: bool,
     players: Vec<Player>,
-    players_maximum: usize,
-    players_online: usize,
+    players_maximum: u32,
+    players_online: u32,
 }
 
 impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::JC2MP(self) }
 
-    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u64 {
-        // If usize doesn't fit in u64 silently return 0 as this is extremely unlikely
-        // for a player count
-        self.players_maximum.try_into().unwrap_or(0)
-    }
-    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
         Some(
@@ -113,10 +109,10 @@ pub fn query_with_timeout(
                 false => reported_players,
             }
         }
-    };
+    } as u32;
 
     Ok(Response {
-        version: server_vars
+        game_version: server_vars
             .remove("version")
             .ok_or(GDErrorKind::PacketBad)?,
         description: server_vars

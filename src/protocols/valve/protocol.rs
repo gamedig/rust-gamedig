@@ -211,7 +211,7 @@ impl ValveProtocol {
         let name = buffer.read_string::<Utf8Decoder>(None)?;
         let map = buffer.read_string::<Utf8Decoder>(None)?;
         let folder = buffer.read_string::<Utf8Decoder>(None)?;
-        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
         let protocol = buffer.read()?;
@@ -245,11 +245,11 @@ impl ValveProtocol {
         let bots = buffer.read::<u8>()?;
 
         Ok(ServerInfo {
-            protocol,
+            protocol_version: protocol,
             name,
             map,
             folder,
-            game,
+            game_mode,
             appid: 0, // not present in the obsolete response
             players_online: players,
             players_maximum: max_players,
@@ -259,7 +259,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship: None,
-            version: "".to_string(), // a version field only for the mod
+            game_version: "".to_string(), // a version field only for the mod
             extra_data: None,
             is_mod,
             mod_data,
@@ -281,7 +281,7 @@ impl ValveProtocol {
         let name = buffer.read_string::<Utf8Decoder>(None)?;
         let map = buffer.read_string::<Utf8Decoder>(None)?;
         let folder = buffer.read_string::<Utf8Decoder>(None)?;
-        let game = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
         let mut appid = buffer.read::<u16>()? as u32;
         let players = buffer.read()?;
         let max_players = buffer.read()?;
@@ -300,7 +300,7 @@ impl ValveProtocol {
                 })
             }
         };
-        let version = buffer.read_string::<Utf8Decoder>(None)?;
+        let game_version = buffer.read_string::<Utf8Decoder>(None)?;
         let extra_data = match buffer.read::<u8>() {
             Err(_) => None,
             Ok(value) => {
@@ -339,11 +339,11 @@ impl ValveProtocol {
         };
 
         Ok(ServerInfo {
-            protocol,
+            protocol_version: protocol,
             name,
             map,
             folder,
-            game,
+            game_mode,
             appid,
             players_online: players,
             players_maximum: max_players,
@@ -353,7 +353,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship,
-            version,
+            game_version,
             extra_data,
             is_mod: false,
             mod_data: None,
@@ -436,7 +436,6 @@ fn get_response(
     let mut client = ValveProtocol::new(address, timeout_settings)?;
 
     let info = client.get_server_info(&engine)?;
-    let protocol = info.protocol;
 
     if let Engine::Source(Some(appids)) = &engine {
         let mut is_specified_id = false;
@@ -453,6 +452,8 @@ fn get_response(
             return Err(BadGame.context(format!("AppId: {}", info.appid)));
         }
     }
+
+    let protocol = info.protocol_version;
 
     Ok(Response {
         info,

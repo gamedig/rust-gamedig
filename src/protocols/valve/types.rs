@@ -61,12 +61,12 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::Valve(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.info.name) }
-    fn game(&self) -> Option<&str> { Some(&self.info.game) }
-    fn game_version(&self) -> Option<&str> { Some(&self.info.version) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.info.game_mode) }
+    fn game_version(&self) -> Option<&str> { Some(&self.info.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.info.map) }
-    fn players_maximum(&self) -> u64 { self.info.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.info.players_online.into() }
-    fn players_bots(&self) -> Option<u64> { Some(self.info.players_bots.into()) }
+    fn players_maximum(&self) -> u32 { self.info.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.info.players_online.into() }
+    fn players_bots(&self) -> Option<u32> { Some(self.info.players_bots.into()) }
     fn has_password(&self) -> Option<bool> { Some(self.info.has_password) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
@@ -81,15 +81,15 @@ impl CommonResponse for Response {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct ServerInfo {
     /// Protocol used by the server.
-    pub protocol: u8,
+    pub protocol_version: u8,
     /// Name of the server.
     pub name: String,
     /// Map name.
     pub map: String,
     /// Name of the folder containing the game files.
     pub folder: String,
-    /// The name of the game.
-    pub game: String,
+    /// The server-declared name of the game/game mode.
+    pub game_mode: String,
     /// [Steam Application ID](https://developer.valvesoftware.com/wiki/Steam_Application_ID) of game.
     pub appid: u32,
     /// Number of players on the server.
@@ -109,7 +109,7 @@ pub struct ServerInfo {
     /// [The ship](https://developer.valvesoftware.com/wiki/The_Ship) extra data
     pub the_ship: Option<TheShip>,
     /// Version of the game installed on the server.
-    pub version: String,
+    pub game_version: String,
     /// Some extra data that the server might provide or not.
     pub extra_data: Option<ExtraData>,
     /// GoldSrc only: Indicates whether the hosted game is a mod.
@@ -125,7 +125,7 @@ pub struct ServerPlayer {
     /// Player's name.
     pub name: String,
     /// General score.
-    pub score: u32,
+    pub score: i32,
     /// How long a player has been in the server (seconds).
     pub duration: f32,
     /// Only for [the ship](https://developer.valvesoftware.com/wiki/The_Ship): deaths count
@@ -137,7 +137,7 @@ pub struct ServerPlayer {
 impl CommonPlayer for ServerPlayer {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Valve(self) }
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score) }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 }
 
 /// Only present for [the ship](https://developer.valvesoftware.com/wiki/The_Ship).
@@ -447,7 +447,7 @@ pub mod game {
         /// Player's name.
         pub name: String,
         /// Player's score.
-        pub score: u32,
+        pub score: i32,
         /// How long a player has been in the server (seconds).
         pub duration: f32,
     }
@@ -511,10 +511,10 @@ pub mod game {
             let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
             Self {
-                protocol: response.info.protocol,
+                protocol: response.info.protocol_version,
                 name: response.info.name,
                 map: response.info.map,
-                game: response.info.game,
+                game: response.info.game_mode,
                 appid: response.info.appid,
                 players_online: response.info.players_online,
                 players_details: response
@@ -528,7 +528,7 @@ pub mod game {
                 server_type: response.info.server_type,
                 has_password: response.info.has_password,
                 vac_secured: response.info.vac_secured,
-                version: response.info.version,
+                version: response.info.game_version,
                 port,
                 steam_id,
                 tv_port,

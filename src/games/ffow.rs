@@ -13,17 +13,17 @@ use std::net::{IpAddr, SocketAddr};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Response {
     /// Protocol used by the server.
-    pub protocol: u8,
+    pub protocol_version: u8,
     /// Name of the server.
     pub name: String,
     /// Map name.
     pub active_mod: String,
     /// Running game mode.
     pub game_mode: String,
+    /// The version that the server is running on.
+    pub game_version: String,
     /// Description of the server.
     pub description: String,
-    /// The version that the server is running on.
-    pub version: String,
     /// Current map.
     pub map: String,
     /// Number of players on the server.
@@ -50,13 +50,13 @@ impl CommonResponse for Response {
     fn as_original(&self) -> GenericResponse { GenericResponse::FFOW(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
-    fn game(&self) -> Option<&str> { Some(&self.game_mode) }
+    fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }
     fn description(&self) -> Option<&str> { Some(&self.description) }
-    fn game_version(&self) -> Option<&str> { Some(&self.version) }
+    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum.into() }
+    fn players_online(&self) -> u32 { self.players_online.into() }
 }
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
@@ -79,13 +79,13 @@ pub fn query_with_timeout(
 
     let mut buffer = Buffer::<LittleEndian>::new(&data);
 
-    let protocol = buffer.read::<u8>()?;
+    let protocol_version = buffer.read::<u8>()?;
     let name = buffer.read_string::<Utf8Decoder>(None)?;
     let map = buffer.read_string::<Utf8Decoder>(None)?;
     let active_mod = buffer.read_string::<Utf8Decoder>(None)?;
     let game_mode = buffer.read_string::<Utf8Decoder>(None)?;
     let description = buffer.read_string::<Utf8Decoder>(None)?;
-    let version = buffer.read_string::<Utf8Decoder>(None)?;
+    let game_version = buffer.read_string::<Utf8Decoder>(None)?;
     buffer.move_cursor(2)?;
     let players_online = buffer.read::<u8>()?;
     let players_maximum = buffer.read::<u8>()?;
@@ -99,12 +99,12 @@ pub fn query_with_timeout(
     let time_left = buffer.read::<u16>()?;
 
     Ok(Response {
-        protocol,
+        protocol_version,
         name,
         active_mod,
         game_mode,
+        game_version,
         description,
-        version,
         map,
         players_online,
         players_maximum,

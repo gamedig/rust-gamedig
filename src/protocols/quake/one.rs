@@ -33,7 +33,7 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::QuakeOne(self) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score.into()) }
+    fn score(&self) -> Option<i32> { Some(self.score.into()) }
 }
 
 pub(crate) struct QuakeOne;

@@ -27,7 +27,7 @@ impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::Two(self)) }
 
     fn name(&self) -> &str { &self.name }
-    fn score(&self) -> Option<u32> { Some(self.score.into()) }
+    fn score(&self) -> Option<i32> { Some(self.score.into()) }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -37,9 +37,9 @@ pub struct Response {
     pub map: String,
     pub has_password: bool,
     pub teams: Vec<Team>,
-    pub players_maximum: usize,
-    pub players_online: usize,
-    pub players_minimum: Option<u8>,
+    pub players_maximum: u32,
+    pub players_online: u32,
+    pub players_minimum: Option<u32>,
     pub players: Vec<Player>,
     pub unused_entries: HashMap<String, String>,
 }
@@ -50,8 +50,8 @@ impl CommonResponse for Response {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.try_into().unwrap_or(0) }
-    fn players_online(&self) -> u64 { self.players_online.try_into().unwrap_or(0) }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
         Some(

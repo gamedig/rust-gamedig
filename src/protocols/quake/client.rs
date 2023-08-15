@@ -118,7 +118,7 @@ pub(crate) fn client_query<Client: QuakeClient>(
             .parse()
             .map_err(|e| TypeParse.context(e))?,
         players,
-        version: server_vars
+        game_version: server_vars
             .remove("version")
             .or(server_vars.remove("*version")),
         unused_entries: server_vars,

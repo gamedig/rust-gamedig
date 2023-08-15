@@ -66,16 +66,16 @@ pub enum VersionedResponse<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct JavaResponse {
     /// Version name, example: "1.19.2".
-    pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2). Note that for versions
-    /// below 1.6 this field is always -1.
-    pub version_protocol: i32,
+    pub game_version: String,
+    /// Protocol version, example: 760 (for 1.19.1 or 1.19.2).
+    /// Note that for versions below 1.6 this field is always -1.
+    pub protocol_version: i32,
     /// Number of server capacity.
     pub players_maximum: u32,
     /// Number of online players.
     pub players_online: u32,
     /// Some online players (can be missing).
-    pub players_sample: Option<Vec<Player>>,
+    pub players: Option<Vec<Player>>,
     /// Server's description or MOTD.
     pub description: String,
     /// The favicon (can be missing).
@@ -92,12 +92,12 @@ impl CommonResponse for JavaResponse {
     fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
 
     fn description(&self) -> Option<&str> { Some(&self.description) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
-    fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
+    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
-        self.players_sample
+        self.players
             .as_ref()
             .map(|players| players.iter().map(|p| p as &dyn CommonPlayer).collect())
     }
@@ -113,8 +113,8 @@ pub struct BedrockResponse {
     pub name: String,
     /// Version name, example: "1.19.40".
     pub version_name: String,
-    /// Version protocol, example: 760 (for 1.19.2).
-    pub version_protocol: String,
+    /// Protocol version, example: 760 (for 1.19.2).
+    pub protocol_version: String,
     /// Maximum number of players the server reports it can hold.
     pub players_maximum: u32,
     /// Number of players on the server.
@@ -135,18 +135,18 @@ impl CommonResponse for BedrockResponse {
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { self.map.as_deref() }
     fn game_version(&self) -> Option<&str> { Some(&self.version_name) }
-    fn players_maximum(&self) -> u64 { self.players_maximum.into() }
-    fn players_online(&self) -> u64 { self.players_online.into() }
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+    fn players_online(&self) -> u32 { self.players_online }
 }
 
 impl JavaResponse {
     pub fn from_bedrock_response(response: BedrockResponse) -> Self {
         Self {
-            version_name: response.version_name,
-            version_protocol: 0,
+            game_version: response.version_name,
+            protocol_version: 0,
             players_maximum: response.players_maximum,
             players_online: response.players_online,
-            players_sample: None,
+            players: None,
             description: response.name,
             favicon: None,
             previews_chat: None,

@@ -87,8 +87,8 @@ fn get_server_values(
     Ok(server_values)
 }
 
-fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: usize) -> GDResult<Vec<Player>> {
-    let mut players_data: Vec<HashMap<String, String>> = Vec::with_capacity(players_maximum);
+fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u32) -> GDResult<Vec<Player>> {
+    let mut players_data: Vec<HashMap<String, String>> = Vec::with_capacity(players_maximum as usize);
 
     server_vars.retain(|key, value| {
         let split: Vec<&str> = key.split('_').collect();
@@ -201,7 +201,7 @@ pub fn query_vars(
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
     let mut server_vars = query_vars(address, timeout_settings)?;
 
-    let players_maximum = server_vars
+    let players_maximum: u32 = server_vars
         .remove("maxplayers")
         .ok_or(GDErrorKind::PacketBad)?
         .parse()
@@ -226,14 +226,14 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
             .remove("AdminName")
             .or_else(|| server_vars.remove("admin")),
         has_password: has_password(&mut server_vars)?,
-        game_type: server_vars
+        game_mode: server_vars
             .remove("gametype")
             .ok_or(GDErrorKind::PacketBad)?,
         game_version: server_vars
             .remove("gamever")
             .ok_or(GDErrorKind::PacketBad)?,
         players_maximum,
-        players_online: players.len(),
+        players_online: players.len() as u32,
         players_minimum,
         players,
         tournament: server_vars
