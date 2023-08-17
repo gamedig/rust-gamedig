@@ -4,6 +4,7 @@ use crate::{
         valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
         GenericResponse,
     },
+    GDErrorKind::PacketBad,
     GDResult,
 };
 use std::net::{IpAddr, SocketAddr};
@@ -90,12 +91,12 @@ impl CommonResponse for Response {
 }
 
 impl Response {
-    pub fn new_from_valve_response(response: valve::Response) -> Self {
+    pub fn new_from_valve_response(response: valve::Response) -> GDResult<Self> {
         let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
-        let the_unwrapped_ship = response.info.the_ship.unwrap(); // TODO! Err here!
+        let the_unwrapped_ship = response.info.the_ship.ok_or(PacketBad)?;
 
-        Self {
+        Ok(Self {
             protocol_version: response.info.protocol_version,
             name: response.info.name,
             map: response.info.map,
@@ -122,7 +123,7 @@ impl Response {
             mode: the_unwrapped_ship.mode,
             witnesses: the_unwrapped_ship.witnesses,
             duration: the_unwrapped_ship.duration,
-        }
+        })
     }
 }
 
@@ -140,5 +141,5 @@ pub fn query_with_timeout(
         timeout_settings,
     )?;
 
-    Ok(Response::new_from_valve_response(valve_response))
+    Response::new_from_valve_response(valve_response)
 }
