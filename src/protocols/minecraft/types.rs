@@ -238,11 +238,3 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
 
     String::from_utf8(text).map_err(|e| PacketBad.context(e))
 }
-
-#[allow(dead_code)] // TODO! Look if this is needed anymore
-pub(crate) fn as_string(value: &str) -> Vec<u8> {
-    let mut buf = as_varint(value.len() as i32);
-    buf.extend(value.as_bytes());
-
-    buf
-}
