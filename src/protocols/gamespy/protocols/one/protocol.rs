@@ -24,7 +24,7 @@ fn get_server_values(
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
 
-    socket.send("\\status\\xserverquery".as_bytes())?;
+    socket.send(b"\\status\\xserverquery")?;
 
     let mut received_query_id: Option<usize> = None;
     let mut parts: Vec<usize> = Vec::new();
@@ -44,10 +44,9 @@ fn get_server_values(
         for i in 0 .. splited.len() / 2 {
             let position = i * 2;
             let key = splited[position].clone();
-            let value = match splited.get(position + 1) {
-                None => "".to_string(),
-                Some(v) => v.clone(),
-            };
+            let value = splited
+                .get(position + 1)
+                .map_or_else(String::new, |v| v.clone());
 
             server_values.insert(key, value);
         }
@@ -74,9 +73,9 @@ fn get_server_values(
 
         if received_query_id.is_some() && received_query_id != query_id {
             return Err(GDErrorKind::PacketBad.into()); // wrong query id!
-        } else {
-            received_query_id = query_id;
         }
+
+        received_query_id = query_id;
 
         match parts.contains(&part) {
             true => Err(GDErrorKind::PacketBad)?,

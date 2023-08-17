@@ -16,10 +16,9 @@ pub fn default_master_address() -> SocketAddr {
 }
 
 fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &str, last_port: u16) -> Vec<u8> {
-    let filters_bytes: Vec<u8> = match filters {
-        None => vec![0x00],
-        Some(f) => f.to_bytes(),
-    };
+    let filters_bytes: Vec<u8> = filters
+        .as_ref()
+        .map_or_else(|| vec![0x00], |f| f.to_bytes());
 
     let region_byte = &[region as u8];
 
@@ -71,8 +70,8 @@ impl ValveMasterServer {
         let received_data = self.socket.receive(Some(1400))?;
         let mut buf = Buffer::<BigEndian>::new(&received_data);
 
-        if buf.read::<u32>()? != 4294967295 || buf.read::<u16>()? != 26122 {
-            return Err(PacketBad.context("Expected 4294967295 or 26122"));
+        if buf.read::<u32>()? != u32::MAX || buf.read::<u16>()? != 26122 {
+            return Err(PacketBad.context("Expected 4294967295 followed by 26122"));
         }
 
         let mut ips: Vec<(IpAddr, u16)> = Vec::new();

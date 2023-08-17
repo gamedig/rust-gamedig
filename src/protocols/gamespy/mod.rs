@@ -9,7 +9,7 @@ pub use protocols::*;
 
 /// Versions of the gamespy protocol
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GameSpyVersion {
     One,
     Two,
@@ -17,7 +17,7 @@ pub enum GameSpyVersion {
 }
 
 /// Versioned response type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedResponse<'a> {
     One(&'a one::Response),
     Two(&'a two::Response),
@@ -25,7 +25,7 @@ pub enum VersionedResponse<'a> {
 }
 
 /// Versioned player type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedPlayer<'a> {
     One(&'a one::Player),
     Two(&'a two::Player),

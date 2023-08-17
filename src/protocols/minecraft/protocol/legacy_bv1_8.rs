@@ -65,6 +65,6 @@ impl LegacyBV1_8 {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        LegacyBV1_8::new(address, timeout_settings)?.get_info()
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

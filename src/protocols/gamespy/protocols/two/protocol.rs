@@ -32,7 +32,7 @@ macro_rules! table_extract_parse {
 
 fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<String>>, usize)> {
     if data.read::<u8>()? != 0 {
-        Err(GDErrorKind::PacketBad)?
+        Err(GDErrorKind::PacketBad)?;
     }
 
     let rows = data.read::<u8>()? as usize;
@@ -46,7 +46,7 @@ fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<
     let mut current_column = data.read_string::<Utf8Decoder>(None)?;
     while !current_column.is_empty() {
         column_heads.push(current_column);
-        current_column = data.read_string::<Utf8Decoder>(None)?
+        current_column = data.read_string::<Utf8Decoder>(None)?;
     }
 
     let columns = column_heads.len();
@@ -63,7 +63,7 @@ fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<
     }
 
     for _ in 0 .. rows {
-        for column in column_heads.iter() {
+        for column in &column_heads {
             let value = data.read_string::<Utf8Decoder>(None)?;
             table
                 .get_mut(column)
@@ -131,7 +131,7 @@ fn get_teams(bufferer: &mut Buffer<BigEndian>) -> GDResult<Vec<Team>> {
         teams.push(Team {
             name: table_extract!(table, "team_t", index).clone(),
             score: table_extract_parse!(table, "score_t", index),
-        })
+        });
     }
 
     Ok(teams)
@@ -148,7 +148,7 @@ fn get_players(bufferer: &mut Buffer<BigEndian>) -> GDResult<Vec<Player>> {
             score: table_extract_parse!(table, "score_", index),
             ping: table_extract_parse!(table, "ping_", index),
             team_index: table_extract_parse!(table, "team_", index),
-        })
+        });
     }
 
     Ok(players)

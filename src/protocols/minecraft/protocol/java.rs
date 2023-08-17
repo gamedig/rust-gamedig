@@ -121,7 +121,7 @@ impl Java {
                         players.push(Player {
                             name: player["name"].as_str().ok_or(PacketBad)?.to_string(),
                             id: player["id"].as_str().ok_or(PacketBad)?.to_string(),
-                        })
+                        });
                     }
 
                     players
@@ -144,6 +144,6 @@ impl Java {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        Java::new(address, timeout_settings)?.get_info()
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

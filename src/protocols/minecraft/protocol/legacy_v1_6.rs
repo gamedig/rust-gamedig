@@ -94,14 +94,14 @@ impl LegacyV1_6 {
         let length = buffer.read::<u16>()? * 2;
         error_by_expected_size((length + 3) as usize, data.len())?;
 
-        if !LegacyV1_6::is_protocol(&mut buffer)? {
+        if !Self::is_protocol(&mut buffer)? {
             return Err(ProtocolFormat.context("Not legacy 1.6 protocol"));
         }
 
-        LegacyV1_6::get_response(&mut buffer)
+        Self::get_response(&mut buffer)
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        LegacyV1_6::new(address, timeout_settings)?.get_info()
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

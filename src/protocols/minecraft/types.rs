@@ -55,7 +55,7 @@ impl CommonPlayer for Player {
 }
 
 /// Versioned response type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedResponse<'a> {
     Bedrock(&'a BedrockResponse),
     Java(&'a JavaResponse),
@@ -170,12 +170,12 @@ pub enum GameMode {
 impl GameMode {
     pub fn from_bedrock(value: &&str) -> GDResult<Self> {
         match *value {
-            "Survival" => Ok(GameMode::Survival),
-            "Creative" => Ok(GameMode::Creative),
-            "Hardcore" => Ok(GameMode::Hardcore),
-            "Spectator" => Ok(GameMode::Spectator),
-            "Adventure" => Ok(GameMode::Adventure),
-            _ => Err(UnknownEnumCast.context(format!("Unknown gamemode {:?}", value))),
+            "Survival" => Ok(Self::Survival),
+            "Creative" => Ok(Self::Creative),
+            "Hardcore" => Ok(Self::Hardcore),
+            "Spectator" => Ok(Self::Spectator),
+            "Adventure" => Ok(Self::Adventure),
+            _ => Err(UnknownEnumCast.context(format!("Unknown gamemode {value:?}"))),
         }
     }
 }
@@ -183,7 +183,7 @@ impl GameMode {
 pub(crate) fn get_varint<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<i32> {
     let mut result = 0;
 
-    let msb: u8 = 0b10000000;
+    let msb: u8 = 0b1000_0000;
     let mask: u8 = !msb;
 
     for i in 0 .. 5 {
@@ -208,8 +208,8 @@ pub(crate) fn as_varint(value: i32) -> Vec<u8> {
     let mut bytes = vec![];
     let mut reading_value = value;
 
-    let msb: u8 = 0b10000000;
-    let mask: i32 = 0b01111111;
+    let msb: u8 = 0b1000_0000;
+    let mask: i32 = 0b0111_1111;
 
     for _ in 0 .. 5 {
         let tmp = (reading_value & mask) as u8;
@@ -217,12 +217,12 @@ pub(crate) fn as_varint(value: i32) -> Vec<u8> {
         reading_value &= !mask;
         reading_value = reading_value.rotate_right(7);
 
-        if reading_value != 0 {
-            bytes.push(tmp | msb);
-        } else {
+        if reading_value == 0 {
             bytes.push(tmp);
             break;
         }
+
+        bytes.push(tmp | msb);
     }
 
     bytes
@@ -239,10 +239,10 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
     String::from_utf8(text).map_err(|e| PacketBad.context(e))
 }
 
-#[allow(dead_code)]
-pub(crate) fn as_string(value: String) -> Vec<u8> {
+#[allow(dead_code)] // TODO! Look if this is needed anymore
+pub(crate) fn as_string(value: &str) -> Vec<u8> {
     let mut buf = as_varint(value.len() as i32);
-    buf.extend(value.as_bytes().to_vec());
+    buf.extend(value.as_bytes());
 
     buf
 }

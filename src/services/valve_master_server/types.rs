@@ -27,7 +27,7 @@ pub enum Filter {
     HasGameDir(String),
 }
 
-fn bool_as_char_u8(b: &bool) -> u8 {
+const fn bool_as_char_u8(b: &bool) -> u8 {
     match b {
         true => b'1',
         false => b'0',
@@ -39,33 +39,33 @@ impl Filter {
         let mut bytes: Vec<u8> = Vec::new();
 
         match self {
-            Filter::IsSecured(secured) => {
-                bytes = "\\secure\\".as_bytes().to_vec();
+            Self::IsSecured(secured) => {
+                bytes = b"\\secure\\".to_vec();
                 bytes.extend([bool_as_char_u8(secured)]);
             }
-            Filter::RunsMap(map) => {
-                bytes = "\\map\\".as_bytes().to_vec();
+            Self::RunsMap(map) => {
+                bytes = b"\\map\\".to_vec();
                 bytes.extend(map.as_bytes());
             }
-            Filter::CanHavePassword(password) => {
-                bytes = "\\password\\".as_bytes().to_vec();
+            Self::CanHavePassword(password) => {
+                bytes = b"\\password\\".to_vec();
                 bytes.extend([bool_as_char_u8(password)]);
             }
-            Filter::CanBeEmpty(empty) => {
-                bytes = "\\empty\\".as_bytes().to_vec();
+            Self::CanBeEmpty(empty) => {
+                bytes = b"\\empty\\".to_vec();
                 bytes.extend([bool_as_char_u8(empty)]);
             }
-            Filter::CanBeFull(full) => {
-                bytes = "\\full\\".as_bytes().to_vec();
+            Self::CanBeFull(full) => {
+                bytes = b"\\full\\".to_vec();
                 bytes.extend([bool_as_char_u8(full)]);
             }
-            Filter::RunsAppID(id) => {
-                bytes = "\\appid\\".as_bytes().to_vec();
+            Self::RunsAppID(id) => {
+                bytes = b"\\appid\\".to_vec();
                 bytes.extend(id.to_string().as_bytes());
             }
-            Filter::HasTags(tags) => {
+            Self::HasTags(tags) => {
                 if !tags.is_empty() {
-                    bytes = "\\gametype\\".as_bytes().to_vec();
+                    bytes = b"\\gametype\\".to_vec();
                     for tag in tags.iter() {
                         bytes.extend(tag.as_bytes());
                         bytes.extend([b',']);
@@ -74,48 +74,48 @@ impl Filter {
                     bytes.pop();
                 }
             }
-            Filter::NotAppID(id) => {
-                bytes = "\\napp\\".as_bytes().to_vec();
+            Self::NotAppID(id) => {
+                bytes = b"\\napp\\".to_vec();
                 bytes.extend(id.to_string().as_bytes());
             }
-            Filter::IsEmpty(empty) => {
-                bytes = "\\noplayers\\".as_bytes().to_vec();
+            Self::IsEmpty(empty) => {
+                bytes = b"\\noplayers\\".to_vec();
                 bytes.extend([bool_as_char_u8(empty)]);
             }
-            Filter::MatchName(name) => {
-                bytes = "\\name_match\\".as_bytes().to_vec();
+            Self::MatchName(name) => {
+                bytes = b"\\name_match\\".to_vec();
                 bytes.extend(name.as_bytes());
             }
-            Filter::MatchVersion(version) => {
-                bytes = "\\version_match\\".as_bytes().to_vec();
+            Self::MatchVersion(version) => {
+                bytes = b"\\version_match\\".to_vec();
                 bytes.extend(version.as_bytes());
             }
-            Filter::RestrictUniqueIP(unique) => {
-                bytes = "\\collapse_addr_hash\\".as_bytes().to_vec();
+            Self::RestrictUniqueIP(unique) => {
+                bytes = b"\\collapse_addr_hash\\".to_vec();
                 bytes.extend([bool_as_char_u8(unique)]);
             }
-            Filter::OnAddress(address) => {
-                bytes = "\\gameaddr\\".as_bytes().to_vec();
+            Self::OnAddress(address) => {
+                bytes = b"\\gameaddr\\".to_vec();
                 bytes.extend(address.as_bytes());
             }
-            Filter::Whitelisted(whitelisted) => {
-                bytes = "\\white\\".as_bytes().to_vec();
+            Self::Whitelisted(whitelisted) => {
+                bytes = b"\\white\\".to_vec();
                 bytes.extend([bool_as_char_u8(whitelisted)]);
             }
-            Filter::SpectatorProxy(condition) => {
-                bytes = "\\proxy\\".as_bytes().to_vec();
+            Self::SpectatorProxy(condition) => {
+                bytes = b"\\proxy\\".to_vec();
                 bytes.extend([bool_as_char_u8(condition)]);
             }
-            Filter::IsDedicated(dedicated) => {
-                bytes = "\\dedicated\\".as_bytes().to_vec();
+            Self::IsDedicated(dedicated) => {
+                bytes = b"\\dedicated\\".to_vec();
                 bytes.extend([bool_as_char_u8(dedicated)]);
             }
-            Filter::RunsLinux(linux) => {
-                bytes = "\\linux\\".as_bytes().to_vec();
+            Self::RunsLinux(linux) => {
+                bytes = b"\\linux\\".to_vec();
                 bytes.extend([bool_as_char_u8(linux)]);
             }
-            Filter::HasGameDir(game_dir) => {
-                bytes = "\\gamedir\\".as_bytes().to_vec();
+            Self::HasGameDir(game_dir) => {
+                bytes = b"\\gamedir\\".to_vec();
                 bytes.extend(game_dir.as_bytes());
             }
         }
@@ -144,7 +144,7 @@ pub struct SearchFilters {
 }
 
 impl Default for SearchFilters {
-    fn default() -> Self { SearchFilters::new() }
+    fn default() -> Self { Self::new() }
 }
 
 impl SearchFilters {
@@ -210,14 +210,8 @@ impl SearchFilters {
             bytes.extend(filter.to_bytes())
         }
 
-        bytes.extend(SearchFilters::special_filter_to_bytes(
-            "nand",
-            &self.nand_filters,
-        ));
-        bytes.extend(SearchFilters::special_filter_to_bytes(
-            "nor",
-            &self.nor_filters,
-        ));
+        bytes.extend(Self::special_filter_to_bytes("nand", &self.nand_filters));
+        bytes.extend(Self::special_filter_to_bytes("nor", &self.nor_filters));
 
         bytes.extend([0x00]);
         bytes

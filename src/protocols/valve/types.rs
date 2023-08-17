@@ -20,9 +20,9 @@ pub enum Server {
 impl Server {
     pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
         Ok(match value {
-            100 => Server::Dedicated,    //'d'
-            108 => Server::NonDedicated, //'l'
-            112 => Server::TV,           //'p'
+            100 => Self::Dedicated,    //'d'
+            108 => Self::NonDedicated, //'l'
+            112 => Self::TV,           //'p'
             _ => Err(UnknownEnumCast)?,
         })
     }
@@ -40,9 +40,9 @@ pub enum Environment {
 impl Environment {
     pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
         Ok(match value {
-            108 => Environment::Linux,     //'l'
-            119 => Environment::Windows,   //'w'
-            109 | 111 => Environment::Mac, //'m' or 'o'
+            108 => Self::Linux,     //'l'
+            119 => Self::Windows,   //'w'
+            109 | 111 => Self::Mac, //'m' or 'o'
             _ => Err(UnknownEnumCast)?,
         })
     }
@@ -204,7 +204,7 @@ pub(crate) struct Packet {
 impl Packet {
     pub fn new(kind: u8, payload: Vec<u8>) -> Self {
         Self {
-            header: 4294967295, // FF FF FF FF
+            header: u32::MAX, // FF FF FF FF
             kind,
             payload,
         }
@@ -241,9 +241,9 @@ pub(crate) enum Request {
 }
 
 impl Request {
-    pub fn get_default_payload(&self) -> Vec<u8> {
+    pub fn get_default_payload(self) -> Vec<u8> {
         match self {
-            Request::Info => String::from("Source Engine Query\0").into_bytes(),
+            Self::Info => String::from("Source Engine Query\0").into_bytes(),
             _ => vec![0xFF, 0xFF, 0xFF, 0xFF],
         }
     }
@@ -341,50 +341,46 @@ pub enum SteamApp {
 
 impl SteamApp {
     /// Get the specified app as engine.
-    pub fn as_engine(&self) -> Engine {
+    pub const fn as_engine(&self) -> Engine {
         match self {
-            SteamApp::CS => Engine::GoldSrc(false),   // 10
-            SteamApp::TFC => Engine::GoldSrc(false),  // 20
-            SteamApp::DOD => Engine::GoldSrc(false),  // 30
-            SteamApp::CSCZ => Engine::GoldSrc(false), // 80
-            SteamApp::CSS => Engine::new_source(240),
-            SteamApp::DODS => Engine::new_source(300),
-            SteamApp::HL2DM => Engine::new_source(320),
-            SteamApp::HLDMS => Engine::new_source(360),
-            SteamApp::TF2 => Engine::new_source(440),
-            SteamApp::L4D => Engine::new_source(500),
-            SteamApp::L4D2 => Engine::new_source(550),
-            SteamApp::ALIENS => Engine::new_source(630),
-            SteamApp::CSGO => Engine::new_source(730),
-            SteamApp::TS => Engine::new_source(2400),
-            SteamApp::GM => Engine::new_source(4000),
-            SteamApp::AOC => Engine::new_source(17510),
-            SteamApp::INSMIC => Engine::new_source(17700),
-            SteamApp::ARMA2OA => Engine::new_source(33930),
-            SteamApp::PZ => Engine::new_source(108600),
-            SteamApp::INS => Engine::new_source(222880),
-            SteamApp::SC => Engine::GoldSrc(false), // 225840
-            SteamApp::SDTD => Engine::new_source(251570),
-            SteamApp::RUST => Engine::new_source(252490),
-            SteamApp::BO => Engine::new_source(296300),
-            SteamApp::DST => Engine::new_source(322320),
-            SteamApp::BB2 => Engine::new_source(346330),
-            SteamApp::CCURE => Engine::new_source(355180),
-            SteamApp::BM => Engine::new_source(362890),
-            SteamApp::COSU => Engine::new_source(366090),
-            SteamApp::AVORION => Engine::new_source(445220),
-            SteamApp::DOI => Engine::new_source(447820),
-            SteamApp::TF => Engine::new_source(556450),
-            SteamApp::UNTURNED => Engine::new_source(304930),
-            SteamApp::ASE => Engine::new_source(346110),
-            SteamApp::BAT1944 => Engine::new_source(489940),
-            SteamApp::INSS => Engine::new_source(581320),
-            SteamApp::ASRD => Engine::new_source(563560),
-            SteamApp::ROR2 => Engine::new_source(632360),
-            SteamApp::OHD => Engine::new_source_with_dedicated(736590, 950900),
-            SteamApp::ONSET => Engine::new_source(1105810),
-            SteamApp::VR => Engine::new_source(1604030),
-            SteamApp::HLL => Engine::new_source(686810),
+            Self::CSS => Engine::new_source(240),
+            Self::DODS => Engine::new_source(300),
+            Self::HL2DM => Engine::new_source(320),
+            Self::HLDMS => Engine::new_source(360),
+            Self::TF2 => Engine::new_source(440),
+            Self::L4D => Engine::new_source(500),
+            Self::L4D2 => Engine::new_source(550),
+            Self::ALIENS => Engine::new_source(630),
+            Self::CSGO => Engine::new_source(730),
+            Self::TS => Engine::new_source(2400),
+            Self::GM => Engine::new_source(4000),
+            Self::AOC => Engine::new_source(17510),
+            Self::INSMIC => Engine::new_source(17700),
+            Self::ARMA2OA => Engine::new_source(33930),
+            Self::PZ => Engine::new_source(108_600),
+            Self::INS => Engine::new_source(222_880),
+            Self::SDTD => Engine::new_source(251_570),
+            Self::RUST => Engine::new_source(252_490),
+            Self::BO => Engine::new_source(296_300),
+            Self::DST => Engine::new_source(322_320),
+            Self::BB2 => Engine::new_source(346_330),
+            Self::CCURE => Engine::new_source(355_180),
+            Self::BM => Engine::new_source(362_890),
+            Self::COSU => Engine::new_source(366_090),
+            Self::AVORION => Engine::new_source(445_220),
+            Self::DOI => Engine::new_source(447_820),
+            Self::TF => Engine::new_source(556_450),
+            Self::UNTURNED => Engine::new_source(304_930),
+            Self::ASE => Engine::new_source(346_110),
+            Self::BAT1944 => Engine::new_source(489_940),
+            Self::INSS => Engine::new_source(581_320),
+            Self::ASRD => Engine::new_source(563_560),
+            Self::ROR2 => Engine::new_source(632_360),
+            Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
+            Self::ONSET => Engine::new_source(1_105_810),
+            Self::VR => Engine::new_source(1_604_030),
+            Self::HLL => Engine::new_source(686_810),
+            _ => Engine::GoldSrc(false), // CS - 10, TFC - 20, DOD - 30, CSCZ - 80, SC - 225840
         }
     }
 }
@@ -404,10 +400,10 @@ pub enum Engine {
 }
 
 impl Engine {
-    pub fn new_source(appid: u32) -> Self { Engine::Source(Some((appid, None))) }
+    pub const fn new_source(appid: u32) -> Self { Self::Source(Some((appid, None))) }
 
-    pub fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
-        Engine::Source(Some((appid, Some(dedicated_appid))))
+    pub const fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
+        Self::Source(Some((appid, Some(dedicated_appid))))
     }
 }
 

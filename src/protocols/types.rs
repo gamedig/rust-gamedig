@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 /// Enumeration of all custom protocols
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ProprietaryProtocol {
     TheShip,
     FFOW,
@@ -18,7 +18,7 @@ pub enum ProprietaryProtocol {
 
 /// Enumeration of all valid protocol types
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Protocol {
     Gamespy(gamespy::GameSpyVersion),
     Minecraft(Option<minecraft::types::Server>),
@@ -102,7 +102,7 @@ pub trait CommonResponse {
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommonResponseJson<'a> {
     pub name: Option<&'a str>,
     pub description: Option<&'a str>,
@@ -135,7 +135,7 @@ pub trait CommonPlayer {
 }
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommonPlayerJson<'a> {
     pub name: &'a str,
     pub score: Option<i32>,
@@ -169,10 +169,10 @@ impl TimeoutSettings {
     }
 
     /// Get the read timeout.
-    pub fn get_read(&self) -> Option<Duration> { self.read }
+    pub const fn get_read(&self) -> Option<Duration> { self.read }
 
     /// Get the write timeout.
-    pub fn get_write(&self) -> Option<Duration> { self.write }
+    pub const fn get_write(&self) -> Option<Duration> { self.write }
 }
 
 impl Default for TimeoutSettings {

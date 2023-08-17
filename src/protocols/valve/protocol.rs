@@ -273,7 +273,7 @@ impl ValveProtocol {
 
         if let Engine::GoldSrc(force) = engine {
             if *force {
-                return ValveProtocol::get_goldsrc_server_info(&mut buffer);
+                return Self::get_goldsrc_server_info(&mut buffer);
             }
         }
 

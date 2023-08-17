@@ -12,7 +12,7 @@ pub use types::*;
 mod client;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QuakeVersion {
     One,
     Two,

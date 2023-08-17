@@ -29,8 +29,8 @@ impl TheShipPlayer {
             name: player.name.clone(),
             score: player.score,
             duration: player.duration,
-            deaths: player.deaths.unwrap(),
-            money: player.money.unwrap(),
+            deaths: player.deaths.unwrap(), // TODO! Err here!
+            money: player.money.unwrap(),   // TODO! Err here!
         }
     }
 }
@@ -93,7 +93,7 @@ impl Response {
     pub fn new_from_valve_response(response: valve::Response) -> Self {
         let (port, steam_id, tv_port, tv_name, keywords) = get_optional_extracted_data(response.info.extra_data);
 
-        let the_unwrapped_ship = response.info.the_ship.unwrap();
+        let the_unwrapped_ship = response.info.the_ship.unwrap(); // TODO! Err here!
 
         Self {
             protocol_version: response.info.protocol_version,

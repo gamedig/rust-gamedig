@@ -123,7 +123,7 @@ use std::net::{IpAddr, SocketAddr};
 
 /// Definition of a game
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Game {
     /// Full name of the game
     pub name: &'static str,

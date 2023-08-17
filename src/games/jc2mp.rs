@@ -56,8 +56,8 @@ impl CommonResponse for Response {
     }
 }
 
-fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
-    let mut buf = Buffer::<BigEndian>::new(&packet);
+fn parse_players_and_teams(packet: &[u8]) -> GDResult<Vec<Player>> {
+    let mut buf = Buffer::<BigEndian>::new(packet);
 
     let count = buf.read::<u16>()?;
     let mut players = Vec::with_capacity(count as usize);
@@ -67,7 +67,7 @@ fn parse_players_and_teams(packet: Vec<u8>) -> GDResult<Vec<Player>> {
             name: buf.read_string::<Utf8Decoder>(None)?,
             steam_id: buf.read_string::<Utf8Decoder>(None)?,
             ping: buf.read::<u16>()?,
-        })
+        });
     }
 
     Ok(players)
@@ -93,7 +93,7 @@ pub fn query_with_timeout(
         .ok_or(PacketBad.context("First packet missing"))?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;
-    let players = parse_players_and_teams(remaining_data)?;
+    let players = parse_players_and_teams(&remaining_data)?;
 
     let players_maximum = server_vars
         .remove("maxplayers")

@@ -50,7 +50,7 @@ impl Bedrock {
         }
 
         // Checking for our nonce directly from a u64 (as the nonce is 8 bytes).
-        if buffer.read::<u64>()? != 9833440827789222417 {
+        if buffer.read::<u64>()? != 9_833_440_827_789_222_417 {
             return Err(PacketBad.context("Invalid nonce"));
         }
 
@@ -59,11 +59,11 @@ impl Bedrock {
         buffer.move_cursor(8)?;
 
         // Verifying the magic value (as we need 16 bytes, cast to two u64 values)
-        if buffer.read::<u64>()? != 18374403896610127616 {
+        if buffer.read::<u64>()? != 18_374_403_896_610_127_616 {
             return Err(PacketBad.context("Invalid magic"));
         }
 
-        if buffer.read::<u64>()? != 8671175388723805693 {
+        if buffer.read::<u64>()? != 8_671_175_388_723_805_693 {
             return Err(PacketBad.context("Invalid magic"));
         }
 
@@ -86,8 +86,8 @@ impl Bedrock {
             protocol_version: status[2].to_string(),
             players_maximum: status[5].parse().map_err(|e| TypeParse.context(e))?,
             players_online: status[4].parse().map_err(|e| TypeParse.context(e))?,
-            id: status.get(6).map(|v| v.to_string()),
-            map: status.get(7).map(|v| v.to_string()),
+            id: status.get(6).map(std::string::ToString::to_string),
+            map: status.get(7).map(std::string::ToString::to_string),
             game_mode: match status.get(8) {
                 None => None,
                 Some(v) => Some(GameMode::from_bedrock(v)?),
@@ -97,6 +97,6 @@ impl Bedrock {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
-        Bedrock::new(address, timeout_settings)?.get_info()
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

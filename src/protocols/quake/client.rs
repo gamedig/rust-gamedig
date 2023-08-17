@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::slice::Iter;
 
-pub(crate) trait QuakeClient {
+pub trait QuakeClient {
     type Player;
 
     fn get_send_header<'a>() -> &'a str;
@@ -34,13 +34,13 @@ fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<
     let data = socket.receive(None)?;
     let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
-    if bufferer.read::<u32>()? != 4294967295 {
+    if bufferer.read::<u32>()? != u32::MAX {
         return Err(PacketBad.context("Expected 4294967295"));
     }
 
     let response_header = Client::get_response_header().as_bytes();
     if !bufferer.remaining_bytes().starts_with(response_header) {
-        Err(GDErrorKind::PacketBad)?
+        Err(GDErrorKind::PacketBad)?;
     }
 
     bufferer.move_cursor(response_header.len() as isize)?;
@@ -91,7 +91,7 @@ fn get_players<Client: QuakeClient>(bufferer: &mut Buffer<LittleEndian>) -> GDRe
     Ok(players)
 }
 
-pub(crate) fn client_query<Client: QuakeClient>(
+pub fn client_query<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response<Client::Player>> {
@@ -125,7 +125,7 @@ pub(crate) fn client_query<Client: QuakeClient>(
     })
 }
 
-pub(crate) fn remove_wrapping_quotes<'a>(string: &&'a str) -> &'a str {
+pub fn remove_wrapping_quotes<'a>(string: &&'a str) -> &'a str {
     match string.starts_with('\"') && string.ends_with('\"') {
         false => string,
         true => &string[1 .. string.len() - 1],

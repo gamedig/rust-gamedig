@@ -10,7 +10,7 @@ pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     }
 }
 
-pub fn u8_lower_upper(n: u8) -> (u8, u8) { (n & 15, n >> 4) }
+pub const fn u8_lower_upper(n: u8) -> (u8, u8) { (n & 15, n >> 4) }
 
 #[cfg(test)]
 mod tests {

@@ -68,6 +68,6 @@ impl LegacyV1_4 {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        LegacyV1_4::new(address, timeout_settings)?.get_info()
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

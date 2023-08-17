@@ -167,7 +167,7 @@ impl GameSpy3 {
             values[packet_id] = buf.remaining_bytes().to_vec();
         }
 
-        if values.iter().any(|v| v.is_empty()) {
+        if values.iter().any(Vec::is_empty) {
             return Err(PacketBad.context("One (or more) packets is empty"));
         }
 
@@ -244,7 +244,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                         true => None,
                         false => {
                             if v != &"t" {
-                                Err(GDErrorKind::PacketBad)?
+                                Err(GDErrorKind::PacketBad)?;
                             }
 
                             Some(v)
@@ -267,7 +267,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 }
 
                 while data.len() <= offset {
-                    data.push(HashMap::new())
+                    data.push(HashMap::new());
                 }
 
                 let entry_data = data.get_mut(offset).unwrap();
@@ -311,7 +311,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
                 .map_err(|e| TypeParse.context(e))?,
-        })
+        });
     }
 
     let mut teams: Vec<Team> = Vec::new();
@@ -330,7 +330,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 .ok_or(GDErrorKind::PacketBad)?
                 .parse()
                 .map_err(|e| TypeParse.context(e))?,
-        })
+        });
     }
 
     Ok((players, teams))
