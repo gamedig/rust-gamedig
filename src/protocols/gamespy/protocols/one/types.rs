@@ -12,16 +12,16 @@ use crate::protocols::GenericResponse;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
     pub name: String,
-    pub team: u8,
+    pub team: Option<u8>,
     /// The ping from the server's perspective.
     pub ping: u16,
-    pub face: String,
-    pub skin: String,
-    pub mesh: String,
+    pub face: Option<String>,
+    pub skin: Option<String>,
+    pub mesh: Option<String>,
     pub score: i32,
     pub deaths: Option<u32>,
     pub health: Option<u32>,
-    pub secret: bool,
+    pub secret: Option<bool>,
 }
 
 impl CommonPlayer for Player {

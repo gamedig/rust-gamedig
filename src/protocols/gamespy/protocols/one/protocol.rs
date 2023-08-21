@@ -135,30 +135,19 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                         .clone()
                 }
             },
-            team: player_data
-                .get("team")
-                .ok_or(GDErrorKind::PacketBad)?
-                .trim()
-                .parse()
-                .map_err(|e| TypeParse.context(e))?,
+            team: match player_data.get("team") {
+                Some(t) => Some(t.trim().parse().map_err(|e| TypeParse.context(e))?),
+                None => None,
+            },
             ping: player_data
                 .get("ping")
                 .ok_or(GDErrorKind::PacketBad)?
                 .trim()
                 .parse()
                 .map_err(|e| TypeParse.context(e))?,
-            face: player_data
-                .get("face")
-                .ok_or(GDErrorKind::PacketBad)?
-                .clone(),
-            skin: player_data
-                .get("skin")
-                .ok_or(GDErrorKind::PacketBad)?
-                .clone(),
-            mesh: player_data
-                .get("mesh")
-                .ok_or(GDErrorKind::PacketBad)?
-                .clone(),
+            face: player_data.get("face").cloned(),
+            skin: player_data.get("skin").cloned(),
+            mesh: player_data.get("mesh").cloned(),
             score: player_data
                 .get("frags")
                 .ok_or(GDErrorKind::PacketBad)?
@@ -173,12 +162,10 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
                 Some(v) => Some(v.trim().parse().map_err(|e| TypeParse.context(e))?),
                 None => None,
             },
-            secret: player_data
-                .get("ngsecret")
-                .ok_or(GDErrorKind::PacketBad)?
-                .to_lowercase()
-                .parse()
-                .map_err(|e| TypeParse.context(e))?,
+            secret: match player_data.get("ngsecret") {
+                Some(s) => Some(s.to_lowercase().parse().map_err(|e| TypeParse.context(e))?),
+                None => None,
+            },
         };
 
         players.push(new_player);
