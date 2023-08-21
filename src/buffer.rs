@@ -4,6 +4,8 @@ use crate::GDResult;
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{convert::TryInto, marker::PhantomData};
 
+use encoding::{DecoderTrap, Encoding};
+
 /// A struct representing a buffer with a specific byte order.
 ///
 /// It's comprised of a byte slice that it reads from, a cursor to keep track of
@@ -318,6 +320,36 @@ pub trait StringDecoder {
     ///
     /// Returns a `BufferError` if there is an error decoding the string.
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String>;
+}
+
+pub struct Latin1Decoder;
+
+impl StringDecoder for Latin1Decoder {
+    type Delimiter = [u8; 1];
+
+    const DELIMITER: Self::Delimiter = [0x00];
+
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
+        // Find the position of the delimiter in the data. If the delimiter is not
+        // found, the length of the data is returned.
+        let position = data
+        // Create an iterator over the data.
+            .iter()
+            // Find the position of the delimiter
+            .position(|&b| b == delimiter.as_ref()[0])
+            // If the delimiter is not found, use the whole data slice.
+            .unwrap_or(data.len());
+
+        let result = encoding::all::ISO_8859_1
+            .decode(&data[.. position], DecoderTrap::Strict)
+            .map_err(|e| PacketBad.context(e))?;
+
+        // Update the cursor position
+        // The +1 is to skip the delimiter
+        *cursor += position + 1;
+
+        Ok(result)
+    }
 }
 
 /// A decoder for UTF-8 encoded strings.
