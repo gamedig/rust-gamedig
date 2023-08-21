@@ -104,7 +104,8 @@ fn extract_players(server_vars: &mut HashMap<String, String>, players_maximum: u
         };
 
         let early_return = match kind {
-            "team" | "player" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" | "deaths" | "health" => false,
+            "team" | "player" | "playername" | "ping" | "face" | "skin" | "mesh" | "frags" | "ngsecret" | "deaths"
+            | "health" => false,
             _x => true, // println!("UNKNOWN {id} {x} {value}");
         };
 
