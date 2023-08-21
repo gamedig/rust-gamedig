@@ -1,6 +1,6 @@
 use byteorder::LittleEndian;
 
-use crate::buffer::Utf8Decoder;
+use crate::buffer::Latin1Decoder;
 use crate::protocols::gamespy::common::has_password;
 use crate::GDErrorKind::TypeParse;
 
@@ -46,7 +46,7 @@ fn get_server_values_impl(socket: &mut UdpSocket) -> GDResult<HashMap<String, St
         let data = socket.receive(None)?;
         let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
-        let mut as_string = bufferer.read_string::<Utf8Decoder>(None)?;
+        let mut as_string = bufferer.read_string::<Latin1Decoder>(None)?;
         as_string.remove(0);
 
         let splited: Vec<String> = as_string.split('\\').map(str::to_string).collect();
