@@ -1,4 +1,4 @@
-use crate::GDErrorKind;
+use crate::{GDErrorKind, Packet, Socket};
 use std::error::Error;
 use std::fmt::Formatter;
 use std::{backtrace, fmt};
