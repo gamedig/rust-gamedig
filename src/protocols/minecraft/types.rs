@@ -156,6 +156,20 @@ impl JavaResponse {
     }
 }
 
+pub struct RequestSettings {
+    pub query_address: String,
+    pub protocol_version: i32,
+}
+
+impl Default for RequestSettings {
+    fn default() -> Self {
+        Self {
+            query_address: "gamedig".to_string(),
+            protocol_version: -1,
+        }
+    }
+}
+
 /// A server's game mode (used only by Bedrock servers.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

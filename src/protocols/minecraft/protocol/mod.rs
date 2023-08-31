@@ -1,3 +1,4 @@
+use crate::protocols::minecraft::types::RequestSettings;
 use crate::{
     protocols::minecraft::{
         protocol::{
@@ -26,7 +27,7 @@ mod legacy_v1_6;
 /// Queries a Minecraft server with all the protocol variants one by one (Java
 /// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-    if let Ok(response) = query_java(address, timeout_settings.clone()) {
+    if let Ok(response) = query_java(address, timeout_settings.clone(), None) {
         return Ok(response);
     }
 
@@ -42,8 +43,12 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
 }
 
 /// Query a Java Server.
-pub fn query_java(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-    Java::query(address, timeout_settings)
+pub fn query_java(
+    address: &SocketAddr,
+    timeout_settings: Option<TimeoutSettings>,
+    request_settings: Option<RequestSettings>,
+) -> GDResult<JavaResponse> {
+    Java::query(address, timeout_settings, request_settings)
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).

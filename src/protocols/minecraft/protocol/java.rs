@@ -11,7 +11,7 @@ use crate::{
 
 use std::net::SocketAddr;
 
-use crate::protocols::minecraft::as_string;
+use crate::protocols::minecraft::{as_string, RequestSettings};
 use byteorder::LittleEndian;
 use serde_json::Value;
 
@@ -61,8 +61,9 @@ impl Java {
             // Server address (can be anything)
             as_string(&self.request_settings.query_address).as_slice(),
             // Server port (can be anything)
+            &self.socket.port().to_le_bytes(),
             &[
-                0x00, 0x00, // Next state (1 for status)
+                // Next state (1 for status)
                 0x01,
             ],
         ]
@@ -160,19 +161,5 @@ impl Java {
         request_settings: Option<RequestSettings>,
     ) -> GDResult<JavaResponse> {
         Self::new(address, timeout_settings, request_settings)?.get_info()
-    }
-}
-
-struct RequestSettings {
-    pub query_address: String,
-    pub protocol_version: i32,
-}
-
-impl Default for RequestSettings {
-    fn default() -> Self {
-        Self {
-            query_address: "gamedig".to_string(),
-            protocol_version: -1,
-        }
     }
 }

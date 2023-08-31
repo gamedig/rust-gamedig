@@ -159,7 +159,7 @@ pub fn query_with_timeout(
         Protocol::Minecraft(version) => {
             match version {
                 Some(protocols::minecraft::Server::Java) => {
-                    protocols::minecraft::query_java(&socket_addr, timeout_settings).map(Box::new)?
+                    protocols::minecraft::query_java(&socket_addr, timeout_settings, None).map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Bedrock) => {
                     protocols::minecraft::query_bedrock(&socket_addr, timeout_settings).map(Box::new)?

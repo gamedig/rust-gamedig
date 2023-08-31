@@ -1,3 +1,4 @@
+use crate::protocols::minecraft::RequestSettings;
 use crate::{
     protocols::minecraft::{self, BedrockResponse, JavaResponse, LegacyGroup},
     GDErrorKind,
@@ -8,7 +9,7 @@ use std::net::{IpAddr, SocketAddr};
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
 /// (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
-    if let Ok(response) = query_java(address, port) {
+    if let Ok(response) = query_java(address, port, None) {
         return Ok(response);
     }
 
@@ -24,8 +25,16 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
 }
 
 /// Query a Java Server.
-pub fn query_java(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
-    minecraft::query_java(&SocketAddr::new(*address, port_or_java_default(port)), None)
+pub fn query_java(
+    address: &IpAddr,
+    port: Option<u16>,
+    request_settings: Option<RequestSettings>,
+) -> GDResult<JavaResponse> {
+    minecraft::query_java(
+        &SocketAddr::new(*address, port_or_java_default(port)),
+        None,
+        request_settings,
+    )
 }
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
