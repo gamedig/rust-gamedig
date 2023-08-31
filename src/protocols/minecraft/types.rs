@@ -157,14 +157,14 @@ impl JavaResponse {
 }
 
 pub struct RequestSettings {
-    pub query_address: String,
+    pub hostname: String,
     pub protocol_version: i32,
 }
 
 impl Default for RequestSettings {
     fn default() -> Self {
         Self {
-            query_address: "gamedig".to_string(),
+            hostname: "gamedig".to_string(),
             protocol_version: -1,
         }
     }
