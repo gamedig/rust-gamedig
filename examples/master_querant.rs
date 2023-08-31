@@ -126,7 +126,7 @@ fn main() -> GDResult<()> {
             )
         }
         "mc" => println!("{:#?}", mc::query(ip, port)?),
-        "mc_java" => println!("{:#?}", mc::query_java(ip, port)?),
+        "mc_java" => println!("{:#?}", mc::query_java(ip, port, None)?),
         "mc_bedrock" => println!("{:#?}", mc::query_bedrock(ip, port)?),
         "mc_legacy" => println!("{:#?}", mc::query_legacy(ip, port)?),
         "mc_legacy_vb1_8" => {
