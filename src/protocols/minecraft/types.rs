@@ -8,7 +8,7 @@ use crate::{
         types::{CommonPlayer, CommonResponse, GenericPlayer},
         GenericResponse,
     },
-    GDErrorKind::{PacketBad, UnknownEnumCast},
+    GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast},
     GDResult,
 };
 
@@ -86,6 +86,28 @@ pub struct JavaResponse {
     pub enforces_secure_chat: Option<bool>,
     /// Tell's the server type.
     pub server_type: Server,
+}
+
+/// Java-only additional request settings.
+pub struct RequestSettings {
+    /// Some Minecraft servers do not respond as expected if this
+    /// isn't a specific value, `mc.hypixel.net` is an example.
+    pub hostname: String,
+    /// Specifies the client [protocol version number](https://wiki.vg/Protocol_version_numbers),
+    /// `-1` means anything.
+    pub protocol_version: i32,
+}
+
+impl Default for RequestSettings {
+    /// `hostname`: "gamedig"
+    ///
+    /// `protocol_version`: -1
+    fn default() -> Self {
+        Self {
+            hostname: "gamedig".to_string(),
+            protocol_version: -1,
+        }
+    }
 }
 
 impl CommonResponse for JavaResponse {
@@ -237,4 +259,15 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
     }
 
     String::from_utf8(text).map_err(|e| PacketBad.context(e))
+}
+
+pub(crate) fn as_string(value: &str) -> GDResult<Vec<u8>> {
+    let length = value
+        .len()
+        .try_into()
+        .map_err(|e| InvalidInput.context(e))?;
+    let mut buf = as_varint(length);
+    buf.extend(value.as_bytes());
+
+    Ok(buf)
 }

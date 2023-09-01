@@ -20,16 +20,20 @@ pub trait Socket {
 
     fn send(&mut self, data: &[u8]) -> GDResult<()>;
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>>;
+
+    fn port(&self) -> u16;
 }
 
 pub struct TcpSocket {
     socket: net::TcpStream,
+    address: SocketAddr,
 }
 
 impl Socket for TcpSocket {
     fn new(address: &SocketAddr) -> GDResult<Self> {
         Ok(Self {
             socket: net::TcpStream::connect(address).map_err(|e| SocketConnect.context(e))?,
+            address: *address,
         })
     }
 
@@ -54,6 +58,8 @@ impl Socket for TcpSocket {
 
         Ok(buf)
     }
+
+    fn port(&self) -> u16 { self.address.port() }
 }
 
 pub struct UdpSocket {
@@ -96,6 +102,8 @@ impl Socket for UdpSocket {
 
         Ok(buf[.. number_of_bytes_received].to_vec())
     }
+
+    fn port(&self) -> u16 { self.address.port() }
 }
 
 #[cfg(test)]
