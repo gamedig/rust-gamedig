@@ -59,7 +59,7 @@ impl Java {
             ], // Protocol Version (-1 to determine version)
             as_varint(self.request_settings.protocol_version).as_slice(),
             // Server address (can be anything)
-            as_string(&self.request_settings.hostname).as_slice(),
+            as_string(&self.request_settings.hostname)?.as_slice(),
             // Server port (can be anything)
             &self.socket.port().to_le_bytes(),
             &[
