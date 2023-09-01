@@ -17,10 +17,6 @@ Crate:
 - Applied some nursery Clippy lints.
 
 ### Breaking...
-Protocols:
-- Gamespy 1: Renamed the players `frags` field to `score` to be more inline with the other protocols.
-- Quake: The `version` field has been changed from `String`to `Option<String>`.
-
 Crate:
 - The enum used for errors, `GDError` has been renamed to `GDErrorKind`.
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
@@ -30,7 +26,7 @@ Generics:
 - Changed `players_maximum` and `players_online` (and their functions) types from `u64` to `u32`.
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
-Protocol:
+Protocols:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `version` to `game_version`.
@@ -43,9 +39,11 @@ Protocol:
 
 - GameSpy 1:
 1. Changed `score` type of player from `u32` to `i32`.
+2. Renamed the players `frags` field to `score`.
 
 - Quake (1, 2):
 1. Renamed `game_type` to `game_mode`.
+2. Changed `version` type from `String`to `Option<String>`.
 
 - Minecraft Java
 1. Renamed `version_protocol` to `protocol_version`.
