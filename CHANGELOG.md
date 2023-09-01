@@ -9,6 +9,8 @@ Protocols:
 reported by the server are the same, errors if not, enabled by default.
 - Valve: Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 - The Ship: Fixed some instances of using `unwrap` without handling the panics.
+- Minecraft Java: Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake 
+packet (this solves some servers not responding to the query).
 
 Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
