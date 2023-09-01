@@ -8,14 +8,13 @@ use crate::{
         types::{CommonPlayer, CommonResponse, GenericPlayer},
         GenericResponse,
     },
-    GDErrorKind::{PacketBad, UnknownEnumCast},
+    GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast},
     GDResult,
 };
 
 use byteorder::ByteOrder;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use crate::GDErrorKind::InvalidInput;
 
 /// The type of Minecraft Server you want to query.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -263,7 +262,10 @@ pub(crate) fn get_string<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Strin
 }
 
 pub(crate) fn as_string(value: &str) -> GDResult<Vec<u8>> {
-    let length = value.len().try_into().map_err(|e| InvalidInput.context(e))?;
+    let length = value
+        .len()
+        .try_into()
+        .map_err(|e| InvalidInput.context(e))?;
     let mut buf = as_varint(length);
     buf.extend(value.as_bytes());
 
