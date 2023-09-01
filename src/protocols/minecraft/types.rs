@@ -89,6 +89,28 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
+/// Java-only additional request settings.
+pub struct RequestSettings {
+    /// Some Minecraft servers do not respond as expected if this
+    /// isn't a specific value, `mc.hypixel.net` is an example.
+    pub hostname: String,
+    /// Specifies the client [protocol version number](https://wiki.vg/Protocol_version_numbers),
+    /// `-1` means anything.
+    pub protocol_version: i32,
+}
+
+impl Default for RequestSettings {
+    /// `hostname`: "gamedig"
+    ///
+    /// `protocol_version`: -1
+    fn default() -> Self {
+        Self {
+            hostname: "gamedig".to_string(),
+            protocol_version: -1,
+        }
+    }
+}
+
 impl CommonResponse for JavaResponse {
     fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
 
@@ -153,20 +175,6 @@ impl JavaResponse {
             previews_chat: None,
             enforces_secure_chat: None,
             server_type: Server::Bedrock,
-        }
-    }
-}
-
-pub struct RequestSettings {
-    pub hostname: String,
-    pub protocol_version: i32,
-}
-
-impl Default for RequestSettings {
-    fn default() -> Self {
-        Self {
-            hostname: "gamedig".to_string(),
-            protocol_version: -1,
         }
     }
 }
