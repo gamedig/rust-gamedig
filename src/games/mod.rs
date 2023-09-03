@@ -29,6 +29,8 @@ pub mod bo;
 pub mod ccure;
 /// Colony Survival
 pub mod cosu;
+/// Creativerse
+pub mod creativerse;
 /// Counter-Strike
 pub mod cs;
 /// Counter Strike: Condition Zero

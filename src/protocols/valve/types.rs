@@ -255,6 +255,8 @@ impl Request {
 pub enum SteamApp {
     /// Counter-Strike
     CS,
+    /// Creativerse
+    CREATIVERSE,
     /// Team Fortress Classic
     TFC,
     /// Day of Defeat
@@ -361,6 +363,7 @@ impl SteamApp {
             Self::INS => Engine::new_source(222_880),
             Self::SDTD => Engine::new_source(251_570),
             Self::RUST => Engine::new_source(252_490),
+            Self::CREATIVERSE => Engine::new_source(280_790),
             Self::BO => Engine::new_source(296_300),
             Self::DST => Engine::new_source(322_320),
             Self::BB2 => Engine::new_source(346_330),

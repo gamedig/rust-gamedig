@@ -16,6 +16,7 @@ use gamedig::{
     bo,
     ccure,
     cosu,
+    creativerse,
     cs,
     cscz,
     csgo,
@@ -193,6 +194,7 @@ fn main() -> GDResult<()> {
         "haloce" => println!("{:#?}", haloce::query(ip, port)?),
         "jc2mp" => println!("{:#?}", jc2mp::query(ip, port)?),
         "warsow" => println!("{:#?}", warsow::query(ip, port)?),
+        "creativerse" => println!("{:#?}", creativerse::query(ip, port)?),
         _ => panic!("Undefined game: {}", args[1]),
     };
 

@@ -3,6 +3,9 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/2023
 ### Changes:
+Games:
+- [Creativerse](https://store.steampowered.com/app/280790/Creativerse/) support.
+
 Protocols:
 - Quake 2: Fixed a bug where the version tag wouldn't always be present.
 - Valve: Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
