@@ -8,12 +8,7 @@ Games:
 
 Protocols:
 - Quake 2: Fixed a bug where the version tag wouldn't always be present.
-- Valve: Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
-reported by the server are the same, errors if not, enabled by default.
-- Valve: Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 - The Ship: Fixed some instances of using `unwrap` without handling the panics.
-- Minecraft Java: Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake 
-packet (this solves some servers not responding to the query).
 
 Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
@@ -38,7 +33,9 @@ Protocols:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `version` to `game_version`.
 3. Renamed `game` to `game_mode`.
-4. Changed `score` type of player from `u32` to `i32`.
+4. Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
+5. Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
+reported by the server are the same, errors if not, enabled by default.
 
 - GameSpy (1, 2, 3):
 1. Renamed `version` to `game_version`.
@@ -56,12 +53,14 @@ Protocols:
 1. Renamed `version_protocol` to `protocol_version`.
 2. Renamed `version_name` to `game_version`.
 3. Renamed `players_sample` to `players`.
+4. Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake
+packet (this solves some servers not responding to the query).
 
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.
 
 - Minecraft:
-1. Added `request_settings` parameter to `query()`
+1. Added an optional parameter, `request_settings` parameter to `query`.
 
 - The Ship:
 1. Renamed `protocol` to `protocol_version`.
