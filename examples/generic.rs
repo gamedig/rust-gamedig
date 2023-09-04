@@ -1,6 +1,6 @@
 use gamedig::{
-    protocols::types::{CommonResponse, TimeoutSettings},
-    query_with_timeout,
+    protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
+    query_with_timeout_and_extra_settings,
     GDResult,
     GAMES,
 };
@@ -13,6 +13,7 @@ fn generic_query(
     addr: &IpAddr,
     port: Option<u16>,
     timeout_settings: Option<TimeoutSettings>,
+    extra_settings: Option<ExtraRequestSettings>,
 ) -> GDResult<Box<dyn CommonResponse>> {
     let game = GAMES
         .get(game_name)
@@ -20,7 +21,7 @@ fn generic_query(
 
     println!("Querying {:#?} with game {:#?}.", addr, game);
 
-    let response = query_with_timeout(game, addr, port, timeout_settings)?;
+    let response = query_with_timeout_and_extra_settings(game, addr, port, timeout_settings, extra_settings)?;
     println!("Response: {:#?}", response.as_json());
 
     let common = response.as_original();
@@ -34,16 +35,22 @@ fn main() {
 
     // Handle arguments
     if let Some(game_name) = args.next() {
+        let hostname = args.next().expect("Must provide an address");
         // Use to_socket_addrs to resolve hostname to IP
-        let addr: SocketAddr = args
-            .next()
-            .map(|s| format!("{}:0", s).to_socket_addrs().unwrap())
-            .expect("Must provide address")
+        let addr: SocketAddr = format!("{}:0", hostname)
+            .to_socket_addrs()
+            .unwrap()
             .next()
             .expect("Could not lookup host");
         let port: Option<u16> = args.next().map(|s| s.parse().unwrap());
 
-        generic_query(&game_name, &addr.ip(), port, None).unwrap();
+        let extra_settings = ExtraRequestSettings::default()
+            .set_hostname(hostname.to_string())
+            .set_gather_rules(true)
+            .set_gather_players(true)
+            .set_check_app_id(false);
+
+        generic_query(&game_name, &addr.ip(), port, None, Some(extra_settings)).unwrap();
     } else {
         // Without arguments print a list of games
 

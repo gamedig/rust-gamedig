@@ -19,6 +19,10 @@ Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
 - Applied some nursery Clippy lints.
 
+Generics:
+- Added `ExtraRequestSettings` containing all possible extra request settings.
+- Added `query_with_timeout_and_extra_settings()` to allow generic queries with extra settings.
+
 ### Breaking...
 Crate:
 - The enum used for errors, `GDError` has been renamed to `GDErrorKind`.

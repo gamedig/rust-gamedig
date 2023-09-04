@@ -118,7 +118,7 @@ pub mod warsow;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
-use crate::protocols::types::{CommonResponse, ProprietaryProtocol, TimeoutSettings};
+use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol, TimeoutSettings};
 use crate::protocols::{self, Protocol};
 use crate::GDResult;
 use std::net::{IpAddr, SocketAddr};
@@ -142,26 +142,50 @@ mod definitions;
 pub use definitions::GAMES;
 
 /// Make a query given a game definition
+#[inline]
 pub fn query(game: &Game, address: &IpAddr, port: Option<u16>) -> GDResult<Box<dyn CommonResponse>> {
-    query_with_timeout(game, address, port, None)
+    query_with_timeout_and_extra_settings(game, address, port, None, None)
 }
 
 /// Make a query given a game definition and timeout settings
+#[inline]
 pub fn query_with_timeout(
     game: &Game,
     address: &IpAddr,
     port: Option<u16>,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Box<dyn CommonResponse>> {
+    query_with_timeout_and_extra_settings(game, address, port, timeout_settings, None)
+}
+
+/// Make a query given a game definition, timeout settings, and extra settings
+pub fn query_with_timeout_and_extra_settings(
+    game: &Game,
+    address: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+    extra_settings: Option<ExtraRequestSettings>,
+) -> GDResult<Box<dyn CommonResponse>> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
         Protocol::Valve(steam_app) => {
-            protocols::valve::query(&socket_addr, steam_app.as_engine(), None, timeout_settings).map(Box::new)?
+            protocols::valve::query(
+                &socket_addr,
+                steam_app.as_engine(),
+                extra_settings.map(ExtraRequestSettings::into),
+                timeout_settings,
+            )
+            .map(Box::new)?
         }
         Protocol::Minecraft(version) => {
             match version {
                 Some(protocols::minecraft::Server::Java) => {
-                    protocols::minecraft::query_java(&socket_addr, timeout_settings, None).map(Box::new)?
+                    protocols::minecraft::query_java(
+                        &socket_addr,
+                        timeout_settings,
+                        extra_settings.map(ExtraRequestSettings::into),
+                    )
+                    .map(Box::new)?
                 }
                 Some(protocols::minecraft::Server::Bedrock) => {
                     protocols::minecraft::query_bedrock(&socket_addr, timeout_settings).map(Box::new)?
