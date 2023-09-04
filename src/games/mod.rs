@@ -193,7 +193,14 @@ pub fn query_with_timeout_and_extra_settings(
                 Some(protocols::minecraft::Server::Legacy(group)) => {
                     protocols::minecraft::query_legacy_specific(*group, &socket_addr, timeout_settings).map(Box::new)?
                 }
-                None => protocols::minecraft::query(&socket_addr, timeout_settings).map(Box::new)?,
+                None => {
+                    protocols::minecraft::query(
+                        &socket_addr,
+                        timeout_settings,
+                        extra_settings.map(ExtraRequestSettings::into),
+                    )
+                    .map(Box::new)?
+                }
             }
         }
         Protocol::Gamespy(version) => {

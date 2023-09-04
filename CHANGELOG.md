@@ -60,6 +60,9 @@ Protocols:
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.
 
+- Minecraft:
+1. Added `request_settings` parameter to `query()`
+
 - The Ship:
 1. Renamed `protocol` to `protocol_version`.
 2. Renamed `max_players` to `players_maximum` and changed its type from `u64` to `u32`.
