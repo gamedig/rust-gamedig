@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
 use crate::GDErrorKind::UnknownEnumCast;
 use crate::GDResult;
 use crate::{buffer::Buffer, protocols::GenericResponse};
@@ -426,6 +426,17 @@ impl Default for GatheringSettings {
             players: true,
             rules: true,
             check_app_id: true,
+        }
+    }
+}
+
+impl From<ExtraRequestSettings> for GatheringSettings {
+    fn from(value: ExtraRequestSettings) -> Self {
+        let default = Self::default();
+        Self {
+            players: value.gather_players.unwrap_or(default.players),
+            rules: value.gather_rules.unwrap_or(default.rules),
+            check_app_id: value.check_app_id.unwrap_or(default.check_app_id),
         }
     }
 }

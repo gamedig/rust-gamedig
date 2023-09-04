@@ -26,8 +26,12 @@ mod legacy_v1_6;
 
 /// Queries a Minecraft server with all the protocol variants one by one (Java
 /// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
-pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-    if let Ok(response) = query_java(address, timeout_settings.clone(), None) {
+pub fn query(
+    address: &SocketAddr,
+    timeout_settings: Option<TimeoutSettings>,
+    request_settings: Option<RequestSettings>,
+) -> GDResult<JavaResponse> {
+    if let Ok(response) = query_java(address, timeout_settings.clone(), request_settings) {
         return Ok(response);
     }
 

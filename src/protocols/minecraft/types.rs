@@ -5,7 +5,7 @@
 use crate::{
     buffer::Buffer,
     protocols::{
-        types::{CommonPlayer, CommonResponse, GenericPlayer},
+        types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer},
         GenericResponse,
     },
     GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast},
@@ -106,6 +106,16 @@ impl Default for RequestSettings {
         Self {
             hostname: "gamedig".to_string(),
             protocol_version: -1,
+        }
+    }
+}
+
+impl From<ExtraRequestSettings> for RequestSettings {
+    fn from(value: ExtraRequestSettings) -> Self {
+        let default = Self::default();
+        Self {
+            hostname: value.hostname.unwrap_or(default.hostname),
+            protocol_version: value.protocol_version.unwrap_or(default.protocol_version),
         }
     }
 }

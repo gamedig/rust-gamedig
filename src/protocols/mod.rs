@@ -15,4 +15,4 @@ pub mod types;
 /// Reference: [Server Query](https://developer.valvesoftware.com/wiki/Server_queries)
 pub mod valve;
 
-pub use types::{GenericResponse, Protocol};
+pub use types::{ExtraRequestSettings, GenericResponse, Protocol};
