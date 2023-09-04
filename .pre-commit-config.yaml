@@ -26,7 +26,7 @@ repos:
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: cargo test
+        entry: cargo test --bins --lib --examples --all-features
       - id: format
         name: Check rustfmt
         language: system
