@@ -136,9 +136,9 @@ impl GameSpy3 {
 
         let mut values: Vec<Vec<u8>> = Vec::new();
 
-        let mut expected_number_of_packets: Option<usize> = None;
+        let mut reached_expected_packets_size = false;
 
-        while expected_number_of_packets.is_none() || values.len() != expected_number_of_packets.unwrap() {
+        while !reached_expected_packets_size {
             let received_data = self.receive(None, 0)?;
             let mut buf = Buffer::<BigEndian>::new(&received_data);
 
@@ -156,8 +156,8 @@ impl GameSpy3 {
             let packet_id = (id & 0x7f) as usize;
             buf.move_cursor(1)?; //unknown byte regarding packet no.
 
-            if is_last {
-                expected_number_of_packets = Some(packet_id + 1);
+            if is_last && packet_id + 1 != values.len() {
+                reached_expected_packets_size = true;
             }
 
             while values.len() <= packet_id {
@@ -270,7 +270,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                     data.push(HashMap::new());
                 }
 
-                let entry_data = data.get_mut(offset).unwrap();
+                let entry_data = data.get_mut(offset).ok_or(PacketBad)?;
                 entry_data.insert(field_name.to_string(), item);
 
                 offset += 1;
