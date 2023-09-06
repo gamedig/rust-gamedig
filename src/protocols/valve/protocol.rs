@@ -41,9 +41,9 @@ struct SplitPacket {
     pub total: u8,
     pub number: u8,
     pub size: u16,
-    pub compressed: bool,
-    pub decompressed_size: Option<u32>,
-    pub uncompressed_crc32: Option<u32>,
+    /// None means its not compressed, Some means it is and it contains
+    /// (decompressed_size and decompressed_crc32)
+    pub compressed: Option<(u32, u32)>,
     payload: Vec<u8>,
 }
 
@@ -51,10 +51,10 @@ impl SplitPacket {
     fn new(engine: &Engine, protocol: u8, buffer: &mut Buffer<LittleEndian>) -> GDResult<Self> {
         let header = buffer.read()?; //buffer.get_u32()?;
         let id = buffer.read()?;
-        let (total, number, size, compressed, decompressed_size, uncompressed_crc32) = match engine {
+        let (total, number, size, compressed) = match engine {
             Engine::GoldSrc(_) => {
                 let (lower, upper) = u8_lower_upper(buffer.read()?);
-                (lower, upper, 0, false, None, None)
+                (lower, upper, 0, None)
             }
             Engine::Source(_) => {
                 let total = buffer.read()?;
@@ -64,20 +64,14 @@ impl SplitPacket {
                     false => buffer.read()?,
                     true => 1248,
                 };
-                let compressed = ((id >> 31) & 1u32) == 1u32;
 
-                let (decompressed_size, uncompressed_crc32) = match compressed {
-                    false => (None, None),
-                    true => (Some(buffer.read()?), Some(buffer.read()?)),
+                let is_compressed = ((id >> 31) & 1u32) == 1u32;
+                let compressed = match is_compressed {
+                    false => None,
+                    true => Some((buffer.read()?, buffer.read()?)),
                 };
-                (
-                    total,
-                    number,
-                    size,
-                    compressed,
-                    decompressed_size,
-                    uncompressed_crc32,
-                )
+
+                (total, number, size, compressed)
             }
         };
 
@@ -88,20 +82,18 @@ impl SplitPacket {
             number,
             size,
             compressed,
-            decompressed_size,
-            uncompressed_crc32,
             payload: buffer.remaining_bytes().to_vec(),
         })
     }
 
     fn get_payload(&self) -> GDResult<Vec<u8>> {
-        if self.compressed {
+        if let Some(decompressed) = self.compressed {
             let mut decoder = Decoder::new();
             decoder
                 .write(&self.payload)
                 .map_err(|e| Decompress.context(e))?;
 
-            let decompressed_size = self.decompressed_size.unwrap() as usize;
+            let decompressed_size = decompressed.0 as usize;
 
             let mut decompressed_payload = vec![0; decompressed_size];
 
@@ -110,7 +102,7 @@ impl SplitPacket {
                 .map_err(|e| Decompress.context(e))?;
 
             if decompressed_payload.len() != decompressed_size
-                || crc32fast::hash(&decompressed_payload) != self.uncompressed_crc32.unwrap()
+                || crc32fast::hash(&decompressed_payload) != decompressed.1
             {
                 Err(Decompress.context(format!(
                     "Decompressed size {} was not expected {}",
