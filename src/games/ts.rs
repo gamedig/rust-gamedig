@@ -25,14 +25,14 @@ pub struct TheShipPlayer {
 }
 
 impl TheShipPlayer {
-    pub fn new_from_valve_player(player: &ServerPlayer) -> Self {
-        Self {
+    pub fn new_from_valve_player(player: &ServerPlayer) -> GDResult<Self> {
+        Ok(Self {
             name: player.name.clone(),
             score: player.score,
             duration: player.duration,
-            deaths: player.deaths.unwrap(), // TODO! Err here!
-            money: player.money.unwrap(),   // TODO! Err here!
-        }
+            deaths: player.deaths.ok_or(PacketBad)?,
+            money: player.money.ok_or(PacketBad)?,
+        })
     }
 }
 
@@ -105,10 +105,10 @@ impl Response {
             players_online: response.info.players_online,
             players: response
                 .players
-                .unwrap()
+                .ok_or(PacketBad)?
                 .iter()
                 .map(TheShipPlayer::new_from_valve_player)
-                .collect(),
+                .collect::<GDResult<Vec<TheShipPlayer>>>()?,
             players_maximum: response.info.players_maximum,
             players_bots: response.info.players_bots,
             server_type: response.info.server_type,
@@ -119,7 +119,7 @@ impl Response {
             tv_port,
             tv_name,
             keywords,
-            rules: response.rules.unwrap(),
+            rules: response.rules.ok_or(PacketBad)?,
             mode: the_unwrapped_ship.mode,
             witnesses: the_unwrapped_ship.witnesses,
             duration: the_unwrapped_ship.duration,

@@ -8,7 +8,7 @@ Games:
 
 Protocols:
 - Quake 2: Fixed a bug where the version tag wouldn't always be present.
-- The Ship: Fixed some instances of using `unwrap` without handling the panics.
+- The Ship: Removed instances of using `unwrap` without handling the panics.
 
 Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
