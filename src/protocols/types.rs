@@ -151,7 +151,7 @@ pub struct TimeoutSettings {
 impl TimeoutSettings {
     /// Construct new settings, passing None will block indefinitely. Passing
     /// zero Duration throws
-    /// GDErrorKind::[InvalidInput](crate::GDErrorKind::InvalidInput).
+    /// GDErrorKind::[InvalidInput].
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
