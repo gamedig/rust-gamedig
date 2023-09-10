@@ -1,66 +1,16 @@
-use std::{
-    backtrace,
-    error::Error,
-    fmt::{self, Formatter},
-};
-
-/// Result of Type and GDError.
-pub type GDResult<T> = Result<T, GDError>;
-
-/// GameDig Error.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GDErrorKind {
-    /// The received packet was bigger than the buffer size.
-    PacketOverflow,
-    /// The received packet was shorter than the expected one.
-    PacketUnderflow,
-    /// The received packet is badly formatted.
-    PacketBad,
-    /// Couldn't send the packet.
-    PacketSend,
-    /// Couldn't send the receive.
-    PacketReceive,
-    /// Couldn't decompress data.
-    Decompress,
-    /// Couldn't create a socket connection.
-    SocketConnect,
-    /// Couldn't bind a socket.
-    SocketBind,
-    /// Invalid input.
-    InvalidInput,
-    /// The server queried is not the queried game server.
-    BadGame,
-    /// Couldn't automatically query.
-    AutoQuery,
-    /// A protocol-defined expected format was not met.
-    ProtocolFormat,
-    /// Couldn't cast a value to an enum.
-    UnknownEnumCast,
-    /// Couldn't parse a json string.
-    JsonParse,
-    /// Couldn't parse a value.
-    TypeParse,
-}
-
-impl GDErrorKind {
-    /// Convert error kind into a full error with a source (and implicit
-    /// backtrace)
-    ///
-    /// ```
-    /// use gamedig::{GDErrorKind, GDResult};
-    /// let _: GDResult<u32> = "thing".parse().map_err(|e| GDErrorKind::TypeParse.context(e));
-    /// ```
-    pub fn context<E: Into<Box<dyn Error + 'static>>>(self, source: E) -> GDError { GDError::from_error(self, source) }
-}
+use crate::GDErrorKind;
+use std::error::Error;
+use std::fmt::Formatter;
+use std::{backtrace, fmt};
 
 type ErrorSource = Box<dyn Error + 'static>;
 
-/// Gamedig error type
+/// The GameDig error type.
 ///
 /// Can be created in three ways (all of which will implicitly generate a
 /// backtrace):
 ///
-/// Directly from an [error kind](crate::errors::GDErrorKind) (without a
+/// Directly from an [error kind](GDErrorKind) (without a
 /// source).
 ///
 /// ```
@@ -68,7 +18,7 @@ type ErrorSource = Box<dyn Error + 'static>;
 /// let _: GDError = GDErrorKind::PacketBad.into();
 /// ```
 ///
-/// [From an error kind with a source](crate::errors::GDErrorKind::context) (any
+/// [From an error kind with a source](GDErrorKind::context) (any
 /// type that implements `Into<Box<dyn std::error::Error + 'static>>`).
 ///
 /// ```
@@ -76,7 +26,7 @@ type ErrorSource = Box<dyn Error + 'static>;
 /// let _: GDError = GDErrorKind::PacketBad.context("Reason the packet was bad");
 /// ```
 ///
-/// Using the [new helper](crate::errors::GDError::new).
+/// Using the [new helper](GDError::new).
 ///
 /// ```
 /// use gamedig::{GDError, GDErrorKind};
@@ -146,38 +96,6 @@ impl GDError {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // Testing Ok variant of the GDResult type
-    #[test]
-    fn test_gdresult_ok() {
-        let result: GDResult<u32> = Ok(42);
-        assert_eq!(result.unwrap(), 42);
-    }
-
-    // Testing Err variant of the GDResult type
-    #[test]
-    fn test_gdresult_err() {
-        let result: GDResult<u32> = Err(GDErrorKind::InvalidInput.into());
-        assert!(result.is_err());
-    }
-
-    // Testing cloning the GDErrorKind type
-    #[test]
-    fn test_cloning() {
-        let error = GDErrorKind::BadGame;
-        let cloned_error = error.clone();
-        assert_eq!(error, cloned_error);
-    }
-
-    // test display GDError
-    #[test]
-    fn test_display() {
-        let err = GDErrorKind::BadGame.context("Rust is not a game");
-        assert_eq!(
-            format!("{err}"),
-            "GDError{ kind=BadGame\n  source=\"Rust is not a game\"\n  backtrace=<disabled>\n}\n"
-        );
-    }
 
     // test error trait GDError
     #[test]
