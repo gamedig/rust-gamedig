@@ -149,9 +149,8 @@ pub struct TimeoutSettings {
 }
 
 impl TimeoutSettings {
-    /// Construct new settings, passing None will block indefinitely. Passing
-    /// zero Duration throws
-    /// GDErrorKind::[InvalidInput].
+    /// Construct new settings, passing None will block indefinitely.  
+    /// Passing zero Duration throws GDErrorKind::[InvalidInput].
     pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
@@ -187,9 +186,9 @@ impl Default for TimeoutSettings {
 
 /// Generic extra request settings
 ///
-/// Fields of this struct may not be used depending on which protocol is
-/// selected, the individual fields link to the specific places they will be
-/// used with additional documentation.
+/// Fields of this struct may not be used depending on which protocol
+/// is selected, the individual fields link to the specific places
+/// they will be used with additional documentation.
 ///
 /// ## Examples
 /// Create minecraft settings with builder:
