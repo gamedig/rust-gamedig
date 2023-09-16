@@ -146,12 +146,13 @@ pub struct CommonPlayerJson<'a> {
 pub struct TimeoutSettings {
     read: Option<Duration>,
     write: Option<Duration>,
+    retries: usize,
 }
 
 impl TimeoutSettings {
     /// Construct new settings, passing None will block indefinitely.  
     /// Passing zero Duration throws GDErrorKind::[InvalidInput].
-    pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
+    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: Option<usize>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
                 return Err(InvalidInput.context("Read duration must not be 0"));
@@ -164,7 +165,11 @@ impl TimeoutSettings {
             }
         }
 
-        Ok(Self { read, write })
+        Ok(Self {
+            read,
+            write,
+            retries: retries.unwrap_or(0),
+        })
     }
 
     /// Get the read timeout.
@@ -172,6 +177,9 @@ impl TimeoutSettings {
 
     /// Get the write timeout.
     pub const fn get_write(&self) -> Option<Duration> { self.write }
+
+    /// Get amount of retries
+    pub const fn get_retries(&self) -> usize { self.retries }
 }
 
 impl Default for TimeoutSettings {
@@ -180,6 +188,7 @@ impl Default for TimeoutSettings {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
+            retries: 1,
         }
     }
 }
@@ -273,7 +282,7 @@ mod tests {
         let write_duration = Duration::from_secs(2);
 
         // Create new TimeoutSettings with the valid durations
-        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration))?;
+        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), None)?;
 
         // Verify that the get_read and get_write methods return the expected values
         assert_eq!(timeout_settings.get_read(), Some(read_duration));
@@ -291,7 +300,7 @@ mod tests {
 
         // Try to create new TimeoutSettings with the zero read duration (this should
         // fail)
-        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration));
+        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), None);
 
         // Verify that the function returned an error and that the error type is
         // InvalidInput

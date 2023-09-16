@@ -73,8 +73,14 @@ mod test {
     const ADDR: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
     fn test_game(game_name: &str) {
-        let timeout_settings =
-            Some(TimeoutSettings::new(Some(Duration::from_nanos(1)), Some(Duration::from_nanos(1))).unwrap());
+        let timeout_settings = Some(
+            TimeoutSettings::new(
+                Some(Duration::from_nanos(1)),
+                Some(Duration::from_nanos(1)),
+                None,
+            )
+            .unwrap(),
+        );
         assert!(generic_query(game_name, &ADDR, None, timeout_settings, None).is_err());
     }
 
