@@ -1,4 +1,4 @@
-use crate::GDErrorKind::{PacketOverflow, PacketUnderflow};
+use crate::GDErrorKind::{PacketOverflow, PacketReceive, PacketUnderflow};
 use crate::GDResult;
 use std::cmp::Ordering;
 
@@ -11,6 +11,21 @@ pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
 }
 
 pub const fn u8_lower_upper(n: u8) -> (u8, u8) { (n & 15, n >> 4) }
+
+pub fn retry_on_timeout<T>(mut retry_count: usize, mut fetch: impl FnMut() -> GDResult<T>) -> GDResult<T> {
+    let mut last_err = PacketReceive.context("Retry count was 0");
+    retry_count += 1;
+    while retry_count > 0 {
+        last_err = match fetch() {
+            Ok(r) => return Ok(r),
+            Err(e) if e.kind == PacketReceive => e,
+            Err(e) => return Err(e),
+        };
+        retry_count -= 1;
+        println!("Retry");
+    }
+    Err(last_err)
+}
 
 #[cfg(test)]
 mod tests {
