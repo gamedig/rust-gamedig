@@ -1,2 +1,14 @@
 ci:
   - .github/workflows/**
+  - .actrc
+  - .pre-commit-config.yaml
+
+protocol:
+  - src/protocols/**
+
+games:
+  - src/games/**
+
+crate:
+  - Cargo.toml
+  - Cargo.lock
