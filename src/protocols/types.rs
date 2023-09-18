@@ -158,7 +158,7 @@ impl TimeoutSettings {
     /// "1" will try the request again once if it fails.
     /// The retry count is per-request so for multi-request queries (valve) if a
     /// single part fails that part can be retried up to `retries` times.
-    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: Option<usize>) -> GDResult<Self> {
+    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: usize) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
                 return Err(InvalidInput.context("Read duration must not be 0"));
@@ -174,7 +174,7 @@ impl TimeoutSettings {
         Ok(Self {
             read,
             write,
-            retries: retries.unwrap_or(0),
+            retries,
         })
     }
 
@@ -297,7 +297,7 @@ mod tests {
         let write_duration = Duration::from_secs(2);
 
         // Create new TimeoutSettings with the valid durations
-        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), None)?;
+        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0)?;
 
         // Verify that the get_read and get_write methods return the expected values
         assert_eq!(timeout_settings.get_read(), Some(read_duration));
@@ -315,7 +315,7 @@ mod tests {
 
         // Try to create new TimeoutSettings with the zero read duration (this should
         // fail)
-        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), None);
+        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0);
 
         // Verify that the function returned an error and that the error type is
         // InvalidInput

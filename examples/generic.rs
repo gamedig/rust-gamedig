@@ -77,7 +77,7 @@ mod test {
             TimeoutSettings::new(
                 Some(Duration::from_nanos(1)),
                 Some(Duration::from_nanos(1)),
-                None,
+                0,
             )
             .unwrap(),
         );
