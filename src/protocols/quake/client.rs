@@ -4,6 +4,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
@@ -95,7 +96,10 @@ pub fn client_query<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response<Client::Player>> {
-    let data = get_data::<Client>(address, timeout_settings)?;
+    let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+    let data = retry_on_timeout(retry_count, || {
+        get_data::<Client>(address, timeout_settings.clone())
+    })?;
     let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
     let mut server_vars = get_server_values(&mut bufferer)?;
