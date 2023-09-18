@@ -152,6 +152,12 @@ pub struct TimeoutSettings {
 impl TimeoutSettings {
     /// Construct new settings, passing None will block indefinitely.  
     /// Passing zero Duration throws GDErrorKind::[InvalidInput].
+    ///
+    /// The retry count is the number of extra tries once the original request
+    /// fails, so a value of "0" will only make a single request, whereas
+    /// "1" will try the request again once if it fails.
+    /// The retry count is per-request so for multi-request queries (valve) if a
+    /// single part fails that part can be retried up to `retries` times.
     pub fn new(read: Option<Duration>, write: Option<Duration>, retries: Option<usize>) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
@@ -178,7 +184,7 @@ impl TimeoutSettings {
     /// Get the write timeout.
     pub const fn get_write(&self) -> Option<Duration> { self.write }
 
-    /// Get amount of retries
+    /// Get number of retries
     pub const fn get_retries(&self) -> usize { self.retries }
 
     /// Get the number of retries if there are timeout settings else fall back
@@ -192,12 +198,12 @@ impl TimeoutSettings {
 }
 
 impl Default for TimeoutSettings {
-    /// Default values are 4 seconds for both read and write.
+    /// Default values are 4 seconds for both read and write, no retries.
     fn default() -> Self {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
-            retries: 1,
+            retries: 0,
         }
     }
 }
