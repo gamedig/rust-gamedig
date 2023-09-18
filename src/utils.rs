@@ -22,7 +22,6 @@ pub fn retry_on_timeout<T>(mut retry_count: usize, mut fetch: impl FnMut() -> GD
             Err(e) => return Err(e),
         };
         retry_count -= 1;
-        println!("Retry");
     }
     Err(last_err)
 }
