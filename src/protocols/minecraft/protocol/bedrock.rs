@@ -7,7 +7,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, UdpSocket},
-    utils::error_by_expected_size,
+    utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, TypeParse},
     GDResult,
 };
@@ -97,6 +97,8 @@ impl Bedrock {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<BedrockResponse> {
-        Self::new(address, timeout_settings)?.get_info()
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        let mut mc_query = Self::new(address, timeout_settings)?;
+        retry_on_timeout(retry_count, move || mc_query.get_info())
     }
 }

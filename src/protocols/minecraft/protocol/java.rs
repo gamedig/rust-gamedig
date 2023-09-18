@@ -5,6 +5,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
+    utils::retry_on_timeout,
     GDErrorKind::{JsonParse, PacketBad},
     GDResult,
 };
@@ -160,6 +161,11 @@ impl Java {
         timeout_settings: Option<TimeoutSettings>,
         request_settings: Option<RequestSettings>,
     ) -> GDResult<JavaResponse> {
-        Self::new(address, timeout_settings, request_settings)?.get_info()
+        let retry_count = timeout_settings
+            .as_ref()
+            .map(|t| t.get_retries())
+            .unwrap_or_else(|| TimeoutSettings::default().get_retries());
+        let mut mc_query = Self::new(address, timeout_settings, request_settings)?;
+        retry_on_timeout(retry_count, move || mc_query.get_info())
     }
 }

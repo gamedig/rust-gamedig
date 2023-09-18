@@ -7,7 +7,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
-    utils::error_by_expected_size,
+    utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
 };
@@ -102,6 +102,8 @@ impl LegacyV1_6 {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        Self::new(address, timeout_settings)?.get_info()
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        let mut mc_query = Self::new(address, timeout_settings)?;
+        retry_on_timeout(retry_count, move || mc_query.get_info())
     }
 }
