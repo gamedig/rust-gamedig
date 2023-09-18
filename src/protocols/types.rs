@@ -180,6 +180,15 @@ impl TimeoutSettings {
 
     /// Get amount of retries
     pub const fn get_retries(&self) -> usize { self.retries }
+
+    /// Get the number of retries if there are timeout settings else fall back
+    /// to the default
+    pub fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
+        timeout_settings
+            .as_ref()
+            .map(|t| t.get_retries())
+            .unwrap_or_else(|| TimeoutSettings::default().get_retries())
+    }
 }
 
 impl Default for TimeoutSettings {
