@@ -5,6 +5,7 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
@@ -340,8 +341,9 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
     let mut client = GameSpy3::new(address, timeout_settings)?;
-    let packets = client.get_server_packets()?;
+    let packets = retry_on_timeout(retry_count, move || client.get_server_packets())?;
 
     let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDErrorKind::PacketBad)?)?;
 

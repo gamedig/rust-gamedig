@@ -4,6 +4,7 @@ use crate::buffer::Utf8Decoder;
 use crate::protocols::gamespy::common::has_password;
 use crate::GDErrorKind::TypeParse;
 
+use crate::utils::retry_on_timeout;
 use crate::{
     buffer::Buffer,
     protocols::{
@@ -198,7 +199,10 @@ pub fn query_vars(
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let mut server_vars = query_vars(address, timeout_settings)?;
+    let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+    let mut server_vars = retry_on_timeout(retry_count, move || {
+        query_vars(address, timeout_settings.clone())
+    })?;
 
     let players_maximum: u32 = server_vars
         .remove("maxplayers")

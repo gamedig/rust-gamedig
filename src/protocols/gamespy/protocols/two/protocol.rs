@@ -2,6 +2,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::two::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use byteorder::BigEndian;
@@ -155,8 +156,9 @@ fn get_players(bufferer: &mut Buffer<BigEndian>) -> GDResult<Vec<Player>> {
 }
 
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+    let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
     let mut client = GameSpy2::new(address, timeout_settings)?;
-    let (data, buf_index) = client.request_data()?;
+    let (data, buf_index) = retry_on_timeout(retry_count, move || client.request_data())?;
 
     let mut buffer = Buffer::<BigEndian>::new(&data);
     buffer.move_cursor(buf_index as isize)?;
