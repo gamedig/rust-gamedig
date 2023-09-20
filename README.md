@@ -1,4 +1,4 @@
-# rust-GameDig [![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![Latest Version](https://img.shields.io/crates/v/gamedig.svg?color=yellow)](https://crates.io/crates/gamedig) [![Crates.io](https://img.shields.io/crates/d/gamedig?color=purple)](https://crates.io/crates/gamedig) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](LICENSE.md)
+# rust-GameDig [![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![Latest Version](https://img.shields.io/crates/v/gamedig.svg?color=yellow)](https://crates.io/crates/gamedig) [![Crates.io](https://img.shields.io/crates/d/gamedig?color=purple)](https://crates.io/crates/gamedig) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](LICENSE.md) [![node coverage](./.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
 
 **Warning**: This project goes through frequent API breaking changes and hasn't been thoroughly tested.
 
