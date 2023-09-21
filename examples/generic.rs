@@ -88,7 +88,7 @@ mod test {
     fn tf2() { test_game("tf2"); }
 
     #[test]
-    fn quake() { test_game("quake3a"); }
+    fn quake() { test_game("quake3"); }
 
     #[test]
     fn all_games() {
