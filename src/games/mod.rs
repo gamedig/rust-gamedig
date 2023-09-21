@@ -101,12 +101,12 @@ pub mod sof2;
 pub mod ss;
 /// Sven Co-op
 pub mod svencoop;
-/// The Forest
-pub mod tf;
 /// Team Fortress 2
 pub mod tf2;
 /// Team Fortress Classic
 pub mod tfc;
+/// The Forest
+pub mod theforest;
 /// Unturned
 pub mod unturned;
 /// Unreal Tournament

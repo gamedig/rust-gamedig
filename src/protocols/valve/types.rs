@@ -318,7 +318,7 @@ pub enum SteamApp {
     /// Day of Infamy
     DOI,
     /// The Forest
-    TF,
+    THEFOREST,
     /// Unturned
     UNTURNED,
     /// ARK: Survival Evolved
@@ -372,7 +372,7 @@ impl SteamApp {
             Self::COLONYSURVIVAL => Engine::new_source(366_090),
             Self::AVORION => Engine::new_source(445_220),
             Self::DOI => Engine::new_source(447_820),
-            Self::TF => Engine::new_source(556_450),
+            Self::THEFOREST => Engine::new_source(556_450),
             Self::UNTURNED => Engine::new_source(304_930),
             Self::ARKSE => Engine::new_source(346_110),
             Self::BAT1944 => Engine::new_source(489_940),
