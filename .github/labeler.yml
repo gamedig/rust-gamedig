@@ -1,12 +1,13 @@
 ci:
   - .github/workflows/**
+  - .github/labeler.yml
   - .actrc
   - .pre-commit-config.yaml
 
 protocol:
   - src/protocols/**
 
-games:
+game:
   - src/games/**
 
 crate:
