@@ -24,12 +24,16 @@ macro_rules! game {
 
 /// Map of all currently supported games
 pub static GAMES: Map<&'static str, Game> = phf_map! {
-    "mc" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
-    "mc-java" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
-    "mc-bedrock" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
-    "mc-legacy-1.6" => game!("Minecraft (legacy v1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
-    "mc-legacy-1.4" => game!("Minecraft (legacy v1.4-1.5)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4)))),
-    "mc-legacy-b1.8" => game!("Minecraft (legacy vB1.8-1.3)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8)))),
+    // Query with all minecraft protocols node-gamedig: minecraft,minecraftping
+    "minecraft" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
+    "minecraftping" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
+    // Query with specific minecraft protocols
+    "minecraftbe" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
+    "minecraftpe" => game!("Minecraft (bedrock/pocket edition)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
+    "minecraftjava" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
+    "minecraft-legacy-1.6" => game!("Minecraft (legacy v1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
+    "minecraft-legacy-1.4" => game!("Minecraft (legacy v1.4-1.5)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4)))),
+    "minecraft-legacy-b1.8" => game!("Minecraft (legacy vB1.8-1.3)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8)))),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(SteamApp::ALIENS)),
     "ageofchivalry" => game!("Age of Chivalry", 27015, Protocol::Valve(SteamApp::AOC)),
     "arma2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(SteamApp::ARMA2OA)),
