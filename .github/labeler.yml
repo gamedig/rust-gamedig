@@ -6,7 +6,7 @@ ci:
 protocol:
   - src/protocols/**
 
-games:
+game:
   - src/games/**
 
 crate:
