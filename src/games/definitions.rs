@@ -110,10 +110,8 @@ mod test {
             let metadata = file.metadata().unwrap();
             if metadata.is_file() {
                 if let Some(file_name) = file.file_name().into_string().unwrap().strip_suffix(".rs") {
-                    if !ignore.contains(&file_name) {
-                        if !GAMES.contains_key(file_name) {
-                            panic!("Expected GAMES to contain a definition to match {file_name}");
-                        }
+                    if !ignore.contains(&file_name) && !GAMES.contains_key(file_name) {
+                        panic!("Expected GAMES to contain a definition to match {file_name}");
                     }
                 }
             }
