@@ -274,59 +274,59 @@ pub enum SteamApp {
     /// Team Fortress 2
     TF2,
     /// Left 4 Dead
-    L4D,
+    LEFT4DEAD,
     /// Left 4 Dead
-    L4D2,
+    LEFT4DEAD2,
     /// Alien Swarm
-    ALIENS,
+    ALIENSWARM,
     /// Counter-Strike: Global Offensive
     CSGO,
     /// The Ship
-    TS,
+    SHIP,
     /// Garry's Mod
-    GM,
+    GARRYSMOD,
     /// Age of Chivalry
-    AOC,
+    AGEOFCHIVALRY,
     /// Insurgency: Modern Infantry Combat
-    INSMIC,
+    INSURGENCYMIC,
     /// ARMA 2: Operation Arrowhead
     ARMA2OA,
     /// Project Zomboid
-    PZ,
+    PRZOMBOID,
     /// Insurgency
-    INS,
+    INSURGENCY,
     /// Sven Co-op
-    SC,
+    SVEENCOOP,
     /// 7 Days To Die
-    SDTD,
+    SD2D,
     /// Rust
     RUST,
     /// Vallistic Overkill
-    BO,
+    BALLISTICOVERKILL,
     /// Don't Starve Together
     DST,
     /// BrainBread 2
-    BB2,
+    BRAINBREAD2,
     /// Codename CURE
-    CCURE,
+    CODENAMECURE,
     /// Black Mesa
-    BM,
+    BLACKMESA,
     /// Colony Survival
-    COSU,
+    COLONYSURVIVAL,
     /// Avorion
     AVORION,
     /// Day of Infamy
     DOI,
     /// The Forest
-    TF,
+    THEFOREST,
     /// Unturned
     UNTURNED,
     /// ARK: Survival Evolved
-    ASE,
+    ARKSE,
     /// Battalion 1944
     BAT1944,
     /// Insurgency: Sandstorm
-    INSS,
+    INSURGENCYSANDSTORM,
     /// Alien Swarm: Reactive Drop
     ASRD,
     /// Risk of Rain 2
@@ -336,7 +336,7 @@ pub enum SteamApp {
     /// Onset
     ONSET,
     /// V Rising
-    VR,
+    VRISING,
     /// Hell Let Loose
     HLL,
 }
@@ -350,38 +350,38 @@ impl SteamApp {
             Self::HL2DM => Engine::new_source(320),
             Self::HLDMS => Engine::new_source(360),
             Self::TF2 => Engine::new_source(440),
-            Self::L4D => Engine::new_source(500),
-            Self::L4D2 => Engine::new_source(550),
-            Self::ALIENS => Engine::new_source(630),
+            Self::LEFT4DEAD => Engine::new_source(500),
+            Self::LEFT4DEAD2 => Engine::new_source(550),
+            Self::ALIENSWARM => Engine::new_source(630),
             Self::CSGO => Engine::new_source(730),
-            Self::TS => Engine::new_source(2400),
-            Self::GM => Engine::new_source(4000),
-            Self::AOC => Engine::new_source(17510),
-            Self::INSMIC => Engine::new_source(17700),
+            Self::SHIP => Engine::new_source(2400),
+            Self::GARRYSMOD => Engine::new_source(4000),
+            Self::AGEOFCHIVALRY => Engine::new_source(17510),
+            Self::INSURGENCYMIC => Engine::new_source(17700),
             Self::ARMA2OA => Engine::new_source(33930),
-            Self::PZ => Engine::new_source(108_600),
-            Self::INS => Engine::new_source(222_880),
-            Self::SDTD => Engine::new_source(251_570),
+            Self::PRZOMBOID => Engine::new_source(108_600),
+            Self::INSURGENCY => Engine::new_source(222_880),
+            Self::SD2D => Engine::new_source(251_570),
             Self::RUST => Engine::new_source(252_490),
             Self::CREATIVERSE => Engine::new_source(280_790),
-            Self::BO => Engine::new_source(296_300),
+            Self::BALLISTICOVERKILL => Engine::new_source(296_300),
             Self::DST => Engine::new_source(322_320),
-            Self::BB2 => Engine::new_source(346_330),
-            Self::CCURE => Engine::new_source(355_180),
-            Self::BM => Engine::new_source(362_890),
-            Self::COSU => Engine::new_source(366_090),
+            Self::BRAINBREAD2 => Engine::new_source(346_330),
+            Self::CODENAMECURE => Engine::new_source(355_180),
+            Self::BLACKMESA => Engine::new_source(362_890),
+            Self::COLONYSURVIVAL => Engine::new_source(366_090),
             Self::AVORION => Engine::new_source(445_220),
             Self::DOI => Engine::new_source(447_820),
-            Self::TF => Engine::new_source(556_450),
+            Self::THEFOREST => Engine::new_source(556_450),
             Self::UNTURNED => Engine::new_source(304_930),
-            Self::ASE => Engine::new_source(346_110),
+            Self::ARKSE => Engine::new_source(346_110),
             Self::BAT1944 => Engine::new_source(489_940),
-            Self::INSS => Engine::new_source(581_320),
+            Self::INSURGENCYSANDSTORM => Engine::new_source(581_320),
             Self::ASRD => Engine::new_source(563_560),
             Self::ROR2 => Engine::new_source(632_360),
             Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
             Self::ONSET => Engine::new_source(1_105_810),
-            Self::VR => Engine::new_source(1_604_030),
+            Self::VRISING => Engine::new_source(1_604_030),
             Self::HLL => Engine::new_source(686_810),
             _ => Engine::GoldSrc(false), // CS - 10, TFC - 20, DOD - 30, CSCZ - 80, SC - 225840
         }

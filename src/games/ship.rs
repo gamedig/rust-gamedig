@@ -136,7 +136,7 @@ pub fn query_with_timeout(
 ) -> GDResult<Response> {
     let valve_response = valve::query(
         &SocketAddr::new(*address, port.unwrap_or(27015)),
-        SteamApp::TS.as_engine(),
+        SteamApp::SHIP.as_engine(),
         None,
         timeout_settings,
     )?;

@@ -82,13 +82,13 @@ mod test {
     fn battlefield() { test_game("bf1942"); }
 
     #[test]
-    fn minecraft() { test_game("mc"); }
+    fn minecraft() { test_game("minecraft"); }
 
     #[test]
     fn tf2() { test_game("tf2"); }
 
     #[test]
-    fn quake() { test_game("quake3a"); }
+    fn quake() { test_game("quake3"); }
 
     #[test]
     fn all_games() {

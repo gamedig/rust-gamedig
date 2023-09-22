@@ -24,65 +24,97 @@ macro_rules! game {
 
 /// Map of all currently supported games
 pub static GAMES: Map<&'static str, Game> = phf_map! {
-    "mc" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
-    "mc-java" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
-    "mc-bedrock" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
-    "mc-legacy-1.6" => game!("Minecraft (legacy v1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
-    "mc-legacy-1.4" => game!("Minecraft (legacy v1.4-1.5)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4)))),
-    "mc-legacy-b1.8" => game!("Minecraft (legacy vB1.8-1.3)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8)))),
-    "aliens" => game!("Alien Swarm", 27015, Protocol::Valve(SteamApp::ALIENS)),
-    "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(SteamApp::AOC)),
+    // Query with all minecraft protocols node-gamedig: minecraft,minecraftping
+    "minecraft" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
+    "minecraftping" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
+    // Query with specific minecraft protocols
+    "minecraftbe" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
+    "minecraftpe" => game!("Minecraft (bedrock/pocket edition)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
+    "minecraftjava" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
+    "minecraft-legacy-1.6" => game!("Minecraft (legacy v1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
+    "minecraft-legacy-1.4" => game!("Minecraft (legacy v1.4-1.5)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4)))),
+    "minecraft-legacy-b1.8" => game!("Minecraft (legacy vB1.8-1.3)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8)))),
+    "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(SteamApp::ALIENSWARM)),
+    "ageofchivalry" => game!("Age of Chivalry", 27015, Protocol::Valve(SteamApp::AGEOFCHIVALRY)),
     "arma2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(SteamApp::ARMA2OA)),
-    "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(SteamApp::ASE)),
+    "arkse" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(SteamApp::ARKSE)),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(SteamApp::ASRD)),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(SteamApp::AVORION)),
     "bat1944" => game!("Battalion 1944", 7780, Protocol::Valve(SteamApp::BAT1944)),
-    "bb2" => game!("BrainBread 2", 27015, Protocol::Valve(SteamApp::BB2)),
+    "brainbread2" => game!("BrainBread 2", 27015, Protocol::Valve(SteamApp::BRAINBREAD2)),
     "bf1942" => game!("Battlefield 1942", 23000, Protocol::Gamespy(GameSpyVersion::One)),
-    "bm" => game!("Black Mesa", 27015, Protocol::Valve(SteamApp::BM)),
-    "bo" => game!("Ballistic Overkill", 27016, Protocol::Valve(SteamApp::BO)),
-    "ccure" => game!("Codename CURE", 27015, Protocol::Valve(SteamApp::CCURE)),
-    "cosu" => game!("Colony Survival", 27004, Protocol::Valve(SteamApp::COSU)),
+    "blackmesa" => game!("Black Mesa", 27015, Protocol::Valve(SteamApp::BLACKMESA)),
+    "ballisticoverkill" => game!("Ballistic Overkill", 27016, Protocol::Valve(SteamApp::BALLISTICOVERKILL)),
+    "codenamecure" => game!("Codename CURE", 27015, Protocol::Valve(SteamApp::CODENAMECURE)),
+    "colonysurvival" => game!("Colony Survival", 27004, Protocol::Valve(SteamApp::COLONYSURVIVAL)),
     "cs" => game!("Counter-Strike", 27015, Protocol::Valve(SteamApp::CS)),
     "cscz" => game!("Counter Strike: Condition Zero", 27015, Protocol::Valve(SteamApp::CSCZ)),
     "csgo" => game!("Counter-Strike: Global Offensive", 27015, Protocol::Valve(SteamApp::CSGO)),
     "css" => game!("Counter-Strike: Source", 27015, Protocol::Valve(SteamApp::CSS)),
     "creativerse" => game!("Creativerse", 26901, Protocol::Valve(SteamApp::CREATIVERSE)),
-    "cw" => game!("Crysis Wars", 64100, Protocol::Gamespy(GameSpyVersion::Three)),
+    "crysiswars" => game!("Crysis Wars", 64100, Protocol::Gamespy(GameSpyVersion::Three)),
     "dod" => game!("Day of Defeat", 27015, Protocol::Valve(SteamApp::DOD)),
     "dods" => game!("Day of Defeat: Source", 27015, Protocol::Valve(SteamApp::DODS)),
     "doi" => game!("Day of Infamy", 27015, Protocol::Valve(SteamApp::DOI)),
     "dst" => game!("Don't Starve Together", 27016, Protocol::Valve(SteamApp::DST)),
     "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::PROPRIETARY(ProprietaryProtocol::FFOW)),
-    "gm" => game!("Garry's Mod", 27016, Protocol::Valve(SteamApp::GM)),
+    "garrysmod" => game!("Garry's Mod", 27016, Protocol::Valve(SteamApp::GARRYSMOD)),
     "hl2dm" => game!("Half-Life 2 Deathmatch", 27015, Protocol::Valve(SteamApp::HL2DM)),
     "haloce" => game!("Halo: Combat Evolved", 2302, Protocol::Gamespy(GameSpyVersion::Two)),
     "hldms" => game!("Half-Life Deathmatch: Source", 27015, Protocol::Valve(SteamApp::HLDMS)),
     "hll" => game!("Hell Let Loose", 26420, Protocol::Valve(SteamApp::HLL)),
-    "ins" => game!("Insurgency", 27015, Protocol::Valve(SteamApp::INS)),
-    "insmic" => game!("Insurgency: Modern Infantry Combat", 27015, Protocol::Valve(SteamApp::INSMIC)),
-    "inss" => game!("Insurgency: Sandstorm", 27131, Protocol::Valve(SteamApp::INSS)),
-    "l4d" => game!("Left 4 Dead", 27015, Protocol::Valve(SteamApp::L4D)),
-    "l4d2" => game!("Left 4 Dead 2", 27015, Protocol::Valve(SteamApp::L4D2)),
+    "insurgency" => game!("Insurgency", 27015, Protocol::Valve(SteamApp::INSURGENCY)),
+    "insurgencymic" => game!("Insurgency: Modern Infantry Combat", 27015, Protocol::Valve(SteamApp::INSURGENCYMIC)),
+    "insurgencysandstorm" => game!("Insurgency: Sandstorm", 27131, Protocol::Valve(SteamApp::INSURGENCYSANDSTORM)),
+    "left4dead" => game!("Left 4 Dead", 27015, Protocol::Valve(SteamApp::LEFT4DEAD)),
+    "left4dead2" => game!("Left 4 Dead 2", 27015, Protocol::Valve(SteamApp::LEFT4DEAD2)),
     "ohd" => game!("Operation: Harsh Doorstop", 27005, Protocol::Valve(SteamApp::OHD)),
     "onset" => game!("Onset", 7776, Protocol::Valve(SteamApp::ONSET)),
-    "pz" => game!("Project Zomboid", 16261, Protocol::Valve(SteamApp::PZ)),
+    "przomboid" => game!("Project Zomboid", 16261, Protocol::Valve(SteamApp::PRZOMBOID)),
     "quake1" => game!("Quake 1", 27500, Protocol::Quake(QuakeVersion::One)),
     "quake2" => game!("Quake 2", 27910, Protocol::Quake(QuakeVersion::Two)),
-    "quake3a" => game!("Quake 3: Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
+    "quake3" => game!("Quake 3: Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
     "ror2" => game!("Risk of Rain 2", 27016, Protocol::Valve(SteamApp::ROR2)),
     "rust" => game!("Rust", 27015, Protocol::Valve(SteamApp::RUST)),
-    "sc" => game!("Sven Co-op", 27015, Protocol::Valve(SteamApp::SC)),
-    "sdtd" => game!("7 Days To Die", 26900, Protocol::Valve(SteamApp::SDTD)),
+    "svencoop" => game!("Sven Co-op", 27015, Protocol::Valve(SteamApp::SVEENCOOP)),
+    "7d2d" => game!("7 Days To Die", 26900, Protocol::Valve(SteamApp::SD2D)),
     "sof2" => game!("Soldier of Fortune 2", 20100, Protocol::Quake(QuakeVersion::Three)),
     "ss" => game!("Serious Sam", 25601, Protocol::Gamespy(GameSpyVersion::One)),
-    "tf" => game!("The Forest", 27016, Protocol::Valve(SteamApp::TF)),
+    "theforest" => game!("The Forest", 27016, Protocol::Valve(SteamApp::THEFOREST)),
     "tf2" => game!("Team Fortress 2", 27015, Protocol::Valve(SteamApp::TF2)),
     "tfc" => game!("Team Fortress Classic", 27015, Protocol::Valve(SteamApp::TFC)),
-    "ts" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),
+    "ship" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "ut" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
-    "vr" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VR)),
+    "vrising" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VRISING)),
     "jc2mp" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2MP)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),
 };
+
+#[cfg(test)]
+mod test {
+    use super::GAMES;
+    use std::fs;
+
+    #[test]
+    fn check_game_files_match_defs() {
+        let ignore = [
+            "mod",         // Module file
+            "definitions", // This file
+            "mc",          // Has various defs
+            "sd2d",        // Module names cannot start with numbers
+        ];
+
+        for file in fs::read_dir("./src/games/").unwrap() {
+            let file = file.unwrap();
+            let metadata = file.metadata().unwrap();
+            if metadata.is_file() {
+                if let Some(file_name) = file.file_name().into_string().unwrap().strip_suffix(".rs") {
+                    if !ignore.contains(&file_name) && !GAMES.contains_key(file_name) {
+                        panic!("Expected GAMES to contain a definition to match {file_name}");
+                    }
+                }
+            }
+        }
+    }
+}

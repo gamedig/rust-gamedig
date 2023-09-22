@@ -36,7 +36,7 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     #[cfg(feature = "games")]
-    TheShip(&'a crate::games::ts::Response),
+    TheShip(&'a crate::games::ship::Response),
     #[cfg(feature = "games")]
     FFOW(&'a crate::games::ffow::Response),
     #[cfg(feature = "games")]
@@ -52,7 +52,7 @@ pub enum GenericPlayer<'a> {
     Minecraft(&'a minecraft::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
     #[cfg(feature = "games")]
-    TheShip(&'a crate::games::ts::TheShipPlayer),
+    TheShip(&'a crate::games::ship::TheShipPlayer),
     #[cfg(feature = "games")]
     JCMP2(&'a crate::games::jc2mp::Player),
 }
