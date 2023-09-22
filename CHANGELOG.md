@@ -28,6 +28,10 @@ Generics:
 - Changed `players_maximum` and `players_online` (and their functions) types from `u64` to `u32`.
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
+Games:
+- Renamed game definitions to better match node-gamedig
+- Renamed game implementations to match new definition names
+
 Protocols:
 - Valve:
 1. Renamed `protocol` to `protocol_version`.
@@ -36,6 +40,7 @@ Protocols:
 4. Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 5. Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
 reported by the server are the same, errors if not, enabled by default.
+6. Valve: Renamed SteamApp enum variants to match new definition names
 
 - GameSpy (1, 2, 3):
 1. Renamed `version` to `game_version`.
