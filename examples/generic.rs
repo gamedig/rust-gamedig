@@ -44,13 +44,27 @@ fn main() {
             .expect("Could not lookup host");
         let port: Option<u16> = args.next().map(|s| s.parse().unwrap());
 
+        let timeout_settings = TimeoutSettings::new(
+            TimeoutSettings::default().get_read(),
+            TimeoutSettings::default().get_write(),
+            2,
+        )
+        .unwrap();
+
         let extra_settings = ExtraRequestSettings::default()
             .set_hostname(hostname.to_string())
             .set_gather_rules(true)
             .set_gather_players(true)
             .set_check_app_id(false);
 
-        generic_query(&game_name, &addr.ip(), port, None, Some(extra_settings)).unwrap();
+        generic_query(
+            &game_name,
+            &addr.ip(),
+            port,
+            Some(timeout_settings),
+            Some(extra_settings),
+        )
+        .unwrap();
     } else {
         // Without arguments print a list of games
 
