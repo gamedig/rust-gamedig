@@ -15,14 +15,19 @@ use std::net::SocketAddr;
 
 pub struct LegacyV1_6 {
     socket: TcpSocket,
+    retry_count: usize,
 }
 
 impl LegacyV1_6 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TcpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        socket.apply_timeout(&timeout_settings)?;
 
-        Ok(Self { socket })
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        Ok(Self {
+            socket,
+            retry_count,
+        })
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> {
@@ -81,7 +86,14 @@ impl LegacyV1_6 {
         })
     }
 
+    /// Send info request and parse response.
+    /// This function will retry fetch on timeouts.
     fn get_info(&mut self) -> GDResult<JavaResponse> {
+        retry_on_timeout(self.retry_count, move || self.get_info_impl())
+    }
+
+    /// Send info request and parse response (without retry logic).
+    fn get_info_impl(&mut self) -> GDResult<JavaResponse> {
         self.send_initial_request()?;
 
         let data = self.socket.receive(None)?;
@@ -102,8 +114,6 @@ impl LegacyV1_6 {
     }
 
     pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
-        let mut mc_query = Self::new(address, timeout_settings)?;
-        retry_on_timeout(retry_count, move || mc_query.get_info())
+        Self::new(address, timeout_settings)?.get_info()
     }
 }

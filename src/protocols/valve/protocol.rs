@@ -132,7 +132,7 @@ impl ValveProtocol {
             .as_ref()
             .map(|t| t.get_retries())
             .unwrap_or_else(|| TimeoutSettings::default().get_retries());
-        socket.apply_timeout(timeout_settings)?;
+        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
@@ -178,7 +178,21 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
+    /// This function will retry fetch on timeouts.
     pub fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: u8, payload: Vec<u8>) -> GDResult<Vec<u8>> {
+        retry_on_timeout(self.retry_count, || {
+            self.get_request_data_impl(engine, protocol, kind, payload.clone())
+        })
+    }
+
+    /// Ask for a specific request only (without retry logic).
+    fn get_request_data_impl(
+        &mut self,
+        engine: &Engine,
+        protocol: u8,
+        kind: u8,
+        payload: Vec<u8>,
+    ) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::new(kind, payload).to_bytes();
         self.socket.send(&request_initial_packet)?;
 
@@ -268,9 +282,7 @@ impl ValveProtocol {
 
     /// Get the server information's.
     fn get_server_info(&mut self, engine: &Engine) -> GDResult<ServerInfo> {
-        let data = retry_on_timeout(self.retry_count, || {
-            self.get_kind_request_data(engine, 0, Request::Info)
-        })?;
+        let data = self.get_kind_request_data(engine, 0, Request::Info)?;
         let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         if let Engine::GoldSrc(force) = engine {
@@ -364,9 +376,7 @@ impl ValveProtocol {
 
     /// Get the server player's.
     fn get_server_players(&mut self, engine: &Engine, protocol: u8) -> GDResult<Vec<ServerPlayer>> {
-        let data = retry_on_timeout(self.retry_count, || {
-            self.get_kind_request_data(engine, protocol, Request::Players)
-        })?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Players)?;
         let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         let count = buffer.read::<u8>()? as usize;
@@ -395,9 +405,7 @@ impl ValveProtocol {
 
     /// Get the server's rules.
     fn get_server_rules(&mut self, engine: &Engine, protocol: u8) -> GDResult<HashMap<String, String>> {
-        let data = retry_on_timeout(self.retry_count, || {
-            self.get_kind_request_data(engine, protocol, Request::Rules)
-        })?;
+        let data = self.get_kind_request_data(engine, protocol, Request::Rules)?;
         let mut buffer = Buffer::<LittleEndian>::new(&data);
 
         let count = buffer.read::<u16>()? as usize;

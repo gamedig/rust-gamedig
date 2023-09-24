@@ -16,7 +16,7 @@ pub trait Socket {
     fn new(address: &SocketAddr) -> GDResult<Self>
     where Self: Sized;
 
-    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()>;
+    fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()>;
 
     fn send(&mut self, data: &[u8]) -> GDResult<()>;
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>>;
@@ -37,10 +37,10 @@ impl Socket for TcpSocket {
         })
     }
 
-    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-        let settings = timeout_settings.unwrap_or_default();
-        self.socket.set_read_timeout(settings.get_read()).unwrap(); // unwrapping because TimeoutSettings::new
-        self.socket.set_write_timeout(settings.get_write()).unwrap(); // checks if these are 0 and throws an error
+    fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()> {
+        let (read, write) = TimeoutSettings::get_read_and_write_or_defaults(timeout_settings);
+        self.socket.set_read_timeout(read).unwrap(); // unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(write).unwrap(); // checks if these are 0 and throws an error
 
         Ok(())
     }
@@ -77,10 +77,10 @@ impl Socket for UdpSocket {
         })
     }
 
-    fn apply_timeout(&self, timeout_settings: Option<TimeoutSettings>) -> GDResult<()> {
-        let settings = timeout_settings.unwrap_or_default();
-        self.socket.set_read_timeout(settings.get_read()).unwrap(); // unwrapping because TimeoutSettings::new
-        self.socket.set_write_timeout(settings.get_write()).unwrap(); // checks if these are 0 and throws an error
+    fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()> {
+        let (read, write) = TimeoutSettings::get_read_and_write_or_defaults(timeout_settings);
+        self.socket.set_read_timeout(read).unwrap(); // unwrapping because TimeoutSettings::new
+        self.socket.set_write_timeout(write).unwrap(); // checks if these are 0 and throws an error
 
         Ok(())
     }

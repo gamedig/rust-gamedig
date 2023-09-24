@@ -189,23 +189,40 @@ impl TimeoutSettings {
 
     /// Get the number of retries if there are timeout settings else fall back
     /// to the default
-    pub fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
-        timeout_settings
-            .as_ref()
-            .map(|t| t.get_retries())
-            .unwrap_or_else(|| TimeoutSettings::default().get_retries())
+    pub const fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
+        if let Some(timeout_settings) = timeout_settings {
+            timeout_settings.get_retries()
+        } else {
+            TimeoutSettings::const_default().get_retries()
+        }
     }
-}
 
-impl Default for TimeoutSettings {
+    /// Get the read and write durations if there are timeout settings else fall
+    /// back to the defaults
+    pub const fn get_read_and_write_or_defaults(
+        timeout_settings: &Option<TimeoutSettings>,
+    ) -> (Option<Duration>, Option<Duration>) {
+        if let Some(timeout_settings) = timeout_settings {
+            (timeout_settings.get_read(), timeout_settings.get_write())
+        } else {
+            let default = TimeoutSettings::const_default();
+            (default.get_read(), default.get_write())
+        }
+    }
+
     /// Default values are 4 seconds for both read and write, no retries.
-    fn default() -> Self {
+    pub const fn const_default() -> Self {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
             retries: 0,
         }
     }
+}
+
+impl Default for TimeoutSettings {
+    /// Default values are 4 seconds for both read and write, no retries.
+    fn default() -> Self { Self::const_default() }
 }
 
 /// Generic extra request settings

@@ -44,6 +44,7 @@ pub(crate) struct GameSpy3 {
     socket: UdpSocket,
     payload: [u8; 4],
     single_packets: bool,
+    retry_count: usize,
 }
 
 const PACKET_SIZE: usize = 2048;
@@ -52,12 +53,14 @@ const DEFAULT_PAYLOAD: [u8; 4] = [0xFF, 0xFF, 0xFF, 0x01];
 impl GameSpy3 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
             payload: DEFAULT_PAYLOAD,
             single_packets: false,
+            retry_count,
         })
     }
 
@@ -68,12 +71,14 @@ impl GameSpy3 {
         single_packets: bool,
     ) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
             payload,
             single_packets,
+            retry_count,
         })
     }
 
@@ -131,7 +136,14 @@ impl GameSpy3 {
         )
     }
 
+    /// Fetch packets from server and store in buffer.
+    /// This function will retry fetch on timeouts.
     pub(crate) fn get_server_packets(&mut self) -> GDResult<Vec<Vec<u8>>> {
+        retry_on_timeout(self.retry_count, move || self.get_server_packets_impl())
+    }
+
+    /// Fetch packets from server and store in buffer (without retry logic).
+    fn get_server_packets_impl(&mut self) -> GDResult<Vec<Vec<u8>>> {
         let challenge = self.make_initial_handshake()?;
         self.send_data_request(challenge)?;
 
@@ -341,9 +353,8 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
 /// Providing None to the timeout settings results in using the default values.
 /// (TimeoutSettings::[default](TimeoutSettings::default)).
 pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
-    let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
     let mut client = GameSpy3::new(address, timeout_settings)?;
-    let packets = retry_on_timeout(retry_count, move || client.get_server_packets())?;
+    let packets = client.get_server_packets()?;
 
     let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDErrorKind::PacketBad)?)?;
 
