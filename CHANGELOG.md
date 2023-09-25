@@ -13,6 +13,8 @@ Protocols:
 Crate:
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
 - Applied some nursery Clippy lints.
+- The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query)
+    - By default `retries` is set to `0`, meaning no retries will be attempted
 
 Generics:
 - Added `ExtraRequestSettings` containing all possible extra request settings.
@@ -22,6 +24,8 @@ Generics:
 Crate:
 - The enum used for errors, `GDError` has been renamed to `GDErrorKind`.
 - `GDError` is now a struct that holds its kind, the source and a backtrace.
+- The `Socket::apply_timeout` method now borrows `TimeoutSettings` (`&Option<TimeoutSettings>`)
+    - To make this easier to work with a new method was added to `TimeoutSettings`: `TimeoutSettings::get_read_and_write_or_defaults` this takes a borrowed optional `TimeoutSettings` and returns the contained read and write durations or the default read and write durations.
 
 Generics:
 - Renamed `CommonResponseJson`'s `game` field (and the function) to `game_mode`.
