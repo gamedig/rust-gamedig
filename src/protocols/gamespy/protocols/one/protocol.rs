@@ -4,6 +4,7 @@ use crate::buffer::Utf8Decoder;
 use crate::protocols::gamespy::common::has_password;
 use crate::GDErrorKind::TypeParse;
 
+use crate::utils::retry_on_timeout;
 use crate::{
     buffer::Buffer,
     protocols::{
@@ -17,13 +18,22 @@ use crate::{
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
+/// Send status request, and parse response into HashMap.
+/// This function will retry fetch on timeouts.
 fn get_server_values(
     address: &SocketAddr,
-    timeout_settings: Option<TimeoutSettings>,
+    timeout_settings: &Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
+    retry_on_timeout(
+        TimeoutSettings::get_retries_or_default(timeout_settings),
+        move || get_server_values_impl(&mut socket),
+    )
+}
 
+/// Send status request, and parse response into HashMap (without retry logic).
+fn get_server_values_impl(socket: &mut UdpSocket) -> GDResult<HashMap<String, String>> {
     socket.send(b"\\status\\xserverquery")?;
 
     let mut received_query_id: Option<usize> = None;
@@ -191,7 +201,7 @@ pub fn query_vars(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    get_server_values(address, timeout_settings)
+    get_server_values(address, &timeout_settings)
 }
 
 /// Query a server by providing the address, the port and timeout settings.

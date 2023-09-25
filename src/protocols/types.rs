@@ -146,12 +146,19 @@ pub struct CommonPlayerJson<'a> {
 pub struct TimeoutSettings {
     read: Option<Duration>,
     write: Option<Duration>,
+    retries: usize,
 }
 
 impl TimeoutSettings {
     /// Construct new settings, passing None will block indefinitely.  
     /// Passing zero Duration throws GDErrorKind::[InvalidInput].
-    pub fn new(read: Option<Duration>, write: Option<Duration>) -> GDResult<Self> {
+    ///
+    /// The retry count is the number of extra tries once the original request
+    /// fails, so a value of "0" will only make a single request, whereas
+    /// "1" will try the request again once if it fails.
+    /// The retry count is per-request so for multi-request queries (valve) if a
+    /// single part fails that part can be retried up to `retries` times.
+    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: usize) -> GDResult<Self> {
         if let Some(read_duration) = read {
             if read_duration == Duration::new(0, 0) {
                 return Err(InvalidInput.context("Read duration must not be 0"));
@@ -164,7 +171,11 @@ impl TimeoutSettings {
             }
         }
 
-        Ok(Self { read, write })
+        Ok(Self {
+            read,
+            write,
+            retries,
+        })
     }
 
     /// Get the read timeout.
@@ -172,16 +183,46 @@ impl TimeoutSettings {
 
     /// Get the write timeout.
     pub const fn get_write(&self) -> Option<Duration> { self.write }
-}
 
-impl Default for TimeoutSettings {
-    /// Default values are 4 seconds for both read and write.
-    fn default() -> Self {
+    /// Get number of retries
+    pub const fn get_retries(&self) -> usize { self.retries }
+
+    /// Get the number of retries if there are timeout settings else fall back
+    /// to the default
+    pub const fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
+        if let Some(timeout_settings) = timeout_settings {
+            timeout_settings.get_retries()
+        } else {
+            TimeoutSettings::const_default().get_retries()
+        }
+    }
+
+    /// Get the read and write durations if there are timeout settings else fall
+    /// back to the defaults
+    pub const fn get_read_and_write_or_defaults(
+        timeout_settings: &Option<TimeoutSettings>,
+    ) -> (Option<Duration>, Option<Duration>) {
+        if let Some(timeout_settings) = timeout_settings {
+            (timeout_settings.get_read(), timeout_settings.get_write())
+        } else {
+            let default = TimeoutSettings::const_default();
+            (default.get_read(), default.get_write())
+        }
+    }
+
+    /// Default values are 4 seconds for both read and write, no retries.
+    pub const fn const_default() -> Self {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
+            retries: 0,
         }
     }
+}
+
+impl Default for TimeoutSettings {
+    /// Default values are 4 seconds for both read and write, no retries.
+    fn default() -> Self { Self::const_default() }
 }
 
 /// Generic extra request settings
@@ -273,7 +314,7 @@ mod tests {
         let write_duration = Duration::from_secs(2);
 
         // Create new TimeoutSettings with the valid durations
-        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration))?;
+        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0)?;
 
         // Verify that the get_read and get_write methods return the expected values
         assert_eq!(timeout_settings.get_read(), Some(read_duration));
@@ -291,7 +332,7 @@ mod tests {
 
         // Try to create new TimeoutSettings with the zero read duration (this should
         // fail)
-        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration));
+        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0);
 
         // Verify that the function returned an error and that the error type is
         // InvalidInput

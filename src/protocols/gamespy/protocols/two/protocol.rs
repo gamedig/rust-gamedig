@@ -2,6 +2,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::two::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use byteorder::BigEndian;
@@ -10,6 +11,7 @@ use std::net::SocketAddr;
 
 struct GameSpy2 {
     socket: UdpSocket,
+    retry_count: usize,
 }
 
 macro_rules! table_extract {
@@ -78,12 +80,24 @@ fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<
 impl GameSpy2 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        socket.apply_timeout(&timeout_settings)?;
 
-        Ok(Self { socket })
+        Ok(Self {
+            socket,
+            retry_count,
+        })
     }
 
+    /// Send fetch request to server and store result in buffer.
+    /// This function will retry fetch on timeouts.
     fn request_data(&mut self) -> GDResult<(Vec<u8>, usize)> {
+        retry_on_timeout(self.retry_count, move || self.request_data_impl())
+    }
+
+    /// Send fetch request to server and store result in buffer (without retry
+    /// logic).
+    fn request_data_impl(&mut self) -> GDResult<(Vec<u8>, usize)> {
         self.socket
             .send(&[0xFE, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF])?;
 

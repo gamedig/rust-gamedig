@@ -7,7 +7,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
-    utils::error_by_expected_size,
+    utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
 };
@@ -15,19 +15,31 @@ use std::net::SocketAddr;
 
 pub struct LegacyV1_4 {
     socket: TcpSocket,
+    retry_count: usize,
 }
 
 impl LegacyV1_4 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TcpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        socket.apply_timeout(&timeout_settings)?;
 
-        Ok(Self { socket })
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        Ok(Self {
+            socket,
+            retry_count,
+        })
     }
 
     fn send_initial_request(&mut self) -> GDResult<()> { self.socket.send(&[0xFE, 0x01]) }
 
+    /// Send info request and parse response.
+    /// This function will retry fetch on timeouts.
     fn get_info(&mut self) -> GDResult<JavaResponse> {
+        retry_on_timeout(self.retry_count, move || self.get_info_impl())
+    }
+
+    /// Send info request and parse response (without retry logic).
+    fn get_info_impl(&mut self) -> GDResult<JavaResponse> {
         self.send_initial_request()?;
 
         let data = self.socket.receive(None)?;

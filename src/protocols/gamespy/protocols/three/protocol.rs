@@ -5,6 +5,7 @@ use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{Player, Response, Team};
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
@@ -43,6 +44,7 @@ pub(crate) struct GameSpy3 {
     socket: UdpSocket,
     payload: [u8; 4],
     single_packets: bool,
+    retry_count: usize,
 }
 
 const PACKET_SIZE: usize = 2048;
@@ -51,12 +53,14 @@ const DEFAULT_PAYLOAD: [u8; 4] = [0xFF, 0xFF, 0xFF, 0x01];
 impl GameSpy3 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
             payload: DEFAULT_PAYLOAD,
             single_packets: false,
+            retry_count,
         })
     }
 
@@ -67,12 +71,14 @@ impl GameSpy3 {
         single_packets: bool,
     ) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
             payload,
             single_packets,
+            retry_count,
         })
     }
 
@@ -130,7 +136,14 @@ impl GameSpy3 {
         )
     }
 
+    /// Fetch packets from server and store in buffer.
+    /// This function will retry fetch on timeouts.
     pub(crate) fn get_server_packets(&mut self) -> GDResult<Vec<Vec<u8>>> {
+        retry_on_timeout(self.retry_count, move || self.get_server_packets_impl())
+    }
+
+    /// Fetch packets from server and store in buffer (without retry logic).
+    fn get_server_packets_impl(&mut self) -> GDResult<Vec<Vec<u8>>> {
         let challenge = self.make_initial_handshake()?;
         self.send_data_request(challenge)?;
 

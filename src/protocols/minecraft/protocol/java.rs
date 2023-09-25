@@ -5,6 +5,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, TcpSocket},
+    utils::retry_on_timeout,
     GDErrorKind::{JsonParse, PacketBad},
     GDResult,
 };
@@ -18,6 +19,7 @@ use serde_json::Value;
 pub struct Java {
     socket: TcpSocket,
     request_settings: RequestSettings,
+    retry_count: usize,
 }
 
 impl Java {
@@ -27,11 +29,13 @@ impl Java {
         request_settings: Option<RequestSettings>,
     ) -> GDResult<Self> {
         let socket = TcpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        socket.apply_timeout(&timeout_settings)?;
 
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
         Ok(Self {
             socket,
             request_settings: request_settings.unwrap_or_default(),
+            retry_count,
         })
     }
 
@@ -92,7 +96,15 @@ impl Java {
         Ok(())
     }
 
+    /// Send minecraft ping request and parse the response.
+    /// This function will retry fetch on timeouts.
     fn get_info(&mut self) -> GDResult<JavaResponse> {
+        retry_on_timeout(self.retry_count, move || self.get_info_impl())
+    }
+
+    /// Send minecraft ping request and parse the response (without retry
+    /// logic).
+    fn get_info_impl(&mut self) -> GDResult<JavaResponse> {
         self.send_handshake()?;
         self.send_status_request()?;
         self.send_ping_request()?;

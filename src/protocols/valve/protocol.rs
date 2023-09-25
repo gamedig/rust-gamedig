@@ -20,7 +20,7 @@ use crate::{
         },
     },
     socket::{Socket, UdpSocket},
-    utils::u8_lower_upper,
+    utils::{retry_on_timeout, u8_lower_upper},
     GDErrorKind::{BadGame, Decompress, UnknownEnumCast},
     GDResult,
 };
@@ -120,6 +120,7 @@ impl SplitPacket {
 
 pub(crate) struct ValveProtocol {
     socket: UdpSocket,
+    retry_count: usize,
 }
 
 static PACKET_SIZE: usize = 6144;
@@ -127,9 +128,16 @@ static PACKET_SIZE: usize = 6144;
 impl ValveProtocol {
     pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        let retry_count = timeout_settings
+            .as_ref()
+            .map(|t| t.get_retries())
+            .unwrap_or_else(|| TimeoutSettings::default().get_retries());
+        socket.apply_timeout(&timeout_settings)?;
 
-        Ok(Self { socket })
+        Ok(Self {
+            socket,
+            retry_count,
+        })
     }
 
     fn receive(&mut self, engine: &Engine, protocol: u8, buffer_size: usize) -> GDResult<Packet> {
@@ -170,7 +178,21 @@ impl ValveProtocol {
     }
 
     /// Ask for a specific request only.
+    /// This function will retry fetch on timeouts.
     pub fn get_request_data(&mut self, engine: &Engine, protocol: u8, kind: u8, payload: Vec<u8>) -> GDResult<Vec<u8>> {
+        retry_on_timeout(self.retry_count, || {
+            self.get_request_data_impl(engine, protocol, kind, payload.clone())
+        })
+    }
+
+    /// Ask for a specific request only (without retry logic).
+    fn get_request_data_impl(
+        &mut self,
+        engine: &Engine,
+        protocol: u8,
+        kind: u8,
+        payload: Vec<u8>,
+    ) -> GDResult<Vec<u8>> {
         let request_initial_packet = Packet::new(kind, payload).to_bytes();
         self.socket.send(&request_initial_packet)?;
 

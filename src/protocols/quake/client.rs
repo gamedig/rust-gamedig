@@ -4,6 +4,7 @@ use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::quake::types::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
 use crate::{GDErrorKind, GDResult};
 use std::collections::HashMap;
@@ -18,10 +19,22 @@ pub trait QuakeClient {
     fn parse_player_string(data: Iter<&str>) -> GDResult<Self::Player>;
 }
 
-fn get_data<Client: QuakeClient>(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Vec<u8>> {
+/// Send request and return result buffer.
+/// This function will retry fetch on timeouts.
+fn get_data<Client: QuakeClient>(
+    address: &SocketAddr,
+    timeout_settings: &Option<TimeoutSettings>,
+) -> GDResult<Vec<u8>> {
     let mut socket = UdpSocket::new(address)?;
     socket.apply_timeout(timeout_settings)?;
+    retry_on_timeout(
+        TimeoutSettings::get_retries_or_default(timeout_settings),
+        move || get_data_impl::<Client>(&mut socket),
+    )
+}
 
+/// Send request and return result buffer (without retry logic).
+fn get_data_impl<Client: QuakeClient>(socket: &mut UdpSocket) -> GDResult<Vec<u8>> {
     socket.send(
         &[
             &[0xFF, 0xFF, 0xFF, 0xFF],
@@ -95,7 +108,7 @@ pub fn client_query<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response<Client::Player>> {
-    let data = get_data::<Client>(address, timeout_settings)?;
+    let data = get_data::<Client>(address, &timeout_settings)?;
     let mut bufferer = Buffer::<LittleEndian>::new(&data);
 
     let mut server_vars = get_server_values(&mut bufferer)?;

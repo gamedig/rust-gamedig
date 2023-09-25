@@ -7,7 +7,7 @@ use crate::{
         types::TimeoutSettings,
     },
     socket::{Socket, UdpSocket},
-    utils::error_by_expected_size,
+    utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, TypeParse},
     GDResult,
 };
@@ -18,14 +18,19 @@ use byteorder::LittleEndian;
 
 pub struct Bedrock {
     socket: UdpSocket,
+    retry_count: usize,
 }
 
 impl Bedrock {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address)?;
-        socket.apply_timeout(timeout_settings)?;
+        socket.apply_timeout(&timeout_settings)?;
 
-        Ok(Self { socket })
+        let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
+        Ok(Self {
+            socket,
+            retry_count,
+        })
     }
 
     fn send_status_request(&mut self) -> GDResult<()> {
@@ -39,7 +44,14 @@ impl Bedrock {
         Ok(())
     }
 
+    /// Send a status request, and parse the response.
+    /// This function will retry fetch on timeouts.
     fn get_info(&mut self) -> GDResult<BedrockResponse> {
+        retry_on_timeout(self.retry_count, move || self.get_info_impl())
+    }
+
+    /// Send a status request, and parse the response (without retry logic).
+    fn get_info_impl(&mut self) -> GDResult<BedrockResponse> {
         self.send_status_request()?;
 
         let received = self.socket.receive(None)?;
