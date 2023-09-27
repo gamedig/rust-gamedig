@@ -1,8 +1,31 @@
-# rust-GameDig [![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![Latest Version](https://img.shields.io/crates/v/gamedig.svg?color=yellow)](https://crates.io/crates/gamedig) [![Crates.io](https://img.shields.io/crates/d/gamedig?color=purple)](https://crates.io/crates/gamedig) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](LICENSE.md) [![node coverage](./.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
+<h1 align="center">rust-GameDig</h1>
+
+<h5 align="center">The fast library for querying game servers/services.</h5>
+
+<div align="center">
+  <a href="https://github.com/gamedig/rust-gamedig/actions">
+    <img src="https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
+  <a href="https://crates.io/crates/gamedig">
+    <img src="https://img.shields.io/crates/v/gamedig.svg?color=yellow" alt="Latest Version">
+  </a>
+  <a href="https://crates.io/crates/gamedig">
+    <img src="https://img.shields.io/crates/d/gamedig?color=purple" alt="Crates.io">
+  </a>
+  <a href="https://github.com/gamedig/node-gamedig">
+    <img src="./.github/badges/node.svg" alt="Node-GameDig Game Coverage">
+  </a>
+</div>
+
+<h5 align="center">
+  This library brings what
+  <a href="https://github.com/gamedig/node-gamedig">
+    node-GameDig
+  </a>
+  does (and not only), to pure Rust!
+</h5>
 
 **Warning**: This project goes through frequent API breaking changes and hasn't been thoroughly tested.
-
-**rust-GameDig** is a game servers/services query library that fetches the availability and details of those, this library brings what **[node-GameDig](https://github.com/gamedig/node-gamedig)** does, to pure Rust!  
 
 ## Community
 Checkout the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).  
