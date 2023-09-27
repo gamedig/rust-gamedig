@@ -332,13 +332,7 @@ impl StringDecoder for Latin1Decoder {
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
         // Find the position of the delimiter in the data. If the delimiter is not
         // found, the length of the data is returned.
-        let position = data
-        // Create an iterator over the data.
-            .iter()
-            // Find the position of the delimiter
-            .position(|&b| b == delimiter.as_ref()[0])
-            // If the delimiter is not found, use the whole data slice.
-            .unwrap_or(data.len());
+        let position = find_delimiter_position(data, &delimiter);
 
         let result = encoding::all::ISO_8859_1
             .decode(&data[.. position], DecoderTrap::Strict)
@@ -346,7 +340,7 @@ impl StringDecoder for Latin1Decoder {
 
         // Update the cursor position
         // The +1 is to skip the delimiter
-        *cursor += position + 1;
+        *cursor += position + delimiter.len();
 
         Ok(result)
     }
@@ -367,13 +361,7 @@ impl StringDecoder for Utf8Decoder {
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
         // Find the position of the delimiter in the data. If the delimiter is not
         // found, the length of the data is returned.
-        let position = data
-        // Create an iterator over the data.
-            .iter()
-            // Find the position of the delimiter
-            .position(|&b| b == delimiter.as_ref()[0])
-            // If the delimiter is not found, use the whole data slice.
-            .unwrap_or(data.len());
+        let position = find_delimiter_position(data, &delimiter);
 
         // Convert the data until the found position into a UTF-8 string.
         let result = std::str::from_utf8(
@@ -387,7 +375,7 @@ impl StringDecoder for Utf8Decoder {
 
         // Update the cursor position
         // The +1 is to skip the delimiter
-        *cursor += position + 1;
+        *cursor += position + delimiter.len();
 
         Ok(result)
     }
@@ -414,13 +402,7 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
     /// position accordingly.
     fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
         // Try to find the position of the delimiter in the data
-        let position = data
-        // Split the data into 2-byte chunks (as UTF-16 uses 2 bytes per character)
-            .chunks_exact(2)
-            // Find the position of the delimiter
-            .position(|chunk| chunk == delimiter.as_ref())
-            // If the delimiter is not found, use the whole data, otherwise use the position of the delimiter
-            .map_or(data.len(), |pos| pos * 2);
+        let position = find_delimiter_position(data, &delimiter);
 
         // Create a buffer of u16 values to hold the decoded characters
         let mut paired_buf: Vec<u16> = vec![0; position / 2];
@@ -433,10 +415,27 @@ impl<B: ByteOrder> StringDecoder for Utf16Decoder<B> {
 
         // Update the cursor position
         // The +2 accounts for the delimiter
-        *cursor += position + 2;
+        *cursor += position + delimiter.len();
 
         Ok(result)
     }
+}
+
+/// Finds the position of the delimiter in the data slice.
+///
+/// # Arguments
+///
+/// * `data` - The data slice to search for the delimiter in.
+/// * `delimiter` - The delimiter to search for in the data slice.
+///
+/// # Returns
+///
+/// The position of the first occurrence of the delimiter in the data slice.
+/// If the delimiter is not found, returns the length of the data slice.
+fn find_delimiter_position(data: &[u8], delimiter: &[u8]) -> usize {
+    data.chunks_exact(delimiter.len())
+        .position(|window| window == delimiter)
+        .map_or(data.len(), |pos| pos * delimiter.len())
 }
 
 #[cfg(test)]
