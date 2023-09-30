@@ -43,10 +43,10 @@ the newer id (2005 would be `swbf2` and 2017 would be `swbf22017`).
 #2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV` -> `finalfantasy14`).
 
 ### Priorities
-If two games were to be requested to be added where one of them already has the 
-underlying protocol implemented, that's the one that'll be prioritized unless 
-said requested comes with the implementation added by himself (also called a 
-contribution).
+Game suggestions will be prioritized by maintainers based on whether the game
+uses a protocol already implemented in the library (games that use already
+implemented protocols will be added first), except in the case where a
+contribution is made with the protocol needed to implement the game.
 
 The same goes for protocols, if 2 were to be requested, the one implemented in 
 the most games will be prioritized.
