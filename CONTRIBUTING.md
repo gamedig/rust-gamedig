@@ -12,6 +12,10 @@ alongside with their backing points to ensure the transparency of the project's
 development.
 
 ## Issues
+Before opening an issue, check if there is an existing relevant issue first, 
+someone might just have had your issue already, or you might find something 
+related that could be of help.
+
 When opening a new issue, make sure to fill the issue template. They are made
 to make the subject to be as understandable as possible, not doing so may result 
 in your issue not being managed right away, if you don't understand something
