@@ -27,7 +27,7 @@ Note before contributing that everything done here is under the [MIT](https://op
 ### Naming
 Naming is an important matter, and it shouldn't be changed unless necessary.
 
-A game's identificator shall be created following these rules:
+A game's identification is lowercased only and be created following these rules:
 1. Names composed of a maximum of two words will result in an id where the 
 words are concatenated (`Dead Cells` -> `deadcells`), acronyms in the name 
 count as a single word (`S.T.A.L.K.E.R.` -> `stalker`).
@@ -44,7 +44,8 @@ the newer id (2005 would be `swbf2` and 2017 would be `swbf22017`).
 5. Always append the sequel number at the end (`Team Fortress 2` -> 
 `teamfortress2`) and the year (`Unreal Torunament 2004` -> 
 `unrealtournament2004`), note that the number (or the year) don't count to rule
-#2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV` -> `finalfantasy14`).
+#2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV`
+-> `finalfantasy14`).
 
 ### Priorities
 Game suggestions will be prioritized by maintainers based on whether the game
