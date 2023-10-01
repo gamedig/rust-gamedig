@@ -46,6 +46,10 @@ the newer id (2005 would be `swbf2` and 2017 would be `swbf22017`).
 `unrealtournament2004`), note that the number (or the year) don't count to rule
 #2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV`
 -> `finalfantasy14`).
+6. If a game has multiple id entries (by specifiying the edition (Minecraft: 
+Java and Bedrock) or the release version (Counter-Strike 1: 1.5 and 1.6)), one
+more entry by the base name (`minecraft` and `counterstrike` respectively) can
+be added, where it queries in a group said included entries.
 
 ### Priorities
 Game suggestions will be prioritized by maintainers based on whether the game
