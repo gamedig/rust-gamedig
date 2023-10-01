@@ -11,14 +11,14 @@ Protocols:
 - The Ship: Removed instances of using `unwrap` without handling the panics.
 
 Crate:
-- Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
+- Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`. (by @Douile)
 - Applied some nursery Clippy lints.
-- The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query)
+- The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query). (by @Douile)
     - By default `retries` is set to `0`, meaning no retries will be attempted
 
 Generics:
-- Added `ExtraRequestSettings` containing all possible extra request settings.
-- Added `query_with_timeout_and_extra_settings()` to allow generic queries with extra settings.
+- Added `ExtraRequestSettings` containing all possible extra request settings. (by @Douile)
+- Added `query_with_timeout_and_extra_settings()` to allow generic queries with extra settings. (by @Douile)
 
 ### Breaking...
 Crate:
@@ -33,8 +33,8 @@ Generics:
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
 Games:
-- Renamed game definitions to better match node-gamedig
-- Renamed game implementations to match new definition names
+- Renamed game definitions to better match node-gamedig (subject to change again in the next release). (by @Douile)
+- Renamed game implementations to match new definition names. (by @Douile)
 
 Protocols:
 - Valve:
@@ -43,7 +43,7 @@ Protocols:
 3. Renamed `game` to `game_mode`.
 4. Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 5. Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
-reported by the server are the same, errors if not, enabled by default.
+reported by the server are the same, errors if not, enabled by default. (by @Douile)
 6. Valve: Renamed SteamApp enum variants to match new definition names
 
 - GameSpy (1, 2, 3):
@@ -51,8 +51,8 @@ reported by the server are the same, errors if not, enabled by default.
 2. Changed `players_maximum` and `players_online` (and their functions) types from `usize` to `u32`.
 
 - GameSpy 1:
-1. Changed `score` type of player from `u32` to `i32`.
-2. Renamed the players `frags` field to `score`.
+1. Renamed the player's `frags` to `score` and type from `u32` to `i32`.
+2. Made `Option` the following response fields `team`, `face`, `skin`, `mesh` and `secret` to fix missing fields issues. (by @Douile)
 
 - Quake (1, 2):
 1. Renamed `game_type` to `game_mode`.
@@ -63,7 +63,7 @@ reported by the server are the same, errors if not, enabled by default.
 2. Renamed `version_name` to `game_version`.
 3. Renamed `players_sample` to `players`.
 4. Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake
-packet (this solves some servers not responding to the query).
+packet (this solves some servers not responding to the query). (by @Douile)
 
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.
