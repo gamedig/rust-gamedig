@@ -42,14 +42,13 @@ and 2017 would be `swbf22017`).
 4. If a new id (`Day of Dragons` -> `dod`) results in an id that already exists 
 (`Day of Defeat` -> `dod`), then the new name should ignore rule #2 
 (`Day of Dragons` -> `dayofdragons`).
-5. Always append the sequel number at the end (`Team Fortress 2` -> 
-`teamfortress2`) and the year (`Unreal Torunament 2004` -> 
-`unrealtournament2004`), note that the number (or the year) don't count to rule
-#2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV`
--> `finalfantasy14`).
-6. ID's cannot begin with a number, they will be considered words if the name
-begins with a number (so they count to #2) (`7 Days to Die` -> `sdtd`, `50 Cent: 
-Bulletproof` -> `fcb`).
+5. Roman numbering will be converted to arabic numbering (`XIV` -> `14`).
+6. Unless numbers are at the end of a name, they will be considered words, 
+digits will be used instead of the acronym (counter to #2) unless they at the 
+start position (`7 Days to Die` -> `sdtd`, `Left 4 Dead` -> `l4d`), if they are 
+at the end (such as sequel number or the year), don't count them as a word and 
+always append them (`Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 
+2003` -> `unrealtournament2003`).
 7. If a game has multiple id entries (by specifying the edition (Minecraft: 
 Java and Bedrock) or the release version (Counter-Strike 1: 1.5 and 1.6)), one
 more entry by the base name (`minecraft` and `counterstrike` respectively) can
