@@ -47,7 +47,10 @@ and 2017 would be `swbf22017`).
 `unrealtournament2004`), note that the number (or the year) don't count to rule
 #2, roman numbering will be converted to arabic numbering (`Final Fantasy XIV`
 -> `finalfantasy14`).
-6. If a game has multiple id entries (by specifying the edition (Minecraft: 
+6. ID's cannot begin with a number, they will be considered words if the name
+begins with a number (so they count to #2) (`7 Days to Die` -> `sdtd`, `50 Cent: 
+Bulletproof` -> `fcb`).
+7. If a game has multiple id entries (by specifying the edition (Minecraft: 
 Java and Bedrock) or the release version (Counter-Strike 1: 1.5 and 1.6)), one
 more entry by the base name (`minecraft` and `counterstrike` respectively) can
 be added, where it queries in a group said included entries.
