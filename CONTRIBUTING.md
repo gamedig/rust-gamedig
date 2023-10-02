@@ -61,6 +61,8 @@ if they are at the end (such as sequel number or the year), always append them
 Java and Bedrock) or the release version (Counter-Strike 1: 1.5 and 1.6)), one
 more entry by the base name (`minecraft` and `counterstrike` respectively) can
 be added, where it queries in a group said included entries.
+8. If said game is actually a mod that adds the ability for queries to be 
+performed, process only the mod name.
 
 ### Priorities
 Game suggestions will be prioritized by maintainers based on whether the game
