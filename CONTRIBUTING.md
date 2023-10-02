@@ -57,12 +57,14 @@ Dead` -> `l4d`) unless they at the start position (`7 Days to Die` -> `sdtd`),
 if they are at the end (such as sequel number or the year), always append them 
 (`Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 2003` -> 
 `unrealtournament2003`).
-7. If a game has multiple id entries (by specifying the edition (Minecraft: 
-Java and Bedrock) or the release version (Counter-Strike 1: 1.5 and 1.6)), one
-more entry by the base name (`minecraft` and `counterstrike` respectively) can
-be added, where it queries in a group said included entries.
-8. If said game is actually a mod that adds the ability for queries to be 
-performed, process only the mod name.
+7. If a game supports multiple protocols, multiple entries will be done for 
+said game where the edition/protocol name (first disposable in this order) will 
+be appended to the game name (Minecraft is divided by 2 editions, Java and Bedrock 
+which will be `minecraftjava` and `minecraftbedrock` respectively) and one more 
+entry can be added by the base name of the game which queries in a group said 
+supported protocols to make generic queries easier and disposable.
+8. If its actually about a mod that adds the ability for queries to be performed, 
+process only the mod name.
 
 ### Priorities
 Game suggestions will be prioritized by maintainers based on whether the game
