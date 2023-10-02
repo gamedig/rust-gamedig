@@ -27,7 +27,15 @@ Note before contributing that everything done here is under the [MIT](https://op
 ### Naming
 Naming is an important matter, and it shouldn't be changed unless necessary.
 
-A game's identification is lowercased only and be created following these rules:
+Game **names** should be added as they appear on steam (or other storefront 
+if not listed there) with the release year appended in brackets (except when the 
+release year is already part of the name).  
+If there is a mod that needs to be added (or it adds the support for server 
+queries for the game), its name should be composed of the game name, a separating
+**bracket**, the mod name and the release year as specified previously
+(e.g. `Grand Theft Auto V - FiveM (2013)`).
+
+A game's **identification** is lowercased only and be created following these rules:
 1. Names composed of a maximum of two words (unless #4 applies) will result in an 
 id where the words are concatenated (`Dead Cells` -> `deadcells`), acronyms in 
 the name count as a single word (`S.T.A.L.K.E.R.` -> `stalker`).
