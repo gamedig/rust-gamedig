@@ -28,9 +28,9 @@ Note before contributing that everything done here is under the [MIT](https://op
 Naming is an important matter, and it shouldn't be changed unless necessary.
 
 A game's identification is lowercased only and be created following these rules:
-1. Names composed of a maximum of two words will result in an id where the 
-words are concatenated (`Dead Cells` -> `deadcells`), acronyms in the name 
-count as a single word (`S.T.A.L.K.E.R.` -> `stalker`).
+1. Names composed of a maximum of two words (unless #4 applies) will result in an 
+id where the words are concatenated (`Dead Cells` -> `deadcells`), acronyms in 
+the name count as a single word (`S.T.A.L.K.E.R.` -> `stalker`).
 2. Names of more than two words shall be made into an acronym made of the 
 initial letters (`The Binding of Isaac` -> `tboi`), [hypenation composed words](https://prowritingaid.com/hyphenated-words) 
 don't count as a single word, but of how many parts they are made of 
