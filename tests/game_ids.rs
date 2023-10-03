@@ -407,3 +407,67 @@ fn check_node_definitions_match_name_rules() {
     let wrong = test_game_name_rules(games);
     assert!(wrong.is_empty());
 }
+
+fn test_single_game_rule(id: &str, name: &str) -> Vec<IDFail> { test_game_name_rules(std::iter::once((id, name))) }
+
+#[test]
+fn id_rule_one() {
+    assert!(test_single_game_rule("testgame", "Test Game").is_empty());
+    assert!(test_single_game_rule("testgame", "TestGame").is_empty());
+
+    assert!(test_single_game_rule("deadcells", "Dead Cells").is_empty());
+    assert!(test_single_game_rule("stalker", "S.T.A.L.K.E.R").is_empty());
+}
+
+#[test]
+fn id_rule_two() {
+    assert!(test_single_game_rule("tgt", "Test Game Three").is_empty());
+    assert!(test_single_game_rule("tgt", "Test Game-Three").is_empty());
+
+    assert!(test_single_game_rule("tboi", "The Binding of Isaac").is_empty());
+    assert!(test_single_game_rule("ddd", "Dino D-Day").is_empty());
+}
+
+#[test]
+fn id_rule_three() {
+    let games = vec![
+        ("swb22017", "Star Wars Battlefront 2 (2017)"),
+        ("swb2", "Star Wars Battlefront 2 (2015)"),
+    ];
+    assert!(test_game_name_rules(games.into_iter()).is_empty());
+}
+
+#[test]
+fn id_rule_four() {
+    let games = vec![("dod", "Day of Defeat"), ("dayofdragons", "Day of Dragons")];
+    assert!(test_game_name_rules(games.into_iter()).is_empty());
+}
+
+#[test]
+fn id_rule_five() {
+    assert!(test_single_game_rule("gta14", "Grand Theft Auto XIV").is_empty());
+}
+
+#[test]
+fn id_rule_six() {
+    assert!(test_single_game_rule("l4d", "Left 4 Dead").is_empty());
+    assert!(test_single_game_rule("sdtd", "7 Days to Die").is_empty());
+    assert!(test_single_game_rule("teamfortress2", "Team Fortress 2").is_empty());
+    assert!(test_single_game_rule("unrealtournament2003", "Unreal Tournament 2003").is_empty());
+}
+
+#[test]
+fn id_rule_seven() {
+    let games = vec![
+        ("minecraft", "Minecraft"),
+        ("minecraftjava", "Minecraft (java)"),
+        ("minecraftbedrock", "Minecraft (bedrock)"),
+    ];
+    assert!(test_game_name_rules(games.into_iter()).is_empty());
+}
+
+#[test]
+fn id_rule_eight() {
+    assert!(test_single_game_rule("fivem", "Grand Theft Auto V - FiveM (2013)").is_empty());
+    assert!(test_single_game_rule("jc3m", "Just Cause 3 - Multiplayer").is_empty());
+}
