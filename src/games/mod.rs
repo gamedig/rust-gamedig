@@ -3,14 +3,14 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-/// Age of Chivalry
-pub mod ageofchivalry;
+/// ARMA 2: Operation Arrowhead
+pub mod a2oa;
 /// Alien Swarm
 pub mod alienswarm;
+/// Age of Chivalry
+pub mod aoc;
 /// ARK: Survival Evolved
-pub mod arkse;
-/// ARMA 2: Operation Arrowhead
-pub mod arma2oa;
+pub mod ase;
 /// Alien Swarm: Reactive Drop
 pub mod asrd;
 /// Avorion
@@ -18,9 +18,9 @@ pub mod avorion;
 /// Ballistic Overkill
 pub mod ballisticoverkill;
 /// Battalion 1944
-pub mod bat1944;
+pub mod battalion1944;
 /// Battlefield 1942
-pub mod bf1942;
+pub mod battlefield1942;
 /// Black Mesa
 pub mod blackmesa;
 /// BrainBread 2
@@ -29,12 +29,12 @@ pub mod brainbread2;
 pub mod codenamecure;
 /// Colony Survival
 pub mod colonysurvival;
+/// Counter-Strike
+pub mod counterstrike;
 /// Creativerse
 pub mod creativerse;
 /// Crysis Wars
 pub mod crysiswars;
-/// Counter-Strike
-pub mod cs;
 /// Counter Strike: Condition Zero
 pub mod cscz;
 /// Counter-Strike: Global Offensive
@@ -54,33 +54,33 @@ pub mod ffow;
 /// Garry's Mod
 pub mod garrysmod;
 /// Halo: Combat Evolved
-pub mod haloce;
+pub mod hce;
 /// Half-Life 2 Deathmatch
-pub mod hl2dm;
+pub mod hl2d;
 /// Half-Life Deathmatch: Source
-pub mod hldms;
+pub mod hlds;
 /// Hell Let Loose
 pub mod hll;
+/// Insurgency: Modern Infantry Combat
+pub mod imic;
 /// Insurgency
 pub mod insurgency;
-/// Insurgency: Modern Infantry Combat
-pub mod insurgencymic;
 /// Insurgency: Sandstorm
 pub mod insurgencysandstorm;
 /// Just Cause 2: Multiplayer
-pub mod jc2mp;
+pub mod jc2m;
 /// Left 4 Dead
 pub mod left4dead;
 /// Left 4 Dead 2
 pub mod left4dead2;
 /// Minecraft
-pub mod mc;
+pub mod minecraft;
 /// Operation: Harsh Doorstop
 pub mod ohd;
 /// Onset
 pub mod onset;
 /// Project Zomboid
-pub mod przomboid;
+pub mod projectzomboid;
 /// Quake 1
 pub mod quake1;
 /// Quake 2
@@ -91,26 +91,26 @@ pub mod quake3;
 pub mod ror2;
 /// Rust
 pub mod rust;
+/// Sven Co-op
+pub mod sco;
 /// 7 Days To Die
 pub mod sd2d;
-/// The Ship
-pub mod ship;
+/// Serious Sam
+pub mod serioussam;
 /// Soldier of Fortune 2
 pub mod sof2;
-/// Serious Sam
-pub mod ss;
-/// Sven Co-op
-pub mod svencoop;
 /// Team Fortress 2
-pub mod tf2;
+pub mod teamfortress2;
 /// Team Fortress Classic
 pub mod tfc;
 /// The Forest
 pub mod theforest;
+/// The Ship
+pub mod theship;
+/// Unreal Tournament
+pub mod unrealtournament;
 /// Unturned
 pub mod unturned;
-/// Unreal Tournament
-pub mod ut;
 /// V Rising
 pub mod vrising;
 /// Warsow
@@ -222,12 +222,10 @@ pub fn query_with_timeout_and_extra_settings(
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
                 ProprietaryProtocol::TheShip => {
-                    ship::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                    theship::query_with_timeout(address, port, timeout_settings).map(Box::new)?
                 }
                 ProprietaryProtocol::FFOW => ffow::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
-                ProprietaryProtocol::JC2MP => {
-                    jc2mp::query_with_timeout(address, port, timeout_settings).map(Box::new)?
-                }
+                ProprietaryProtocol::JC2M => jc2m::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
             }
         }
     })

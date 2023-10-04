@@ -254,7 +254,7 @@ impl Request {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum SteamApp {
     /// Counter-Strike
-    CS,
+    COUNTERSTRIKE,
     /// Creativerse
     CREATIVERSE,
     /// Team Fortress Classic
@@ -268,11 +268,11 @@ pub enum SteamApp {
     /// Day of Defeat: Source
     DODS,
     /// Half-Life 2 Deathmatch
-    HL2DM,
+    HL2D,
     /// Half-Life Deathmatch: Source
-    HLDMS,
+    HLDS,
     /// Team Fortress 2
-    TF2,
+    TEAMFORTRESS2,
     /// Left 4 Dead
     LEFT4DEAD,
     /// Left 4 Dead
@@ -282,21 +282,21 @@ pub enum SteamApp {
     /// Counter-Strike: Global Offensive
     CSGO,
     /// The Ship
-    SHIP,
+    THESHIP,
     /// Garry's Mod
     GARRYSMOD,
     /// Age of Chivalry
-    AGEOFCHIVALRY,
+    AOC,
     /// Insurgency: Modern Infantry Combat
-    INSURGENCYMIC,
+    IMIC,
     /// ARMA 2: Operation Arrowhead
-    ARMA2OA,
+    A2OA,
     /// Project Zomboid
-    PRZOMBOID,
+    PROJECTZOMBOID,
     /// Insurgency
     INSURGENCY,
     /// Sven Co-op
-    SVEENCOOP,
+    SCO,
     /// 7 Days To Die
     SD2D,
     /// Rust
@@ -322,9 +322,9 @@ pub enum SteamApp {
     /// Unturned
     UNTURNED,
     /// ARK: Survival Evolved
-    ARKSE,
+    ASE,
     /// Battalion 1944
-    BAT1944,
+    BATTALION1944,
     /// Insurgency: Sandstorm
     INSURGENCYSANDSTORM,
     /// Alien Swarm: Reactive Drop
@@ -347,19 +347,19 @@ impl SteamApp {
         match self {
             Self::CSS => Engine::new_source(240),
             Self::DODS => Engine::new_source(300),
-            Self::HL2DM => Engine::new_source(320),
-            Self::HLDMS => Engine::new_source(360),
-            Self::TF2 => Engine::new_source(440),
+            Self::HL2D => Engine::new_source(320),
+            Self::HLDS => Engine::new_source(360),
+            Self::TEAMFORTRESS2 => Engine::new_source(440),
             Self::LEFT4DEAD => Engine::new_source(500),
             Self::LEFT4DEAD2 => Engine::new_source(550),
             Self::ALIENSWARM => Engine::new_source(630),
             Self::CSGO => Engine::new_source(730),
-            Self::SHIP => Engine::new_source(2400),
+            Self::THESHIP => Engine::new_source(2400),
             Self::GARRYSMOD => Engine::new_source(4000),
-            Self::AGEOFCHIVALRY => Engine::new_source(17510),
-            Self::INSURGENCYMIC => Engine::new_source(17700),
-            Self::ARMA2OA => Engine::new_source(33930),
-            Self::PRZOMBOID => Engine::new_source(108_600),
+            Self::AOC => Engine::new_source(17510),
+            Self::IMIC => Engine::new_source(17700),
+            Self::A2OA => Engine::new_source(33930),
+            Self::PROJECTZOMBOID => Engine::new_source(108_600),
             Self::INSURGENCY => Engine::new_source(222_880),
             Self::SD2D => Engine::new_source(251_570),
             Self::RUST => Engine::new_source(252_490),
@@ -374,8 +374,8 @@ impl SteamApp {
             Self::DOI => Engine::new_source(447_820),
             Self::THEFOREST => Engine::new_source(556_450),
             Self::UNTURNED => Engine::new_source(304_930),
-            Self::ARKSE => Engine::new_source(346_110),
-            Self::BAT1944 => Engine::new_source(489_940),
+            Self::ASE => Engine::new_source(346_110),
+            Self::BATTALION1944 => Engine::new_source(489_940),
             Self::INSURGENCYSANDSTORM => Engine::new_source(581_320),
             Self::ASRD => Engine::new_source(563_560),
             Self::ROR2 => Engine::new_source(632_360),

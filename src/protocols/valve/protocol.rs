@@ -304,7 +304,7 @@ impl ValveProtocol {
         let environment_type = Environment::from_gldsrc(buffer.read()?)?;
         let has_password = buffer.read::<u8>()? == 1;
         let vac_secured = buffer.read::<u8>()? == 1;
-        let the_ship = match *engine == SteamApp::SHIP.as_engine() {
+        let the_ship = match *engine == SteamApp::THESHIP.as_engine() {
             false => None,
             true => {
                 Some(TheShip {
@@ -389,11 +389,11 @@ impl ValveProtocol {
                 name: buffer.read_string::<Utf8Decoder>(None)?,
                 score: buffer.read()?,
                 duration: buffer.read()?,
-                deaths: match *engine == SteamApp::SHIP.as_engine() {
+                deaths: match *engine == SteamApp::THESHIP.as_engine() {
                     false => None,
                     true => Some(buffer.read()?),
                 },
-                money: match *engine == SteamApp::SHIP.as_engine() {
+                money: match *engine == SteamApp::THESHIP.as_engine() {
                     false => None,
                     true => Some(buffer.read()?),
                 },
