@@ -46,8 +46,8 @@ don't count as a single word, but of how many parts they are made of
 (`Dino D-Day`, 3 words, so `ddd`).
 3. If a game has the exact name as a previously existing id's game 
 (`Star Wars Battlefront 2`, the 2005 and 2017 one), append the release year to
-the newer id (2005 would be `swbf2` (suppose we already have this one supported) 
-and 2017 would be `swbf22017`).
+the newer id (2005 would be `swb2` (suppose we already have this one supported) 
+and 2017 would be `swb22017`).
 4. If a new id (`Day of Dragons` -> `dod`) results in an id that already exists 
 (`Day of Defeat` -> `dod`), then the new name should ignore rule #2 
 (`Day of Dragons` -> `dayofdragons`).
