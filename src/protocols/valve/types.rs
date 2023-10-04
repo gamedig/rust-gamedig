@@ -301,7 +301,7 @@ pub enum SteamApp {
     SD2D,
     /// Rust
     RUST,
-    /// Vallistic Overkill
+    /// Ballistic Overkill
     BALLISTICOVERKILL,
     /// Don't Starve Together
     DST,
