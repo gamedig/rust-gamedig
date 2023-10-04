@@ -33,8 +33,7 @@ Generics:
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
 Games:
-- Renamed game definitions to better match node-gamedig (subject to change again in the next release). (by @Douile)
-- Renamed game implementations to match new definition names. (by @Douile)
+- Rename some game definitions and implementations to follow a stable ID naming system.
 
 Protocols:
 - Valve:
