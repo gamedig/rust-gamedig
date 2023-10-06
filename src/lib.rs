@@ -4,9 +4,9 @@
 //!
 //! ## For a specific game
 //! ```
-//! use gamedig::games::tf2;
+//! use gamedig::games::teamfortress2;
 //!
-//! let response = tf2::query(&"127.0.0.1".parse().unwrap(), None); // None is the default port (which is 27015), could also be Some(27015)
+//! let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None); // None is the default port (which is 27015), could also be Some(27015)
 //! match response { // Result type, must check what it is...
 //!     Err(error) => println!("Couldn't query, error: {}", error),
 //!     Ok(r) => println!("{:#?}", r)
@@ -17,7 +17,7 @@
 //! ```
 //! use gamedig::games::{GAMES, query};
 //!
-//! let game = GAMES.get("tf2").unwrap(); // Get a game definition, the full list can be found in src/games/mod.rs
+//! let game = GAMES.get("teamfortress2").unwrap(); // Get a game definition, the full list can be found in src/games/mod.rs
 //! let response = query(game, &"127.0.0.1".parse().unwrap(), None); // None will use the default port
 //! match response {
 //!     Err(error) => println!("Couldn't query, error: {}", error),

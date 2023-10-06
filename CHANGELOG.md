@@ -33,8 +33,7 @@ Generics:
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
 Games:
-- Renamed game definitions to better match node-gamedig (subject to change again in the next release). (by @Douile)
-- Renamed game implementations to match new definition names. (by @Douile)
+- Rename some game definitions and implementations to follow a stable ID naming system.
 
 Protocols:
 - Valve:
@@ -64,6 +63,8 @@ reported by the server are the same, errors if not, enabled by default. (by @Dou
 3. Renamed `players_sample` to `players`.
 4. Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake
 packet (this solves some servers not responding to the query). (by @Douile)
+5. Legacy versions naming has been changed to represent up to what version they can query, `LegacyBV1_8` (Beta 1.8 to 
+1.3) -> `LegacyV1_3` and `LegacyV1_4` (1.4 to 1.5) -> `LegacyV1_5` (and their enums accordingly).
 
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.

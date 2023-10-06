@@ -7,7 +7,7 @@ use std::net::{IpAddr, SocketAddr};
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<game::Response> {
     let valve_response = valve::query(
         &SocketAddr::new(*address, port.unwrap_or(27015)),
-        SteamApp::TF2.as_engine(),
+        SteamApp::COUNTERSTRIKE.as_engine(),
         None,
         None,
     )?;

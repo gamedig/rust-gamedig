@@ -40,10 +40,10 @@ Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.m
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 ```rust
-use gamedig::games::tf2;
+use gamedig::games::teamfortress2;
 
 fn main() {
-    let response = tf2::query(&"127.0.0.1".parse().unwrap(), None); 
+    let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None); 
         // None is the default port (which is 27015), could also be Some(27015)
     
     match response { // Result type, must check what it is...

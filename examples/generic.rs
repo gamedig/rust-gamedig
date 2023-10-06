@@ -99,13 +99,13 @@ mod test {
     }
 
     #[test]
-    fn battlefield() { test_game("bf1942"); }
+    fn battlefield1942() { test_game("battlefield1942"); }
 
     #[test]
     fn minecraft() { test_game("minecraft"); }
 
     #[test]
-    fn tf2() { test_game("tf2"); }
+    fn teamfortress2() { test_game("teamfortress2"); }
 
     #[test]
     fn quake() { test_game("quake3"); }

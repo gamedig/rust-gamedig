@@ -37,7 +37,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::JC2MP(self) }
+    fn as_original(&self) -> GenericResponse { GenericResponse::JC2M(self) }
 
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn description(&self) -> Option<&str> { Some(&self.description) }

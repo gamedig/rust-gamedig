@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 pub enum ProprietaryProtocol {
     TheShip,
     FFOW,
-    JC2MP,
+    JC2M,
 }
 
 /// Enumeration of all valid protocol types
@@ -36,11 +36,11 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     #[cfg(feature = "games")]
-    TheShip(&'a crate::games::ship::Response),
+    TheShip(&'a crate::games::theship::Response),
     #[cfg(feature = "games")]
     FFOW(&'a crate::games::ffow::Response),
     #[cfg(feature = "games")]
-    JC2MP(&'a crate::games::jc2mp::Response),
+    JC2M(&'a crate::games::jc2m::Response),
 }
 
 /// All player types
@@ -52,9 +52,9 @@ pub enum GenericPlayer<'a> {
     Minecraft(&'a minecraft::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
     #[cfg(feature = "games")]
-    TheShip(&'a crate::games::ship::TheShipPlayer),
+    TheShip(&'a crate::games::theship::TheShipPlayer),
     #[cfg(feature = "games")]
-    JCMP2(&'a crate::games::jc2mp::Player),
+    JCMP2(&'a crate::games::jc2m::Player),
 }
 
 pub trait CommonResponse {
