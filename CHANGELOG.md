@@ -11,6 +11,7 @@ Protocols:
 - The Ship: Removed instances of using `unwrap` without handling the panics.
 
 Crate:
+- Updated [byteorder](https://crates.io/crates/byteorder) dependency from 1.4 to 1.5.
 - Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`. (by @Douile)
 - Applied some nursery Clippy lints.
 - The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query). (by @Douile)
