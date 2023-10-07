@@ -3,7 +3,9 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
-None, yet...
+Protocols:
+- Minecraft Java: Add derives to `RequestSettings` and add `new_just_hostname` that creates new settings just by specifying
+the hostname, `protocol_version` defaults to -1.
 
 ### Breaking...
 None, yaay!

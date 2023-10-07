@@ -89,6 +89,8 @@ pub struct JavaResponse {
 }
 
 /// Java-only additional request settings.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RequestSettings {
     /// Some Minecraft servers do not respond as expected if this
     /// isn't a specific value, `mc.hypixel.net` is an example.
@@ -99,12 +101,22 @@ pub struct RequestSettings {
 }
 
 impl Default for RequestSettings {
-    /// `hostname`: "gamedig"
-    ///
+    /// `hostname`: "gamedig"  
     /// `protocol_version`: -1
     fn default() -> Self {
         Self {
             hostname: "gamedig".to_string(),
+            protocol_version: -1,
+        }
+    }
+}
+
+impl RequestSettings {
+    /// Make a new *RequestSettings* with just the hostname, the protocol
+    /// version defaults to -1
+    pub fn new_just_hostname(hostname: String) -> Self {
+        Self {
+            hostname,
             protocol_version: -1,
         }
     }
