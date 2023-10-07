@@ -24,12 +24,11 @@ macro_rules! game {
 
 /// Map of all currently supported games
 pub static GAMES: Map<&'static str, Game> = phf_map! {
-    // Query with all minecraft protocols node-gamedig: minecraft,minecraftping
+    // Query with all minecraft protocols
     "minecraft" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
-    "minecraftping" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
     // Query with specific minecraft protocols
     "minecraftbedrock" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
-    "minecraftpocket" => game!("Minecraft (bedrock/pocket edition)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
+    "minecraftpocket" => game!("Minecraft (pocket)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
     "minecraftjava" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
     "minecraftlegacy16" => game!("Minecraft (legacy v1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
     "minecraftlegacy15" => game!("Minecraft (legacy v1.4-1.5)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_5)))),
