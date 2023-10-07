@@ -88,4 +88,4 @@ The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamed
 Curious about the history and what changed between versions? Everything is in the [CHANGELOG](CHANGELOG.md) file.
 
 ## Contributing
-If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
+If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
