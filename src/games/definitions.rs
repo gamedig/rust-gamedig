@@ -24,9 +24,8 @@ macro_rules! game {
 
 /// Map of all currently supported games
 pub static GAMES: Map<&'static str, Game> = phf_map! {
-    // Query with all minecraft protocols node-gamedig: minecraft,minecraftping
+    // Query with all minecraft protocols
     "minecraft" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
-    "minecraftping" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
     // Query with specific minecraft protocols
     "minecraftbedrock" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
     "minecraftpocket" => game!("Minecraft (bedrock/pocket edition)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
