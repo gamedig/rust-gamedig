@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fmt::Formatter;
 use std::{backtrace, fmt};
 
-pub(crate) type ErrorSource = Box<dyn Error + Send + Sync>;
+pub(crate) type ErrorSource = Box<dyn Error + 'static + Send + Sync>;
 
 /// The GameDig error type.
 ///
