@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fmt::Formatter;
 use std::{backtrace, fmt};
 
-type ErrorSource = Box<dyn Error + 'static>;
+pub(crate) type ErrorSource = Box<dyn Error + Send + Sync>;
 
 /// The GameDig error type.
 ///
@@ -54,7 +54,7 @@ impl PartialEq for GDError {
 }
 
 impl Error for GDError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> { self.source.as_ref().map(Box::as_ref) }
+    fn source(&self) -> Option<&(dyn Error + 'static)> { self.source.as_ref().map(|err| Box::as_ref(err) as _) }
 }
 
 impl fmt::Debug for GDError {
@@ -88,7 +88,7 @@ impl GDError {
     }
 
     /// Create a new error using any type that can be converted to an error
-    pub fn from_error<E: Into<Box<dyn Error + 'static>>>(kind: GDErrorKind, source: E) -> Self {
+    pub fn from_error<E: Into<ErrorSource>>(kind: GDErrorKind, source: E) -> Self {
         Self::new(kind, Some(source.into()))
     }
 }
