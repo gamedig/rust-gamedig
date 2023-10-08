@@ -8,8 +8,8 @@ Protocols:
 the hostname, `protocol_version` defaults to -1.
 
 Generics:
-- Added derives to `GenericResponse` (serde), `GenericPlayer` (serde), `ProprietaryProtocol`, `CommonResponseJson`, 
-`CommonPlayerJson`, `TimeoutSettings`, `ExtraRequestSettings`.
+- Added standard derives to `ProprietaryProtocol`, `CommonResponseJson`, `CommonPlayerJson`, `TimeoutSettings` and
+`ExtraRequestSettings`.
 
 ### Breaking...
 None, yaay!
