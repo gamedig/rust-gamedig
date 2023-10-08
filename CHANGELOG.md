@@ -7,6 +7,10 @@ Protocols:
 - Minecraft Java: Add derives to `RequestSettings` and add `new_just_hostname` that creates new settings just by specifying
 the hostname, `protocol_version` defaults to -1.
 
+Generics:
+- Added derives to `GenericResponse` (serde), `GenericPlayer` (serde), `ProprietaryProtocol`, `CommonResponseJson`, 
+`CommonPlayerJson`, `TimeoutSettings`, `ExtraRequestSettings`.
+
 ### Breaking...
 None, yaay!
 

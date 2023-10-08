@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 /// Enumeration of all custom protocols
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ProprietaryProtocol {
     TheShip,
     FFOW,
@@ -29,6 +29,7 @@ pub enum Protocol {
 }
 
 /// All response types
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
     GameSpy(gamespy::VersionedResponse<'a>),
@@ -44,6 +45,7 @@ pub enum GenericResponse<'a> {
 }
 
 /// All player types
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericPlayer<'a> {
     Valve(&'a valve::ServerPlayer),
@@ -101,8 +103,8 @@ pub trait CommonResponse {
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { None }
 }
 
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct CommonResponseJson<'a> {
     pub name: Option<&'a str>,
     pub description: Option<&'a str>,
@@ -134,15 +136,16 @@ pub trait CommonPlayer {
     fn score(&self) -> Option<i32> { None }
 }
 
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct CommonPlayerJson<'a> {
     pub name: &'a str,
     pub score: Option<i32>,
 }
 
 /// Timeout settings for socket operations
-#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
     read: Option<Duration>,
     write: Option<Duration>,
@@ -243,7 +246,8 @@ impl Default for TimeoutSettings {
 /// use gamedig::protocols::{valve, ExtraRequestSettings};
 /// let valve_settings: valve::GatheringSettings = ExtraRequestSettings::default().set_check_app_id(false).into();
 /// ```
-#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct ExtraRequestSettings {
     /// The server's hostname.
     ///
