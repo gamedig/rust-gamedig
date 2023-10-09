@@ -32,12 +32,24 @@ pub enum VersionedPlayer<'a> {
     Three(&'a three::Player),
 }
 
+/// Generate a module containing a query function for a gamespy game.
+macro_rules! game_query_mod {
+    ($mod_name: ident, $pretty_name: expr, $gamespy_ver: ident, $default_port: literal) => {
+        #[doc = $pretty_name]
+        pub mod $mod_name {
+            crate::protocols::gamespy::game_query_fn!($gamespy_ver, $default_port);
+        }
+    };
+}
+
+pub(crate) use game_query_mod;
+
 // Allow generating doc comments:
 // https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
 /// Generate a query function for a gamespy game.
 macro_rules! game_query_fn {
     ($gamespy_ver: ident, $default_port: literal) => {
-        game_query_fn! {@gen $gamespy_ver, $default_port, concat!(
+        crate::protocols::gamespy::game_query_fn! {@gen $gamespy_ver, $default_port, concat!(
         "Make a gamespy ", stringify!($gamespy_ver), " query with default timeout settings.\n\n",
         "If port is `None`, then the default port (", stringify!($default_port), ") will be used.")}
     };
