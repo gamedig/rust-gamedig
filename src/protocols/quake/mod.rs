@@ -18,3 +18,34 @@ pub enum QuakeVersion {
     Two,
     Three,
 }
+
+// Allow generating doc comments:
+// https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
+/// Generate a query function for a quake game.
+macro_rules! game_query_fn {
+    ($quake_ver: ident, $default_port: literal) => {
+        use crate::protocols::quake::$quake_ver::Player;
+        game_query_fn! {$quake_ver, Player, $default_port}
+    };
+
+    ($quake_ver: ident, $player_type: ty, $default_port: literal) => {
+        game_query_fn! {@gen $quake_ver, $player_type, $default_port, concat!(
+        "Make a quake ", stringify!($quake_ver), " query with default timeout settings.\n\n",
+        "If port is `None`, then the default port (", stringify!($default_port), ") will be used.")}
+    };
+
+    (@gen $quake_ver: ident, $player_type: ty, $default_port: literal, $doc: expr) => {
+        #[doc = $doc]
+        pub fn query(
+            address: &std::net::IpAddr,
+            port: Option<u16>,
+        ) -> crate::GDResult<crate::protocols::quake::Response<$player_type>> {
+            crate::protocols::quake::$quake_ver::query(
+                &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
+                None,
+            )
+        }
+    };
+}
+
+pub(crate) use game_query_fn;
