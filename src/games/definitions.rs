@@ -89,31 +89,3 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "jc2m" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2M)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),
 };
-
-#[cfg(test)]
-mod test {
-    use super::GAMES;
-    use std::fs;
-
-    #[test]
-    fn check_game_files_match_defs() {
-        let ignore = [
-            "mod",         // Module file
-            "definitions", // This file
-            "minecraft",   // Has various defs
-            "sd2d",        // Module names cannot start with numbers
-        ];
-
-        for file in fs::read_dir("./src/games/").unwrap() {
-            let file = file.unwrap();
-            let metadata = file.metadata().unwrap();
-            if metadata.is_file() {
-                if let Some(file_name) = file.file_name().into_string().unwrap().strip_suffix(".rs") {
-                    if !ignore.contains(&file_name) && !GAMES.contains_key(file_name) {
-                        panic!("Expected GAMES to contain a definition to match {file_name}");
-                    }
-                }
-            }
-        }
-    }
-}

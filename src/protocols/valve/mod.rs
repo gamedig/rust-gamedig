@@ -6,12 +6,23 @@ pub mod types;
 pub use protocol::*;
 pub use types::*;
 
+macro_rules! game_query_mod {
+    ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal) => {
+        #[doc = $pretty_name]
+        pub mod $mod_name {
+            crate::protocols::valve::game_query_fn!($steam_app, $default_port);
+        }
+    };
+}
+
+pub(crate) use game_query_mod;
+
 // Allow generating doc comments:
 // https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
 /// Generate a query function for a valve game.
 macro_rules! game_query_fn {
     ($steam_app: ident, $default_port: literal) => {
-        game_query_fn!{@gen $steam_app, $default_port, concat!(
+        crate::protocols::valve::game_query_fn!{@gen $steam_app, $default_port, concat!(
             "Make a valve query for ", stringify!($steam_app), " with default timeout settings and default extra request settings.\n\n",
             "If port is `None`, then the default port (", stringify!($default_port), ") will be used.")}
     };

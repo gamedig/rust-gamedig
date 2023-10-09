@@ -3,116 +3,36 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-/// ARMA 2: Operation Arrowhead
-pub mod a2oa;
-/// Alien Swarm
-pub mod alienswarm;
-/// Age of Chivalry
-pub mod aoc;
-/// ARK: Survival Evolved
-pub mod ase;
-/// Alien Swarm: Reactive Drop
-pub mod asrd;
-/// Avorion
-pub mod avorion;
-/// Ballistic Overkill
-pub mod ballisticoverkill;
+pub mod valve;
+
+pub use valve::*;
+
 /// Battalion 1944
 pub mod battalion1944;
 /// Battlefield 1942
 pub mod battlefield1942;
-/// Black Mesa
-pub mod blackmesa;
-/// BrainBread 2
-pub mod brainbread2;
-/// Codename CURE
-pub mod codenamecure;
-/// Colony Survival
-pub mod colonysurvival;
-/// Counter-Strike
-pub mod counterstrike;
-/// Creativerse
-pub mod creativerse;
 /// Crysis Wars
 pub mod crysiswars;
-/// Counter Strike: Condition Zero
-pub mod cscz;
-/// Counter-Strike: Global Offensive
-pub mod csgo;
-/// Counter-Strike: Source
-pub mod css;
-/// Day of Defeat
-pub mod dod;
-/// Day of Defeat: Source
-pub mod dods;
-/// Day of Infamy
-pub mod doi;
-/// Don't Starve Together
-pub mod dst;
 /// Frontlines: Fuel of War
 pub mod ffow;
-/// Garry's Mod
-pub mod garrysmod;
-/// Halo: Combat Evolved
-pub mod hce;
-/// Half-Life 2 Deathmatch
-pub mod hl2d;
-/// Half-Life Deathmatch: Source
-pub mod hlds;
-/// Hell Let Loose
-pub mod hll;
-/// Insurgency: Modern Infantry Combat
-pub mod imic;
-/// Insurgency
-pub mod insurgency;
-/// Insurgency: Sandstorm
-pub mod insurgencysandstorm;
 /// Just Cause 2: Multiplayer
 pub mod jc2m;
-/// Left 4 Dead
-pub mod left4dead;
-/// Left 4 Dead 2
-pub mod left4dead2;
 /// Minecraft
 pub mod minecraft;
-/// Operation: Harsh Doorstop
-pub mod ohd;
-/// Onset
-pub mod onset;
-/// Project Zomboid
-pub mod projectzomboid;
 /// Quake 1
 pub mod quake1;
 /// Quake 2
 pub mod quake2;
 /// Quake 3: Arena
 pub mod quake3;
-/// Risk of Rain 2
-pub mod ror2;
-/// Rust
-pub mod rust;
-/// Sven Co-op
-pub mod sco;
-/// 7 Days To Die
-pub mod sd2d;
 /// Serious Sam
 pub mod serioussam;
 /// Soldier of Fortune 2
 pub mod sof2;
-/// Team Fortress 2
-pub mod teamfortress2;
-/// Team Fortress Classic
-pub mod tfc;
-/// The Forest
-pub mod theforest;
 /// The Ship
 pub mod theship;
 /// Unreal Tournament
 pub mod unrealtournament;
-/// Unturned
-pub mod unturned;
-/// V Rising
-pub mod vrising;
 /// Warsow
 pub mod warsow;
 
