@@ -10,6 +10,12 @@ Protocols:
 - Minecraft Java: Add derives to `RequestSettings` and add `new_just_hostname` that creates new settings just by specifying
 the hostname, `protocol_version` defaults to -1.
 
+Games:
+- Organised game modules into protocols (when protocol used by other games),
+  you can now access a game by its name or by its protocol name:
+  - `use gamedig::games::teamfortress2;`
+  - `use gamedig::games::valve::teamfortress2;`
+
 Generics:
 - Added standard derives to `ProprietaryProtocol`, `CommonResponseJson`, `CommonPlayerJson`, `TimeoutSettings` and
 `ExtraRequestSettings`.
