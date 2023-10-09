@@ -31,3 +31,29 @@ pub enum VersionedPlayer<'a> {
     Two(&'a two::Player),
     Three(&'a three::Player),
 }
+
+// Allow generating doc comments:
+// https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
+/// Generate a query function for a gamespy game.
+macro_rules! game_query_fn {
+    ($gamespy_ver: ident, $default_port: literal) => {
+        game_query_fn! {@gen $gamespy_ver, $default_port, concat!(
+        "Make a gamespy ", stringify!($gamespy_ver), " query with default timeout settings.\n\n",
+        "If port is `None`, then the default port (", stringify!($default_port), ") will be used.")}
+    };
+
+    (@gen $gamespy_ver: ident, $default_port: literal, $doc: expr) => {
+        #[doc = $doc]
+        pub fn query(
+            address: &std::net::IpAddr,
+            port: Option<u16>,
+        ) -> crate::GDResult<crate::protocols::gamespy::$gamespy_ver::Response> {
+            crate::protocols::gamespy::$gamespy_ver::query(
+                &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
+                None,
+            )
+        }
+    };
+}
+
+pub(crate) use game_query_fn;
