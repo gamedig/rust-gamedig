@@ -20,6 +20,12 @@ pub enum QuakeVersion {
 }
 
 /// Generate a module containing a query function for a quake game.
+///
+/// * `mod_name` - The name to be given to the game module (see ID naming
+///   conventions in CONTRIBUTING.md).
+/// * `pretty_name` - The full name of the game, will be used as the
+///   documentation for the created module.
+/// * `quake_ver`, `default_port` - Passed through to [game_query_fn].
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $quake_ver: ident, $default_port: literal) => {
         #[doc = $pretty_name]
@@ -34,6 +40,15 @@ pub(crate) use game_query_mod;
 // Allow generating doc comments:
 // https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
 /// Generate a query function for a quake game.
+///
+/// * `quake_ver` - The name of the [module](crate::protocols::quake) for the
+///   quake version the game uses.
+/// * `default_port` - The default port the game uses.
+///
+/// ```rust,ignore
+/// use crate::protocols::quake::game_query_fn;
+/// game_query_fn!(one, 27500);
+/// ```
 macro_rules! game_query_fn {
     ($quake_ver: ident, $default_port: literal) => {
         use crate::protocols::quake::$quake_ver::Player;
