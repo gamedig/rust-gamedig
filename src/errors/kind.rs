@@ -1,5 +1,5 @@
+use crate::error::ErrorSource;
 use crate::GDError;
-use std::error::Error;
 
 /// All GameDig Error kinds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,7 +44,7 @@ impl GDErrorKind {
     /// use gamedig::{GDErrorKind, GDResult};
     /// let _: GDResult<u32> = "thing".parse().map_err(|e| GDErrorKind::TypeParse.context(e));
     /// ```
-    pub fn context<E: Into<Box<dyn Error + 'static>>>(self, source: E) -> GDError { GDError::from_error(self, source) }
+    pub fn context<E: Into<ErrorSource>>(self, source: E) -> GDError { GDError::from_error(self, source) }
 }
 
 #[cfg(test)]
