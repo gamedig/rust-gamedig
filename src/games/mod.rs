@@ -3,8 +3,10 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+pub mod quake;
 pub mod valve;
 
+pub use quake::*;
 pub use valve::*;
 
 /// Battalion 1944
@@ -19,22 +21,12 @@ pub mod ffow;
 pub mod jc2m;
 /// Minecraft
 pub mod minecraft;
-/// Quake 1
-pub mod quake1;
-/// Quake 2
-pub mod quake2;
-/// Quake 3: Arena
-pub mod quake3;
 /// Serious Sam
 pub mod serioussam;
-/// Soldier of Fortune 2
-pub mod sof2;
 /// The Ship
 pub mod theship;
 /// Unreal Tournament
 pub mod unrealtournament;
-/// Warsow
-pub mod warsow;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;

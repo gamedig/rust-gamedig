@@ -1,10 +1,12 @@
 use crate::protocols::quake::client::{client_query, QuakeClient};
-use crate::protocols::quake::two::{Player, QuakeTwo};
+use crate::protocols::quake::two::QuakeTwo;
 use crate::protocols::quake::Response;
 use crate::protocols::types::TimeoutSettings;
 use crate::GDResult;
 use std::net::SocketAddr;
 use std::slice::Iter;
+
+pub use crate::protocols::quake::two::Player;
 
 struct QuakeThree;
 impl QuakeClient for QuakeThree {
