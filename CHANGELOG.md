@@ -3,6 +3,13 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
+Nothing yet.
+
+### Breaking:
+None, yaay!
+
+# 0.4.1 - 13/10/2023
+### Changes:
 Game:
 - Added [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma/) support.
 
