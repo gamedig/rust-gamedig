@@ -14,6 +14,7 @@ game_query_mod!(
     BALLISTICOVERKILL,
     27016
 );
+game_query_mod!(barotrauma, "Barotrauma", BAROTRAUMA, 27016);
 game_query_mod!(blackmesa, "Black Mesa", BLACKMESA, 27015);
 game_query_mod!(brainbread2, "BrainBread 2", BRAINBREAD2, 27015);
 game_query_mod!(codenamecure, "Codename CURE", CODENAMECURE, 27015);

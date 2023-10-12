@@ -39,6 +39,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(SteamApp::ASE)),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(SteamApp::ASRD)),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(SteamApp::AVORION)),
+    "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(SteamApp::BAROTRAUMA)),
     "battalion1944" => game!("Battalion 1944", 7780, Protocol::Valve(SteamApp::BATTALION1944)),
     "brainbread2" => game!("BrainBread 2", 27015, Protocol::Valve(SteamApp::BRAINBREAD2)),
     "battlefield1942" => game!("Battlefield 1942", 23000, Protocol::Gamespy(GameSpyVersion::One)),

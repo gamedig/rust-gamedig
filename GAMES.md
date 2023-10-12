@@ -61,6 +61,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Warsow                             | WARSOW              | Quake 3              |                                                                                                                                                                           |
 | Creativerse                        | CREATIVERSE         | Valve                | Query Port offset: 1.                                                                                                                                                     |
 | Garry's Mod                        | GARRYSMOD           | Valve                |                                                                                                                                                                           |
+| Barotrauma                         | BAROTRAUMA          | Valve                | Query Port offset: 1.                                                                                                                                                     |
 
 ## Planned to add support:
 _

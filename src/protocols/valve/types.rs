@@ -339,6 +339,8 @@ pub enum SteamApp {
     VRISING,
     /// Hell Let Loose
     HLL,
+    /// Barotrauma
+    BAROTRAUMA,
 }
 
 impl SteamApp {
@@ -378,6 +380,7 @@ impl SteamApp {
             Self::BATTALION1944 => Engine::new_source(489_940),
             Self::INSURGENCYSANDSTORM => Engine::new_source(581_320),
             Self::ASRD => Engine::new_source(563_560),
+            Self::BAROTRAUMA => Engine::new_source(602960),
             Self::ROR2 => Engine::new_source(632_360),
             Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
             Self::ONSET => Engine::new_source(1_105_810),

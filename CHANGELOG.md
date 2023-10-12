@@ -3,6 +3,9 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
+Game:
+- Added [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma/) support.
+
 Crate:
 - Added `Send` and `Sync` on `Error::source` to fix some async issues.
 
