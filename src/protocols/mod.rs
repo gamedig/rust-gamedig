@@ -12,6 +12,8 @@ pub mod minecraft;
 pub mod quake;
 /// General types that are used by all protocols.
 pub mod types;
+/// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/unreal2.js)
+pub mod unreal2;
 /// Reference: [Server Query](https://developer.valvesoftware.com/wiki/Server_queries)
 pub mod valve;
 
