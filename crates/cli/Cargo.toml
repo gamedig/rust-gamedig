@@ -1,0 +1,22 @@
+[package]
+name = "gamedig-cli"
+authors = ["rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]"]
+description = "A command line interface for gamedig"
+license = "MIT"
+version = "0.4.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.1.11", features = ["derive"] }
+gamedig = { version = "*", path = "../lib" }
+strum = "0.25.0"
+strum_macros = "0.24.3"
+thiserror = "1.0.43"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = true
+lto = true
