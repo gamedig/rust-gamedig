@@ -11,6 +11,6 @@ pub enum Error {
     #[error("Gamedig Error: {0}")]
     Gamedig(#[from] gamedig::errors::GDError),
 
-    #[error("Strum Error: {0}")]
-    Strum(#[from] strum::ParseError),
+    #[error("Unknown Game: {0}")]
+    UnknownGame(String),
 }
