@@ -39,7 +39,7 @@ jobs:
           # Calculate how many of those games we have definitions for
           rust_games_count=0
           for game in $node_games; do
-            if grep "\"$game\" *=>" ./src/games/definitions.rs; then
+            if grep "\"$game\" *=>" ./crates/lib/src/games/definitions.rs; then
               rust_games_count=$(( rust_games_count + 1 ))
             fi
           done
