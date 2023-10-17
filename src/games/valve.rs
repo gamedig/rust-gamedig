@@ -1,7 +1,6 @@
 //! Valve game query modules
 
 use crate::protocols::valve::game_query_mod;
-use crate::protocols::valve::types::GatheringSettings;
 
 game_query_mod!(a2oa, "ARMA 2: Operation Arrowhead", A2OA, 2304);
 game_query_mod!(alienswarm, "Alien Swarm", ALIENSWARM, 27015);
