@@ -31,11 +31,11 @@ pub fn query(
     timeout_settings: Option<TimeoutSettings>,
     request_settings: Option<RequestSettings>,
 ) -> GDResult<JavaResponse> {
-    if let Ok(response) = query_java(address, timeout_settings.clone(), request_settings) {
+    if let Ok(response) = query_java(address, timeout_settings, request_settings) {
         return Ok(response);
     }
 
-    if let Ok(response) = query_bedrock(address, timeout_settings.clone()) {
+    if let Ok(response) = query_bedrock(address, timeout_settings) {
         return Ok(JavaResponse::from_bedrock_response(response));
     }
 
@@ -57,11 +57,11 @@ pub fn query_java(
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
 pub fn query_legacy(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<JavaResponse> {
-    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_6, address, timeout_settings.clone()) {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_6, address, timeout_settings) {
         return Ok(response);
     }
 
-    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_5, address, timeout_settings.clone()) {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_5, address, timeout_settings) {
         return Ok(response);
     }
 
