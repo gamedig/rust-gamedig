@@ -1,6 +1,7 @@
 //! Valve game query modules
 
 use crate::protocols::valve::game_query_mod;
+use crate::protocols::valve::types::GatheringSettings;
 
 game_query_mod!(a2oa, "ARMA 2: Operation Arrowhead", A2OA, 2304);
 game_query_mod!(alienswarm, "Alien Swarm", ALIENSWARM, 27015);
@@ -53,4 +54,15 @@ game_query_mod!(teamfortress2, "Team Fortress 2", TEAMFORTRESS2, 27015);
 game_query_mod!(tfc, "Team Fortress Classic", TFC, 27015);
 game_query_mod!(theforest, "The Forest", THEFOREST, 27016);
 game_query_mod!(unturned, "Unturned", UNTURNED, 27015);
+game_query_mod!(
+    valheim,
+    "Valheim",
+    VALHEIM,
+    2457,
+    GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }
+);
 game_query_mod!(vrising, "V Rising", VRISING, 27016);

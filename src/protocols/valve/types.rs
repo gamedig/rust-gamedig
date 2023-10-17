@@ -341,6 +341,8 @@ pub enum SteamApp {
     HLL,
     /// Barotrauma
     BAROTRAUMA,
+    /// Valheim
+    VALHEIM,
 }
 
 impl SteamApp {
@@ -383,6 +385,7 @@ impl SteamApp {
             Self::BAROTRAUMA => Engine::new_source(602960),
             Self::ROR2 => Engine::new_source(632_360),
             Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
+            Self::VALHEIM => Engine::new_source(892_970),
             Self::ONSET => Engine::new_source(1_105_810),
             Self::VRISING => Engine::new_source(1_604_030),
             Self::HLL => Engine::new_source(686_810),

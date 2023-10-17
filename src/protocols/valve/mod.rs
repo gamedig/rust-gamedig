@@ -6,6 +6,8 @@ pub mod types;
 pub use protocol::*;
 pub use types::*;
 
+use crate::protocols::valve::types::GatheringSettings;
+
 /// Generate a module containing a query function for a valve game.
 ///
 /// * `mod_name` - The name to be given to the game module (see ID naming
@@ -15,9 +17,19 @@ pub use types::*;
 /// * `steam_app`, `default_port` - Passed through to [game_query_fn].
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal) => {
+        crate::protocols::valve::game_query_mod!(
+            $mod_name,
+            $pretty_name,
+            $steam_app,
+            $default_port,
+            crate::protocols::valve::types::GatheringSettings::default()
+        );
+    };
+
+    ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
         #[doc = $pretty_name]
         pub mod $mod_name {
-            crate::protocols::valve::game_query_fn!($steam_app, $default_port);
+            crate::protocols::valve::game_query_fn!($steam_app, $default_port, $gathering_settings);
         }
     };
 }
@@ -36,10 +48,10 @@ pub(crate) use game_query_mod;
 /// game_query_fn!(TEAMFORTRESS2, 27015);
 /// ```
 macro_rules! game_query_fn {
-    ($steam_app: ident, $default_port: literal) => {
+    ($steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
         crate::protocols::valve::game_query_fn!{@gen $steam_app, $default_port, concat!(
             "Make a valve query for ", stringify!($steam_app), " with default timeout settings and default extra request settings.\n\n",
-            "If port is `None`, then the default port (", stringify!($default_port), ") will be used."), None}
+            "If port is `None`, then the default port (", stringify!($default_port), ") will be used."), $gathering_settings}
     };
 
     (@gen $steam_app: ident, $default_port: literal, $doc: expr, $gathering_settings: expr) => {
@@ -49,7 +61,7 @@ macro_rules! game_query_fn {
                 &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
                 crate::protocols::valve::SteamApp::$steam_app.as_engine(),
                 None,
-                $gathering_settings,
+                Some($gathering_settings),
             )?;
 
             Ok(crate::protocols::valve::game::Response::new_from_valve_response(valve_response))

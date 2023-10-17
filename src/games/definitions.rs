@@ -86,6 +86,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "theship" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "unrealtournament" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
+    "valheim" => game!("Valheim", 2457, Protocol::Valve(SteamApp::VALHEIM)),
     "vrising" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VRISING)),
     "jc2m" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2M)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),
