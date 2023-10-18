@@ -6,8 +6,6 @@ pub mod types;
 pub use protocol::*;
 pub use types::*;
 
-use crate::protocols::valve::types::GatheringSettings;
-
 /// Generate a module containing a query function for a valve game.
 ///
 /// * `mod_name` - The name to be given to the game module (see ID naming
@@ -22,13 +20,15 @@ macro_rules! game_query_mod {
             $pretty_name,
             $steam_app,
             $default_port,
-            crate::protocols::valve::types::GatheringSettings::default()
+            GatheringSettings::default()
         );
     };
 
     ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
         #[doc = $pretty_name]
         pub mod $mod_name {
+            use crate::protocols::valve::GatheringSettings;
+
             crate::protocols::valve::game_query_fn!($steam_app, $default_port, $gathering_settings);
         }
     };
@@ -60,8 +60,8 @@ macro_rules! game_query_fn {
             let valve_response = crate::protocols::valve::query(
                 &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
                 crate::protocols::valve::SteamApp::$steam_app.as_engine(),
-                None,
                 Some($gathering_settings),
+                None,
             )?;
 
             Ok(crate::protocols::valve::game::Response::new_from_valve_response(valve_response))
