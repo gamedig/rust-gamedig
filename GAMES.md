@@ -62,6 +62,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Creativerse                        | CREATIVERSE         | Valve                | Query Port offset: 1.                                                                                                                                                     |
 | Garry's Mod                        | GARRYSMOD           | Valve                |                                                                                                                                                                           |
 | Barotrauma                         | BAROTRAUMA          | Valve                | Query Port offset: 1.                                                                                                                                                     |
+| Valheim                            | VALHEIM             | Valve                | Query Port offset: 1. Does not respond to the A2S rules.                                                                                                                  |
 
 ## Planned to add support:
 _

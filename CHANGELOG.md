@@ -3,7 +3,7 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
-Nothing yet.
+- Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
 
 ### Breaking:
 None, yaay!
