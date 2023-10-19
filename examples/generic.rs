@@ -9,6 +9,7 @@ use gamedig::{
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
 /// Make a query given the name of a game
+/// The `game` argument is taken from the [GAMES](gamedig::GAMES) map.
 fn generic_query(
     game: &Game,
     addr: &IpAddr,
@@ -82,7 +83,7 @@ mod test {
         time::Duration,
     };
 
-    use super::{generic_query, generic_query_by_name};
+    use super::generic_query;
 
     const ADDR: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
