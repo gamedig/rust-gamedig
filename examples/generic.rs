@@ -27,20 +27,6 @@ fn generic_query(
     Ok(response)
 }
 
-fn generic_query_by_name(
-    game_name: &str,
-    addr: &IpAddr,
-    port: Option<u16>,
-    timeout_settings: Option<TimeoutSettings>,
-    extra_settings: Option<ExtraRequestSettings>,
-) -> GDResult<Box<dyn CommonResponse>> {
-    let game = GAMES
-        .get(&game_name)
-        .expect("Game doesn't exist, run without arguments to see a list of games");
-
-    generic_query(game, addr, port, timeout_settings, extra_settings)
-}
-
 fn main() {
     let mut args = std::env::args().skip(1);
 
@@ -109,7 +95,12 @@ mod test {
             )
             .unwrap(),
         );
-        assert!(generic_query_by_name(game_name, &ADDR, None, timeout_settings, None).is_err());
+
+        let game = GAMES
+            .get(game_name)
+            .expect("Game doesn't exist, run without arguments to see a list of games");
+
+        assert!(generic_query(game, &ADDR, None, timeout_settings, None).is_err());
     }
 
     #[test]
