@@ -341,6 +341,8 @@ pub enum SteamApp {
     HLL,
     /// Barotrauma
     BAROTRAUMA,
+    /// Valheim
+    VALHEIM,
 }
 
 impl SteamApp {
@@ -383,6 +385,7 @@ impl SteamApp {
             Self::BAROTRAUMA => Engine::new_source(602960),
             Self::ROR2 => Engine::new_source(632_360),
             Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
+            Self::VALHEIM => Engine::new_source(892_970),
             Self::ONSET => Engine::new_source(1_105_810),
             Self::VRISING => Engine::new_source(1_604_030),
             Self::HLL => Engine::new_source(686_810),
@@ -422,15 +425,29 @@ pub struct GatheringSettings {
     pub check_app_id: bool,
 }
 
-impl Default for GatheringSettings {
+impl GatheringSettings {
     /// Default values are true for both the players and the rules.
-    fn default() -> Self {
+    pub const fn default() -> Self {
         Self {
             players: true,
             rules: true,
             check_app_id: true,
         }
     }
+
+    pub const fn into_extra(self) -> ExtraRequestSettings {
+        ExtraRequestSettings {
+            hostname: None,
+            protocol_version: None,
+            gather_players: Some(self.players),
+            gather_rules: Some(self.rules),
+            check_app_id: Some(self.check_app_id),
+        }
+    }
+}
+
+impl Default for GatheringSettings {
+    fn default() -> Self { GatheringSettings::default() }
 }
 
 impl From<ExtraRequestSettings> for GatheringSettings {

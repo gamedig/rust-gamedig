@@ -39,6 +39,8 @@ pub struct Game {
     pub default_port: u16,
     /// The protocol the game's query uses
     pub protocol: Protocol,
+    /// Request settings.
+    pub request_settings: ExtraRequestSettings,
 }
 
 #[cfg(feature = "game_defs")]
@@ -78,7 +80,9 @@ pub fn query_with_timeout_and_extra_settings(
             protocols::valve::query(
                 &socket_addr,
                 steam_app.as_engine(),
-                extra_settings.map(ExtraRequestSettings::into),
+                extra_settings
+                    .or(Option::from(game.request_settings.clone()))
+                    .map(ExtraRequestSettings::into),
                 timeout_settings,
             )
             .map(Box::new)?
