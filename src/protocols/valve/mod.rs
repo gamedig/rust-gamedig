@@ -49,6 +49,7 @@ pub(crate) use game_query_mod;
 /// ```
 macro_rules! game_query_fn {
     ($steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
+        // TODO: By using $gathering_settings, also add to doc if a game doesnt respond to certain gathering settings
         crate::protocols::valve::game_query_fn!{@gen $steam_app, $default_port, concat!(
             "Make a valve query for ", stringify!($steam_app), " with default timeout settings and default extra request settings.\n\n",
             "If port is `None`, then the default port (", stringify!($default_port), ") will be used."), $gathering_settings}
