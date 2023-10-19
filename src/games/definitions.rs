@@ -10,14 +10,25 @@ use crate::protocols::{
 use crate::Game;
 
 use crate::protocols::types::ProprietaryProtocol;
+use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
 macro_rules! game {
     ($name: literal, $default_port: literal, $protocol: expr) => {
+        game!(
+            $name,
+            $default_port,
+            $protocol,
+            GatheringSettings::default().into_extra()
+        )
+    };
+
+    ($name: literal, $default_port: literal, $protocol: expr, $extra_request_settings: expr) => {
         Game {
             name: $name,
             default_port: $default_port,
             protocol: $protocol,
+            request_settings: $extra_request_settings,
         }
     };
 }
@@ -86,7 +97,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "theship" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),
     "unturned" => game!("Unturned", 27015, Protocol::Valve(SteamApp::UNTURNED)),
     "unrealtournament" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
-    "valheim" => game!("Valheim", 2457, Protocol::Valve(SteamApp::VALHEIM)),
+    "valheim" => game!("Valheim", 2457, Protocol::Valve(SteamApp::VALHEIM), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "vrising" => game!("V Rising", 27016, Protocol::Valve(SteamApp::VRISING)),
     "jc2m" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2M)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),

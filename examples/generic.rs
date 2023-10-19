@@ -2,6 +2,7 @@ use gamedig::{
     protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
     query_with_timeout_and_extra_settings,
     GDResult,
+    Game,
     GAMES,
 };
 
@@ -9,16 +10,12 @@ use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
 /// Make a query given the name of a game
 fn generic_query(
-    game_name: &str,
+    game: &Game,
     addr: &IpAddr,
     port: Option<u16>,
     timeout_settings: Option<TimeoutSettings>,
     extra_settings: Option<ExtraRequestSettings>,
 ) -> GDResult<Box<dyn CommonResponse>> {
-    let game = GAMES
-        .get(game_name)
-        .expect("Game doesn't exist, run without arguments to see a list of games");
-
     println!("Querying {:#?} with game {:#?}.", addr, game);
 
     let response = query_with_timeout_and_extra_settings(game, addr, port, timeout_settings, extra_settings)?;
@@ -28,6 +25,20 @@ fn generic_query(
     println!("Common response: {:#?}", common);
 
     Ok(response)
+}
+
+fn generic_query_by_name(
+    game_name: &str,
+    addr: &IpAddr,
+    port: Option<u16>,
+    timeout_settings: Option<TimeoutSettings>,
+    extra_settings: Option<ExtraRequestSettings>,
+) -> GDResult<Box<dyn CommonResponse>> {
+    let game = GAMES
+        .get(&game_name)
+        .expect("Game doesn't exist, run without arguments to see a list of games");
+
+    generic_query(game, addr, port, timeout_settings, extra_settings)
 }
 
 fn main() {
@@ -51,14 +62,18 @@ fn main() {
         )
         .unwrap();
 
-        let extra_settings = ExtraRequestSettings::default()
+        let game = GAMES
+            .get(&game_name)
+            .expect("Game doesn't exist, run without arguments to see a list of games");
+
+        let extra_settings = game
+            .request_settings
+            .clone()
             .set_hostname(hostname.to_string())
-            .set_gather_rules(true)
-            .set_gather_players(true)
             .set_check_app_id(false);
 
         generic_query(
-            &game_name,
+            game,
             &addr.ip(),
             port,
             Some(timeout_settings),
@@ -67,8 +82,7 @@ fn main() {
         .unwrap();
     } else {
         // Without arguments print a list of games
-
-        for (name, game) in gamedig::games::GAMES.entries() {
+        for (name, game) in GAMES.entries() {
             println!("{}\t{}", name, game.name);
         }
     }
@@ -82,7 +96,7 @@ mod test {
         time::Duration,
     };
 
-    use super::generic_query;
+    use super::{generic_query, generic_query_by_name};
 
     const ADDR: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
@@ -95,7 +109,7 @@ mod test {
             )
             .unwrap(),
         );
-        assert!(generic_query(game_name, &ADDR, None, timeout_settings, None).is_err());
+        assert!(generic_query_by_name(game_name, &ADDR, None, timeout_settings, None).is_err());
     }
 
     #[test]

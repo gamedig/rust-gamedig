@@ -425,15 +425,29 @@ pub struct GatheringSettings {
     pub check_app_id: bool,
 }
 
-impl Default for GatheringSettings {
+impl GatheringSettings {
     /// Default values are true for both the players and the rules.
-    fn default() -> Self {
+    pub const fn default() -> Self {
         Self {
             players: true,
             rules: true,
             check_app_id: true,
         }
     }
+
+    pub const fn into_extra(self) -> ExtraRequestSettings {
+        ExtraRequestSettings {
+            hostname: None,
+            protocol_version: None,
+            gather_players: Some(self.players),
+            gather_rules: Some(self.rules),
+            check_app_id: Some(self.check_app_id),
+        }
+    }
+}
+
+impl Default for GatheringSettings {
+    fn default() -> Self { GatheringSettings::default() }
 }
 
 impl From<ExtraRequestSettings> for GatheringSettings {
