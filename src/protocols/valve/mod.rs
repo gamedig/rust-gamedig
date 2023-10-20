@@ -14,22 +14,22 @@ pub use types::*;
 ///   documentation for the created module.
 /// * `steam_app`, `default_port` - Passed through to [game_query_fn].
 macro_rules! game_query_mod {
-    ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal) => {
+    ($mod_name: ident, $pretty_name: expr, $engine: expr, $default_port: literal) => {
         crate::protocols::valve::game_query_mod!(
             $mod_name,
             $pretty_name,
-            $steam_app,
+            $engine,
             $default_port,
             GatheringSettings::default()
         );
     };
 
-    ($mod_name: ident, $pretty_name: expr, $steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
+    ($mod_name: ident, $pretty_name: expr, $engine: expr, $default_port: literal, $gathering_settings: expr) => {
         #[doc = $pretty_name]
         pub mod $mod_name {
-            use crate::protocols::valve::GatheringSettings;
+            use crate::protocols::valve::{Engine, GatheringSettings};
 
-            crate::protocols::valve::game_query_fn!($steam_app, $default_port, $gathering_settings);
+            crate::protocols::valve::game_query_fn!($pretty_name, $engine, $default_port, $gathering_settings);
         }
     };
 }
@@ -48,19 +48,19 @@ pub(crate) use game_query_mod;
 /// game_query_fn!(TEAMFORTRESS2, 27015);
 /// ```
 macro_rules! game_query_fn {
-    ($steam_app: ident, $default_port: literal, $gathering_settings: expr) => {
+    ($pretty_name: expr, $engine: expr, $default_port: literal, $gathering_settings: expr) => {
         // TODO: By using $gathering_settings, also add to doc if a game doesnt respond to certain gathering settings
-        crate::protocols::valve::game_query_fn!{@gen $steam_app, $default_port, concat!(
-            "Make a valve query for ", stringify!($steam_app), " with default timeout settings and default extra request settings.\n\n",
+        crate::protocols::valve::game_query_fn!{@gen $engine, $default_port, concat!(
+            "Make a valve query for ", $pretty_name, " with default timeout settings and default extra request settings.\n\n",
             "If port is `None`, then the default port (", stringify!($default_port), ") will be used."), $gathering_settings}
     };
 
-    (@gen $steam_app: ident, $default_port: literal, $doc: expr, $gathering_settings: expr) => {
+    (@gen $engine: expr, $default_port: literal, $doc: expr, $gathering_settings: expr) => {
         #[doc = $doc]
         pub fn query(address: &std::net::IpAddr, port: Option<u16>) -> crate::GDResult<crate::protocols::valve::game::Response> {
             let valve_response = crate::protocols::valve::query(
                 &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
-                crate::protocols::valve::SteamApp::$steam_app.as_engine(),
+                $engine,
                 Some($gathering_settings),
                 None,
             )?;

@@ -4,7 +4,7 @@ use crate::protocols::{
     gamespy::GameSpyVersion,
     minecraft::{LegacyGroup, Server},
     quake::QuakeVersion,
-    valve::SteamApp,
+    valve::Engine,
     Protocol,
 };
 use crate::Game;
