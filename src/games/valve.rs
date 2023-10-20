@@ -37,14 +37,14 @@ game_query_mod!(
 game_query_mod!(
     counterstrike,
     "Counter-Strike",
-    Engine::new_goldSrc(false),
+    Engine::new_gold_src(false),
     27015
 );
 game_query_mod!(creativerse, "Creativerse", Engine::new(280_790), 26901);
 game_query_mod!(
     cscz,
     "Counter Strike: Condition Zero",
-    Engine::new_goldSrc(false),
+    Engine::new_gold_src(false),
     27015
 );
 game_query_mod!(
@@ -54,7 +54,7 @@ game_query_mod!(
     27015
 );
 game_query_mod!(css, "Counter-Strike: Source", Engine::new(240), 27015);
-game_query_mod!(dod, "Day of Defeat", Engine::new_goldSrc(false), 27015);
+game_query_mod!(dod, "Day of Defeat", Engine::new_gold_src(false), 27015);
 game_query_mod!(dods, "Day of Defeat: Source", Engine::new(300), 27015);
 game_query_mod!(doi, "Day of Infamy", Engine::new(447_820), 27015);
 game_query_mod!(dst, "Don't Starve Together", Engine::new(322_320), 27016);
@@ -97,13 +97,13 @@ game_query_mod!(
 );
 game_query_mod!(ror2, "Risk of Rain 2", Engine::new(632_360), 27016);
 game_query_mod!(rust, "Rust", Engine::new(252_490), 27015);
-game_query_mod!(sco, "Sven Co-op", Engine::new_goldSrc(false), 27015);
+game_query_mod!(sco, "Sven Co-op", Engine::new_gold_src(false), 27015);
 game_query_mod!(sd2d, "7 Days To Die", Engine::new(251_570), 26900);
 game_query_mod!(teamfortress2, "Team Fortress 2", Engine::new(440), 27015);
 game_query_mod!(
     tfc,
     "Team Fortress Classic",
-    Engine::new_goldSrc(false),
+    Engine::new_gold_src(false),
     27015
 );
 game_query_mod!(theforest, "The Forest", Engine::new(556_450), 27016);

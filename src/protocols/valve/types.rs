@@ -266,7 +266,7 @@ pub enum Engine {
 impl Engine {
     pub const fn new(appid: u32) -> Self { Self::Source(Some((appid, None))) }
 
-    pub const fn new_goldSrc(force: bool) -> Self { Self::GoldSrc(force) }
+    pub const fn new_gold_src(force: bool) -> Self { Self::GoldSrc(force) }
 
     pub const fn new_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
         Self::Source(Some((appid, Some(dedicated_appid))))
