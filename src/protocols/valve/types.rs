@@ -249,151 +249,6 @@ impl Request {
     }
 }
 
-/// Supported steam apps
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum SteamApp {
-    /// Counter-Strike
-    COUNTERSTRIKE,
-    /// Creativerse
-    CREATIVERSE,
-    /// Team Fortress Classic
-    TFC,
-    /// Day of Defeat
-    DOD,
-    /// Counter-Strike: Condition Zero
-    CSCZ,
-    /// Counter-Strike: Source
-    CSS,
-    /// Day of Defeat: Source
-    DODS,
-    /// Half-Life 2 Deathmatch
-    HL2D,
-    /// Half-Life Deathmatch: Source
-    HLDS,
-    /// Team Fortress 2
-    TEAMFORTRESS2,
-    /// Left 4 Dead
-    LEFT4DEAD,
-    /// Left 4 Dead
-    LEFT4DEAD2,
-    /// Alien Swarm
-    ALIENSWARM,
-    /// Counter-Strike: Global Offensive
-    CSGO,
-    /// The Ship
-    THESHIP,
-    /// Garry's Mod
-    GARRYSMOD,
-    /// Age of Chivalry
-    AOC,
-    /// Insurgency: Modern Infantry Combat
-    IMIC,
-    /// ARMA 2: Operation Arrowhead
-    A2OA,
-    /// Project Zomboid
-    PROJECTZOMBOID,
-    /// Insurgency
-    INSURGENCY,
-    /// Sven Co-op
-    SCO,
-    /// 7 Days To Die
-    SD2D,
-    /// Rust
-    RUST,
-    /// Ballistic Overkill
-    BALLISTICOVERKILL,
-    /// Don't Starve Together
-    DST,
-    /// BrainBread 2
-    BRAINBREAD2,
-    /// Codename CURE
-    CODENAMECURE,
-    /// Black Mesa
-    BLACKMESA,
-    /// Colony Survival
-    COLONYSURVIVAL,
-    /// Avorion
-    AVORION,
-    /// Day of Infamy
-    DOI,
-    /// The Forest
-    THEFOREST,
-    /// Unturned
-    UNTURNED,
-    /// ARK: Survival Evolved
-    ASE,
-    /// Battalion 1944
-    BATTALION1944,
-    /// Insurgency: Sandstorm
-    INSURGENCYSANDSTORM,
-    /// Alien Swarm: Reactive Drop
-    ASRD,
-    /// Risk of Rain 2
-    ROR2,
-    /// Operation: Harsh Doorstop
-    OHD,
-    /// Onset
-    ONSET,
-    /// V Rising
-    VRISING,
-    /// Hell Let Loose
-    HLL,
-    /// Barotrauma
-    BAROTRAUMA,
-    /// Valheim
-    VALHEIM,
-}
-
-impl SteamApp {
-    /// Get the specified app as engine.
-    pub const fn as_engine(&self) -> Engine {
-        match self {
-            Self::CSS => Engine::new_source(240),
-            Self::DODS => Engine::new_source(300),
-            Self::HL2D => Engine::new_source(320),
-            Self::HLDS => Engine::new_source(360),
-            Self::TEAMFORTRESS2 => Engine::new_source(440),
-            Self::LEFT4DEAD => Engine::new_source(500),
-            Self::LEFT4DEAD2 => Engine::new_source(550),
-            Self::ALIENSWARM => Engine::new_source(630),
-            Self::CSGO => Engine::new_source(730),
-            Self::THESHIP => Engine::new_source(2400),
-            Self::GARRYSMOD => Engine::new_source(4000),
-            Self::AOC => Engine::new_source(17510),
-            Self::IMIC => Engine::new_source(17700),
-            Self::A2OA => Engine::new_source(33930),
-            Self::PROJECTZOMBOID => Engine::new_source(108_600),
-            Self::INSURGENCY => Engine::new_source(222_880),
-            Self::SD2D => Engine::new_source(251_570),
-            Self::RUST => Engine::new_source(252_490),
-            Self::CREATIVERSE => Engine::new_source(280_790),
-            Self::BALLISTICOVERKILL => Engine::new_source(296_300),
-            Self::DST => Engine::new_source(322_320),
-            Self::BRAINBREAD2 => Engine::new_source(346_330),
-            Self::CODENAMECURE => Engine::new_source(355_180),
-            Self::BLACKMESA => Engine::new_source(362_890),
-            Self::COLONYSURVIVAL => Engine::new_source(366_090),
-            Self::AVORION => Engine::new_source(445_220),
-            Self::DOI => Engine::new_source(447_820),
-            Self::THEFOREST => Engine::new_source(556_450),
-            Self::UNTURNED => Engine::new_source(304_930),
-            Self::ASE => Engine::new_source(346_110),
-            Self::BATTALION1944 => Engine::new_source(489_940),
-            Self::INSURGENCYSANDSTORM => Engine::new_source(581_320),
-            Self::ASRD => Engine::new_source(563_560),
-            Self::BAROTRAUMA => Engine::new_source(602960),
-            Self::ROR2 => Engine::new_source(632_360),
-            Self::OHD => Engine::new_source_with_dedicated(736_590, 950_900),
-            Self::VALHEIM => Engine::new_source(892_970),
-            Self::ONSET => Engine::new_source(1_105_810),
-            Self::VRISING => Engine::new_source(1_604_030),
-            Self::HLL => Engine::new_source(686_810),
-            _ => Engine::GoldSrc(false), // CS - 10, TFC - 20, DOD - 30, CSCZ - 80, SC - 225840
-        }
-    }
-}
-
 /// Engine type.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -409,9 +264,11 @@ pub enum Engine {
 }
 
 impl Engine {
-    pub const fn new_source(appid: u32) -> Self { Self::Source(Some((appid, None))) }
+    pub const fn new(appid: u32) -> Self { Self::Source(Some((appid, None))) }
 
-    pub const fn new_source_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
+    pub const fn new_goldSrc(force: bool) -> Self { Self::GoldSrc(force) }
+
+    pub const fn new_with_dedicated(appid: u32, dedicated_appid: u32) -> Self {
         Self::Source(Some((appid, Some(dedicated_appid))))
     }
 }

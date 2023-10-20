@@ -16,7 +16,6 @@ use crate::{
             },
             Engine,
             ModData,
-            SteamApp,
         },
     },
     socket::{Socket, UdpSocket},
