@@ -40,7 +40,7 @@ pub(crate) use game_query_mod;
 // https://users.rust-lang.org/t/macros-filling-text-in-comments/20473
 /// Generate a query function for a valve game.
 ///
-/// * `steam_app` - The entry in the [SteamApp] enum that the game uses.
+/// * `engine` - The [Engine] that the game uses.
 /// * `default_port` - The default port the game uses.
 ///
 /// ```rust,ignore
