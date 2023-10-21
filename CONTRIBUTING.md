@@ -60,10 +60,11 @@ if they are at the end (such as sequel number or the year), always append them
 `unrealtournament2003`).
 7. If a game supports multiple protocols, multiple entries will be done for 
 said game where the edition/protocol name (first disposable in this order) will 
-be appended to the game name (Minecraft is divided by 2 editions, Java and Bedrock 
-which will be `minecraftjava` and `minecraftbedrock` respectively) and one more 
-entry can be added by the base name of the game which queries in a group said 
-supported protocols to make generic queries easier and disposable.
+be appended to the game name fully, ignoring #2 (Minecraft is mainly divided by 
+2 editions, Java and Bedrock which will be `minecraftjava` and `minecraftbedrock` 
+respectively) and one more entry can be added by the base name of the game which 
+queries in a group said supported protocols to make generic queries easier and 
+disposable.
 8. If its actually about a mod that adds the ability for queries to be performed, 
 process only the mod name.
 
