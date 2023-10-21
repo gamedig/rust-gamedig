@@ -76,10 +76,10 @@ pub fn query_with_timeout_and_extra_settings(
 ) -> GDResult<Box<dyn CommonResponse>> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
-        Protocol::Valve(steam_app) => {
+        Protocol::Valve(engine) => {
             protocols::valve::query(
                 &socket_addr,
-                steam_app.as_engine(),
+                *engine,
                 extra_settings
                     .or(Option::from(game.request_settings.clone()))
                     .map(ExtraRequestSettings::into),
