@@ -4,45 +4,9 @@ use std::{collections::HashMap, fs, io::Read};
 
 use gamedig::GAMES;
 
-/// Split a str when characters swap between being digits and not digits.
-fn split_on_switch_between_alpha_numeric(text: &str) -> Vec<String> {
-    if text.is_empty() {
-        return vec![];
-    }
+use utils::*;
 
-    let mut parts = Vec::with_capacity(text.len());
-    let mut current = Vec::with_capacity(text.len());
-
-    let mut iter = text.chars();
-    let c = iter.next().unwrap();
-    let mut last_was_numeric = c.is_ascii_digit();
-    current.push(c);
-
-    for c in iter {
-        if c.is_ascii_digit() == last_was_numeric {
-            current.push(c);
-        } else {
-            parts.push(current.iter().collect());
-            current.clear();
-            current.push(c);
-            last_was_numeric = !last_was_numeric;
-        }
-    }
-
-    parts.push(current.into_iter().collect());
-
-    parts
-}
-
-#[test]
-fn split_correctly() {
-    assert_eq!(
-        split_on_switch_between_alpha_numeric("2D45A"),
-        &["2", "D", "45", "A"]
-    );
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IDRule {
     IDsMustBeLowerCase,
     NumbersAreTheirOwnWord,
@@ -216,11 +180,11 @@ pub fn test_game_name_rule(
                 //    easier and disposable.
 
                 rule_stack.push(IDRule::IfIDDuplicateSameGameAppendProtocol);
-                expected_id = format!(
-                    "{}{}",
-                    expected_id,
-                    protocol.trim_matches(|c| c == '(' || c == ')')
-                );
+
+                // Parse the protocol as a game name so we can remove all non-valid characters
+                let protocol_parsed = extract_game_parts_from_name(protocol);
+
+                expected_id = format!("{}{}", expected_id, protocol_parsed.words.concat(),);
             }
         }
     }
@@ -244,7 +208,7 @@ pub fn test_game_name_rule(
     // 8. If its actually about a mod that adds the ability for queries to be
     //    performed, process only the mod name.
     if !is_mod_name && id != expected_id {
-        if let Some((_, mod_game)) = game.name.split_once("-") {
+        if let Some((_, mod_game)) = game.name.split_once('-') {
             let mut result = test_game_name_rule(seen_ids, id, extract_game_parts_from_name(mod_game), true);
 
             if result.is_empty() {
@@ -288,6 +252,13 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
     // NOTE: we have to leave "-" in to prevent hyphenated prefixes being parsed as
     // numerals
     let mut optional_game_name_parts = Vec::new();
+
+    let (game, paren) = extract_bracketed_suffix(game);
+
+    if let Some(paren) = paren {
+        optional_game_name_parts.push(paren);
+    }
+
     // Filter map necessary to move out words
     #[allow(clippy::unnecessary_filter_map)]
     let game_name_words: Vec<_> = game
@@ -320,6 +291,9 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
                 game_year = Some(year);
                 break;
             }
+        } else if let Ok(year) = optional_part.parse() {
+            game_year = Some(year);
+            break;
         }
     }
 
@@ -410,64 +384,130 @@ fn check_node_definitions_match_name_rules() {
 
 fn test_single_game_rule(id: &str, name: &str) -> Vec<IDFail> { test_game_name_rules(std::iter::once((id, name))) }
 
-#[test]
-fn id_rule_one() {
-    assert!(test_single_game_rule("testgame", "Test Game").is_empty());
-    assert!(test_single_game_rule("testgame", "TestGame").is_empty());
+mod id_tests {
+    use super::{test_game_name_rules, test_single_game_rule};
+    #[test]
+    fn id_rule_one() {
+        assert!(test_single_game_rule("testgame", "Test Game").is_empty());
+        assert!(test_single_game_rule("testgame", "TestGame").is_empty());
 
-    assert!(test_single_game_rule("deadcells", "Dead Cells").is_empty());
-    assert!(test_single_game_rule("stalker", "S.T.A.L.K.E.R").is_empty());
+        assert!(test_single_game_rule("deadcells", "Dead Cells").is_empty());
+        assert!(test_single_game_rule("stalker", "S.T.A.L.K.E.R").is_empty());
+    }
+
+    #[test]
+    fn id_rule_two() {
+        assert!(test_single_game_rule("tgt", "Test Game Three").is_empty());
+        assert!(test_single_game_rule("tgt", "Test Game-Three").is_empty());
+
+        assert!(test_single_game_rule("tboi", "The Binding of Isaac").is_empty());
+        assert!(test_single_game_rule("ddd", "Dino D-Day").is_empty());
+    }
+
+    #[test]
+    fn id_rule_three() {
+        let games = vec![
+            ("swb22017", "Star Wars Battlefront 2 (2017)"),
+            ("swb2", "Star Wars Battlefront 2 (2015)"),
+        ];
+        assert!(test_game_name_rules(games.into_iter()).is_empty());
+    }
+
+    #[test]
+    fn id_rule_four() {
+        let games = vec![("dod", "Day of Defeat"), ("dayofdragons", "Day of Dragons")];
+        assert!(test_game_name_rules(games.into_iter()).is_empty());
+    }
+
+    #[test]
+    fn id_rule_five() {
+        assert!(test_single_game_rule("gta14", "Grand Theft Auto XIV").is_empty());
+    }
+
+    #[test]
+    fn id_rule_six() {
+        assert!(test_single_game_rule("l4d", "Left 4 Dead").is_empty());
+        assert!(test_single_game_rule("sdtd", "7 Days to Die").is_empty());
+        assert!(test_single_game_rule("teamfortress2", "Team Fortress 2").is_empty());
+        assert!(test_single_game_rule("unrealtournament2003", "Unreal Tournament 2003").is_empty());
+    }
+
+    #[test]
+    fn id_rule_seven() {
+        let games = vec![
+            ("minecraft", "Minecraft"),
+            ("minecraftjava", "Minecraft (java)"),
+            ("minecraftbedrock", "Minecraft (bedrock)"),
+        ];
+        assert!(test_game_name_rules(games.into_iter()).is_empty());
+    }
+
+    #[test]
+    fn id_rule_eight() {
+        assert!(test_single_game_rule("fivem", "Grand Theft Auto V - FiveM (2013)").is_empty());
+        assert!(test_single_game_rule("jc3m", "Just Cause 3 - Multiplayer").is_empty());
+    }
 }
 
-#[test]
-fn id_rule_two() {
-    assert!(test_single_game_rule("tgt", "Test Game Three").is_empty());
-    assert!(test_single_game_rule("tgt", "Test Game-Three").is_empty());
+mod utils {
+    /// Split a str when characters swap between being digits and not digits.
+    pub fn split_on_switch_between_alpha_numeric(text: &str) -> Vec<String> {
+        if text.is_empty() {
+            return vec![];
+        }
 
-    assert!(test_single_game_rule("tboi", "The Binding of Isaac").is_empty());
-    assert!(test_single_game_rule("ddd", "Dino D-Day").is_empty());
-}
+        let mut parts = Vec::with_capacity(text.len());
+        let mut current = Vec::with_capacity(text.len());
 
-#[test]
-fn id_rule_three() {
-    let games = vec![
-        ("swb22017", "Star Wars Battlefront 2 (2017)"),
-        ("swb2", "Star Wars Battlefront 2 (2015)"),
-    ];
-    assert!(test_game_name_rules(games.into_iter()).is_empty());
-}
+        let mut iter = text.chars();
+        let c = iter.next().unwrap();
+        let mut last_was_numeric = c.is_ascii_digit();
+        current.push(c);
 
-#[test]
-fn id_rule_four() {
-    let games = vec![("dod", "Day of Defeat"), ("dayofdragons", "Day of Dragons")];
-    assert!(test_game_name_rules(games.into_iter()).is_empty());
-}
+        for c in iter {
+            if c.is_ascii_digit() == last_was_numeric {
+                current.push(c);
+            } else {
+                parts.push(current.iter().collect());
+                current.clear();
+                current.push(c);
+                last_was_numeric = !last_was_numeric;
+            }
+        }
 
-#[test]
-fn id_rule_five() {
-    assert!(test_single_game_rule("gta14", "Grand Theft Auto XIV").is_empty());
-}
+        parts.push(current.into_iter().collect());
 
-#[test]
-fn id_rule_six() {
-    assert!(test_single_game_rule("l4d", "Left 4 Dead").is_empty());
-    assert!(test_single_game_rule("sdtd", "7 Days to Die").is_empty());
-    assert!(test_single_game_rule("teamfortress2", "Team Fortress 2").is_empty());
-    assert!(test_single_game_rule("unrealtournament2003", "Unreal Tournament 2003").is_empty());
-}
+        parts
+    }
 
-#[test]
-fn id_rule_seven() {
-    let games = vec![
-        ("minecraft", "Minecraft"),
-        ("minecraftjava", "Minecraft (java)"),
-        ("minecraftbedrock", "Minecraft (bedrock)"),
-    ];
-    assert!(test_game_name_rules(games.into_iter()).is_empty());
-}
+    #[test]
+    fn split_correctly() {
+        assert_eq!(
+            split_on_switch_between_alpha_numeric("2D45A"),
+            &["2", "D", "45", "A"]
+        );
+    }
 
-#[test]
-fn id_rule_eight() {
-    assert!(test_single_game_rule("fivem", "Grand Theft Auto V - FiveM (2013)").is_empty());
-    assert!(test_single_game_rule("jc3m", "Just Cause 3 - Multiplayer").is_empty());
+    /// Extract parts at end of string enclosed in brackets.
+    pub fn extract_bracketed_suffix(text: &str) -> (&str, Option<&str>) {
+        if let Some(text) = text.strip_suffix(')') {
+            if let Some((text, extra)) = text.rsplit_once('(') {
+                return (text, Some(extra));
+            }
+        }
+
+        (text, None)
+    }
+
+    #[test]
+    fn extract_brackets_correctly() {
+        assert_eq!(
+            extract_bracketed_suffix("no brackets here"),
+            ("no brackets here", None)
+        );
+        assert_eq!(
+            extract_bracketed_suffix("Game name (with protocol here)"),
+            ("Game name ", Some("with protocol here"))
+        );
+    }
 }
