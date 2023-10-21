@@ -249,14 +249,20 @@ impl Request {
     }
 }
 
-/// Engine type.
+/// Every supported Valve game references this enum, represents the behaviour
+/// of server requests and responses.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Engine {
-    /// A Source game, the argument represents the possible steam app ids, if
-    /// its **None**, let the query find it, if its **Some**, the query
-    /// fails if the response id is not the first one, which is the game app
-    /// id, or the other one, which is the dedicated server app id.
+    /// A Source game, the argument represents the possible steam app ids.
+    /// If its **None**, let the query find it (could come with some drawbacks,
+    /// some games do not respond on certain protocol versions (CSS on 7),
+    /// some have additional data (The Ship).
+    /// If its **Some**, the first value is the main steam app id, the second
+    /// could be a secondly used id, as some games use a different one for
+    /// dedicated servers. Beware if **check_app_id** is set to true in
+    /// [GatheringSettings], as the query will fail if the server doesnt respond
+    /// with the expected ids.
     Source(Option<(u32, Option<u32>)>),
     /// A GoldSrc game, the argument indicates whether to enforce
     /// requesting the obsolete A2S_INFO response or not.
