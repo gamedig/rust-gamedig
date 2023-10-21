@@ -6,7 +6,8 @@ Who knows what the future holds...
 - Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
 
 ### Breaking:
-None, yaay!
+Protocols:
+- Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
 
 # 0.4.1 - 13/10/2023
 ### Changes:
