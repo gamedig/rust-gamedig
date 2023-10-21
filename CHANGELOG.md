@@ -6,6 +6,12 @@ Who knows what the future holds...
 - Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
 
 ### Breaking:
+Game:
+- Changed identifications of the following games as they weren't properly expecting the naming rules:
+- - Left 4 Dead: `left4dead` -> `l4d`.
+- - 7 Days to Die: `7d2d` in definitions and `sd2d` in game declaration -> `sdtd`.
+- - Quake 3 Arena: `quake3arena` -> `q3a`.
+
 Protocols:
 - Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
 
