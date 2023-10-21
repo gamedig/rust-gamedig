@@ -59,7 +59,7 @@ Other examples: `Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 2003` -
 `unrealtournament2003`.
 7. If a game supports multiple protocols, multiple entries will be done for 
 said game where the edition/protocol name (first disposable in this order) will 
-be appended to the game name fully, ignoring #2 (Minecraft is mainly divided by 
+be appended to the base game id's fully, ignoring #2 (Minecraft is mainly divided by 
 2 editions, Java and Bedrock which will be `minecraftjava` and `minecraftbedrock` 
 respectively) and one more entry can be added by the base name of the game which 
 queries in a group said supported protocols to make generic queries easier and 
