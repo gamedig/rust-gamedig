@@ -80,8 +80,8 @@ game_query_mod!(
     Engine::new(581_320),
     27131
 );
-game_query_mod!(left4dead, "Left 4 Dead", Engine::new(500), 27015);
-game_query_mod!(left4dead2, "Left 4 Dead 2", Engine::new(550), 27015);
+game_query_mod!(l4d, "Left 4 Dead", Engine::new(500), 27015);
+game_query_mod!(l4d2, "Left 4 Dead 2", Engine::new(550), 27015);
 game_query_mod!(
     ohd,
     "Operation: Harsh Doorstop",
