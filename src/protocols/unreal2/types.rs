@@ -100,11 +100,13 @@ impl MutatorsAndRules {
     }
 }
 
-/// Unreal 2 players.
+/// Unreal 2 players and bots.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Players {
+    /// List of players returned by server (without 0 ping).
     pub players: Vec<Player>,
+    /// List of bots returned by server (players with 0 ping).
     pub bots: Vec<Player>,
 }
 

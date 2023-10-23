@@ -86,9 +86,6 @@ impl Unreal2Protocol {
             ServerInfo::parse(&mut buffer)?
         };
 
-        // TODO: Remove debug logging
-        println!("{:#?}", server_info);
-
         // Fetch mutators and rules, this is a required packet so we validate that we
         // get at least one response. However there can be many packets in
         // response to a single request so we greedily handle packets until
@@ -115,12 +112,12 @@ impl Unreal2Protocol {
             mutators_and_rules.parse(&mut buffer)?;
         }
 
-        // TODO: Remove debug logging
-        println!("{:#?}", mutators_and_rules);
-
         // Pre-allocate the player arrays, but don't over allocate memory if the server
         // specifies an insane number of players.
         let mut players = Players::with_capacity(server_info.num_players.try_into().unwrap_or(10).min(50));
+
+        // TODO: Add shortcut, if players received >= numplayers in serverinfo then we
+        //       don't have to wait for a timeout.
 
         // Fetch first players packet (with retries)
         let mut players_data = self.get_request_data(PacketKind::Players);
