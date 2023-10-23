@@ -114,7 +114,8 @@ impl Players {
     pub fn with_capacity(capacity: usize) -> Self {
         Players {
             players: Vec::with_capacity(capacity),
-            bots: Vec::with_capacity(capacity),
+            // Allocate half as many bots as we don't expect there to be as many
+            bots: Vec::with_capacity(capacity / 2),
         }
     }
 
