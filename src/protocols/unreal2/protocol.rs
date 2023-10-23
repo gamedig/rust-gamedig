@@ -10,6 +10,7 @@ use super::{MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
 use std::net::SocketAddr;
 
 use byteorder::{ByteOrder, LittleEndian};
+use encoding_rs::{UTF_8, WINDOWS_1252};
 
 // TODO: Validate this is the correct packet size
 pub const PACKET_SIZE: usize = 5012;
@@ -178,12 +179,20 @@ impl StringDecoder for Unreal2StringDecoder {
         }
 
         // If UCS2 the first byte is the masked length of the string
-        let string_data = if ucs2 {
+        let result = if ucs2 {
             let string_data = &data[start .. start + length];
             if string_data.len() != length {
                 return Err(PacketBad.context("Not enough data in buffer to read string"));
             }
-            string_data
+
+            // NOTE: node-gamedig treats ucs2 the same as UTF8
+            let (result, _, invalid_sequences) = UTF_8.decode(string_data);
+
+            if invalid_sequences {
+                return Err(PacketBad.context("UTF-8 string contained invalid character(s)"));
+            }
+
+            result
         } else {
             // Else the string is null-delimited latin1
 
@@ -198,11 +207,15 @@ impl StringDecoder for Unreal2StringDecoder {
 
             length = position + 1;
 
-            &data[1.min(position) .. position]
-        };
+            // Decode as latin1
+            let (result, _, invalid_sequences) = WINDOWS_1252.decode(&data[0 .. position]);
 
-        // FIXME: This should be latin1 or usc2
-        let result = String::from_utf8_lossy(string_data);
+            if invalid_sequences {
+                return Err(PacketBad.context("latin1 string contained invalid character(s)"));
+            }
+
+            result
+        };
 
         // Strip color encodings
         // TODO: Improve efficiency
