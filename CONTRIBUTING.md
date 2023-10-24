@@ -59,13 +59,16 @@ number is in the first position the longhand (words: 5 -> five) representation o
 number will be used to create an acronym (`7 Days to Die` -> `sdtd`). Other examples: 
 `Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 2003` -> 
 `unrealtournament2003`.
-7. If a game supports multiple protocols, multiple entries will be done for 
-said game where the edition/protocol name (first disposable in this order) will 
-be appended to the base game id's fully, ignoring #2 (Minecraft is mainly divided by 
-2 editions, Java and Bedrock which will be `minecraftjava` and `minecraftbedrock` 
-respectively) and one more entry can be added by the base name of the game which 
-queries in a group said supported protocols to make generic queries easier and 
-disposable.
+7. If a game supports multiple protocols, multiple entries will be done for said game 
+where the edition/protocol name (first disposable in this order) will be appended to 
+the base game id's: `<game_id><protocol_id>` (where the protocol id will follow all 
+rules except #2) (Minecraft is mainly divided by 2 editions, Java and Bedrock 
+which will be `minecraftjava` and `minecraftbedrock` respectively, but it also has
+legacy versions, which use another protocol, an example would be the one for `1.6`, 
+so the name would be `Legacy 1.6` which its id will be `legacy16`, resulting in the 
+entry of `minecraftlegacy16`). One more entry can be added by the base name of the 
+game, which queries in a group said supported protocols to make generic queries 
+easier and disposable.
 8. If its actually about a mod that adds the ability for queries to be performed, 
 process only the mod name.
 
