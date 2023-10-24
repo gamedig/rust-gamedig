@@ -53,9 +53,11 @@ and 2017 would be `swb22017`).
 (`Day of Dragons` -> `dayofdragons`).
 5. Roman numbering will be converted to arabic numbering (`XIV` -> `14`).
 6. Unless numbers (years included) are at the end of a name, they will be considered 
-words. If a number is not in the first position its entire numeric digits will be used instead of the acronym of that number's digits (`Left 4 
-Dead` -> `l4d`). If the number is in the first position the longhand (words: 5 -> five) representation of the number will be used to create an ancronym (`7 Days to Die` -> `sdtd`). 
-Other examples: `Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 2003` ->
+words. If a number is not in the first position, its entire numeric digits will be 
+used instead of the acronym of that number's digits (`Left 4 Dead` -> `l4d`). If the 
+number is in the first position the longhand (words: 5 -> five) representation of the 
+number will be used to create an acronym (`7 Days to Die` -> `sdtd`). Other examples: 
+`Team Fortress 2` -> `teamfortress2`, `Unreal Tournament 2003` -> 
 `unrealtournament2003`.
 7. If a game supports multiple protocols, multiple entries will be done for 
 said game where the edition/protocol name (first disposable in this order) will 
