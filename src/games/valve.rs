@@ -80,8 +80,8 @@ game_query_mod!(
     Engine::new(581_320),
     27131
 );
-game_query_mod!(left4dead, "Left 4 Dead", Engine::new(500), 27015);
-game_query_mod!(left4dead2, "Left 4 Dead 2", Engine::new(550), 27015);
+game_query_mod!(l4d, "Left 4 Dead", Engine::new(500), 27015);
+game_query_mod!(l4d2, "Left 4 Dead 2", Engine::new(550), 27015);
 game_query_mod!(
     ohd,
     "Operation: Harsh Doorstop",
@@ -98,7 +98,7 @@ game_query_mod!(
 game_query_mod!(ror2, "Risk of Rain 2", Engine::new(632_360), 27016);
 game_query_mod!(rust, "Rust", Engine::new(252_490), 27015);
 game_query_mod!(sco, "Sven Co-op", Engine::new_gold_src(false), 27015);
-game_query_mod!(sd2d, "7 Days To Die", Engine::new(251_570), 26900);
+game_query_mod!(sdtd, "7 Days to Die", Engine::new(251_570), 26900);
 game_query_mod!(teamfortress2, "Team Fortress 2", Engine::new(440), 27015);
 game_query_mod!(
     tfc,

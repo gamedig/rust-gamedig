@@ -114,7 +114,7 @@ mod test {
     fn teamfortress2() { test_game("teamfortress2"); }
 
     #[test]
-    fn quake() { test_game("quake3"); }
+    fn quake2() { test_game("quake2"); }
 
     #[test]
     fn all_games() {
