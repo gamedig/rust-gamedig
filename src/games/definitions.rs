@@ -92,6 +92,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "sof2" => game!("Soldier of Fortune 2", 20100, Protocol::Quake(QuakeVersion::Three)),
     "serioussam" => game!("Serious Sam", 25601, Protocol::Gamespy(GameSpyVersion::One)),
     "theforest" => game!("The Forest", 27016, Protocol::Valve(Engine::new(556_450))),
+    "thefront" => game!("The Front", 27015, Protocol::Valve(Engine::new(2_285_150))),
     "teamfortress2" => game!("Team Fortress 2", 27015, Protocol::Valve(Engine::new(440))),
     "tfc" => game!("Team Fortress Classic", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "theship" => game!("The Ship", 27015, Protocol::PROPRIETARY(ProprietaryProtocol::TheShip)),

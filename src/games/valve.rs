@@ -107,6 +107,7 @@ game_query_mod!(
     27015
 );
 game_query_mod!(theforest, "The Forest", Engine::new(556_450), 27016);
+game_query_mod!(thefront, "The Front", Engine::new(2_285_150), 27015);
 game_query_mod!(unturned, "Unturned", Engine::new(304_930), 27015);
 game_query_mod!(
     valheim,

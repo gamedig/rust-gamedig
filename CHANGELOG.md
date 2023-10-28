@@ -4,6 +4,7 @@ Who knows what the future holds...
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
 - Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+- Added [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
 
 ### Breaking:
 Game:
