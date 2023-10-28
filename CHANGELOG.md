@@ -3,7 +3,11 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
+Games:
 - Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+
+Protocols:
+- Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
 
 ### Breaking:
 Game:
