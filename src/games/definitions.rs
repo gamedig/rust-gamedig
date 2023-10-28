@@ -58,6 +58,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "ballisticoverkill" => game!("Ballistic Overkill", 27016, Protocol::Valve(Engine::new(296_300))),
     "codenamecure" => game!("Codename CURE", 27015, Protocol::Valve(Engine::new(355_180))),
     "colonysurvival" => game!("Colony Survival", 27004, Protocol::Valve(Engine::new(366_090))),
+    "conanexiles" => game!("Conan Exiles", 27015, Protocol::Valve(Engine::new(440_900)), GatheringSettings {
+        players: false,
+        rules: true,
+        check_app_id: true,
+    }.into_extra()),
     "counterstrike" => game!("Counter-Strike", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "cscz" => game!("Counter Strike: Condition Zero", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "csgo" => game!("Counter-Strike: Global Offensive", 27015, Protocol::Valve(Engine::new(730))),

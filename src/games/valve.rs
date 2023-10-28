@@ -35,6 +35,17 @@ game_query_mod!(
     27004
 );
 game_query_mod!(
+    conanexiles,
+    "Conan Exiles",
+    Engine::new(440_900),
+    27015,
+    GatheringSettings {
+        players: false,
+        rules: true,
+        check_app_id: true,
+    }
+);
+game_query_mod!(
     counterstrike,
     "Counter-Strike",
     Engine::new_gold_src(false),
