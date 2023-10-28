@@ -78,7 +78,7 @@ impl ServerInfo {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MutatorsAndRules {
     pub mutators: HashSet<String>,
-    pub rules: HashMap<String, Option<String>>,
+    pub rules: HashMap<String, Vec<String>>,
 }
 
 impl MutatorsAndRules {
@@ -92,8 +92,20 @@ impl MutatorsAndRules {
                     self.mutators.insert(value);
                 }
             } else {
-                // TODO: Node combines multiple rule occurences with ,
-                self.rules.insert(key, value);
+                let rule_vec = self.rules.get_mut(&key);
+
+                let rule_vec = if let Some(rule_vec) = rule_vec {
+                    rule_vec
+                } else {
+                    self.rules.insert(key.clone(), Vec::default());
+                    self.rules
+                        .get_mut(&key)
+                        .expect("Value should be in HashMap after we inserted")
+                };
+
+                if let Some(value) = value {
+                    rule_vec.push(value);
+                }
             }
         }
         Ok(())
