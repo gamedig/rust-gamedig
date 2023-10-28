@@ -49,26 +49,16 @@ pub struct ServerInfo {
 
 impl ServerInfo {
     pub fn parse<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Self> {
-        let server_id = buffer.read()?;
-        let ip = buffer.read_string::<Unreal2StringDecoder>(None)?;
-        let game_port = buffer.read()?;
-        let query_port = buffer.read()?;
-        let name = buffer.read_string::<Unreal2StringDecoder>(None)?;
-        let map = buffer.read_string::<Unreal2StringDecoder>(None)?;
-        let game_type = buffer.read_string::<Unreal2StringDecoder>(None)?;
-        let num_players = buffer.read()?;
-        let max_players = buffer.read()?;
-
         Ok(ServerInfo {
-            server_id,
-            ip,
-            game_port,
-            query_port,
-            name,
-            map,
-            game_type,
-            num_players,
-            max_players,
+            server_id: buffer.read()?,
+            ip: buffer.read_string::<Unreal2StringDecoder>(None)?,
+            game_port: buffer.read()?,
+            query_port: buffer.read()?,
+            name: buffer.read_string::<Unreal2StringDecoder>(None)?,
+            map: buffer.read_string::<Unreal2StringDecoder>(None)?,
+            game_type: buffer.read_string::<Unreal2StringDecoder>(None)?,
+            num_players: buffer.read()?,
+            max_players: buffer.read()?,
         })
     }
 }
