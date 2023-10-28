@@ -4,7 +4,9 @@ Who knows what the future holds...
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
 Games:
-- Added [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+- [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+- [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
+- [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
 
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
