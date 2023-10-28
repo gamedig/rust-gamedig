@@ -111,6 +111,8 @@ pub struct Players {
 }
 
 impl Players {
+    /// Pre-allocate the vectors inside the players struct based on the provided
+    /// capacity.
     pub fn with_capacity(capacity: usize) -> Self {
         Players {
             players: Vec::with_capacity(capacity),
@@ -119,6 +121,7 @@ impl Players {
         }
     }
 
+    /// Parse a raw buffer of players into the current struct.
     pub fn parse<B: ByteOrder>(&mut self, buffer: &mut Buffer<B>) -> GDResult<()> {
         while buffer.remaining_length() > 0 {
             let player = Player {

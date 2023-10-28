@@ -12,8 +12,17 @@ use std::net::SocketAddr;
 use byteorder::{ByteOrder, LittleEndian};
 use encoding_rs::{UTF_8, WINDOWS_1252};
 
-// TODO: Validate this is the correct packet size
-pub const PACKET_SIZE: usize = 5012;
+/// Response packets don't seem to exceed 500 bytes, set to 1024 just to be
+/// safe.
+const PACKET_SIZE: usize = 1024;
+
+/// Default amount of players to pre-allocate if numplayers was not included in
+/// server info response.
+const DEFAULT_PLAYER_PREALLOCATION: usize = 10;
+
+/// Maximum amount of players to pre-allocate: if the server specifies a number
+/// larger than this in serverinfo we don't allocate that many.
+const MAXIMUM_PLAYER_PREALLOCATION: usize = 50;
 
 /// The Unreal2 protocol implementation.
 pub(crate) struct Unreal2Protocol {
@@ -115,10 +124,15 @@ impl Unreal2Protocol {
 
         // Pre-allocate the player arrays, but don't over allocate memory if the server
         // specifies an insane number of players.
-        let mut players = Players::with_capacity(server_info.num_players.try_into().unwrap_or(10).min(50));
+        let num_players: Option<usize> = server_info.num_players.try_into().ok();
 
         // TODO: Add shortcut, if players received >= numplayers in serverinfo then we
         //       don't have to wait for a timeout.
+        let mut players = Players::with_capacity(
+            num_players
+                .unwrap_or(DEFAULT_PLAYER_PREALLOCATION)
+                .min(MAXIMUM_PLAYER_PREALLOCATION),
+        );
 
         // Fetch first players packet (with retries)
         let mut players_data = self.get_request_data(PacketKind::Players);
