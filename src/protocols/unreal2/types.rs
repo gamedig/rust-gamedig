@@ -6,7 +6,7 @@ use crate::{GDError, GDResult};
 
 use super::Unreal2StringDecoder;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use byteorder::ByteOrder;
 
@@ -77,7 +77,7 @@ impl ServerInfo {
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MutatorsAndRules {
-    pub mutators: Vec<String>,
+    pub mutators: HashSet<String>,
     pub rules: HashMap<String, Option<String>>,
 }
 
@@ -89,7 +89,7 @@ impl MutatorsAndRules {
 
             if key.eq_ignore_ascii_case("mutator") {
                 if let Some(value) = value {
-                    self.mutators.push(value);
+                    self.mutators.insert(value);
                 }
             } else {
                 // TODO: Node combines multiple rule occurences with ,
