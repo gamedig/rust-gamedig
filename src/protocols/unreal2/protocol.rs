@@ -126,8 +126,6 @@ impl Unreal2Protocol {
         // specifies an insane number of players.
         let num_players: Option<usize> = server_info.num_players.try_into().ok();
 
-        // TODO: Add shortcut, if players received >= numplayers in serverinfo then we
-        //       don't have to wait for a timeout.
         let mut players = Players::with_capacity(
             num_players
                 .unwrap_or(DEFAULT_PLAYER_PREALLOCATION)
@@ -144,6 +142,14 @@ impl Unreal2Protocol {
             Self::consume_response_headers(&mut buffer, PacketKind::Players)?;
 
             players.parse(&mut buffer)?;
+
+            if let Some(num_players) = num_players {
+                if players.total_len() >= num_players {
+                    // If we have already received the amount of players specified in server info
+                    // then we don't need to wait for more player packets to time out.
+                    break;
+                }
+            }
 
             // Receive next packet
             players_data = self.socket.receive(Some(PACKET_SIZE));
@@ -246,6 +252,7 @@ impl StringDecoder for Unreal2StringDecoder {
                     return false;
                 }
                 char_skip = char_skip.saturating_sub(1);
+
                 char_skip == 0
             })
             .collect();

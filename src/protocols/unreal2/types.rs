@@ -142,6 +142,9 @@ impl Players {
 
         Ok(())
     }
+
+    /// Length of both players and bots.
+    pub fn total_len(&self) -> usize { self.players.len() + self.bots.len() }
 }
 
 /// Unreal 2 player info.
