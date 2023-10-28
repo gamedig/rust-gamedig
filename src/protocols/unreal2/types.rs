@@ -11,7 +11,7 @@ use std::collections::{HashMap, HashSet};
 use byteorder::ByteOrder;
 
 /// Unreal 2 packet types.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[repr(u8)]
 pub enum PacketKind {
@@ -33,7 +33,7 @@ impl TryFrom<u8> for PacketKind {
 }
 
 /// Unreal 2 server info.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ServerInfo {
     pub server_id: u32,
@@ -74,7 +74,7 @@ impl ServerInfo {
 }
 
 /// Unreal 2 mutators and rules.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MutatorsAndRules {
     pub mutators: HashSet<String>,
@@ -113,7 +113,7 @@ impl MutatorsAndRules {
 }
 
 /// Unreal 2 players and bots.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Players {
     /// List of players returned by server (without 0 ping).
@@ -160,7 +160,7 @@ impl Players {
 }
 
 /// Unreal 2 player info.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Player {
     pub id: u32,
@@ -179,7 +179,7 @@ impl CommonPlayer for Player {
 }
 
 /// Unreal 2 response.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Response {
     pub server_info: ServerInfo,
