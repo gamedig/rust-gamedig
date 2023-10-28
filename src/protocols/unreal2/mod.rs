@@ -44,6 +44,7 @@ macro_rules! game_query_fn {
         ) -> crate::GDResult<crate::protocols::unreal2::Response> {
             crate::protocols::unreal2::query(
                 &std::net::SocketAddr::new(*address, port.unwrap_or($default_port)),
+                &crate::protocols::unreal2::GatheringSettings::default(),
                 None,
             )
         }

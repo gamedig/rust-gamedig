@@ -1,6 +1,6 @@
 use crate::buffer::Buffer;
 use crate::errors::GDErrorKind::PacketBad;
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 
@@ -209,6 +209,48 @@ impl CommonResponse for Response {
     }
 
     fn as_original(&self) -> GenericResponse { GenericResponse::Unreal2(self) }
+}
+
+/// What data to gather, purely used only with the query function.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct GatheringSettings {
+    pub players: bool,
+    pub mutators_and_rules: bool,
+}
+
+impl GatheringSettings {
+    /// Default values are true for both the players and the rules.
+    pub const fn default() -> Self {
+        Self {
+            players: true,
+            mutators_and_rules: true,
+        }
+    }
+
+    pub const fn into_extra(self) -> ExtraRequestSettings {
+        ExtraRequestSettings {
+            hostname: None,
+            protocol_version: None,
+            gather_players: Some(self.players),
+            gather_rules: Some(self.mutators_and_rules),
+            check_app_id: None,
+        }
+    }
+}
+
+impl Default for GatheringSettings {
+    fn default() -> Self { GatheringSettings::default() }
+}
+
+impl From<ExtraRequestSettings> for GatheringSettings {
+    fn from(value: ExtraRequestSettings) -> Self {
+        let default = Self::default();
+        Self {
+            players: value.gather_players.unwrap_or(default.players),
+            mutators_and_rules: value.gather_rules.unwrap_or(default.mutators_and_rules),
+        }
+    }
 }
 
 // TODO: Add tests

@@ -131,7 +131,16 @@ pub fn query_with_timeout_and_extra_settings(
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
         }
-        Protocol::Unreal2 => protocols::unreal2::query(&socket_addr, timeout_settings).map(Box::new)?,
+        Protocol::Unreal2 => {
+            protocols::unreal2::query(
+                &socket_addr,
+                &extra_settings
+                    .map(ExtraRequestSettings::into)
+                    .unwrap_or_default(),
+                timeout_settings,
+            )
+            .map(Box::new)?
+        }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
                 ProprietaryProtocol::TheShip => {

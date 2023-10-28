@@ -5,7 +5,7 @@ use crate::socket::{Socket, UdpSocket};
 use crate::utils::retry_on_timeout;
 use crate::GDResult;
 
-use super::{MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
+use super::{GatheringSettings, MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
 
 use std::net::SocketAddr;
 
@@ -85,21 +85,22 @@ impl Unreal2Protocol {
         }
     }
 
-    /// Make a full server query.
-    pub fn query(&mut self) -> GDResult<Response> {
-        // Fetch the server info, this can only handle one response packet
-        let server_info = {
-            let data = self.get_request_data(PacketKind::ServerInfo)?;
-            let mut buffer = Buffer::<LittleEndian>::new(&data);
-            // TODO: Maybe put consume headers in individual packet parse methods
-            Self::consume_response_headers(&mut buffer, PacketKind::ServerInfo)?;
-            ServerInfo::parse(&mut buffer)?
-        };
+    /// Send server info query.
+    pub fn query_server_info(&mut self) -> GDResult<ServerInfo> {
+        let data = self.get_request_data(PacketKind::ServerInfo)?;
+        let mut buffer = Buffer::<LittleEndian>::new(&data);
+        // TODO: Maybe put consume headers in individual packet parse methods
+        Self::consume_response_headers(&mut buffer, PacketKind::ServerInfo)?;
+        ServerInfo::parse(&mut buffer)
+    }
 
-        // Fetch mutators and rules, this is a required packet so we validate that we
-        // get at least one response. However there can be many packets in
-        // response to a single request so we greedily handle packets until
-        // we get a timeout (or any receive error).
+    /// Send mutators and rules query.
+    pub fn query_mutators_and_rules(&mut self) -> GDResult<MutatorsAndRules> {
+        // This is a required packet so we validate that we get at least one response.
+        // However there can be many packets in response to a single request so
+        // we greedily handle packets until we get a timeout (or any receive
+        // error).
+
         let mut mutators_and_rules = MutatorsAndRules::default();
         {
             let data = self.get_request_data(PacketKind::MutatorsAndRules)?;
@@ -122,9 +123,14 @@ impl Unreal2Protocol {
             mutators_and_rules.parse(&mut buffer)?;
         }
 
+        Ok(mutators_and_rules)
+    }
+
+    /// Send players query.
+    pub fn query_players(&mut self, server_info: Option<&ServerInfo>) -> GDResult<Players> {
         // Pre-allocate the player arrays, but don't over allocate memory if the server
         // specifies an insane number of players.
-        let num_players: Option<usize> = server_info.num_players.try_into().ok();
+        let num_players: Option<usize> = server_info.and_then(|i| i.num_players.try_into().ok());
 
         let mut players = Players::with_capacity(
             num_players
@@ -154,6 +160,26 @@ impl Unreal2Protocol {
             // Receive next packet
             players_data = self.socket.receive(Some(PACKET_SIZE));
         }
+
+        Ok(players)
+    }
+
+    /// Make a full server query.
+    pub fn query(&mut self, gather_settings: &GatheringSettings) -> GDResult<Response> {
+        // Fetch the server info, this can only handle one response packet
+        let server_info = self.query_server_info()?;
+
+        let mutators_and_rules = if gather_settings.mutators_and_rules {
+            self.query_mutators_and_rules()?
+        } else {
+            MutatorsAndRules::default()
+        };
+
+        let players = if gather_settings.players {
+            self.query_players(Some(&server_info))?
+        } else {
+            Players::with_capacity(0)
+        };
 
         // TODO: Handle extra info parsing when we detect certain game types (or maybe
         // include that in gather settings).
@@ -268,10 +294,14 @@ impl StringDecoder for Unreal2StringDecoder {
 }
 
 ///  Make an unreal2 query.
-pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Response> {
+pub fn query(
+    address: &SocketAddr,
+    gather_settings: &GatheringSettings,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Response> {
     let mut client = Unreal2Protocol::new(address, timeout_settings)?;
 
-    client.query()
+    client.query(gather_settings)
 }
 
 // TODO: Add tests
