@@ -16,7 +16,6 @@ use crate::{
             },
             Engine,
             ModData,
-            SteamApp,
         },
     },
     socket::{Socket, UdpSocket},
@@ -59,8 +58,8 @@ impl SplitPacket {
             Engine::Source(_) => {
                 let total = buffer.read()?;
                 let number = buffer.read()?;
-                let size = match protocol == 7 && (*engine == SteamApp::CSS.as_engine()) {
-                    // certain apps with protocol = 7 dont have this field
+                let size = match protocol == 7 && (*engine == Engine::new(240)) {
+                    // certain apps with protocol = 7 dont have this field, such as CSS
                     false => buffer.read()?,
                     true => 1248,
                 };
@@ -304,7 +303,7 @@ impl ValveProtocol {
         let environment_type = Environment::from_gldsrc(buffer.read()?)?;
         let has_password = buffer.read::<u8>()? == 1;
         let vac_secured = buffer.read::<u8>()? == 1;
-        let the_ship = match *engine == SteamApp::THESHIP.as_engine() {
+        let the_ship = match *engine == Engine::new(2400) {
             false => None,
             true => {
                 Some(TheShip {
@@ -389,11 +388,11 @@ impl ValveProtocol {
                 name: buffer.read_string::<Utf8Decoder>(None)?,
                 score: buffer.read()?,
                 duration: buffer.read()?,
-                deaths: match *engine == SteamApp::THESHIP.as_engine() {
+                deaths: match *engine == Engine::new(2400) {
                     false => None,
                     true => Some(buffer.read()?),
                 },
-                money: match *engine == SteamApp::THESHIP.as_engine() {
+                money: match *engine == Engine::new(2400) {
                     false => None,
                     true => Some(buffer.read()?),
                 },
@@ -418,7 +417,8 @@ impl ValveProtocol {
             rules.insert(name, value);
         }
 
-        if *engine == SteamApp::ROR2.as_engine() {
+        if *engine == Engine::new(632_360) {
+            // ROR2
             rules.remove("Test");
         }
 

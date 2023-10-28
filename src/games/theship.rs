@@ -1,7 +1,7 @@
 use crate::{
     protocols::{
         types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings},
-        valve::{self, get_optional_extracted_data, Server, ServerPlayer, SteamApp},
+        valve::{self, get_optional_extracted_data, Server, ServerPlayer},
         GenericResponse,
     },
     GDErrorKind::PacketBad,
@@ -11,6 +11,7 @@ use std::net::{IpAddr, SocketAddr};
 
 use std::collections::HashMap;
 
+use crate::protocols::valve::Engine;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -136,7 +137,7 @@ pub fn query_with_timeout(
 ) -> GDResult<Response> {
     let valve_response = valve::query(
         &SocketAddr::new(*address, port.unwrap_or(27015)),
-        SteamApp::THESHIP.as_engine(),
+        Engine::new(2400),
         None,
         timeout_settings,
     )?;

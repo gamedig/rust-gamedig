@@ -23,7 +23,7 @@ pub enum Protocol {
     Gamespy(gamespy::GameSpyVersion),
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
-    Valve(valve::SteamApp),
+    Valve(valve::Engine),
     Unreal2,
     #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
