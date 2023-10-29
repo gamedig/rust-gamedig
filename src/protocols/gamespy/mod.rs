@@ -39,6 +39,7 @@ pub enum VersionedPlayer<'a> {
 /// * `pretty_name` - The full name of the game, will be used as the
 ///   documentation for the created module.
 /// * `gamespy_ver`, `default_port` - Passed through to [game_query_fn].
+#[cfg(feature = "games")]
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $gamespy_ver: ident, $default_port: literal) => {
         #[doc = $pretty_name]
@@ -48,6 +49,7 @@ macro_rules! game_query_mod {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_mod;
 
 // Allow generating doc comments:
@@ -62,6 +64,7 @@ pub(crate) use game_query_mod;
 /// use crate::protocols::gamespy::game_query_fn;
 /// game_query_fn!(one, 7778);
 /// ```
+#[cfg(feature = "games")]
 macro_rules! game_query_fn {
     ($gamespy_ver: ident, $default_port: literal) => {
         crate::protocols::gamespy::game_query_fn! {@gen $gamespy_ver, $default_port, concat!(
@@ -83,4 +86,5 @@ macro_rules! game_query_fn {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_fn;
