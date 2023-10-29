@@ -10,7 +10,7 @@ use super::{GatheringSettings, MutatorsAndRules, PacketKind, Players, Response, 
 use std::net::SocketAddr;
 
 use byteorder::{ByteOrder, LittleEndian};
-use encoding_rs::{UTF_8, WINDOWS_1252};
+use encoding_rs::{UTF_16LE, WINDOWS_1252};
 
 /// Response packets don't seem to exceed 500 bytes, set to 1024 just to be
 /// safe.
@@ -231,8 +231,9 @@ impl StringDecoder for Unreal2StringDecoder {
                 return Err(PacketBad.context("Not enough data in buffer to read string"));
             }
 
-            // NOTE: node-gamedig treats ucs2 the same as UTF8
-            let (result, _, invalid_sequences) = UTF_8.decode(string_data);
+            // When node decodes UCS2 it uses the UFT16LE encoding.
+            // https://github.com/nodejs/node/blob/2aaa21f9f684484edb54be30589c4af0b923cdef/lib/buffer.js#L637-L645
+            let (result, _, invalid_sequences) = UTF_16LE.decode(string_data);
 
             if invalid_sequences {
                 return Err(PacketBad.context("UTF-8 string contained invalid character(s)"));
