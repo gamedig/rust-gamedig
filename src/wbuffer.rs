@@ -110,18 +110,6 @@ pub trait StringEncoder<B: ByteOrder> {
     /// be an estimate: if unknown return None.
     fn bytes_required(_string: &str) -> Option<usize> { None }
 
-    fn encode_string_to_buffer(string: &str) -> GDResult<WriteBuffer<B>> {
-        let mut buffer = if let Some(capacity) = Self::bytes_required(string) {
-            WriteBuffer::with_capacity(capacity)
-        } else {
-            WriteBuffer::default()
-        };
-
-        Self::encode_string(&mut buffer, string)?;
-
-        Ok(buffer)
-    }
-
     /// Encode a string.
     fn encode_string(buffer: &mut WriteBuffer<B>, string: &str) -> GDResult<()>;
 }
