@@ -366,3 +366,29 @@ mod tests {
         let _: valve::GatheringSettings = settings.into();
     }
 }
+
+/// Allows a type to be represented as a u8 slice, and sent over the network as
+/// a packet.
+pub trait ToPacket: Sized {
+    /// Encode self as raw bytes to be sent as a packet.
+    fn as_packet(&self) -> GDResult<Vec<u8>>;
+}
+
+/// Allow creating a type from raw u8 bytes (a packet).
+pub trait FromPacket: Sized {
+    /// Parse the packet bytes to create a new value.
+    fn from_packet(packet: &[u8]) -> GDResult<Self>;
+}
+
+/// Allow extending a pre-existing value using raw u8 bytes (a packet).
+pub trait ExtendFromPacket<'a> {
+    /// The type of the value to be extended (without &mut).
+    type Input;
+    /// The type the extend function will return, mainly for use with types
+    /// where an inner value is being extended, otherwise unit type can be
+    /// returned.
+    type Output: Sized;
+    /// Extend the input value using the packet's bytes and return the an Output
+    /// value.
+    fn extend_from_packet(packet: &[u8], input: &'a mut Self::Input) -> GDResult<Self::Output>;
+}

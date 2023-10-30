@@ -34,6 +34,8 @@ pub enum GDErrorKind {
     JsonParse,
     /// Couldn't parse a value.
     TypeParse,
+    /// Out of memory.
+    OutOfMemory,
 }
 
 impl GDErrorKind {
