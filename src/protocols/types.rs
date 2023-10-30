@@ -366,3 +366,18 @@ mod tests {
         let _: valve::GatheringSettings = settings.into();
     }
 }
+
+pub trait ToPacket: Sized {
+    fn as_packet(&self) -> GDResult<Vec<u8>>;
+    fn to_packet(self) -> GDResult<Vec<u8>> { Self::as_packet(&self) }
+}
+
+pub trait FromPacket: Sized {
+    fn from_packet(packet: &[u8]) -> GDResult<Self>;
+}
+
+pub trait ExtendFromPacket<'a> {
+    type Input;
+    type Output: Sized;
+    fn extend_from_packet(packet: &[u8], input: &'a mut Self::Input) -> GDResult<Self::Output>;
+}
