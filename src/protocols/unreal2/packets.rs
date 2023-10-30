@@ -8,6 +8,7 @@ use byteorder::LittleEndian;
 
 type Buffer<'a> = crate::buffer::Buffer<'a, LittleEndian>;
 type WriteBuffer = crate::wbuffer::WriteBuffer<LittleEndian>;
+type StringEncoder = crate::wbuffer::UTF8LengthPrefixedEncoder<u8>;
 
 /// The first byte of unreal2 requests.
 const REQUEST_FLAG: u8 = 0x79;
@@ -165,12 +166,12 @@ impl ToPacket for ServerInfo {
         );
 
         buffer.write(self.server_id)?;
-        buffer.write_string(&self.ip)?;
+        buffer.write_string::<StringEncoder>(&self.ip)?;
         buffer.write(self.game_port)?;
         buffer.write(self.query_port)?;
-        buffer.write_string(&self.name)?;
-        buffer.write_string(&self.map)?;
-        buffer.write_string(&self.game_type)?;
+        buffer.write_string::<StringEncoder>(&self.name)?;
+        buffer.write_string::<StringEncoder>(&self.map)?;
+        buffer.write_string::<StringEncoder>(&self.game_type)?;
         buffer.write(self.num_players)?;
         buffer.write(self.max_players)?;
 
@@ -220,14 +221,14 @@ impl ToPacket for MutatorsAndRules {
         let mut buffer = WriteBuffer::default();
 
         for mutator in self.mutators.iter() {
-            buffer.write_string("mutator")?;
-            buffer.write_string(mutator)?;
+            buffer.write_string::<StringEncoder>("mutator")?;
+            buffer.write_string::<StringEncoder>(mutator)?;
         }
 
         for (key, values) in self.rules.iter() {
             for value in values {
-                buffer.write_string(key)?;
-                buffer.write_string(value)?;
+                buffer.write_string::<StringEncoder>(key)?;
+                buffer.write_string::<StringEncoder>(value)?;
             }
         }
 
@@ -281,7 +282,7 @@ impl ToPacket for Players {
 
         for player in self.players.iter().chain(self.bots.iter()) {
             buffer.write(player.id)?;
-            buffer.write_string(&player.name)?;
+            buffer.write_string::<StringEncoder>(&player.name)?;
             buffer.write(player.ping)?;
             buffer.write(player.score)?;
             buffer.write(player.stats_id)?;
