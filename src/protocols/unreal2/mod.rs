@@ -13,6 +13,7 @@ pub use types::*;
 /// * `pretty_name` - The full name of the game, will be used as the
 ///   documentation for the created module.
 /// * `default_port` - Passed through to [game_query_fn].
+#[cfg(feature = "games")]
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $default_port: literal) => {
         #[doc = $pretty_name]
@@ -22,6 +23,7 @@ macro_rules! game_query_mod {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_mod;
 
 // Allow generating doc comments:
@@ -29,6 +31,7 @@ pub(crate) use game_query_mod;
 /// Generate a query function for a valve game.
 ///
 /// * `default_port` - The default port the game uses.
+#[cfg(feature = "games")]
 macro_rules! game_query_fn {
     ($default_port: literal) => {
         crate::protocols::unreal2::game_query_fn! {@gen $default_port, concat!(
@@ -51,4 +54,5 @@ macro_rules! game_query_fn {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_fn;
