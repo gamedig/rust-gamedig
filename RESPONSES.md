@@ -55,5 +55,3 @@ In the case that a field that performs the same function exists in the current c
 | query_port           |                  |                           |               |                           |                       |                    |                                   |                           | `u32`                          |                   |                           |                    |
 | ip                   |                  |                           |               |                           |                       |                    |                                   |                           | `String`                       |                   |                           |                    |
 | mutators             |                  |                           |               |                           |                       |                    |                                   |                           | `HashSet<String>`              |                   |                           |                    |
-
-<!-- Generated using https://www.tablesgenerator.com/markdown_tables -->
