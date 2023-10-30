@@ -12,9 +12,9 @@ use super::{
     PacketKind,
     PacketMutatorsAndRules,
     PacketPlayers,
+    PacketRequest,
     PacketServerInfo,
     Players,
-    Request,
     Response,
     ServerInfo,
 };
@@ -65,7 +65,7 @@ impl Unreal2Protocol {
 
     /// Send a request packet
     fn get_request_data_impl(&mut self, packet_type: PacketKind) -> GDResult<Vec<u8>> {
-        let request = Request::from(packet_type);
+        let request = PacketRequest::from(packet_type);
         self.socket.send(&request.as_packet()?)?;
 
         let data = self.socket.receive(Some(PACKET_SIZE))?;

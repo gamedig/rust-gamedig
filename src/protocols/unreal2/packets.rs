@@ -14,14 +14,14 @@ const REQUEST_FLAG: u8 = 0x79;
 
 /// Unreal2 client request.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Request {
+pub struct PacketRequest {
     /// Should always be 0x79.
     pub request_flag: u8,
     pub padding: [u8; 3],
     pub packet_type: PacketKind,
 }
 
-impl From<PacketKind> for Request {
+impl From<PacketKind> for PacketRequest {
     fn from(packet_type: PacketKind) -> Self {
         Self {
             request_flag: REQUEST_FLAG,
@@ -31,7 +31,7 @@ impl From<PacketKind> for Request {
     }
 }
 
-impl ToPacket for Request {
+impl ToPacket for PacketRequest {
     fn as_packet(&self) -> GDResult<Vec<u8>> {
         let mut buffer = Vec::with_capacity(std::mem::size_of::<Self>());
 
@@ -46,13 +46,13 @@ impl ToPacket for Request {
     }
 }
 
-impl FromPacket for Request {
+impl FromPacket for PacketRequest {
     fn from_packet(packet: &[u8]) -> GDResult<Self> {
         let mut buffer = Buffer::new(packet);
         let request_flag = buffer.read()?;
 
         if request_flag != REQUEST_FLAG {
-            return Err(PacketBad.context("Unreal2 request should start with 0x78"));
+            return Err(PacketBad.context("Unreal2 request should start with 0x79"));
         }
 
         Ok(Self {
