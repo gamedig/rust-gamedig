@@ -1,15 +1,26 @@
-use crate::buffer::{Buffer, StringDecoder};
+use crate::buffer::StringDecoder;
 use crate::errors::GDErrorKind::PacketBad;
-use crate::protocols::types::TimeoutSettings;
+use crate::protocols::types::ToPacket;
+use crate::protocols::types::{ExtendFromPacket, FromPacket, TimeoutSettings};
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::retry_on_timeout;
 use crate::GDResult;
 
-use super::{GatheringSettings, MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
+use super::{
+    GatheringSettings,
+    MutatorsAndRules,
+    PacketKind,
+    PacketMutatorsAndRules,
+    PacketPlayers,
+    PacketServerInfo,
+    Players,
+    Request,
+    Response,
+    ServerInfo,
+};
 
 use std::net::SocketAddr;
 
-use byteorder::{ByteOrder, LittleEndian};
 use encoding_rs::{UTF_16LE, WINDOWS_1252};
 
 /// Response packets don't seem to exceed 500 bytes, set to 1024 just to be
@@ -54,44 +65,24 @@ impl Unreal2Protocol {
 
     /// Send a request packet
     fn get_request_data_impl(&mut self, packet_type: PacketKind) -> GDResult<Vec<u8>> {
-        let request = [0x79, 0, 0, 0, packet_type as u8];
-        self.socket.send(&request)?;
+        let request = Request::from(packet_type);
+        self.socket.send(&request.as_packet()?)?;
 
         let data = self.socket.receive(Some(PACKET_SIZE))?;
 
         Ok(data)
     }
 
-    /// Consume the header part of a response packet, validate that the packet
-    /// type matches what is expected.
-    fn consume_response_headers<B: ByteOrder>(
-        buffer: &mut Buffer<B>,
-        expected_packet_type: PacketKind,
-    ) -> GDResult<()> {
-        // Skip header
-        buffer.move_cursor(4)?;
-
-        let packet_type: u8 = buffer.read()?;
-
-        let packet_type: PacketKind = packet_type.try_into()?;
-
-        if packet_type != expected_packet_type {
-            Err(PacketBad.context(format!(
-                "Packet response ({:?}) didn't match request ({:?}) packet type",
-                packet_type, expected_packet_type
-            )))
-        } else {
-            Ok(())
-        }
-    }
-
     /// Send server info query.
     pub fn query_server_info(&mut self) -> GDResult<ServerInfo> {
         let data = self.get_request_data(PacketKind::ServerInfo)?;
-        let mut buffer = Buffer::<LittleEndian>::new(&data);
-        // TODO: Maybe put consume headers in individual packet parse methods
-        Self::consume_response_headers(&mut buffer, PacketKind::ServerInfo)?;
-        ServerInfo::parse(&mut buffer)
+
+        let packet = PacketServerInfo::from_packet(&data)?;
+
+        // TODO: Remove debug logging
+        println!("{:?}", packet);
+
+        Ok(packet.body)
     }
 
     /// Send mutators and rules query.
@@ -104,23 +95,19 @@ impl Unreal2Protocol {
         let mut mutators_and_rules = MutatorsAndRules::default();
         {
             let data = self.get_request_data(PacketKind::MutatorsAndRules)?;
-            let mut buffer = Buffer::<LittleEndian>::new(&data);
-            // TODO: Maybe put consume headers in individual packet parse methods
-            Self::consume_response_headers(&mut buffer, PacketKind::MutatorsAndRules)?;
-            mutators_and_rules.parse(&mut buffer)?
+
+            let packet = PacketMutatorsAndRules::extend_from_packet(&data, &mut mutators_and_rules)?;
+
+            // TODO: Remove debug logging
+            println!("{:?}", packet);
         };
 
         // We could receive multiple packets in response
         while let Ok(data) = self.socket.receive(Some(PACKET_SIZE)) {
-            let mut buffer = Buffer::<LittleEndian>::new(&data);
+            let packet = PacketMutatorsAndRules::extend_from_packet(&data, &mut mutators_and_rules)?;
 
-            let r = Self::consume_response_headers(&mut buffer, PacketKind::MutatorsAndRules);
-            if r.is_err() {
-                println!("{:?}", r);
-                break;
-            }
-
-            mutators_and_rules.parse(&mut buffer)?;
+            // TODO: Remove debug logging
+            println!("{:?}", packet);
         }
 
         Ok(mutators_and_rules)
@@ -143,11 +130,10 @@ impl Unreal2Protocol {
         // Players are non required so if we don't get any responses we continue to
         // return
         while let Ok(data) = players_data {
-            let mut buffer = Buffer::<LittleEndian>::new(&data);
+            let packet = PacketPlayers::extend_from_packet(&data, &mut players)?;
 
-            Self::consume_response_headers(&mut buffer, PacketKind::Players)?;
-
-            players.parse(&mut buffer)?;
+            // TODO: Remove debug logging
+            println!("{:?}", packet);
 
             if let Some(num_players) = num_players {
                 if players.total_len() >= num_players {
@@ -238,6 +224,9 @@ impl StringDecoder for Unreal2StringDecoder {
             if invalid_sequences {
                 return Err(PacketBad.context("UTF-8 string contained invalid character(s)"));
             }
+
+            // TODO: Remove debug logging
+            println!("Decoded UTF16 string");
 
             result
         } else {

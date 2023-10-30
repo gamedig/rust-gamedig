@@ -1,14 +1,9 @@
-use crate::buffer::Buffer;
 use crate::errors::GDErrorKind::PacketBad;
 use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 
-use super::Unreal2StringDecoder;
-
 use std::collections::{HashMap, HashSet};
-
-use byteorder::ByteOrder;
 
 /// Unreal 2 packet types.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -47,59 +42,12 @@ pub struct ServerInfo {
     pub max_players: u32,
 }
 
-impl ServerInfo {
-    pub fn parse<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Self> {
-        Ok(ServerInfo {
-            server_id: buffer.read()?,
-            ip: buffer.read_string::<Unreal2StringDecoder>(None)?,
-            game_port: buffer.read()?,
-            query_port: buffer.read()?,
-            name: buffer.read_string::<Unreal2StringDecoder>(None)?,
-            map: buffer.read_string::<Unreal2StringDecoder>(None)?,
-            game_type: buffer.read_string::<Unreal2StringDecoder>(None)?,
-            num_players: buffer.read()?,
-            max_players: buffer.read()?,
-        })
-    }
-}
-
 /// Unreal 2 mutators and rules.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MutatorsAndRules {
     pub mutators: HashSet<String>,
     pub rules: HashMap<String, Vec<String>>,
-}
-
-impl MutatorsAndRules {
-    pub fn parse<B: ByteOrder>(&mut self, buffer: &mut Buffer<B>) -> GDResult<()> {
-        while buffer.remaining_length() > 0 {
-            let key = buffer.read_string::<Unreal2StringDecoder>(None)?;
-            let value = buffer.read_string::<Unreal2StringDecoder>(None).ok();
-
-            if key.eq_ignore_ascii_case("mutator") {
-                if let Some(value) = value {
-                    self.mutators.insert(value);
-                }
-            } else {
-                let rule_vec = self.rules.get_mut(&key);
-
-                let rule_vec = if let Some(rule_vec) = rule_vec {
-                    rule_vec
-                } else {
-                    self.rules.insert(key.clone(), Vec::default());
-                    self.rules
-                        .get_mut(&key)
-                        .expect("Value should be in HashMap after we inserted")
-                };
-
-                if let Some(value) = value {
-                    rule_vec.push(value);
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 /// Unreal 2 players and bots.
@@ -121,28 +69,6 @@ impl Players {
             // Allocate half as many bots as we don't expect there to be as many
             bots: Vec::with_capacity(capacity / 2),
         }
-    }
-
-    /// Parse a raw buffer of players into the current struct.
-    pub fn parse<B: ByteOrder>(&mut self, buffer: &mut Buffer<B>) -> GDResult<()> {
-        while buffer.remaining_length() > 0 {
-            let player = Player {
-                id: buffer.read()?,
-                name: buffer.read_string::<Unreal2StringDecoder>(None)?,
-                ping: buffer.read()?,
-                score: buffer.read()?,
-                stats_id: buffer.read()?,
-            };
-
-            // If ping is 0 the player is a bot
-            if player.ping == 0 {
-                self.bots.push(player);
-            } else {
-                self.players.push(player);
-            }
-        }
-
-        Ok(())
     }
 
     /// Length of both players and bots.
