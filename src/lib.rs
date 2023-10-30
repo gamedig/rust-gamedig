@@ -44,6 +44,7 @@ pub mod services;
 mod buffer;
 mod socket;
 mod utils;
+mod wbuffer;
 
 pub use errors::*;
 #[cfg(feature = "games")]
