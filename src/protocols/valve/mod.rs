@@ -13,6 +13,7 @@ pub use types::*;
 /// * `pretty_name` - The full name of the game, will be used as the
 ///   documentation for the created module.
 /// * `steam_app`, `default_port` - Passed through to [game_query_fn].
+#[cfg(feature = "games")]
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $engine: expr, $default_port: literal) => {
         crate::protocols::valve::game_query_mod!(
@@ -34,6 +35,7 @@ macro_rules! game_query_mod {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_mod;
 
 // Allow generating doc comments:
@@ -47,6 +49,7 @@ pub(crate) use game_query_mod;
 /// use crate::protocols::valve::game_query_fn;
 /// game_query_fn!(TEAMFORTRESS2, 27015);
 /// ```
+#[cfg(feature = "games")]
 macro_rules! game_query_fn {
     ($pretty_name: expr, $engine: expr, $default_port: literal, $gathering_settings: expr) => {
         // TODO: By using $gathering_settings, also add to doc if a game doesnt respond to certain gathering settings
@@ -70,4 +73,5 @@ macro_rules! game_query_fn {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_fn;

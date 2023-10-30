@@ -26,6 +26,7 @@ pub enum QuakeVersion {
 /// * `pretty_name` - The full name of the game, will be used as the
 ///   documentation for the created module.
 /// * `quake_ver`, `default_port` - Passed through to [game_query_fn].
+#[cfg(feature = "games")]
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $quake_ver: ident, $default_port: literal) => {
         #[doc = $pretty_name]
@@ -35,6 +36,7 @@ macro_rules! game_query_mod {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_mod;
 
 // Allow generating doc comments:
@@ -49,6 +51,7 @@ pub(crate) use game_query_mod;
 /// use crate::protocols::quake::game_query_fn;
 /// game_query_fn!(one, 27500);
 /// ```
+#[cfg(feature = "games")]
 macro_rules! game_query_fn {
     ($quake_ver: ident, $default_port: literal) => {
         use crate::protocols::quake::$quake_ver::Player;
@@ -71,4 +74,5 @@ macro_rules! game_query_fn {
     };
 }
 
+#[cfg(feature = "games")]
 pub(crate) use game_query_fn;
