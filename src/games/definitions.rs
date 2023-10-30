@@ -111,4 +111,10 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "vrising" => game!("V Rising", 27016, Protocol::Valve(Engine::new(1_604_030))),
     "jc2m" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2M)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),
+    "darkesthour" => game!("Darkest Hour: Europe '44-'45 (2008)", 7758, Protocol::Unreal2),
+    "devastation" => game!("Devastation (2003)", 7778, Protocol::Unreal2),
+    "killingfloor" => game!("Killing Floor", 7708, Protocol::Unreal2),
+    "redorchestra" => game!("Red Orchestra", 7759, Protocol::Unreal2),
+    "ut2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
+    "ut2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
 };

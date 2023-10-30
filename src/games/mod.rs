@@ -5,10 +5,12 @@ use serde::{Deserialize, Serialize};
 
 pub mod gamespy;
 pub mod quake;
+pub mod unreal2;
 pub mod valve;
 
 pub use gamespy::*;
 pub use quake::*;
+pub use unreal2::*;
 pub use valve::*;
 
 /// Battalion 1944
@@ -128,6 +130,16 @@ pub fn query_with_timeout_and_extra_settings(
                 QuakeVersion::Two => protocols::quake::two::query(&socket_addr, timeout_settings).map(Box::new)?,
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
+        }
+        Protocol::Unreal2 => {
+            protocols::unreal2::query(
+                &socket_addr,
+                &extra_settings
+                    .map(ExtraRequestSettings::into)
+                    .unwrap_or_default(),
+                timeout_settings,
+            )
+            .map(Box::new)?
         }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
