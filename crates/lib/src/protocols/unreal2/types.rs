@@ -45,6 +45,7 @@ pub struct ServerInfo {
     pub game_type: String,
     pub num_players: u32,
     pub max_players: u32,
+    pub password: Option<bool>,
 }
 
 impl ServerInfo {
@@ -59,6 +60,7 @@ impl ServerInfo {
             game_type: buffer.read_string::<Unreal2StringDecoder>(None)?,
             num_players: buffer.read()?,
             max_players: buffer.read()?,
+            password: None,
         })
     }
 }
