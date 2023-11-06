@@ -170,11 +170,11 @@ impl Unreal2Protocol {
         let mut server_info = self.query_server_info()?;
 
         let mutators_and_rules = if gather_settings.mutators_and_rules {
-            let mut response = self.query_mutators_and_rules()?;
+            let response = self.query_mutators_and_rules()?;
 
-            if let Some(password) = response.rules.remove("GamePassword") {
-                println!("{:#?}", password);
-                server_info.password = Some(false);
+            if let Some(password) = response.rules.get("GamePassword") {
+                let string = password.concat().to_lowercase();
+                server_info.password = string == "true";
             }
 
             response
@@ -226,14 +226,14 @@ impl StringDecoder for Unreal2StringDecoder {
             // For UCS-2 strings, some unreal 2 games randomly insert an extra 0x01 here,
             // not included in the length. Skip it if present (hopefully this never happens
             // legitimately)
-            if let Some(1) = data[start ..].first() {
+            if let Some(1) = data[start..].first() {
                 start += 1;
             }
         }
 
         // If UCS2 the first byte is the masked length of the string
         let result = if ucs2 {
-            let string_data = &data[start .. start + length];
+            let string_data = &data[start..start + length];
             if string_data.len() != length {
                 return Err(PacketBad.context("Not enough data in buffer to read string"));
             }
@@ -262,7 +262,7 @@ impl StringDecoder for Unreal2StringDecoder {
             length = position + 1;
 
             // Decode as latin1
-            let (result, _, invalid_sequences) = WINDOWS_1252.decode(&data[0 .. position]);
+            let (result, _, invalid_sequences) = WINDOWS_1252.decode(&data[0..position]);
 
             if invalid_sequences {
                 return Err(PacketBad.context("latin1 string contained invalid character(s)"));
