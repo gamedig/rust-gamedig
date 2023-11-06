@@ -148,9 +148,7 @@ impl Players {
     }
 
     /// Length of both players and bots.
-    pub fn total_len(&self) -> usize {
-        self.players.len() + self.bots.len()
-    }
+    pub fn total_len(&self) -> usize { self.players.len() + self.bots.len() }
 }
 
 /// Unreal 2 player info.
@@ -165,17 +163,11 @@ pub struct Player {
 }
 
 impl CommonPlayer for Player {
-    fn name(&self) -> &str {
-        &self.name
-    }
+    fn name(&self) -> &str { &self.name }
 
-    fn score(&self) -> Option<i32> {
-        Some(self.score)
-    }
+    fn score(&self) -> Option<i32> { Some(self.score) }
 
-    fn as_original(&self) -> GenericPlayer {
-        GenericPlayer::Unreal2(self)
-    }
+    fn as_original(&self) -> GenericPlayer { GenericPlayer::Unreal2(self) }
 }
 
 /// Unreal 2 response.
@@ -188,25 +180,15 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn map(&self) -> Option<&str> {
-        Some(&self.server_info.map)
-    }
+    fn map(&self) -> Option<&str> { Some(&self.server_info.map) }
 
-    fn name(&self) -> Option<&str> {
-        Some(&self.server_info.name)
-    }
+    fn name(&self) -> Option<&str> { Some(&self.server_info.name) }
 
-    fn game_mode(&self) -> Option<&str> {
-        Some(&self.server_info.game_type)
-    }
+    fn game_mode(&self) -> Option<&str> { Some(&self.server_info.game_type) }
 
-    fn players_online(&self) -> u32 {
-        self.server_info.num_players
-    }
+    fn players_online(&self) -> u32 { self.server_info.num_players }
 
-    fn players_maximum(&self) -> u32 {
-        self.server_info.max_players
-    }
+    fn players_maximum(&self) -> u32 { self.server_info.max_players }
 
     fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
         Some(
@@ -218,9 +200,7 @@ impl CommonResponse for Response {
         )
     }
 
-    fn as_original(&self) -> GenericResponse {
-        GenericResponse::Unreal2(self)
-    }
+    fn as_original(&self) -> GenericResponse { GenericResponse::Unreal2(self) }
 }
 
 /// What data to gather, purely used only with the query function.
@@ -252,9 +232,7 @@ impl GatheringSettings {
 }
 
 impl Default for GatheringSettings {
-    fn default() -> Self {
-        GatheringSettings::default()
-    }
+    fn default() -> Self { GatheringSettings::default() }
 }
 
 impl From<ExtraRequestSettings> for GatheringSettings {
