@@ -167,10 +167,17 @@ impl Unreal2Protocol {
     /// Make a full server query.
     pub fn query(&mut self, gather_settings: &GatheringSettings) -> GDResult<Response> {
         // Fetch the server info, this can only handle one response packet
-        let server_info = self.query_server_info()?;
+        let mut server_info = self.query_server_info()?;
 
         let mutators_and_rules = if gather_settings.mutators_and_rules {
-            self.query_mutators_and_rules()?
+            let response = self.query_mutators_and_rules()?;
+
+            if let Some(password) = response.rules.get("GamePassword") {
+                let string = password.concat().to_lowercase();
+                server_info.password = string == "true";
+            }
+
+            response
         } else {
             MutatorsAndRules::default()
         };

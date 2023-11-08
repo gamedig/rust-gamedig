@@ -45,6 +45,7 @@ pub struct ServerInfo {
     pub game_type: String,
     pub num_players: u32,
     pub max_players: u32,
+    pub password: bool,
 }
 
 impl ServerInfo {
@@ -59,6 +60,7 @@ impl ServerInfo {
             game_type: buffer.read_string::<Unreal2StringDecoder>(None)?,
             num_players: buffer.read()?,
             max_players: buffer.read()?,
+            password: false,
         })
     }
 }
@@ -178,15 +180,19 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn map(&self) -> Option<&str> { Some(&self.server_info.map) }
+    fn as_original(&self) -> GenericResponse { GenericResponse::Unreal2(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.server_info.name) }
 
     fn game_mode(&self) -> Option<&str> { Some(&self.server_info.game_type) }
 
-    fn players_online(&self) -> u32 { self.server_info.num_players }
+    fn map(&self) -> Option<&str> { Some(&self.server_info.map) }
 
     fn players_maximum(&self) -> u32 { self.server_info.max_players }
+
+    fn players_online(&self) -> u32 { self.server_info.num_players }
+
+    fn has_password(&self) -> Option<bool> { Some(self.server_info.password) }
 
     fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
         Some(
@@ -197,8 +203,6 @@ impl CommonResponse for Response {
                 .collect(),
         )
     }
-
-    fn as_original(&self) -> GenericResponse { GenericResponse::Unreal2(self) }
 }
 
 /// What data to gather, purely used only with the query function.
