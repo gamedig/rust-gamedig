@@ -12,6 +12,9 @@ Games:
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
 
+CLI:
+- Added a CLI (by @cainthebest).
+
 ### Breaking:
 Game:
 - Changed identifications of the following games as they weren't properly expecting the naming rules:
