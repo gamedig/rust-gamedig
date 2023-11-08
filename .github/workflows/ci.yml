@@ -25,7 +25,7 @@ jobs:
     name: "Build, check, and test with all features"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -55,7 +55,7 @@ jobs:
             build_name: "Just serde" 
     name: "Build ${{ matrix.build_name }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -66,7 +66,7 @@ jobs:
     name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - name: Install MSRV
         uses: actions-rs/toolchain@v1
@@ -79,7 +79,7 @@ jobs:
     name: "Check code formatting"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
