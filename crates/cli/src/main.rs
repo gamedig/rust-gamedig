@@ -20,7 +20,6 @@ struct Cli {
     port: Option<u16>,
 }
 
-#[rustfmt::skip]
 fn main() -> Result<()> {
     let args = Cli::parse();
 
@@ -29,8 +28,7 @@ fn main() -> Result<()> {
         None => return Err(error::Error::UnknownGame(args.game)),
     };
 
-   println!("{:#?}", query(game, &args.ip, args.port)?.as_json());
+    println!("{:#?}", query(game, &args.ip, args.port)?.as_json());
 
-   Ok(())
-      
+    Ok(())
 }
