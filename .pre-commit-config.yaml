@@ -8,25 +8,25 @@ repos:
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: rustup run --install nightly-2023-07-09 cargo-clippy -- -- -D warnings
+        entry: rustup run --install nightly-2023-07-09 cargo-clippy -- --workspace --all-features -- -D warnings
       - id: build-no-features
         name: Check crate build with no features
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: cargo build --no-default-features
+        entry: cargo check --workspace --no-default-features
       - id: build-all-features
         name: Check crate builds with all features
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: cargo build --all-features --lib --bins --examples
+        entry: cargo check --workspace --all-features --lib --bins --examples
       - id: test
         name: Check tests pass
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: cargo test --bins --lib --examples --all-features
+        entry: cargo test --workspace --bins --lib --examples --all-features
       - id: format
         name: Check rustfmt
         language: system
@@ -34,11 +34,11 @@ repos:
         pass_filenames: false
         entry: rustup run --install nightly-2023-07-09 cargo-fmt --check
       - id: msrv
-        name: Check MSRV compiles
+        name: Check MSRV compiles (lib only)
         language: system
         files: '[.]rs$'
         pass_filenames: false
-        entry: rustup run --install 1.65 cargo build
+        entry: rustup run --install 1.65 cargo check -p gamedig
       - id: docs
         name: Check rustdoc compiles
         language: system

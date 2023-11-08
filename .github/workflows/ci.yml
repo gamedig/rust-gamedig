@@ -31,9 +31,9 @@ jobs:
           shared-key: "cargo-deps"
           cache-targets: false
       - name: Run Build
-        run: cargo build --verbose --bins --lib --examples --all-features
+        run: cargo check --verbose --workspace --bins --lib --examples --all-features
       - name: Run Tests
-        run: cargo test --verbose --bins --lib --examples --all-features
+        run: cargo test --verbose --workspace --bins --lib --examples --all-features
   build:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
@@ -61,9 +61,9 @@ jobs:
           shared-key: "cargo-deps"
           cache-targets: false
       - name: Run Build
-        run: cargo build --verbose --bins --lib ${{ matrix.build_type }}
+        run: cargo check --workspace --verbose --bins --lib ${{ matrix.build_type }}
   build_msrv:
-    name: "Build using MSRV"
+    name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -74,7 +74,7 @@ jobs:
           toolchain: 1.65.0
           override: true
       - name: Run MSRV
-        run: cargo build
+        run: cargo check -p gamedig
   formatting:
     name: "Check code formatting"
     runs-on: ubuntu-latest
@@ -105,10 +105,10 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --bins --lib --examples --all-features
+          args: --workspace --bins --lib --examples --all-features
         if: ${{ !env.ACT }} # skip during local actions testing
       - name: Run clippy (local)
-        run: cargo clippy --verbose --bins --lib --examples --all-features
+        run: cargo clippy --workspace --verbose --bins --lib --examples --all-features
         if: ${{ env.ACT }} # only run during local actions testing
   doc:
     name: "Check rustdoc"
@@ -121,6 +121,6 @@ jobs:
           shared-key: "cargo-deps"
           cache-targets: false
       - name: "Run cargo doc"
-        run: cargo doc
+        run: cargo doc --workspace
         env:
           RUSTDOCFLAGS: "-D warnings"
