@@ -1,4 +1,4 @@
-use crate::protocols::{gamespy, minecraft, quake, valve};
+use crate::protocols::{gamespy, minecraft, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
 use crate::GDResult;
 
@@ -23,7 +23,8 @@ pub enum Protocol {
     Gamespy(gamespy::GameSpyVersion),
     Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
-    Valve(valve::SteamApp),
+    Valve(valve::Engine),
+    Unreal2,
     #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
 }
@@ -35,6 +36,7 @@ pub enum GenericResponse<'a> {
     Minecraft(minecraft::VersionedResponse<'a>),
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
+    Unreal2(&'a unreal2::Response),
     #[cfg(feature = "games")]
     TheShip(&'a crate::games::theship::Response),
     #[cfg(feature = "games")]
@@ -51,6 +53,7 @@ pub enum GenericPlayer<'a> {
     QuakeTwo(&'a quake::two::Player),
     Minecraft(&'a minecraft::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
+    Unreal2(&'a unreal2::Player),
     #[cfg(feature = "games")]
     TheShip(&'a crate::games::theship::TheShipPlayer),
     #[cfg(feature = "games")]

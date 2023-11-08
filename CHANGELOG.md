@@ -3,10 +3,24 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 ### Changes:
-Nothing yet.
+Games:
+- [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+- [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
+- [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
+- Added a valve protocol query example.
+
+Protocols:
+- Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
 
 ### Breaking:
-None, yaay!
+Game:
+- Changed identifications of the following games as they weren't properly expecting the naming rules:
+- - Left 4 Dead: `left4dead` -> `l4d`.
+- - 7 Days to Die: `7d2d` in definitions and `sd2d` in game declaration -> `sdtd`.
+- - Quake 3 Arena: `quake3arena` -> `q3a`.
+
+Protocols:
+- Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
 
 # 0.4.1 - 13/10/2023
 ### Changes:

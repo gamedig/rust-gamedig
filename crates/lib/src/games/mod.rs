@@ -5,10 +5,12 @@ use serde::{Deserialize, Serialize};
 
 pub mod gamespy;
 pub mod quake;
+pub mod unreal2;
 pub mod valve;
 
 pub use gamespy::*;
 pub use quake::*;
+pub use unreal2::*;
 pub use valve::*;
 
 /// Battalion 1944
@@ -39,6 +41,8 @@ pub struct Game {
     pub default_port: u16,
     /// The protocol the game's query uses
     pub protocol: Protocol,
+    /// Request settings.
+    pub request_settings: ExtraRequestSettings,
 }
 
 #[cfg(feature = "game_defs")]
@@ -74,11 +78,13 @@ pub fn query_with_timeout_and_extra_settings(
 ) -> GDResult<Box<dyn CommonResponse>> {
     let socket_addr = SocketAddr::new(*address, port.unwrap_or(game.default_port));
     Ok(match &game.protocol {
-        Protocol::Valve(steam_app) => {
+        Protocol::Valve(engine) => {
             protocols::valve::query(
                 &socket_addr,
-                steam_app.as_engine(),
-                extra_settings.map(ExtraRequestSettings::into),
+                *engine,
+                extra_settings
+                    .or(Option::from(game.request_settings.clone()))
+                    .map(ExtraRequestSettings::into),
                 timeout_settings,
             )
             .map(Box::new)?
@@ -124,6 +130,16 @@ pub fn query_with_timeout_and_extra_settings(
                 QuakeVersion::Two => protocols::quake::two::query(&socket_addr, timeout_settings).map(Box::new)?,
                 QuakeVersion::Three => protocols::quake::three::query(&socket_addr, timeout_settings).map(Box::new)?,
             }
+        }
+        Protocol::Unreal2 => {
+            protocols::unreal2::query(
+                &socket_addr,
+                &extra_settings
+                    .map(ExtraRequestSettings::into)
+                    .unwrap_or_default(),
+                timeout_settings,
+            )
+            .map(Box::new)?
         }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {

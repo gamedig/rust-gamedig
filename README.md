@@ -89,3 +89,5 @@ Curious about the history and what changed between versions? Everything is in th
 
 ## Contributing
 If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
+
+Before contributing please read [CONTRIBUTING](CONTRIBUTING.md).
