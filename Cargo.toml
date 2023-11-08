@@ -1,8 +1,15 @@
 [workspace]
 name = "gamedig-workspace"
-members = [
-    "crates/cli",
-    "crates/lib",
-]
+members = ["crates/cli", "crates/lib"]
+
 # Edition 2021, uses resolver = 2
 resolver = "2"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = true
+lto = true
+
+[profile.release.package."*"]
+opt-level = 3
