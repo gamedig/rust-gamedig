@@ -35,9 +35,9 @@ pub enum LegacyGroup {
     /// 1.6
     V1_6,
     /// 1.4 - 1.5
-    V1_5,
+    V1_4,
     /// Beta 1.8 - 1.3
-    V1_3,
+    VB1_8,
 }
 
 /// Information about a player.
