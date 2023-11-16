@@ -14,12 +14,12 @@ use std::net::SocketAddr;
 
 use byteorder::BigEndian;
 
-pub struct LegacyV1_3 {
+pub struct LegacyVB1_8 {
     socket: TcpSocket,
     retry_count: usize,
 }
 
-impl LegacyV1_3 {
+impl LegacyVB1_8 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TcpSocket::new(address)?;
         socket.apply_timeout(&timeout_settings)?;
@@ -72,7 +72,7 @@ impl LegacyV1_3 {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Legacy(LegacyGroup::V1_3),
+            server_type: Server::Legacy(LegacyGroup::VB1_8),
         })
     }
 

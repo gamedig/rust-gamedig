@@ -13,12 +13,12 @@ use crate::{
 };
 use std::net::SocketAddr;
 
-pub struct LegacyV1_5 {
+pub struct LegacyV1_4 {
     socket: TcpSocket,
     retry_count: usize,
 }
 
-impl LegacyV1_5 {
+impl LegacyV1_4 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TcpSocket::new(address)?;
         socket.apply_timeout(&timeout_settings)?;
@@ -75,7 +75,7 @@ impl LegacyV1_5 {
             favicon: None,
             previews_chat: None,
             enforces_secure_chat: None,
-            server_type: Server::Legacy(LegacyGroup::V1_5),
+            server_type: Server::Legacy(LegacyGroup::V1_4),
         })
     }
 

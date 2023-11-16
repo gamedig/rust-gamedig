@@ -4,9 +4,9 @@ use crate::{
         protocol::{
             bedrock::Bedrock,
             java::Java,
-            legacy_v1_3::LegacyV1_3,
-            legacy_v1_5::LegacyV1_5,
+            legacy_v1_4::LegacyV1_4,
             legacy_v1_6::LegacyV1_6,
+            legacy_vb1_8::LegacyVB1_8,
         },
         BedrockResponse,
         JavaResponse,
@@ -20,9 +20,9 @@ use std::net::SocketAddr;
 
 mod bedrock;
 mod java;
-mod legacy_v1_3;
-mod legacy_v1_5;
+mod legacy_v1_4;
 mod legacy_v1_6;
+mod legacy_vb1_8;
 
 /// Queries a Minecraft server with all the protocol variants one by one (Java
 /// -> Bedrock -> Legacy (1.6 -> 1.4 -> Beta 1.8)).
@@ -61,11 +61,11 @@ pub fn query_legacy(address: &SocketAddr, timeout_settings: Option<TimeoutSettin
         return Ok(response);
     }
 
-    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_5, address, timeout_settings) {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_4, address, timeout_settings) {
         return Ok(response);
     }
 
-    if let Ok(response) = query_legacy_specific(LegacyGroup::V1_3, address, timeout_settings) {
+    if let Ok(response) = query_legacy_specific(LegacyGroup::VB1_8, address, timeout_settings) {
         return Ok(response);
     }
 
@@ -80,8 +80,8 @@ pub fn query_legacy_specific(
 ) -> GDResult<JavaResponse> {
     match group {
         LegacyGroup::V1_6 => LegacyV1_6::query(address, timeout_settings),
-        LegacyGroup::V1_5 => LegacyV1_5::query(address, timeout_settings),
-        LegacyGroup::V1_3 => LegacyV1_3::query(address, timeout_settings),
+        LegacyGroup::V1_4 => LegacyV1_4::query(address, timeout_settings),
+        LegacyGroup::VB1_8 => LegacyVB1_8::query(address, timeout_settings),
     }
 }
 
