@@ -240,7 +240,8 @@ impl Default for TimeoutSettings {
 /// ## Examples
 /// Create minecraft settings with builder:
 /// ```
-/// use gamedig::games::{minecraft, ExtraRequestSettings};
+/// use gamedig::games::minecraft;
+/// use gamedig::protocols::ExtraRequestSettings;
 /// let mc_settings: minecraft::RequestSettings = ExtraRequestSettings::default().set_hostname("mc.hypixel.net".to_string()).into();
 /// ```
 ///
