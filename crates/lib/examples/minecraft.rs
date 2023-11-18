@@ -1,5 +1,5 @@
-use gamedig::games::minecraft;
-use gamedig::protocols::minecraft::RequestSettings;
+use gamedig::minecraft;
+use gamedig::minecraft::types::RequestSettings;
 
 fn main() {
     // or Some(<port>), None is the default protocol port (which is 25565 for java

@@ -1,9 +1,13 @@
-use crate::protocols::minecraft::RequestSettings;
-use crate::{
-    protocols::minecraft::{self, BedrockResponse, JavaResponse, LegacyGroup},
-    GDErrorKind,
-    GDResult,
-};
+/// The implementation.
+/// Reference: [Server List Ping](https://wiki.vg/Server_List_Ping)
+pub mod protocol;
+/// All types used by the implementation.
+pub mod types;
+
+pub use protocol::*;
+pub use types::*;
+
+use crate::{GDErrorKind, GDResult};
 use std::net::{IpAddr, SocketAddr};
 
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
@@ -30,7 +34,7 @@ pub fn query_java(
     port: Option<u16>,
     request_settings: Option<RequestSettings>,
 ) -> GDResult<JavaResponse> {
-    minecraft::query_java(
+    protocol::query_java(
         &SocketAddr::new(*address, port_or_java_default(port)),
         None,
         request_settings,
@@ -39,12 +43,12 @@ pub fn query_java(
 
 /// Query a (Java) Legacy Server (1.6 -> 1.4 -> Beta 1.8).
 pub fn query_legacy(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
-    minecraft::query_legacy(&SocketAddr::new(*address, port_or_java_default(port)), None)
+    protocol::query_legacy(&SocketAddr::new(*address, port_or_java_default(port)), None)
 }
 
 /// Query a specific (Java) Legacy Server.
 pub fn query_legacy_specific(group: LegacyGroup, address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
-    minecraft::query_legacy_specific(
+    protocol::query_legacy_specific(
         group,
         &SocketAddr::new(*address, port_or_java_default(port)),
         None,
@@ -53,7 +57,7 @@ pub fn query_legacy_specific(group: LegacyGroup, address: &IpAddr, port: Option<
 
 /// Query a Bedrock Server.
 pub fn query_bedrock(address: &IpAddr, port: Option<u16>) -> GDResult<BedrockResponse> {
-    minecraft::query_bedrock(
+    protocol::query_bedrock(
         &SocketAddr::new(*address, port_or_bedrock_default(port)),
         None,
     )

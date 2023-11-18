@@ -1,20 +1,16 @@
 use crate::{
     buffer::Buffer,
-    protocols::{
-        minecraft::{as_varint, get_string, get_varint, JavaResponse, Player, Server},
-        types::TimeoutSettings,
-    },
+    games::minecraft::{as_string, as_varint, get_string, get_varint, JavaResponse, Player, RequestSettings, Server},
+    protocols::types::TimeoutSettings,
     socket::{Socket, TcpSocket},
     utils::retry_on_timeout,
     GDErrorKind::{JsonParse, PacketBad},
     GDResult,
 };
 
-use std::net::SocketAddr;
-
-use crate::protocols::minecraft::{as_string, RequestSettings};
 use byteorder::LittleEndian;
 use serde_json::Value;
+use std::net::SocketAddr;
 
 pub struct Java {
     socket: TcpSocket,

@@ -2,10 +2,8 @@
 // (MIT) from https://github.com/gamedig/node-gamedig/blob/master/protocols/minecraftbedrock.js
 use crate::{
     buffer::{Buffer, Utf8Decoder},
-    protocols::{
-        minecraft::{BedrockResponse, GameMode, Server},
-        types::TimeoutSettings,
-    },
+    games::minecraft::{BedrockResponse, GameMode, Server},
+    protocols::types::TimeoutSettings,
     socket::{Socket, UdpSocket},
     utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, TypeParse},

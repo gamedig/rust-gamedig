@@ -1,12 +1,7 @@
 //! Static definitions of currently supported games
 
-use crate::protocols::{
-    gamespy::GameSpyVersion,
-    minecraft::{LegacyGroup, Server},
-    quake::QuakeVersion,
-    valve::Engine,
-    Protocol,
-};
+use crate::games::minecraft::types::{LegacyGroup, Server};
+use crate::protocols::{gamespy::GameSpyVersion, quake::QuakeVersion, valve::Engine, Protocol};
 use crate::Game;
 
 use crate::protocols::types::ProprietaryProtocol;
@@ -36,14 +31,14 @@ macro_rules! game {
 /// Map of all currently supported games
 pub static GAMES: Map<&'static str, Game> = phf_map! {
     // Query with all minecraft protocols
-    "minecraft" => game!("Minecraft", 25565, Protocol::Minecraft(None)),
+    "minecraft" => game!("Minecraft", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(None))),
     // Query with specific minecraft protocols
-    "minecraftbedrock" => game!("Minecraft (bedrock)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
-    "minecraftpocket" => game!("Minecraft (pocket)", 19132, Protocol::Minecraft(Some(Server::Bedrock))),
-    "minecraftjava" => game!("Minecraft (java)", 25565, Protocol::Minecraft(Some(Server::Java))),
-    "minecraftlegacy16" => game!("Minecraft (legacy 1.6)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6)))),
-    "minecraftlegacy14" => game!("Minecraft (legacy 1.4)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4)))),
-    "minecraftlegacyb18" => game!("Minecraft (legacy b1.8)", 25565, Protocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8)))),
+    "minecraftbedrock" => game!("Minecraft (bedrock)", 19132, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Bedrock)))),
+    "minecraftpocket" => game!("Minecraft (pocket)", 19132, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Bedrock)))),
+    "minecraftjava" => game!("Minecraft (java)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Java)))),
+    "minecraftlegacy16" => game!("Minecraft (legacy 1.6)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6))))),
+    "minecraftlegacy14" => game!("Minecraft (legacy 1.4)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4))))),
+    "minecraftlegacyb18" => game!("Minecraft (legacy b1.8)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8))))),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
