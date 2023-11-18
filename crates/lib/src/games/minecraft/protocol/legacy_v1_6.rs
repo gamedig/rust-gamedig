@@ -2,10 +2,8 @@ use byteorder::BigEndian;
 
 use crate::{
     buffer::{Buffer, Utf16Decoder},
-    protocols::{
-        minecraft::{JavaResponse, LegacyGroup, Server},
-        types::TimeoutSettings,
-    },
+    games::minecraft::{JavaResponse, LegacyGroup, Server},
+    protocols::types::TimeoutSettings,
     socket::{Socket, TcpSocket},
     utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, ProtocolFormat},

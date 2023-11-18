@@ -1,6 +1,6 @@
-use crate::protocols::minecraft::types::RequestSettings;
+use crate::games::minecraft::types::RequestSettings;
 use crate::{
-    protocols::minecraft::{
+    games::minecraft::{
         protocol::{
             bedrock::Bedrock,
             java::Java,

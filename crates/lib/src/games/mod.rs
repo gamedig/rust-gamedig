@@ -89,32 +89,6 @@ pub fn query_with_timeout_and_extra_settings(
             )
             .map(Box::new)?
         }
-        Protocol::Minecraft(version) => {
-            match version {
-                Some(protocols::minecraft::Server::Java) => {
-                    protocols::minecraft::query_java(
-                        &socket_addr,
-                        timeout_settings,
-                        extra_settings.map(ExtraRequestSettings::into),
-                    )
-                    .map(Box::new)?
-                }
-                Some(protocols::minecraft::Server::Bedrock) => {
-                    protocols::minecraft::query_bedrock(&socket_addr, timeout_settings).map(Box::new)?
-                }
-                Some(protocols::minecraft::Server::Legacy(group)) => {
-                    protocols::minecraft::query_legacy_specific(*group, &socket_addr, timeout_settings).map(Box::new)?
-                }
-                None => {
-                    protocols::minecraft::query(
-                        &socket_addr,
-                        timeout_settings,
-                        extra_settings.map(ExtraRequestSettings::into),
-                    )
-                    .map(Box::new)?
-                }
-            }
-        }
         Protocol::Gamespy(version) => {
             match version {
                 GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, timeout_settings).map(Box::new)?,
@@ -148,6 +122,33 @@ pub fn query_with_timeout_and_extra_settings(
                 }
                 ProprietaryProtocol::FFOW => ffow::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
                 ProprietaryProtocol::JC2M => jc2m::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
+                ProprietaryProtocol::Minecraft(version) => {
+                    match version {
+                        Some(minecraft::Server::Java) => {
+                            minecraft::protocol::query_java(
+                                &socket_addr,
+                                timeout_settings,
+                                extra_settings.map(ExtraRequestSettings::into),
+                            )
+                            .map(Box::new)?
+                        }
+                        Some(minecraft::Server::Bedrock) => {
+                            minecraft::protocol::query_bedrock(&socket_addr, timeout_settings).map(Box::new)?
+                        }
+                        Some(minecraft::Server::Legacy(group)) => {
+                            minecraft::protocol::query_legacy_specific(*group, &socket_addr, timeout_settings)
+                                .map(Box::new)?
+                        }
+                        None => {
+                            minecraft::protocol::query(
+                                &socket_addr,
+                                timeout_settings,
+                                extra_settings.map(ExtraRequestSettings::into),
+                            )
+                            .map(Box::new)?
+                        }
+                    }
+                }
             }
         }
     })

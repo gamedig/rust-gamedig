@@ -1,6 +1,6 @@
-use crate::protocols::{gamespy, minecraft, quake, unreal2, valve};
+use crate::protocols::{gamespy, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
-use crate::GDResult;
+use crate::{minecraft, GDResult};
 
 use std::time::Duration;
 
@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ProprietaryProtocol {
     TheShip,
+    Minecraft(Option<minecraft::types::Server>),
     FFOW,
     JC2M,
 }
@@ -21,7 +22,6 @@ pub enum ProprietaryProtocol {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Protocol {
     Gamespy(gamespy::GameSpyVersion),
-    Minecraft(Option<minecraft::types::Server>),
     Quake(quake::QuakeVersion),
     Valve(valve::Engine),
     Unreal2,
@@ -33,10 +33,11 @@ pub enum Protocol {
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
     GameSpy(gamespy::VersionedResponse<'a>),
-    Minecraft(minecraft::VersionedResponse<'a>),
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     Unreal2(&'a unreal2::Response),
+    #[cfg(feature = "games")]
+    Minecraft(minecraft::VersionedResponse<'a>),
     #[cfg(feature = "games")]
     TheShip(&'a crate::games::theship::Response),
     #[cfg(feature = "games")]
@@ -51,9 +52,10 @@ pub enum GenericPlayer<'a> {
     Valve(&'a valve::ServerPlayer),
     QuakeOne(&'a quake::one::Player),
     QuakeTwo(&'a quake::two::Player),
-    Minecraft(&'a minecraft::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
     Unreal2(&'a unreal2::Player),
+    #[cfg(feature = "games")]
+    Minecraft(&'a minecraft::Player),
     #[cfg(feature = "games")]
     TheShip(&'a crate::games::theship::TheShipPlayer),
     #[cfg(feature = "games")]
@@ -238,7 +240,7 @@ impl Default for TimeoutSettings {
 /// ## Examples
 /// Create minecraft settings with builder:
 /// ```
-/// use gamedig::protocols::{minecraft, ExtraRequestSettings};
+/// use gamedig::games::{minecraft, ExtraRequestSettings};
 /// let mc_settings: minecraft::RequestSettings = ExtraRequestSettings::default().set_hostname("mc.hypixel.net".to_string()).into();
 /// ```
 ///
@@ -362,7 +364,6 @@ mod tests {
     fn test_extra_request_settings() {
         let settings = ExtraRequestSettings::default();
 
-        let _: minecraft::RequestSettings = settings.clone().into();
         let _: valve::GatheringSettings = settings.into();
     }
 }
