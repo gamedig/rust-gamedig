@@ -6,12 +6,7 @@ pub mod types;
 pub use protocol::*;
 pub use types::*;
 
-use crate::games::minecraft::RequestSettings;
-use crate::{
-    games::minecraft::{BedrockResponse, JavaResponse, LegacyGroup},
-    GDErrorKind,
-    GDResult,
-};
+use crate::{GDErrorKind, GDResult};
 use std::net::{IpAddr, SocketAddr};
 
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
