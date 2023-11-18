@@ -1,4 +1,5 @@
 /// The implementation.
+/// Reference: [Server List Ping](https://wiki.vg/Server_List_Ping)
 pub mod protocol;
 /// All types used by the implementation.
 pub mod types;
