@@ -7,7 +7,7 @@ on:
       - "src/games/definitions.rs"
       - ".github/workflows/node-badge.yml"
   schedule:
-    - cron: '0 0 * * 1' # Update once a week in case node-gamedig has changed
+    - cron: '34 3 * * 2' # Update once a week in case node-gamedig has changed
   workflow_dispatch:
 
 jobs:
