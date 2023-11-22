@@ -15,7 +15,7 @@
 //!
 //! ## Using a game definition
 //! ```
-//! use gamedig::games::{GAMES, query};
+//! use gamedig::{GAMES, query};
 //!
 //! let game = GAMES.get("teamfortress2").unwrap(); // Get a game definition, the full list can be found in src/games/mod.rs
 //! let response = query(game, &"127.0.0.1".parse().unwrap(), None); // None will use the default port
@@ -38,6 +38,8 @@ pub mod errors;
 #[cfg(feature = "games")]
 pub mod games;
 pub mod protocols;
+#[cfg(feature = "games")]
+pub mod query;
 #[cfg(feature = "services")]
 pub mod services;
 pub mod types;
@@ -49,7 +51,8 @@ mod utils;
 pub use errors::*;
 #[cfg(feature = "games")]
 pub use games::*;
+#[cfg(feature = "games")]
+pub use query::*;
 #[cfg(feature = "services")]
 pub use services::*;
-
 pub use types::*;

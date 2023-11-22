@@ -1,7 +1,7 @@
 use std::net::IpAddr;
 
 use clap::Parser;
-use gamedig::games::*;
+use gamedig::{query, GAMES};
 
 mod error;
 
