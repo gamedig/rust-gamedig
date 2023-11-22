@@ -72,6 +72,27 @@ easier and disposable.
 8. If its actually about a mod that adds the ability for queries to be performed, 
 process only the mod name.
 
+### Making commits
+Where possible please format commits as complete atomic changes that don't rely on
+any of the other commits in the patch. Also make sure that the commit message is
+descriptive.
+
+To avoid CI failing when you make a PR you can use our pre-commit hooks: tests that
+run before you are able to make a commit (you can skip this at any time by adding
+the `-n` flag to `git commit`).
+
+To set this up you need the following programs installed
+- [pre-commit](https://pre-commit.com/)
+- [rustup](https://rustup.rs/)
+- [act](https://github.com/nektos/act) (If you want to test changes to github actions workflows)
+
+Once these are installed you can enable the pre-commit hook by running the following in
+the root directory of the repository.
+
+```shell
+$ pre-commit install
+```
+
 ### Priorities
 Game suggestions will be prioritized by maintainers based on whether the game
 uses a protocol already implemented in the library (games that use already
