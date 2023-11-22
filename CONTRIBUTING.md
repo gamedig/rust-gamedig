@@ -74,8 +74,8 @@ process only the mod name.
 
 ### Making commits
 Where possible please format commits as complete atomic changes that don't rely on
-any of the other commits in the patch. Also make sure that the commit message is
-descriptive.
+any future commits. Also make sure that the commit message is as descriptive as
+possible.
 
 To avoid CI failing when you make a PR you can use our pre-commit hooks: tests that
 run before you are able to make a commit (you can skip this at any time by adding
