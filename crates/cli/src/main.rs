@@ -38,6 +38,10 @@ struct Cli {
     #[arg(short, long, default_value = "generic")]
     output_mode: OutputMode,
 
+    #[cfg(feature = "packet_capture")]
+    #[arg(short, long)]
+    capture: Option<String>,
+
     /// Optional timeout settings for the server query.
     #[command(flatten, next_help_heading = "Timeouts")]
     timeout_settings: Option<TimeoutSettings>,
@@ -176,6 +180,11 @@ fn main() -> Result<()> {
 
     // Resolve the IP address
     let ip = resolve_ip_or_domain(&args.ip, &mut extra_options)?;
+
+    #[cfg(feature = "packet_capture")]
+    unsafe {
+        gamedig::capture::simple_setup_capture(args.capture.clone());
+    }
 
     // Query the server using game definition, parsed IP, and user command line
     // flags.

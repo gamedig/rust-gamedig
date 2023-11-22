@@ -11,8 +11,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["json"]
+default = ["json", "packet_capture"]
 json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
+packet_capture = ["gamedig/packet_capture"]
 
 [dependencies]
 clap = { version = "4.1.11", features = ["derive"] }
