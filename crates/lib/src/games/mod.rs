@@ -26,9 +26,9 @@ pub mod theship;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
-use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol, TimeoutSettings};
+use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol};
 use crate::protocols::{self, Protocol};
-use crate::GDResult;
+use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
 
 /// Definition of a game

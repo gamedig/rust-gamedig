@@ -1,11 +1,11 @@
 use crate::{
     buffer::Buffer,
     games::minecraft::{as_string, as_varint, get_string, get_varint, JavaResponse, Player, RequestSettings, Server},
-    protocols::types::TimeoutSettings,
     socket::{Socket, TcpSocket},
     utils::retry_on_timeout,
     GDErrorKind::{JsonParse, PacketBad},
     GDResult,
+    TimeoutSettings,
 };
 
 use byteorder::LittleEndian;

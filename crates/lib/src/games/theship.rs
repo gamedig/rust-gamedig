@@ -1,11 +1,12 @@
 use crate::{
     protocols::{
-        types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings},
+        types::{CommonPlayer, CommonResponse, GenericPlayer},
         valve::{self, get_optional_extracted_data, Server, ServerPlayer},
         GenericResponse,
     },
     GDErrorKind::PacketBad,
     GDResult,
+    TimeoutSettings,
 };
 use std::net::{IpAddr, SocketAddr};
 

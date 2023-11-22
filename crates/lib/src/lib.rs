@@ -40,6 +40,7 @@ pub mod games;
 pub mod protocols;
 #[cfg(feature = "services")]
 pub mod services;
+pub mod types;
 
 mod buffer;
 mod socket;
@@ -50,3 +51,5 @@ pub use errors::*;
 pub use games::*;
 #[cfg(feature = "services")]
 pub use services::*;
+
+pub use types::*;

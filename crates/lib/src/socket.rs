@@ -1,7 +1,7 @@
 use crate::{
-    protocols::types::TimeoutSettings,
     GDErrorKind::{PacketReceive, PacketSend, SocketBind, SocketConnect},
     GDResult,
+    TimeoutSettings,
 };
 
 use std::net::SocketAddr;

@@ -4,11 +4,11 @@ use crate::minecraft::protocol::legacy_v1_6::LegacyV1_6;
 use crate::{
     buffer::{Buffer, Utf16Decoder},
     games::minecraft::{JavaResponse, LegacyGroup, Server},
-    protocols::types::TimeoutSettings,
     socket::{Socket, TcpSocket},
     utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, ProtocolFormat},
     GDResult,
+    TimeoutSettings,
 };
 use std::net::SocketAddr;
 

@@ -1,10 +1,10 @@
 use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::GDErrorKind::{PacketBad, TypeParse};
-use crate::{GDErrorKind, GDResult};
+use crate::{GDErrorKind, GDResult, TimeoutSettings};
 use byteorder::BigEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

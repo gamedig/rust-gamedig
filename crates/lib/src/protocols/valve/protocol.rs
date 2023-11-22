@@ -1,27 +1,25 @@
 use crate::{
     buffer::Buffer,
-    protocols::{
-        types::TimeoutSettings,
-        valve::{
-            types::{
-                Environment,
-                ExtraData,
-                GatheringSettings,
-                Request,
-                Response,
-                Server,
-                ServerInfo,
-                ServerPlayer,
-                TheShip,
-            },
-            Engine,
-            ModData,
+    protocols::valve::{
+        types::{
+            Environment,
+            ExtraData,
+            GatheringSettings,
+            Request,
+            Response,
+            Server,
+            ServerInfo,
+            ServerPlayer,
+            TheShip,
         },
+        Engine,
+        ModData,
     },
     socket::{Socket, UdpSocket},
     utils::{retry_on_timeout, u8_lower_upper},
     GDErrorKind::{BadGame, Decompress, UnknownEnumCast},
     GDResult,
+    TimeoutSettings,
 };
 
 use bzip2_rs::decoder::Decoder;
