@@ -1,7 +1,7 @@
-use std::net::IpAddr;
+use std::net::ToSocketAddrs;
 
 use clap::Parser;
-use gamedig::games::*;
+use gamedig::{games::*, GDErrorKind};
 
 mod error;
 
@@ -13,8 +13,8 @@ struct Cli {
     #[arg(short, long)]
     game: String,
 
-    #[arg(short, long)]
-    ip: IpAddr,
+    #[arg(short, long, help = "Hostname or IP address of the server")]
+    ip: String,
 
     #[arg(short, long)]
     port: Option<u16>,
@@ -28,7 +28,20 @@ fn main() -> Result<()> {
         None => return Err(error::Error::UnknownGame(args.game)),
     };
 
-    println!("{:#?}", query(game, &args.ip, args.port)?.as_json());
+    let ip = if let Ok(ip) = args.ip.parse() {
+        ip
+    } else {
+        // Use ToSocketAddrs to do a DNS lookup
+        // unfortunatley this requires a format to add a port
+        format!("{}:0", args.ip)
+            .to_socket_addrs()
+            .map_err(|e| GDErrorKind::InvalidInput.context(e))?
+            .next()
+            .ok_or(GDErrorKind::InvalidInput.context(format!("Could not resolve an IP address for {:?}", args.ip)))?
+            .ip()
+    };
+
+    println!("{:#?}", query(game, &ip, args.port)?.as_json());
 
     Ok(())
 }
