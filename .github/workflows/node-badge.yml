@@ -28,6 +28,9 @@ jobs:
         with:
           repository: "gamedig/node-gamedig"
           path: "node-gamedig"
+          sparse-checkout: |
+            lib/games.js
+            package.json
 
       - name: Calculate comparison
         id: comparison

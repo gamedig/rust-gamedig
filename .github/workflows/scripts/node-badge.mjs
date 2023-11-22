@@ -15,8 +15,10 @@ const setOutput = (key, value) => {
 }
 
 // Get node IDs
-
-import { games } from "../../../node-gamedig/lib/index.js";
+// NOTE: Here we directly import from games to avoid loading
+//       unecessary parts of the library that would require us
+//       to install dependencies.
+import { games } from "../../../node-gamedig/lib/games.js";
 
 const node_ids = new Set(Object.keys(games));
 const node_total = node_ids.size;
