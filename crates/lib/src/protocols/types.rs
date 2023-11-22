@@ -251,32 +251,38 @@ impl Default for TimeoutSettings {
 /// let valve_settings: valve::GatheringSettings = ExtraRequestSettings::default().set_check_app_id(false).into();
 /// ```
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct ExtraRequestSettings {
     /// The server's hostname.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.hostname]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub hostname: Option<String>,
     /// The protocol version to use.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.protocol_version]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub protocol_version: Option<i32>,
     /// Whether to gather player information
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.players]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_players: Option<bool>,
     /// Whether to gather rule information.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.rules]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_rules: Option<bool>,
     /// Whether to check if the App ID is valid.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.check_app_id]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub check_app_id: Option<bool>,
 }
 

@@ -1,7 +1,7 @@
 use std::net::ToSocketAddrs;
 
 use clap::Parser;
-use gamedig::{games::*, GDErrorKind};
+use gamedig::{games::*, protocols::ExtraRequestSettings, GDErrorKind};
 
 mod error;
 
@@ -26,12 +26,19 @@ struct Cli {
     #[cfg(feature = "json")]
     #[arg(short, long)]
     json: bool,
+
+    #[command(flatten)]
+    extra_options: Option<ExtraRequestSettings>,
 }
 
 fn main() -> Result<()> {
     let args = Cli::parse();
 
-    let mut extra_request_settings = gamedig::protocols::ExtraRequestSettings::default();
+    let mut extra_request_settings = if let Some(extra) = args.extra_options {
+        extra
+    } else {
+        gamedig::protocols::ExtraRequestSettings::default()
+    };
 
     let game = match GAMES.get(&args.game) {
         Some(game) => game,
@@ -42,7 +49,9 @@ fn main() -> Result<()> {
         ip
     } else {
         // Set hostname in extra request settings
-        extra_request_settings = extra_request_settings.set_hostname(args.ip.clone());
+        if extra_request_settings.hostname.is_none() {
+            extra_request_settings.hostname = Some(args.ip.clone());
+        }
 
         // Use ToSocketAddrs to do a DNS lookup
         // unfortunatley this requires a format to add a port
