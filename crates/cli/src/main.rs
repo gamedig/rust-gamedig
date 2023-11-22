@@ -10,17 +10,21 @@ use self::error::Result;
 #[derive(Parser)]
 #[command(author, version, about)]
 struct Cli {
+    /// Game ID
     #[arg(short, long)]
     game: String,
 
-    #[arg(short, long, help = "Hostname or IP address of the server")]
+    /// Hostname or IP address of the server
+    #[arg(short, long)]
     ip: String,
 
+    /// Optional port number to override the default for the game
     #[arg(short, long)]
     port: Option<u16>,
 
+    /// Output result as JSON
     #[cfg(feature = "json")]
-    #[arg(short, long, help = "Output result as JSON")]
+    #[arg(short, long)]
     json: bool,
 }
 
