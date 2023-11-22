@@ -14,6 +14,10 @@ Protocols:
 
 CLI:
 - Added a CLI (by @cainthebest).
+- Added DNS lookup support (by @Douile).
+- Added JSON output option (by @Douile).
+- Added ExtraRequestSettings as CLI arguments (by @Douile).
+- Added TimeoutSettings as CLI argument (by @Douile).
 
 ### Breaking:
 Game:
