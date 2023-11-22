@@ -1,7 +1,7 @@
 use std::net::ToSocketAddrs;
 
 use clap::Parser;
-use gamedig::{games::*, protocols::ExtraRequestSettings, GDErrorKind};
+use gamedig::{games::*, protocols::ExtraRequestSettings};
 
 mod error;
 
@@ -57,9 +57,9 @@ fn main() -> Result<()> {
         // unfortunatley this requires a format to add a port
         format!("{}:0", args.ip)
             .to_socket_addrs()
-            .map_err(|e| GDErrorKind::InvalidInput.context(e))?
+            .map_err(|_| error::Error::InvalidHostname(args.ip.clone()))?
             .next()
-            .ok_or(GDErrorKind::InvalidInput.context(format!("Could not resolve an IP address for {:?}", args.ip)))?
+            .ok_or(error::Error::InvalidHostname(args.ip))?
             .ip()
     };
 
