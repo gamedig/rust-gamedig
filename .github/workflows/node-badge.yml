@@ -4,7 +4,7 @@ name: "Generate node comparison badge"
 on:
   push:
     paths:
-      - "src/games/definitions.rs"
+      - "crates/lib/src/games/definitions.rs"
       - ".github/workflows/node-badge.yml"
       - ".github/workflows/scripts/node-badge.mjs"
   schedule:
