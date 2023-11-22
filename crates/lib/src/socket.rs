@@ -30,12 +30,12 @@ pub trait Socket {
     fn local_addr(&self) -> std::io::Result<SocketAddr>;
 }
 
-pub struct TcpSocket {
+pub struct TcpSocketImpl {
     socket: net::TcpStream,
     address: SocketAddr,
 }
 
-impl Socket for TcpSocket {
+impl Socket for TcpSocketImpl {
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = if let Some(timeout) = TimeoutSettings::get_connect_or_default(timeout_settings) {
             net::TcpStream::connect_timeout(address, timeout)
@@ -79,12 +79,12 @@ impl Socket for TcpSocket {
     fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
-pub struct UdpSocket {
+pub struct UdpSocketImpl {
     socket: net::UdpSocket,
     address: SocketAddr,
 }
 
-impl Socket for UdpSocket {
+impl Socket for UdpSocketImpl {
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| SocketBind.context(e))?;
 
@@ -127,6 +127,135 @@ impl Socket for UdpSocket {
     fn port(&self) -> u16 { self.address.port() }
     fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
+
+/// Things used for capturing packets.
+#[cfg(feature = "packet_capture")]
+pub mod capture {
+    use std::{marker::PhantomData, net::SocketAddr, sync::OnceLock};
+
+    use super::{Socket, TcpSocketImpl, UdpSocketImpl};
+
+    use crate::{
+        capture::{CaptureWriter, PacketDirection, PacketInfo, PacketProtocol},
+        protocols::types::TimeoutSettings,
+        GDResult,
+    };
+
+    static mut WRITER_CELL: OnceLock<Box<dyn CaptureWriter + Send + Sync>> = OnceLock::new();
+
+    /// Set a GLOBAL capture writer that handles writing all packet data.
+    ///
+    /// This is unsafe because the writer is a mutable static, the caller
+    /// is responsible for ensuring that the writer type is able to be stored
+    /// as such.
+    pub(crate) unsafe fn set_writer(writer: Box<dyn CaptureWriter + Send + Sync>) {
+        if WRITER_CELL.set(writer).is_err() {
+            panic!("Should only set writer once");
+        }
+    }
+
+    pub trait PacketProtocolProvider {
+        fn protocol() -> PacketProtocol;
+    }
+    pub struct PacketProtocolTCP;
+    impl PacketProtocolProvider for PacketProtocolTCP {
+        fn protocol() -> PacketProtocol { PacketProtocol::TCP }
+    }
+
+    pub struct PacketProtocolUDP;
+    impl PacketProtocolProvider for PacketProtocolUDP {
+        fn protocol() -> PacketProtocol { PacketProtocol::UDP }
+    }
+
+    /// A socket that allows capturing
+    #[derive(Clone, Debug)]
+    pub struct WrappedCaptureSocket<I, P> {
+        inner: I,
+        remote_address: SocketAddr,
+        _protocol: PhantomData<P>,
+    }
+
+    impl<I: Socket, P: PacketProtocolProvider> Socket for WrappedCaptureSocket<I, P> {
+        fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self>
+        where Self: Sized {
+            let v = Self {
+                inner: I::new(address, timeout_settings)?,
+                remote_address: *address,
+                _protocol: PhantomData,
+            };
+
+            let info = PacketInfo {
+                direction: PacketDirection::Send,
+                protocol: P::protocol(),
+                remote_address: address,
+                local_address: &v.local_addr().unwrap(),
+            };
+            // TODO: Safety
+            unsafe {
+                if let Some(writer) = WRITER_CELL.get_mut() {
+                    writer.new_connect(&info)?;
+                }
+            }
+
+            Ok(v)
+        }
+
+        fn send(&mut self, data: &[u8]) -> crate::GDResult<()> {
+            let info = PacketInfo {
+                direction: PacketDirection::Send,
+                protocol: P::protocol(),
+                remote_address: &self.remote_address,
+                local_address: &self.local_addr().unwrap(),
+            };
+            // TODO: Safety
+            unsafe {
+                if let Some(writer) = WRITER_CELL.get_mut() {
+                    writer.write(&info, data)?;
+                }
+            }
+            self.inner.send(data)
+        }
+
+        fn receive(&mut self, size: Option<usize>) -> crate::GDResult<Vec<u8>> {
+            let data = self.inner.receive(size)?;
+            let info = PacketInfo {
+                direction: PacketDirection::Receive,
+                protocol: P::protocol(),
+                remote_address: &self.remote_address,
+                local_address: &self.local_addr().unwrap(),
+            };
+            // TODO: Safety
+            unsafe {
+                if let Some(writer) = WRITER_CELL.get_mut() {
+                    writer.write(&info, &data)?;
+                }
+            }
+            Ok(data)
+        }
+
+        fn apply_timeout(
+            &self,
+            timeout_settings: &Option<crate::protocols::types::TimeoutSettings>,
+        ) -> crate::GDResult<()> {
+            self.inner.apply_timeout(timeout_settings)
+        }
+        fn port(&self) -> u16 { self.inner.port() }
+        fn local_addr(&self) -> std::io::Result<SocketAddr> { self.inner.local_addr() }
+    }
+
+    pub type CapturedUdpSocket = WrappedCaptureSocket<UdpSocketImpl, PacketProtocolUDP>;
+    pub type CapturedTcpSocket = WrappedCaptureSocket<TcpSocketImpl, PacketProtocolTCP>;
+}
+
+#[cfg(not(feature = "packet_capture"))]
+pub type UdpSocket = UdpSocketImpl;
+#[cfg(not(feature = "packet_capture"))]
+pub type TcpSocket = TcpSocketImpl;
+
+#[cfg(feature = "packet_capture")]
+pub type UdpSocket = capture::CapturedUdpSocket;
+#[cfg(feature = "packet_capture")]
+pub type TcpSocket = capture::CapturedTcpSocket;
 
 #[cfg(test)]
 mod tests {

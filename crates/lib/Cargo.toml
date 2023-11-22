@@ -23,6 +23,7 @@ services = []
 game_defs = ["dep:phf", "games"]
 serde = ["dep:serde", "serde/derive"]
 clap = ["dep:clap"]
+packet_capture = ["dep:pcap-file", "dep:pnet_packet"]
 
 [dependencies]
 byteorder = "1.5"
@@ -36,6 +37,9 @@ serde = { version = "1.0", optional = true }
 phf = { version = "0.11", optional = true, features = ["macros"] }
 
 clap = { version = "4.1.11", optional = true, features = ["derive"] }
+
+pcap-file = { version = "2.0", optional = true }
+pnet_packet = { version = "0.34", optional = true }
 
 # Examples
 [[example]]
