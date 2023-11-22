@@ -6,6 +6,7 @@ on:
     paths:
       - "src/games/definitions.rs"
       - ".github/workflows/node-badge.yml"
+      - ".github/workflows/scripts/node-badge.mjs"
   schedule:
     - cron: '34 3 * * 2' # Update once a week in case node-gamedig has changed
   workflow_dispatch:
