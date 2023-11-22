@@ -24,8 +24,7 @@ fn get_server_values(
     address: &SocketAddr,
     timeout_settings: &Option<TimeoutSettings>,
 ) -> GDResult<HashMap<String, String>> {
-    let mut socket = UdpSocket::new(address)?;
-    socket.apply_timeout(timeout_settings)?;
+    let mut socket = UdpSocket::new(address, timeout_settings)?;
     retry_on_timeout(
         TimeoutSettings::get_retries_or_default(timeout_settings),
         move || get_server_values_impl(&mut socket),

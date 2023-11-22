@@ -15,8 +15,15 @@ fn main() {
 
     let read_timeout = Duration::from_secs(2);
     let write_timeout = Duration::from_secs(3);
+    let connect_timeout = Duration::from_secs(4);
     let retries = 1; // does another request if the first one fails.
-    let timeout_settings = TimeoutSettings::new(Some(read_timeout), Some(write_timeout), retries).unwrap();
+    let timeout_settings = TimeoutSettings::new(
+        Some(read_timeout),
+        Some(write_timeout),
+        Some(connect_timeout),
+        retries,
+    )
+    .unwrap();
 
     let response = valve::query(
         address,

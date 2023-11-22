@@ -150,6 +150,7 @@ pub struct CommonPlayerJson<'a> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
+    connect: Option<Duration>,
     read: Option<Duration>,
     write: Option<Duration>,
     retries: usize,
@@ -164,22 +165,34 @@ impl TimeoutSettings {
     /// "1" will try the request again once if it fails.
     /// The retry count is per-request so for multi-request queries (valve) if a
     /// single part fails that part can be retried up to `retries` times.
-    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: usize) -> GDResult<Self> {
+    pub fn new(
+        read: Option<Duration>,
+        write: Option<Duration>,
+        connect: Option<Duration>,
+        retries: usize,
+    ) -> GDResult<Self> {
         if let Some(read_duration) = read {
-            if read_duration == Duration::new(0, 0) {
+            if read_duration.is_zero() {
                 return Err(InvalidInput.context("Read duration must not be 0"));
             }
         }
 
         if let Some(write_duration) = write {
-            if write_duration == Duration::new(0, 0) {
+            if write_duration.is_zero() {
                 return Err(InvalidInput.context("Write duration must not be 0"));
+            }
+        }
+
+        if let Some(connect_duration) = connect {
+            if connect_duration.is_zero() {
+                return Err(InvalidInput.context("Connect duration must not be 0"));
             }
         }
 
         Ok(Self {
             read,
             write,
+            connect,
             retries,
         })
     }
@@ -189,6 +202,9 @@ impl TimeoutSettings {
 
     /// Get the write timeout.
     pub const fn get_write(&self) -> Option<Duration> { self.write }
+
+    /// Get the connect timeout.
+    pub const fn get_connect(&self) -> Option<Duration> { self.connect }
 
     /// Get number of retries
     pub const fn get_retries(&self) -> usize { self.retries }
@@ -216,11 +232,21 @@ impl TimeoutSettings {
         }
     }
 
+    /// Get the connect duration given timeout settings or get the default.
+    pub const fn get_connect_or_default(timeout_settings: &Option<TimeoutSettings>) -> Option<Duration> {
+        if let Some(timeout_settings) = timeout_settings {
+            timeout_settings.get_connect()
+        } else {
+            TimeoutSettings::const_default().get_connect()
+        }
+    }
+
     /// Default values are 4 seconds for both read and write, no retries.
     pub const fn const_default() -> Self {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
+            connect: Some(Duration::from_secs(4)),
             retries: 0,
         }
     }
@@ -320,9 +346,15 @@ mod tests {
         // Define valid read and write durations
         let read_duration = Duration::from_secs(1);
         let write_duration = Duration::from_secs(2);
+        let connect_duration = Duration::from_secs(3);
 
         // Create new TimeoutSettings with the valid durations
-        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0)?;
+        let timeout_settings = TimeoutSettings::new(
+            Some(read_duration),
+            Some(write_duration),
+            Some(connect_duration),
+            0,
+        )?;
 
         // Verify that the get_read and get_write methods return the expected values
         assert_eq!(timeout_settings.get_read(), Some(read_duration));
@@ -337,10 +369,16 @@ mod tests {
         // Define a zero read duration and a valid write duration
         let read_duration = Duration::new(0, 0);
         let write_duration = Duration::from_secs(2);
+        let connect_duration = Duration::from_secs(3);
 
         // Try to create new TimeoutSettings with the zero read duration (this should
         // fail)
-        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0);
+        let result = TimeoutSettings::new(
+            Some(read_duration),
+            Some(write_duration),
+            Some(connect_duration),
+            0,
+        );
 
         // Verify that the function returned an error and that the error type is
         // InvalidInput
