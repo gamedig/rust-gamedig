@@ -27,6 +27,8 @@ struct Cli {
 fn main() -> Result<()> {
     let args = Cli::parse();
 
+    let mut extra_request_settings = gamedig::protocols::ExtraRequestSettings::default();
+
     let game = match GAMES.get(&args.game) {
         Some(game) => game,
         None => return Err(error::Error::UnknownGame(args.game)),
@@ -35,6 +37,9 @@ fn main() -> Result<()> {
     let ip = if let Ok(ip) = args.ip.parse() {
         ip
     } else {
+        // Set hostname in extra request settings
+        extra_request_settings = extra_request_settings.set_hostname(args.ip.clone());
+
         // Use ToSocketAddrs to do a DNS lookup
         // unfortunatley this requires a format to add a port
         format!("{}:0", args.ip)
@@ -45,7 +50,7 @@ fn main() -> Result<()> {
             .ip()
     };
 
-    let result = query(game, &ip, args.port)?;
+    let result = query_with_timeout_and_extra_settings(game, &ip, args.port, None, Some(extra_request_settings))?;
 
     #[cfg(feature = "json")]
     if args.json {
