@@ -146,12 +146,22 @@ pub struct CommonPlayerJson<'a> {
     pub score: Option<i32>,
 }
 
+#[cfg(feature = "clap")]
+fn parse_duration_secs(value: &str) -> Result<Duration, std::num::ParseIntError> {
+    let secs = value.parse()?;
+    Ok(Duration::from_secs(secs))
+}
+
 /// Timeout settings for socket operations
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
+    #[cfg_attr(feature = "clap", arg(long = "read-timeout", value_parser = parse_duration_secs, help = "Socket read timeout (in seconds)"))]
     read: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long = "write-timeout", value_parser = parse_duration_secs, help = "Socket write timeout (in seconds)"))]
     write: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long))]
     retries: usize,
 }
 

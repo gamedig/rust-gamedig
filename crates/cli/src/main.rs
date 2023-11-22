@@ -1,7 +1,10 @@
 use std::net::ToSocketAddrs;
 
 use clap::Parser;
-use gamedig::{games::*, protocols::ExtraRequestSettings};
+use gamedig::{
+    games::*,
+    protocols::types::{ExtraRequestSettings, TimeoutSettings},
+};
 
 mod error;
 
@@ -28,21 +31,24 @@ struct Cli {
     json: bool,
 
     #[command(flatten)]
+    timeout_settings: Option<TimeoutSettings>,
+
+    #[command(flatten)]
     extra_options: Option<ExtraRequestSettings>,
 }
 
 fn main() -> Result<()> {
     let args = Cli::parse();
 
+    let game = match GAMES.get(&args.game) {
+        Some(game) => game,
+        None => return Err(error::Error::UnknownGame(args.game)),
+    };
+
     let mut extra_request_settings = if let Some(extra) = args.extra_options {
         extra
     } else {
         gamedig::protocols::ExtraRequestSettings::default()
-    };
-
-    let game = match GAMES.get(&args.game) {
-        Some(game) => game,
-        None => return Err(error::Error::UnknownGame(args.game)),
     };
 
     let ip = if let Ok(ip) = args.ip.parse() {
@@ -63,7 +69,30 @@ fn main() -> Result<()> {
             .ip()
     };
 
-    let result = query_with_timeout_and_extra_settings(game, &ip, args.port, None, Some(extra_request_settings))?;
+    // Clap will default unset timeouts to None, which we don't want
+    let timeout_settings = if let Some(user_timeout_settings) = args.timeout_settings {
+        let default_timeout_settings = TimeoutSettings::const_default();
+
+        Some(TimeoutSettings::new(
+            user_timeout_settings
+                .get_read()
+                .or(default_timeout_settings.get_read()),
+            user_timeout_settings
+                .get_write()
+                .or(default_timeout_settings.get_write()),
+            user_timeout_settings.get_retries(),
+        )?)
+    } else {
+        None
+    };
+
+    let result = query_with_timeout_and_extra_settings(
+        game,
+        &ip,
+        args.port,
+        timeout_settings,
+        Some(extra_request_settings),
+    )?;
 
     #[cfg(feature = "json")]
     if args.json {
