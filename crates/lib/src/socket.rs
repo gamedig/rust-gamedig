@@ -24,7 +24,10 @@ pub trait Socket {
     fn send(&mut self, data: &[u8]) -> GDResult<()>;
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>>;
 
+    /// Get the remote port
     fn port(&self) -> u16;
+    /// Get the local SocketAddr
+    fn local_addr(&self) -> std::io::Result<SocketAddr>;
 }
 
 pub struct TcpSocket {
@@ -73,6 +76,7 @@ impl Socket for TcpSocket {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
 pub struct UdpSocket {
@@ -121,6 +125,7 @@ impl Socket for UdpSocket {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
 #[cfg(test)]
