@@ -1,8 +1,5 @@
 //! Currently supported games.
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 pub mod gamespy;
 pub mod quake;
 pub mod unreal2;
@@ -31,19 +28,8 @@ use crate::protocols::{self, Protocol};
 use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
 
-/// Definition of a game
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Game {
-    /// Full name of the game
-    pub name: &'static str,
-    /// Default port used by game
-    pub default_port: u16,
-    /// The protocol the game's query uses
-    pub protocol: Protocol,
-    /// Request settings.
-    pub request_settings: ExtraRequestSettings,
-}
+pub mod types;
+pub use types::*;
 
 #[cfg(feature = "game_defs")]
 mod definitions;
