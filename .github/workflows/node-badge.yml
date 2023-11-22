@@ -26,9 +26,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: "gamedig/node-gamedig"
-          sparse-checkout: |
-            lib/games.js
-            package.json
           path: "node-gamedig"
 
       - name: Calculate comparison

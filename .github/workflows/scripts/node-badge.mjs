@@ -8,7 +8,7 @@ import process from "node:process";
 import { closeSync, openSync, writeSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-function setOutput(key, value) {
+const setOutput = (key, value) => {
     const file = openSync(process.env.GITHUB_OUTPUT, "a");
     writeSync(file, `${key}=${value}\n`);
     closeSync(file);
@@ -16,7 +16,7 @@ function setOutput(key, value) {
 
 // Get node IDs
 
-import { games } from "../../../node-gamedig/lib/games.js";
+import { games } from "../../../node-gamedig/lib/index.js";
 
 const node_ids = new Set(Object.keys(games));
 const node_total = node_ids.size;
