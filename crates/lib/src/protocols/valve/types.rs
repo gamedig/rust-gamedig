@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::GDErrorKind::UnknownEnumCast;
-use crate::GDResult;
 use crate::{buffer::Buffer, protocols::GenericResponse};
+use crate::{ExtraRequestSettings, GDResult};
 use byteorder::LittleEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

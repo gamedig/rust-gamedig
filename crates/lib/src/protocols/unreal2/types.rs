@@ -1,8 +1,8 @@
 use crate::buffer::Buffer;
 use crate::errors::GDErrorKind::PacketBad;
-use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
-use crate::{GDError, GDResult};
+use crate::{ExtraRequestSettings, GDError, GDResult};
 
 use super::Unreal2StringDecoder;
 
