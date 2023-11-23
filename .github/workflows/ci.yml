@@ -21,6 +21,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # First check that we can build EVERYTHING and that tests pass
   build_first:
     name: "Build, check, and test with all features"
     runs-on: ubuntu-latest
@@ -34,6 +35,7 @@ jobs:
         run: cargo check --verbose --workspace --bins --lib --examples --all-features
       - name: Run Tests
         run: cargo test --verbose --workspace --bins --lib --examples --tests --all-features
+  # If we were able to build then test different feature combinations compile with the library
   build_lib:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
@@ -62,6 +64,7 @@ jobs:
           cache-targets: false
       - name: Run Build
         run: cargo check -p gamedig --verbose --lib --examples --tests ${{ matrix.build_type }}
+  # If we were able to build then test different feature combinations compile with the CLI
   build_cli:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
@@ -82,6 +85,7 @@ jobs:
           cache-targets: false
       - name: Run Build
         run: cargo check -p gamedig-cli --verbose --bins --examples --tests ${{ matrix.build_type }}
+  # If we were able to build then test the MSRV compiles (for the libary as not enforced for CLI)
   build_msrv:
     name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
@@ -95,6 +99,7 @@ jobs:
           override: true
       - name: Run MSRV
         run: cargo check -p gamedig
+  # Check the code is formatted properly
   formatting:
     name: "Check code formatting"
     runs-on: ubuntu-latest
@@ -111,6 +116,7 @@ jobs:
           override: true
       - name: Run Formatting check
         run: cargo fmt --check --verbose
+  # If we were able to build then lint the codebase with clippy
   clippy:
     name: "Run clippy tests"
     runs-on: ubuntu-latest
@@ -121,15 +127,18 @@ jobs:
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+      # Run github actions version of clippy that adds annotations
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --workspace --bins --lib --examples --tests --all-features
         if: ${{ !env.ACT }} # skip during local actions testing
+      # Run clippy binary
       - name: Run clippy (local)
         run: cargo clippy --verbose --workspace --bins --lib --examples --tests --all-features
         if: ${{ env.ACT }} # only run during local actions testing
+  # If we were able to build then test that rustdoc (and rustdoc examples) compile
   doc:
     name: "Check rustdoc"
     runs-on: ubuntu-latest
