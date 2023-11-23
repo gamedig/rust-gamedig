@@ -50,4 +50,4 @@ repos:
         language: system
         files: '^[.]github/workflows/'
         pass_filenames: false
-        entry: act -q
+        entry: act --rm
