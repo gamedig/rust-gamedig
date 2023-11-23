@@ -12,10 +12,13 @@ edition = "2021"
 
 [features]
 default = ["json"]
-json = ["dep:serde_json", "gamedig/serde"]
+json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
 
 [dependencies]
 clap = { version = "4.1.11", features = ["derive"] }
 gamedig = { version = "*", path = "../lib", features = ["clap"] }
 thiserror = "1.0.43"
+
+# JSON dependencies
+serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }

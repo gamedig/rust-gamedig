@@ -1,6 +1,6 @@
 use std::net::{IpAddr, ToSocketAddrs};
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use gamedig::{
     games::*,
     protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
@@ -32,6 +32,10 @@ struct Cli {
     #[arg(short, long)]
     json: bool,
 
+    /// Which response variant to use when outputting.
+    #[arg(short, long, default_value = "generic")]
+    output_mode: OutputMode,
+
     /// Optional timeout settings for the server query.
     #[command(flatten)]
     timeout_settings: Option<TimeoutSettings>,
@@ -39,6 +43,16 @@ struct Cli {
     /// Optional extra settings for the server query.
     #[command(flatten)]
     extra_options: Option<ExtraRequestSettings>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
+enum OutputMode {
+    /// A generalised response that maps common fields from all game types to
+    /// the same name.
+    Generic,
+    /// The raw result returned from the protocol query, formatted similarly to
+    /// how the server returned it.
+    ProtocolSpecific,
 }
 
 /// Attempt to find a game from the [library game definitions](GAMES) based on
@@ -120,31 +134,32 @@ fn set_hostname_if_missing(host: &str, extra_options: &mut Option<ExtraRequestSe
 /// * `args` - A reference to the command line options.
 /// * `result` - A reference to the result of the query.
 fn output_result(args: &Cli, result: &dyn CommonResponse) {
-    #[cfg(feature = "json")]
-    if args.json {
-        // Output response as JSON (and early return)
-        return output_result_json(result);
-    }
+    match args.output_mode {
+        #[cfg(feature = "json")]
+        OutputMode::Generic if args.json => output_result_json(result.as_json()),
+        #[cfg(feature = "json")]
+        OutputMode::ProtocolSpecific if args.json => output_result_json(result.as_original()),
 
-    // Output debug formatted response
-    output_result_debug(result);
+        OutputMode::Generic => output_result_debug(result.as_json()),
+        OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
+    }
 }
 
 /// Output the result using debug formatting.
 ///
 /// # Arguments
-/// * `result` - A reference to the result of the query.
-fn output_result_debug(result: &dyn CommonResponse) {
-    println!("{:#?}", result.as_original());
+/// * `result` - A result that can be output using the debug formatter.
+fn output_result_debug<R: std::fmt::Debug>(result: R) {
+    println!("{:#?}", result);
 }
 
 /// Output the result as a JSON object.
 ///
 /// # Arguments
-/// * `result` - A reference to the result of the query.
+/// * `result` - A serde serializable result.
 #[cfg(feature = "json")]
-fn output_result_json(result: &dyn CommonResponse) {
-    serde_json::to_writer_pretty(std::io::stdout(), &result.as_json()).unwrap();
+fn output_result_json<R: serde::Serialize>(result: R) {
+    serde_json::to_writer_pretty(std::io::stdout(), &result).unwrap();
 }
 
 fn main() -> Result<()> {
