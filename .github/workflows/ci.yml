@@ -25,6 +25,9 @@ jobs:
   build_first:
     name: "Build, check, and test with all features"
     runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.filter.outputs.cli }}
+      lib: ${{ steps.filter.outputs.lib }}
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
@@ -35,10 +38,21 @@ jobs:
         run: cargo check --verbose --workspace --bins --lib --examples --all-features
       - name: Run Tests
         run: cargo test --verbose --workspace --bins --lib --examples --tests --all-features
+      # Check what paths were modified so we only run the required tests
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            cli:
+              - 'crates/cli/**'
+            lib:
+              - 'crates/lib/**'
   # If we were able to build then test different feature combinations compile with the library
   build_lib:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
+    # Only run if library files were modified
+    if: ${{ needs.build_first.outputs.lib == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -68,6 +82,8 @@ jobs:
   build_cli:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
+    # Only run if CLI files were modified
+    if: ${{ needs.build_first.outputs.cli == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +105,9 @@ jobs:
   build_msrv:
     name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    # Only run if library files were modified
+    if: ${{ needs.build_first.outputs.lib == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
