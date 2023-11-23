@@ -8,7 +8,7 @@ use gamedig::{
 
 mod error;
 
-use self::error::Result;
+use self::error::{Error, Result};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -37,13 +37,28 @@ struct Cli {
     extra_options: Option<ExtraRequestSettings>,
 }
 
+/// Attempt to find a game from the [library game definitions](GAMES) based on
+/// its unique identifier.
+///
+/// # Arguments
+/// * `game_id` - A string slice containing the unique game identifier.
+///
+/// # Returns
+/// * Result<&'static [Game]> - On sucess returns a reference to the game
+///   definition; on failure returns a [Error::UnknownGame] error.
+fn find_game(game_id: &str) -> Result<&'static Game> {
+    // Attempt to retrieve the game from the predefined game list
+    GAMES
+        .get(game_id)
+        .ok_or_else(|| Error::UnknownGame(game_id.to_string()))
+}
+
 fn main() -> Result<()> {
+    // Parse the command line arguments
     let args = Cli::parse();
 
-    let game = match GAMES.get(&args.game) {
-        Some(game) => game,
-        None => return Err(error::Error::UnknownGame(args.game)),
-    };
+    // Retrieve the game based on the provided ID
+    let game = find_game(&args.game)?;
 
     let mut extra_request_settings = if let Some(extra) = args.extra_options {
         extra
