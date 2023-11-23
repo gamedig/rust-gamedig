@@ -47,6 +47,7 @@ jobs:
               - 'crates/cli/**'
             lib:
               - 'crates/lib/**'
+
   # If we were able to build then test different feature combinations compile with the library
   build_lib:
     runs-on: ubuntu-latest
@@ -79,6 +80,7 @@ jobs:
           save-if: false
       - name: Run Build
         run: cargo check -p gamedig --verbose --lib --examples --tests ${{ matrix.build_type }}
+
   # If we were able to build then test different feature combinations compile with the CLI
   build_cli:
     runs-on: ubuntu-latest
@@ -103,6 +105,7 @@ jobs:
           save-if: false
       - name: Run Build
         run: cargo check -p gamedig-cli --verbose --bins --examples --tests ${{ matrix.build_type }}
+
   # If we were able to build then test the MSRV compiles (for the libary as not enforced for CLI)
   build_msrv:
     name: "Build using MSRV (lib only)"
@@ -153,6 +156,7 @@ jobs:
           override: true
       - name: Run Formatting check
         run: cargo fmt --check --verbose
+
   # If we were able to build then lint the codebase with clippy
   clippy:
     name: "Run clippy tests"
@@ -176,6 +180,7 @@ jobs:
       - name: Run clippy (local)
         run: cargo clippy --verbose --workspace --bins --lib --examples --tests --all-features
         if: ${{ env.ACT }} # only run during local actions testing
+
   # If we were able to build then test that rustdoc (and rustdoc examples) compile
   doc:
     name: "Check rustdoc"
