@@ -6,14 +6,14 @@ on:
     branches: [ "main" ]
     paths:
       - "**.rs" # Any rust file
-      - "Cargo.toml"
+      - "**/Cargo.toml" # Any Cargo.toml
       - ".rustfmt.toml"
       - ".github/workflows/ci.yml" # This action
   pull_request:
     branches: [ "main" ]
     paths:
       - "**.rs" # Any rust file
-      - "Cargo.toml"
+      - "**/Cargo.toml" # Any Cargo.toml
       - ".rustfmt.toml"
       - ".github/workflows/ci.yml" # This action
 
