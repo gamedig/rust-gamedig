@@ -110,9 +110,18 @@ jobs:
     needs: [ "build_first" ]
     # Only run if library files were modified
     if: ${{ needs.build_first.outputs.lib == 'true' }}
+    # Unfortunate hard-coding of rustup directory so that rust-cache caches it
+    env:
+      RUSTUP_HOME: /home/runner/.rustup
     steps:
+      # Act's rust runner has rustup in a different place
+      - if: ${{ env.ACT }}
+        run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+          cache-directories: ${{ env.RUSTUP_HOME }}/toolchains
       - name: Install MSRV
         uses: actions-rs/toolchain@v1
         with:
@@ -124,11 +133,18 @@ jobs:
   formatting:
     name: "Check code formatting"
     runs-on: ubuntu-latest
+    # Unfortunate hard-coding of rustup directory so that rust-cache caches it
+    env:
+      RUSTUP_HOME: /home/runner/.rustup
     steps:
+      # Act's rust runner has rustup in a different place
+      - if: ${{ env.ACT }}
+        run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
+          cache-directories: ${{ env.RUSTUP_HOME }}/toolchains
       - name: Install Formatting nightly
         uses: actions-rs/toolchain@v1
         with:
