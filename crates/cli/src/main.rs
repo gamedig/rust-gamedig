@@ -10,8 +10,10 @@ mod error;
 
 use self::error::{Error, Result};
 
+// NOTE: For some reason without setting long_about here the doc comment for
+// ExtraRequestSettings gets set as the about for the CLI.
 #[derive(Debug, Parser)]
-#[command(author, version, about)]
+#[command(author, version, about, long_about = None)]
 struct Cli {
     /// Unique identifier of the game for which server information is being
     /// queried.
