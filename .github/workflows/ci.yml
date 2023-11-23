@@ -33,7 +33,7 @@ jobs:
       - name: Run Build
         run: cargo check --verbose --workspace --bins --lib --examples --all-features
       - name: Run Tests
-        run: cargo test --verbose --workspace --bins --lib --examples --all-features
+        run: cargo test --verbose --workspace --bins --lib --examples --tests --all-features
   build:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
@@ -61,7 +61,7 @@ jobs:
           shared-key: "cargo-deps"
           cache-targets: false
       - name: Run Build
-        run: cargo check --workspace --verbose --bins --lib ${{ matrix.build_type }}
+        run: cargo check -p gamedig --verbose --lib --examples --tests ${{ matrix.build_type }}
   build_msrv:
     name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
@@ -105,10 +105,10 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --bins --lib --examples --all-features
+          args: --workspace --bins --lib --examples --tests --all-features
         if: ${{ !env.ACT }} # skip during local actions testing
       - name: Run clippy (local)
-        run: cargo clippy --workspace --verbose --bins --lib --examples --all-features
+        run: cargo clippy --verbose --workspace --bins --lib --examples --tests --all-features
         if: ${{ env.ACT }} # only run during local actions testing
   doc:
     name: "Check rustdoc"
