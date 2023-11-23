@@ -10,29 +10,33 @@ mod error;
 
 use self::error::{Error, Result};
 
-#[derive(Parser)]
+#[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Cli {
-    /// Game ID
+    /// Unique identifier of the game for which server information is being
+    /// queried.
     #[arg(short, long)]
     game: String,
 
-    /// Hostname or IP address of the server
+    /// Hostname or IP address of the server.
     #[arg(short, long)]
     ip: String,
 
-    /// Optional port number to override the default for the game
+    /// Optional query port number for the server. If not provided the default
+    /// port for the game is used.
     #[arg(short, long)]
     port: Option<u16>,
 
-    /// Output result as JSON
+    /// Flag indicating if the output should be in JSON format.
     #[cfg(feature = "json")]
     #[arg(short, long)]
     json: bool,
 
+    /// Optional timeout settings for the server query.
     #[command(flatten)]
     timeout_settings: Option<TimeoutSettings>,
 
+    /// Optional extra settings for the server query.
     #[command(flatten)]
     extra_options: Option<ExtraRequestSettings>,
 }
@@ -156,6 +160,8 @@ fn main() -> Result<()> {
     // Resolve the IP address
     let ip = resolve_ip_or_domain(&args.ip, &mut extra_options)?;
 
+    // Query the server using game definition, parsed IP, and user command line
+    // flags.
     let result = query_with_timeout_and_extra_settings(game, &ip, args.port, args.timeout_settings, extra_options)?;
 
     // Output the result in the specified format
