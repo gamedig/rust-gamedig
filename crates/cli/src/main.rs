@@ -3,7 +3,7 @@ use std::net::{IpAddr, ToSocketAddrs};
 use clap::Parser;
 use gamedig::{
     games::*,
-    protocols::types::{ExtraRequestSettings, TimeoutSettings},
+    protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
 };
 
 mod error;
@@ -110,6 +110,39 @@ fn set_hostname_if_missing(host: &str, extra_options: &mut Option<ExtraRequestSe
     }
 }
 
+/// Output the result of a query to stdout.
+///
+/// # Arguments
+/// * `args` - A reference to the command line options.
+/// * `result` - A reference to the result of the query.
+fn output_result(args: &Cli, result: &dyn CommonResponse) {
+    #[cfg(feature = "json")]
+    if args.json {
+        // Output response as JSON (and early return)
+        return output_result_json(result);
+    }
+
+    // Output debug formatted response
+    output_result_debug(result);
+}
+
+/// Output the result using debug formatting.
+///
+/// # Arguments
+/// * `result` - A reference to the result of the query.
+fn output_result_debug(result: &dyn CommonResponse) {
+    println!("{:#?}", result.as_original());
+}
+
+/// Output the result as a JSON object.
+///
+/// # Arguments
+/// * `result` - A reference to the result of the query.
+#[cfg(feature = "json")]
+fn output_result_json(result: &dyn CommonResponse) {
+    serde_json::to_writer_pretty(std::io::stdout(), &result.as_json()).unwrap();
+}
+
 fn main() -> Result<()> {
     // Parse the command line arguments
     let args = Cli::parse();
@@ -118,21 +151,15 @@ fn main() -> Result<()> {
     let game = find_game(&args.game)?;
 
     // Extract extra options for use in setup
-    let mut extra_options = args.extra_options;
+    let mut extra_options = args.extra_options.clone();
 
     // Resolve the IP address
     let ip = resolve_ip_or_domain(&args.ip, &mut extra_options)?;
 
     let result = query_with_timeout_and_extra_settings(game, &ip, args.port, args.timeout_settings, extra_options)?;
 
-    #[cfg(feature = "json")]
-    if args.json {
-        serde_json::to_writer_pretty(std::io::stdout(), &result.as_json()).unwrap();
-    } else {
-        println!("{:#?}", result.as_original());
-    }
-    #[cfg(not(feature = "json"))]
-    println!("{:#?}", result.as_original());
+    // Output the result in the specified format
+    output_result(&args, result.as_ref());
 
     Ok(())
 }
