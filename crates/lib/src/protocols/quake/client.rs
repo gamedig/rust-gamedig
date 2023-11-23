@@ -25,8 +25,7 @@ fn get_data<Client: QuakeClient>(
     address: &SocketAddr,
     timeout_settings: &Option<TimeoutSettings>,
 ) -> GDResult<Vec<u8>> {
-    let mut socket = UdpSocket::new(address)?;
-    socket.apply_timeout(timeout_settings)?;
+    let mut socket = UdpSocket::new(address, timeout_settings)?;
     retry_on_timeout(
         TimeoutSettings::get_retries_or_default(timeout_settings),
         move || get_data_impl::<Client>(&mut socket),

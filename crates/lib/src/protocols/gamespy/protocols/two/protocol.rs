@@ -79,9 +79,8 @@ fn data_as_table(data: &mut Buffer<BigEndian>) -> GDResult<(HashMap<String, Vec<
 
 impl GameSpy2 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
-        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,

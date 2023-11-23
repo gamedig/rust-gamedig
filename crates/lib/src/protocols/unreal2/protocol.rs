@@ -32,12 +32,11 @@ pub(crate) struct Unreal2Protocol {
 
 impl Unreal2Protocol {
     pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = timeout_settings
             .as_ref()
             .map(|t| t.get_retries())
             .unwrap_or_else(|| TimeoutSettings::default().get_retries());
-        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,

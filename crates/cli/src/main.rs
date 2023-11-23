@@ -80,6 +80,9 @@ fn main() -> Result<()> {
             user_timeout_settings
                 .get_write()
                 .or(default_timeout_settings.get_write()),
+            user_timeout_settings
+                .get_connect()
+                .or(default_timeout_settings.get_connect()),
             user_timeout_settings.get_retries(),
         )?)
     } else {

@@ -49,8 +49,7 @@ pub struct ValveMasterServer {
 impl ValveMasterServer {
     /// Construct a new struct.
     pub fn new(master_address: &SocketAddr) -> GDResult<Self> {
-        let socket = UdpSocket::new(master_address)?;
-        socket.apply_timeout(&None)?;
+        let socket = UdpSocket::new(master_address, &None)?;
 
         Ok(Self { socket })
     }

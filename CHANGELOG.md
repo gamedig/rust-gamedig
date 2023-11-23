@@ -32,6 +32,10 @@ Game:
 Protocols:
 - Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
 
+Query:
+- Added a connection timeout to TimeoutSettings (at the moment this only applies to TCP)
+  - Sockets are now expected to apply timeout settings in new()
+
 # 0.4.1 - 13/10/2023
 ### Changes:
 Game:
