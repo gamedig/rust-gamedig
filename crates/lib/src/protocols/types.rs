@@ -157,13 +157,14 @@ fn parse_duration_secs(value: &str) -> Result<Duration, std::num::ParseIntError>
 #[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
-    #[cfg_attr(feature = "clap", arg(long = "connect-timeout", value_parser = parse_duration_secs, help = "Socket connect timeout (in seconds)"))]
+    #[cfg_attr(feature = "clap", arg(long = "connect-timeout", value_parser = parse_duration_secs, help = "Socket connect timeout (in seconds)", default_value = "4"))]
     connect: Option<Duration>,
-    #[cfg_attr(feature = "clap", arg(long = "read-timeout", value_parser = parse_duration_secs, help = "Socket read timeout (in seconds)"))]
+    #[cfg_attr(feature = "clap", arg(long = "read-timeout", value_parser = parse_duration_secs, help = "Socket read timeout (in seconds)", default_value = "4"))]
     read: Option<Duration>,
-    #[cfg_attr(feature = "clap", arg(long = "write-timeout", value_parser = parse_duration_secs, help = "Socket write timeout (in seconds)"))]
+    #[cfg_attr(feature = "clap", arg(long = "write-timeout", value_parser = parse_duration_secs, help = "Socket write timeout (in seconds)", default_value = "4"))]
     write: Option<Duration>,
-    #[cfg_attr(feature = "clap", arg(long))]
+    /// Number of retries per request
+    #[cfg_attr(feature = "clap", arg(long, default_value = "0"))]
     retries: usize,
 }
 

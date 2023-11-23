@@ -69,31 +69,11 @@ fn main() -> Result<()> {
             .ip()
     };
 
-    // Clap will default unset timeouts to None, which we don't want
-    let timeout_settings = if let Some(user_timeout_settings) = args.timeout_settings {
-        let default_timeout_settings = TimeoutSettings::const_default();
-
-        Some(TimeoutSettings::new(
-            user_timeout_settings
-                .get_read()
-                .or(default_timeout_settings.get_read()),
-            user_timeout_settings
-                .get_write()
-                .or(default_timeout_settings.get_write()),
-            user_timeout_settings
-                .get_connect()
-                .or(default_timeout_settings.get_connect()),
-            user_timeout_settings.get_retries(),
-        )?)
-    } else {
-        None
-    };
-
     let result = query_with_timeout_and_extra_settings(
         game,
         &ip,
         args.port,
-        timeout_settings,
+        args.timeout_settings,
         Some(extra_request_settings),
     )?;
 
