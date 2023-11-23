@@ -51,6 +51,7 @@ impl<P: QuakePlayerType> CommonResponse for Response<P> {
 }
 
 /// Versioned response type
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedResponse<'a> {
     One(&'a Response<crate::protocols::quake::one::Player>),

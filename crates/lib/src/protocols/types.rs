@@ -30,6 +30,7 @@ pub enum Protocol {
 }
 
 /// All response types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
     GameSpy(gamespy::VersionedResponse<'a>),
@@ -47,6 +48,7 @@ pub enum GenericResponse<'a> {
 }
 
 /// All player types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericPlayer<'a> {
     Valve(&'a valve::ServerPlayer),
