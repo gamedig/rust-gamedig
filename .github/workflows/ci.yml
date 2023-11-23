@@ -76,6 +76,7 @@ jobs:
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       - name: Run Build
         run: cargo check -p gamedig --verbose --lib --examples --tests ${{ matrix.build_type }}
   # If we were able to build then test different feature combinations compile with the CLI
@@ -99,6 +100,7 @@ jobs:
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       - name: Run Build
         run: cargo check -p gamedig-cli --verbose --bins --examples --tests ${{ matrix.build_type }}
   # If we were able to build then test the MSRV compiles (for the libary as not enforced for CLI)
@@ -146,6 +148,7 @@ jobs:
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       # Run github actions version of clippy that adds annotations
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
@@ -168,6 +171,7 @@ jobs:
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       - name: "Run cargo doc"
         run: cargo doc --workspace
         env:
