@@ -8,7 +8,6 @@ on:
 jobs:
   security_audit:
     runs-on: ubuntu-latest
-    if: ${{ !env.ACT }} # skip during local actions testing
     steps:
       - uses: actions/checkout@v4
       - uses: rustsec/audit-check@v1.4.1
