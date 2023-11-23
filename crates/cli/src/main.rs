@@ -39,11 +39,11 @@ struct Cli {
     output_mode: OutputMode,
 
     /// Optional timeout settings for the server query.
-    #[command(flatten)]
+    #[command(flatten, next_help_heading = "Timeouts")]
     timeout_settings: Option<TimeoutSettings>,
 
     /// Optional extra settings for the server query.
-    #[command(flatten)]
+    #[command(flatten, next_help_heading = "Query options")]
     extra_options: Option<ExtraRequestSettings>,
 }
 
