@@ -33,3 +33,20 @@ encoding_rs = "0.8"
 serde = { version = "1.0", optional = true }
 
 phf = { version = "0.11", optional = true, features = ["macros"] }
+
+# Examples
+[[example]]
+name = "minecraft"
+required-features = ["games"]
+
+[[example]]
+name = "teamfortress2"
+required-features = ["games"]
+
+[[example]]
+name = "valve_master_server_query"
+required-features = ["services"]
+
+[[example]]
+name = "generic"
+required-features = ["games", "game_defs"]
