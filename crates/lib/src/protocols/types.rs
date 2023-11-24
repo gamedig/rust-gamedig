@@ -1,6 +1,8 @@
+#[cfg(feature = "games")]
+use crate::games::minecraft;
 use crate::protocols::{gamespy, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
-use crate::{minecraft, GDResult};
+use crate::GDResult;
 
 use std::time::Duration;
 
@@ -8,6 +10,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 /// Enumeration of all custom protocols
+#[cfg(feature = "games")]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ProprietaryProtocol {
