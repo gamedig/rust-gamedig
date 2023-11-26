@@ -33,6 +33,7 @@ pub enum Protocol {
 }
 
 /// All response types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
     GameSpy(gamespy::VersionedResponse<'a>),
@@ -50,6 +51,7 @@ pub enum GenericResponse<'a> {
 }
 
 /// All player types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericPlayer<'a> {
     Valve(&'a valve::ServerPlayer),
@@ -149,13 +151,25 @@ pub struct CommonPlayerJson<'a> {
     pub score: Option<i32>,
 }
 
+#[cfg(feature = "clap")]
+fn parse_duration_secs(value: &str) -> Result<Duration, std::num::ParseIntError> {
+    let secs = value.parse()?;
+    Ok(Duration::from_secs(secs))
+}
+
 /// Timeout settings for socket operations
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
+    #[cfg_attr(feature = "clap", arg(long = "connect-timeout", value_parser = parse_duration_secs, help = "Socket connect timeout (in seconds)", default_value = "4"))]
     connect: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long = "read-timeout", value_parser = parse_duration_secs, help = "Socket read timeout (in seconds)", default_value = "4"))]
     read: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long = "write-timeout", value_parser = parse_duration_secs, help = "Socket write timeout (in seconds)", default_value = "4"))]
     write: Option<Duration>,
+    /// Number of retries per request
+    #[cfg_attr(feature = "clap", arg(long, default_value = "0"))]
     retries: usize,
 }
 
@@ -280,32 +294,38 @@ impl Default for TimeoutSettings {
 /// let valve_settings: valve::GatheringSettings = ExtraRequestSettings::default().set_check_app_id(false).into();
 /// ```
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct ExtraRequestSettings {
     /// The server's hostname.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.hostname]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub hostname: Option<String>,
     /// The protocol version to use.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.protocol_version]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub protocol_version: Option<i32>,
     /// Whether to gather player information
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.players]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_players: Option<bool>,
     /// Whether to gather rule information.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.rules]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_rules: Option<bool>,
     /// Whether to check if the App ID is valid.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.check_app_id]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub check_app_id: Option<bool>,
 }
 

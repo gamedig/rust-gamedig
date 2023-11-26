@@ -22,6 +22,7 @@ games = []
 services = []
 game_defs = ["dep:phf", "games"]
 serde = ["dep:serde", "serde/derive"]
+clap = ["dep:clap"]
 
 [dependencies]
 byteorder = "1.5"
@@ -33,6 +34,8 @@ encoding_rs = "0.8"
 serde = { version = "1.0", optional = true }
 
 phf = { version = "0.11", optional = true, features = ["macros"] }
+
+clap = { version = "4.1.11", optional = true, features = ["derive"] }
 
 # Examples
 [[example]]

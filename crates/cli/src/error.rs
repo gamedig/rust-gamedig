@@ -13,4 +13,7 @@ pub enum Error {
 
     #[error("Unknown Game: {0}")]
     UnknownGame(String),
+
+    #[error("Invalid hostname: {0}")]
+    InvalidHostname(String),
 }

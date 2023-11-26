@@ -17,6 +17,7 @@ pub enum GameSpyVersion {
 }
 
 /// Versioned response type
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedResponse<'a> {
     One(&'a one::Response),
@@ -25,6 +26,7 @@ pub enum VersionedResponse<'a> {
 }
 
 /// Versioned player type
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedPlayer<'a> {
     One(&'a one::Player),

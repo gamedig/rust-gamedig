@@ -55,6 +55,7 @@ impl CommonPlayer for Player {
 }
 
 /// Versioned response type
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VersionedResponse<'a> {
     Bedrock(&'a BedrockResponse),
