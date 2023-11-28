@@ -113,6 +113,6 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "devastation" => game!("Devastation (2003)", 7778, Protocol::Unreal2),
     "killingfloor" => game!("Killing Floor", 7708, Protocol::Unreal2),
     "redorchestra" => game!("Red Orchestra", 7759, Protocol::Unreal2),
-    "ut2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
-    "ut2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
+    "unrealtournament2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
+    "unrealtournament2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
 };
