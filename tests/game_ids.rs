@@ -1,4 +1,4 @@
-#![cfg(test)]
+#![cfg(all(test, feature = "game_defs"))]
 
 use std::{collections::HashMap, fs, io::Read};
 
