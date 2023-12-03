@@ -8,6 +8,7 @@ Games:
 - [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
 - [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
 - [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
+- [Squad](https://store.steampowered.com/app/393380/Squad/) support.
 - Added a valve protocol query example.
 
 Protocols:
