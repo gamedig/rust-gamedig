@@ -100,6 +100,7 @@ game_query_mod!(
     27005
 );
 game_query_mod!(onset, "Onset", Engine::new(1_105_810), 7776);
+game_query_mod!(postscriptum, "Post Scriptum", Engine::new(736220), 10037);
 game_query_mod!(
     projectzomboid,
     "Project Zomboid",

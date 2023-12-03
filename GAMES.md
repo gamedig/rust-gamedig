@@ -65,12 +65,13 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Valheim                            | VALHEIM             | Valve                | Query Port offset: 1. Does not respond to the A2S rules.                                                                                                                  |
 | The Front                          | THEFRONT            | Valve                | Responds with wrong values on `name` (gives out a SteamID instead of the server name) and `players_maximum` (always 200).                                                 |
 | Conan Exiles                       | CONANEXILES         | Valve                | Does not respond to the players query.                                                                                                                                    |
-| Darkest Hour: Europe '44-'45       | DARKESTHOUR         | Unreal2              | Query port offset: 1 |
-| Devastation                        | DEVASTATION         | Unreal2              | Query port offset: 1 |
-| Killing Floor                      | KILLINGFLOOR        | Unreal2              | Query port offset: 1 |
-| Red Orchestra                      | REDORCHESTRA        | Unreal2              | Query port offset: 1 |
-| Unreal Tournament 2003             | UT2003              | Unreal2              | Query port offset: 1 |
-| Unreal Tournament 2004             | UT2004              | Unreal2              | Query port offset: 1 |
+| Darkest Hour: Europe '44-'45       | DARKESTHOUR         | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Devastation                        | DEVASTATION         | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Killing Floor                      | KILLINGFLOOR        | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Red Orchestra                      | REDORCHESTRA        | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Unreal Tournament 2003             | UT2003              | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Unreal Tournament 2004             | UT2004              | Unreal2              | Query port offset: 1                                                                                                                                                      |
+| Post Scriptum                      | POSTSCRIPTUM        | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 _
