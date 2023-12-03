@@ -7,6 +7,7 @@ Games:
 - [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
 - [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
 - [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
+- [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
 - Added a valve protocol query example.
 
 Protocols:
