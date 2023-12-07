@@ -262,8 +262,11 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
     // Filter map necessary to move out words
     #[allow(clippy::unnecessary_filter_map)]
     let game_name_words: Vec<_> = game
+        // First split all text on space or dash
         .split_inclusive(&[' ', '-'])
+        // Remove whitespace surrounding words (leave in dash because it is important information)
         .map(|w| w.trim())
+        // If a word is entirely surrounded in brackets move it to optional parts
         .filter_map(|w| {
             if w.starts_with('(') && w.ends_with(')') {
                 optional_game_name_parts.push(w);
@@ -272,12 +275,14 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
                 Some(w)
             }
         })
+        // Remove all characters that aren't alphanumeric or dashses
         .map(|w| {
             w.replace(
                 |c: char| !c.is_ascii_digit() && !c.is_alphabetic() && c != '-',
                 "",
             )
         })
+        // Remove words that are empty (discounting strings that are just dashes)
         .filter(|w| !w.trim_matches('-').is_empty())
         .collect();
 
