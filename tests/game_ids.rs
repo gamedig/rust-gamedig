@@ -259,6 +259,8 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
         optional_game_name_parts.push(paren);
     }
 
+    let mut number_accumulator: Option<String> = None;
+
     // Filter map necessary to move out words
     #[allow(clippy::unnecessary_filter_map)]
     let game_name_words: Vec<_> = game
@@ -284,6 +286,35 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
         })
         // Remove words that are empty (discounting strings that are just dashes)
         .filter(|w| !w.trim_matches('-').is_empty())
+        // Combine numbers that are seperated by dashes
+        // e.g. 44-45 = 4445
+        // Panics if there is text after number with trailing dash (44-text)
+        .filter_map(|w| {
+            if number_accumulator.is_some() {
+                if let Some(maybe_number) = w.strip_suffix('-') {
+                    if maybe_number.chars().all(|c| c.is_ascii_digit()) {
+                        number_accumulator.as_mut().unwrap().push_str(maybe_number);
+                        return None;
+                    } else {
+                        panic!("Text after number-");
+                    }
+                } else if w.chars().all(|c| c.is_ascii_digit()) {
+                    let mut accumulator = number_accumulator.as_ref().unwrap().clone();
+                    number_accumulator = None;
+                    accumulator.push_str(&w);
+                    return Some(accumulator);
+                } else {
+                    panic!("Text after number-");
+                }
+            } else if let Some(maybe_number) = w.strip_suffix('-') {
+                if maybe_number.chars().all(|c| c.is_ascii_digit()) {
+                    number_accumulator = Some(maybe_number.to_string());
+                    return None;
+                }
+            }
+
+            Some(w)
+        })
         .collect();
 
     let mut game_year: Option<u16> = None;
@@ -435,6 +466,7 @@ mod id_tests {
         assert!(test_single_game_rule("sdtd", "7 Days to Die").is_empty());
         assert!(test_single_game_rule("teamfortress2", "Team Fortress 2").is_empty());
         assert!(test_single_game_rule("unrealtournament2003", "Unreal Tournament 2003").is_empty());
+        assert!(test_single_game_rule("dhe4445", "Darkest Hour: Europe '44-'45").is_empty());
     }
 
     #[test]
@@ -491,6 +523,12 @@ mod utils {
             split_on_switch_between_alpha_numeric("2D45A"),
             &["2", "D", "45", "A"]
         );
+    }
+
+    #[test]
+    fn split_symbol_broken_numbers() {
+        let game_name = super::extract_game_parts_from_name("Darkest Hour: Europe '44-'45");
+        assert_eq!(game_name.words, &["Darkest", "Hour", "Europe", "4445"]);
     }
 
     /// Extract parts at end of string enclosed in brackets.
