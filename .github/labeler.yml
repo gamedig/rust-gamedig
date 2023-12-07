@@ -1,18 +1,26 @@
 ci:
-  - .github/workflows/**
-  - .github/labeler.yml
-  - .actrc
-  - .pre-commit-config.yaml
+- changed-files:
+  - any-glob-to-any-file:
+    - '.github/workflows/**'
+    - .github/labeler.yml
+    - .actrc
+    - .pre-commit-config.yaml
 
 protocol:
-  - crates/lib/src/protocols/**
+- changed-files:
+  - any-glob-to-any-file: crates/lib/src/protocols/**
 
 game:
-  - crates/lib/src/games/**
+- changed-files:
+  - any-glob-to-any-file: crates/lib/src/games/**
 
 cli:
-  - crates/cli/**
+- changed-files:
+  - any-glob-to-any-file: crates/cli/**
 
 crate:
-  - Cargo.toml
-  - Cargo.lock
+- changed-files:
+  - any-glob-to-any-file:
+    - Cargo.toml
+    - 'crates/**/Cargo.toml'
+    - 'crates/**/Cargo.lock'
