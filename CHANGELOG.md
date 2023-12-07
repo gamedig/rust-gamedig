@@ -28,6 +28,9 @@ Game:
 - - Left 4 Dead: `left4dead` -> `l4d`.
 - - 7 Days to Die: `7d2d` in definitions and `sd2d` in game declaration -> `sdtd`.
 - - Quake 3 Arena: `quake3arena` -> `q3a`.
+- - Unreal tournament 2003: `ut2003` -> `unrealtournament2003`
+- - Unreal tournament 2004: `ut2004` -> `unrealtournament2004`
+- - Darkest Hour: Europe '44-'45: `darkesthour` -> `dhe4445`
 - Minecraft: 
 - - Legacy 1.5 and 1.3 were renamed to 1.4 and beta 1.8 respectively to show the lowest version they support, this change includes Structs, Enum and game id renames, also removed the "v" from the game definition name.
 - - Moved the Minecraft protocol implementation in the games folder as its proprietary.
