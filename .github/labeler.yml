@@ -1,26 +1,31 @@
 ci:
-- changed-files:
-  - any-glob-to-any-file:
-    - '.github/workflows/**'
-    - .github/labeler.yml
-    - .actrc
-    - .pre-commit-config.yaml
+- all:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**'
+      - .github/labeler.yml
+      - .actrc
+      - .pre-commit-config.yaml
 
 protocol:
-- changed-files:
-  - any-glob-to-any-file: crates/lib/src/protocols/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: crates/lib/src/protocols/**
 
 game:
-- changed-files:
-  - any-glob-to-any-file: crates/lib/src/games/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: crates/lib/src/games/**
 
 cli:
-- changed-files:
-  - any-glob-to-any-file: crates/cli/**
+- all:
+  - changed-files:
+    - any-glob-to-any-file: crates/cli/**
 
 crate:
-- changed-files:
-  - any-glob-to-any-file:
-    - Cargo.toml
-    - 'crates/**/Cargo.toml'
-    - 'crates/**/Cargo.lock'
+- all:
+  - changed-files:
+    - any-glob-to-any-file:
+      - Cargo.toml
+      - 'crates/**/Cargo.toml'
+      - 'crates/**/Cargo.lock'
