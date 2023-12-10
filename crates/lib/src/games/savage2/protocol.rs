@@ -14,7 +14,7 @@ pub fn query_with_timeout(
     timeout_settings: Option<TimeoutSettings>,
 ) -> GDResult<Response> {
     let addr = &SocketAddr::new(*address, port.unwrap_or(11235));
-    let mut socket = UdpSocket::new(&addr, &timeout_settings)?;
+    let mut socket = UdpSocket::new(addr, &timeout_settings)?;
     socket.send(&[0x01])?;
     let data = socket.receive(None)?;
     let mut buffer = Buffer::<LittleEndian>::new(&data);
