@@ -1,60 +1,12 @@
 use crate::buffer::{Buffer, Utf8Decoder};
+use crate::jc2m::{Player, Response};
 use crate::protocols::gamespy::common::has_password;
 use crate::protocols::gamespy::three::{data_to_map, GameSpy3};
-use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings};
-use crate::protocols::GenericResponse;
+use crate::protocols::types::TimeoutSettings;
 use crate::GDErrorKind::{PacketBad, TypeParse};
-use crate::{GDErrorKind, GDResult};
+use crate::GDResult;
 use byteorder::BigEndian;
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, SocketAddr};
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Player {
-    name: String,
-    steam_id: String,
-    ping: u16,
-}
-
-impl CommonPlayer for Player {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::JCMP2(self) }
-
-    fn name(&self) -> &str { &self.name }
-}
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Response {
-    game_version: String,
-    description: String,
-    name: String,
-    has_password: bool,
-    players: Vec<Player>,
-    players_maximum: u32,
-    players_online: u32,
-}
-
-impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::JC2M(self) }
-
-    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
-    fn description(&self) -> Option<&str> { Some(&self.description) }
-    fn name(&self) -> Option<&str> { Some(&self.name) }
-    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
-    fn players_maximum(&self) -> u32 { self.players_maximum }
-    fn players_online(&self) -> u32 { self.players_online }
-
-    fn players(&self) -> Option<Vec<&dyn crate::protocols::types::CommonPlayer>> {
-        Some(
-            self.players
-                .iter()
-                .map(|p| p as &dyn CommonPlayer)
-                .collect(),
-        )
-    }
-}
 
 fn parse_players_and_teams(packet: &[u8]) -> GDResult<Vec<Player>> {
     let mut buf = Buffer::<BigEndian>::new(packet);
@@ -112,15 +64,9 @@ pub fn query_with_timeout(
     } as u32;
 
     Ok(Response {
-        game_version: server_vars
-            .remove("version")
-            .ok_or(GDErrorKind::PacketBad)?,
-        description: server_vars
-            .remove("description")
-            .ok_or(GDErrorKind::PacketBad)?,
-        name: server_vars
-            .remove("hostname")
-            .ok_or(GDErrorKind::PacketBad)?,
+        game_version: server_vars.remove("version").ok_or(PacketBad)?,
+        description: server_vars.remove("description").ok_or(PacketBad)?,
+        name: server_vars.remove("hostname").ok_or(PacketBad)?,
         has_password: has_password(&mut server_vars)?,
         players,
         players_maximum,
