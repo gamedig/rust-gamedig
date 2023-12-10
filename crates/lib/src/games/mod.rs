@@ -21,6 +21,8 @@ pub mod ffow;
 pub mod jc2m;
 /// Minecraft
 pub mod minecraft;
+/// Savage 2
+pub mod savage2;
 /// The Ship
 pub mod theship;
 
@@ -117,6 +119,9 @@ pub fn query_with_timeout_and_extra_settings(
         }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
+                ProprietaryProtocol::Savage2 => {
+                    savage2::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                }
                 ProprietaryProtocol::TheShip => {
                     theship::query_with_timeout(address, port, timeout_settings).map(Box::new)?
                 }

@@ -88,6 +88,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "q3a" => game!("Quake 3 Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
     "ror2" => game!("Risk of Rain 2", 27016, Protocol::Valve(Engine::new(632_360))),
     "rust" => game!("Rust", 27015, Protocol::Valve(Engine::new(252_490))),
+    "savage2" => game!("Savage 2", 11235, Protocol::PROPRIETARY(ProprietaryProtocol::Savage2)),
     "sco" => game!("Sven Co-op", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "sdtd" => game!("7 Days to Die", 26900, Protocol::Valve(Engine::new(251_570))),
     "sof2" => game!("Soldier of Fortune 2", 20100, Protocol::Quake(QuakeVersion::Three)),

@@ -73,6 +73,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Unreal Tournament 2004             | UT2004              | Unreal2              | Query port offset: 1                                                                                                                                                      |
 | Post Scriptum                      | POSTSCRIPTUM        | Valve                |                                                                                                                                                                           |
 | Squad                              | SQUAD               | Valve                |                                                                                                                                                                           |
+| Savage 2                           | SAVAGE2             | Proprietary          |                                                                                                                                                                           |
 
 ## Planned to add support:
 _
