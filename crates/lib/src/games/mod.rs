@@ -23,6 +23,7 @@ pub mod jc2m;
 pub mod minecraft;
 /// The Ship
 pub mod theship;
+pub mod savage2;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
@@ -117,6 +118,9 @@ pub fn query_with_timeout_and_extra_settings(
         }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
+                ProprietaryProtocol::Savage2 => {
+                    savage2::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                }
                 ProprietaryProtocol::TheShip => {
                     theship::query_with_timeout(address, port, timeout_settings).map(Box::new)?
                 }

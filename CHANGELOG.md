@@ -9,6 +9,7 @@ Games:
 - [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
 - [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
 - [Squad](https://store.steampowered.com/app/393380/Squad/) support.
+- [Savage 2](https://savage2.net/) support.
 - Added a valve protocol query example.
 
 Protocols:

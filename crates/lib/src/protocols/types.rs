@@ -18,6 +18,7 @@ pub enum ProprietaryProtocol {
     Minecraft(Option<minecraft::types::Server>),
     FFOW,
     JC2M,
+    Savage2,
 }
 
 /// Enumeration of all valid protocol types
@@ -48,6 +49,8 @@ pub enum GenericResponse<'a> {
     FFOW(&'a crate::games::ffow::Response),
     #[cfg(feature = "games")]
     JC2M(&'a crate::games::jc2m::Response),
+    #[cfg(feature = "games")]
+    Savage2(&'a crate::games::savage2::Response),
 }
 
 /// All player types
