@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use crate::protocols::GenericResponse;
 use crate::protocols::types::CommonResponse;
+use crate::protocols::GenericResponse;
+use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]

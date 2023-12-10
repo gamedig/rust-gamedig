@@ -21,9 +21,10 @@ pub mod ffow;
 pub mod jc2m;
 /// Minecraft
 pub mod minecraft;
+/// Savage 2
+pub mod savage2;
 /// The Ship
 pub mod theship;
-pub mod savage2;
 
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;

@@ -1,10 +1,10 @@
-use std::net::{IpAddr, SocketAddr};
-use byteorder::LittleEndian;
 use crate::buffer::{Buffer, Utf8Decoder};
 use crate::games::savage2::types::Response;
-use crate::GDResult;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
+use crate::GDResult;
+use byteorder::LittleEndian;
+use std::net::{IpAddr, SocketAddr};
 
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
 
