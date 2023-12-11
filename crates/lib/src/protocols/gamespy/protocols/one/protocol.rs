@@ -55,7 +55,7 @@ fn get_server_values_impl(socket: &mut UdpSocket) -> GDResult<HashMap<String, St
             let key = splited[position].clone();
             let value = splited
                 .get(position + 1)
-                .map_or_else(String::new, |v| v.clone());
+                .map_or_else(String::new, Clone::clone);
 
             server_values.insert(key, value);
         }
