@@ -271,7 +271,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship: None,
-            game_version: "".to_string(), // a version field only for the mod
+            game_version: String::new(), // a version field only for the mod
             extra_data: None,
             is_mod,
             mod_data,
