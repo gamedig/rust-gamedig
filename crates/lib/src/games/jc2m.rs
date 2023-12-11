@@ -90,7 +90,7 @@ pub fn query_with_timeout(
     let packets = client.get_server_packets()?;
     let data = packets
         .get(0)
-        .ok_or(PacketBad.context("First packet missing"))?;
+        .ok_or_else(|| PacketBad.context("First packet missing"))?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;
     let players = parse_players_and_teams(&remaining_data)?;

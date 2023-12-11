@@ -209,7 +209,7 @@ impl StringDecoder for Unreal2StringDecoder {
         let mut ucs2 = false;
         let mut length: usize = (*data
             .first()
-            .ok_or(PacketBad.context("Tried to decode string without length"))?)
+            .ok_or_else(|| PacketBad.context("Tried to decode string without length"))?)
         .into();
 
         let mut start = 0;
