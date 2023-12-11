@@ -85,7 +85,7 @@ pub fn query_with_timeout_and_extra_settings(
                 &socket_addr,
                 *engine,
                 extra_settings
-                    .or(Option::from(game.request_settings.clone()))
+                    .or_else(|| Option::from(game.request_settings.clone()))
                     .map(ExtraRequestSettings::into),
                 timeout_settings,
             )
