@@ -127,9 +127,10 @@ static PACKET_SIZE: usize = 6144;
 impl ValveProtocol {
     pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = UdpSocket::new(address, &timeout_settings)?;
-        let retry_count = timeout_settings
-            .as_ref()
-            .map_or_else(|| TimeoutSettings::default().get_retries(), |t| t.get_retries());
+        let retry_count = timeout_settings.as_ref().map_or_else(
+            || TimeoutSettings::default().get_retries(),
+            |t| t.get_retries(),
+        );
 
         Ok(Self {
             socket,
