@@ -340,22 +340,22 @@ impl ExtraRequestSettings {
     }
     /// [Sets protocol
     /// version](ExtraRequestSettings#structfield.protocol_version)
-    pub fn set_protocol_version(mut self, protocol_version: i32) -> Self {
+    pub const fn set_protocol_version(mut self, protocol_version: i32) -> Self {
         self.protocol_version = Some(protocol_version);
         self
     }
     /// [Sets gather players](ExtraRequestSettings#structfield.gather_players)
-    pub fn set_gather_players(mut self, gather_players: bool) -> Self {
+    pub const fn set_gather_players(mut self, gather_players: bool) -> Self {
         self.gather_players = Some(gather_players);
         self
     }
     /// [Sets gather rules](ExtraRequestSettings#structfield.gather_rules)
-    pub fn set_gather_rules(mut self, gather_rules: bool) -> Self {
+    pub const fn set_gather_rules(mut self, gather_rules: bool) -> Self {
         self.gather_rules = Some(gather_rules);
         self
     }
     /// [Sets check app ID](ExtraRequestSettings#structfield.check_app_id)
-    pub fn set_check_app_id(mut self, check_app_id: bool) -> Self {
+    pub const fn set_check_app_id(mut self, check_app_id: bool) -> Self {
         self.check_app_id = Some(check_app_id);
         self
     }
