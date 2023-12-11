@@ -91,7 +91,7 @@ fn resolve_ip_or_domain(host: &str, extra_options: &mut Option<ExtraRequestSetti
 
             resolve_domain(host)
         },
-        |parsed_ip| Ok(parsed_ip),
+        Ok,
     )
 }
 
