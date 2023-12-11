@@ -97,7 +97,7 @@ pub fn query_with_timeout(
 
     let players_maximum = server_vars
         .remove("maxplayers")
-        .ok_or(PacketBad.context("Server variables missing maxplayers"))?
+        .ok_or_else(|| PacketBad.context("Server variables missing maxplayers"))?
         .parse()
         .map_err(|e| TypeParse.context(e))?;
     let players_online = match server_vars.remove("numplayers") {
