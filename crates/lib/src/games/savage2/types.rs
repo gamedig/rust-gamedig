@@ -4,7 +4,7 @@ use crate::protocols::GenericResponse;
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Response {
     pub name: String,
     pub players_online: u8,
