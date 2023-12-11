@@ -50,7 +50,7 @@ pub struct ServerInfo {
 
 impl ServerInfo {
     pub fn parse<B: ByteOrder>(buffer: &mut Buffer<B>) -> GDResult<Self> {
-        Ok(ServerInfo {
+        Ok(Self {
             server_id: buffer.read()?,
             ip: buffer.read_string::<Unreal2StringDecoder>(None)?,
             game_port: buffer.read()?,
@@ -118,7 +118,7 @@ impl Players {
     /// Pre-allocate the vectors inside the players struct based on the provided
     /// capacity.
     pub fn with_capacity(capacity: usize) -> Self {
-        Players {
+        Self {
             players: Vec::with_capacity(capacity),
             // Allocate half as many bots as we don't expect there to be as many
             bots: Vec::with_capacity(capacity / 2),
@@ -234,7 +234,7 @@ impl GatheringSettings {
 }
 
 impl Default for GatheringSettings {
-    fn default() -> Self { GatheringSettings::default() }
+    fn default() -> Self { Self::default() }
 }
 
 impl From<ExtraRequestSettings> for GatheringSettings {

@@ -231,33 +231,33 @@ impl TimeoutSettings {
 
     /// Get the number of retries if there are timeout settings else fall back
     /// to the default
-    pub const fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
+    pub const fn get_retries_or_default(timeout_settings: &Option<Self>) -> usize {
         if let Some(timeout_settings) = timeout_settings {
             timeout_settings.get_retries()
         } else {
-            TimeoutSettings::const_default().get_retries()
+            Self::const_default().get_retries()
         }
     }
 
     /// Get the read and write durations if there are timeout settings else fall
     /// back to the defaults
     pub const fn get_read_and_write_or_defaults(
-        timeout_settings: &Option<TimeoutSettings>,
+        timeout_settings: &Option<Self>,
     ) -> (Option<Duration>, Option<Duration>) {
         if let Some(timeout_settings) = timeout_settings {
             (timeout_settings.get_read(), timeout_settings.get_write())
         } else {
-            let default = TimeoutSettings::const_default();
+            let default = Self::const_default();
             (default.get_read(), default.get_write())
         }
     }
 
     /// Get the connect duration given timeout settings or get the default.
-    pub const fn get_connect_or_default(timeout_settings: &Option<TimeoutSettings>) -> Option<Duration> {
+    pub const fn get_connect_or_default(timeout_settings: &Option<Self>) -> Option<Duration> {
         if let Some(timeout_settings) = timeout_settings {
             timeout_settings.get_connect()
         } else {
-            TimeoutSettings::const_default().get_connect()
+            Self::const_default().get_connect()
         }
     }
 
