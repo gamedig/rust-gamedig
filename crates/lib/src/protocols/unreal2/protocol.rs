@@ -225,7 +225,7 @@ impl StringDecoder for Unreal2StringDecoder {
             // For UCS-2 strings, some unreal 2 games randomly insert an extra 0x01 here,
             // not included in the length. Skip it if present (hopefully this never happens
             // legitimately)
-            if let Some(1) = data[start ..].first() {
+            if data[start ..].first() == Some(&1) {
                 start += 1;
             }
         }
