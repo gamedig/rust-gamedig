@@ -78,7 +78,7 @@ fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<St
 
         if let Some(k) = key {
             if let Some(v) = value {
-                vars.insert(k.to_string(), v.to_string());
+                vars.insert((*k).to_string(), (*v).to_string());
             }
         }
     }
