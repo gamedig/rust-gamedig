@@ -35,8 +35,7 @@ impl Unreal2Protocol {
         let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = timeout_settings
             .as_ref()
-            .map(|t| t.get_retries())
-            .unwrap_or_else(|| TimeoutSettings::default().get_retries());
+            .map_or_else(|| TimeoutSettings::default().get_retries(), TimeoutSettings::get_retries);
 
         Ok(Self {
             socket,
