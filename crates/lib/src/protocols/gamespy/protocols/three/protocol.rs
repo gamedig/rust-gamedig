@@ -282,7 +282,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 }
 
                 let entry_data = data.get_mut(offset).ok_or(PacketBad)?;
-                entry_data.insert(field_name.to_string(), item);
+                entry_data.insert((*field_name).to_string(), item);
 
                 offset += 1;
             }
