@@ -85,13 +85,14 @@ fn find_game(game_id: &str) -> Result<&'static Game> {
 /// * `Result<IpAddr>` - On sucess returns a resolved IP address; on failure
 ///   returns an [Error::InvalidHostname] error.
 fn resolve_ip_or_domain(host: &str, extra_options: &mut Option<ExtraRequestSettings>) -> Result<IpAddr> {
-    if let Ok(parsed_ip) = host.parse() {
-        Ok(parsed_ip)
-    } else {
-        set_hostname_if_missing(host, extra_options);
+    host.parse().map_or_else(
+        |_| {
+            set_hostname_if_missing(host, extra_options);
 
-        resolve_domain(host)
-    }
+            resolve_domain(host)
+        },
+        |parsed_ip| Ok(parsed_ip),
+    )
 }
 
 /// Resolve a domain name to one of its IP addresses (the first one returned).
