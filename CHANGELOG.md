@@ -11,6 +11,7 @@ Games:
 - [Squad](https://store.steampowered.com/app/393380/Squad/) support.
 - [Savage 2](https://savage2.net/) support.
 - Added a valve protocol query example.
+- Made all of Just Cause 2: Multiplayer Response and Player fields public.
 
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
