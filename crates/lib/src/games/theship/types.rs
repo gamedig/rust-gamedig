@@ -1,17 +1,10 @@
-use crate::{
-    protocols::{
-        types::{CommonPlayer, CommonResponse, GenericPlayer, TimeoutSettings},
-        valve::{self, get_optional_extracted_data, Server, ServerPlayer},
-        GenericResponse,
-    },
-    GDErrorKind::PacketBad,
-    GDResult,
-};
-use std::net::{IpAddr, SocketAddr};
-
+use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
+use crate::protocols::valve::{get_optional_extracted_data, Server, ServerPlayer};
+use crate::protocols::{valve, GenericResponse};
+use crate::GDErrorKind::PacketBad;
+use crate::GDResult;
 use std::collections::HashMap;
 
-use crate::protocols::valve::Engine;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -126,21 +119,4 @@ impl Response {
             duration: the_unwrapped_ship.duration,
         })
     }
-}
-
-pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, None) }
-
-pub fn query_with_timeout(
-    address: &IpAddr,
-    port: Option<u16>,
-    timeout_settings: Option<TimeoutSettings>,
-) -> GDResult<Response> {
-    let valve_response = valve::query(
-        &SocketAddr::new(*address, port.unwrap_or(27015)),
-        Engine::new(2400),
-        None,
-        timeout_settings,
-    )?;
-
-    Response::new_from_valve_response(valve_response)
 }
