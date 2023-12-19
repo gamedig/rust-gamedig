@@ -1,6 +1,7 @@
 use crate::protocols::types::CommonResponse;
 use crate::protocols::valve::{Environment, Server};
 use crate::protocols::GenericResponse;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// The query response.
