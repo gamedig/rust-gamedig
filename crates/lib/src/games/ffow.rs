@@ -1,8 +1,8 @@
 use crate::buffer::{Buffer, Utf8Decoder};
-use crate::protocols::types::CommonResponse;
+use crate::protocols::types::{CommonResponse, TimeoutSettings};
 use crate::protocols::valve::{Engine, Environment, Server, ValveProtocol};
 use crate::protocols::GenericResponse;
-use crate::{GDResult, TimeoutSettings};
+use crate::GDResult;
 use byteorder::LittleEndian;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

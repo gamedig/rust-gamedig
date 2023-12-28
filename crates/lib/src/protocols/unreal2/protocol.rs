@@ -1,8 +1,9 @@
 use crate::buffer::{Buffer, StringDecoder};
 use crate::errors::GDErrorKind::PacketBad;
+use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::retry_on_timeout;
-use crate::{GDResult, TimeoutSettings};
+use crate::GDResult;
 
 use super::{GatheringSettings, MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
 

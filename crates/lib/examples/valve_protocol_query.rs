@@ -1,6 +1,6 @@
+use gamedig::protocols::types::TimeoutSettings;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::{Engine, GatheringSettings};
-use gamedig::TimeoutSettings;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::time::Duration;
 

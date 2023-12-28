@@ -1,9 +1,8 @@
 use gamedig::{
-    protocols::types::{CommonResponse, ExtraRequestSettings},
+    protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
     query_with_timeout_and_extra_settings,
     GDResult,
     Game,
-    TimeoutSettings,
     GAMES,
 };
 
@@ -78,7 +77,7 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use gamedig::{TimeoutSettings, GAMES};
+    use gamedig::{protocols::types::TimeoutSettings, GAMES};
     use std::{
         net::{IpAddr, Ipv4Addr},
         time::Duration,

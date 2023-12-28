@@ -1,9 +1,9 @@
 use crate::protocols::quake::client::{client_query, remove_wrapping_quotes, QuakeClient};
 use crate::protocols::quake::one::QuakeOne;
 use crate::protocols::quake::Response;
-use crate::protocols::types::{CommonPlayer, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, GenericPlayer, TimeoutSettings};
 use crate::GDErrorKind::TypeParse;
-use crate::{GDErrorKind, GDResult, TimeoutSettings};
+use crate::{GDErrorKind, GDResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;

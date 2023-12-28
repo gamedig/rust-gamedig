@@ -28,10 +28,6 @@ Game:
 Protocols:
 - Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
 
-Crate:
-- TimeoutSettings should now be imported from the root of the crate
-    - `use gamedig::TimeoutSettings`
-
 # 0.4.1 - 13/10/2023
 ### Changes:
 Game:

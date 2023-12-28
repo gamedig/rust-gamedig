@@ -3,11 +3,11 @@
 use crate::{
     buffer::{Buffer, Utf8Decoder},
     games::minecraft::{BedrockResponse, GameMode, Server},
+    protocols::types::TimeoutSettings,
     socket::{Socket, UdpSocket},
     utils::{error_by_expected_size, retry_on_timeout},
     GDErrorKind::{PacketBad, TypeParse},
     GDResult,
-    TimeoutSettings,
 };
 
 use std::net::SocketAddr;

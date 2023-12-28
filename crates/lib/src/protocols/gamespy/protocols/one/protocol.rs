@@ -7,11 +7,13 @@ use crate::GDErrorKind::TypeParse;
 use crate::utils::retry_on_timeout;
 use crate::{
     buffer::Buffer,
-    protocols::gamespy::one::{Player, Response},
+    protocols::{
+        gamespy::one::{Player, Response},
+        types::TimeoutSettings,
+    },
     socket::{Socket, UdpSocket},
     GDErrorKind,
     GDResult,
-    TimeoutSettings,
 };
 use std::collections::HashMap;
 use std::net::SocketAddr;

@@ -1,10 +1,10 @@
 use crate::buffer::{Buffer, Utf8Decoder};
 use crate::protocols::gamespy::two::{Player, Response, Team};
+use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
 use crate::utils::retry_on_timeout;
 use crate::GDErrorKind::{PacketBad, TypeParse};
-use crate::{GDErrorKind, GDResult, TimeoutSettings};
-
+use crate::{GDErrorKind, GDResult};
 use byteorder::BigEndian;
 use std::collections::HashMap;
 use std::net::SocketAddr;

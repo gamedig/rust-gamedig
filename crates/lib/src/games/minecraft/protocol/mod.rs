@@ -12,9 +12,9 @@ use crate::{
         JavaResponse,
         LegacyGroup,
     },
+    protocols::types::TimeoutSettings,
     GDErrorKind::AutoQuery,
     GDResult,
-    TimeoutSettings,
 };
 use std::net::SocketAddr;
 
