@@ -31,8 +31,6 @@ Protocols:
 Crate:
 - TimeoutSettings should now be imported from the root of the crate
     - `use gamedig::TimeoutSettings`
-- ExtraRequestSettings is now in games module and should be imported from the root of the crate
-    - `use gamedig::ExtraRequestSettings`
 
 # 0.4.1 - 13/10/2023
 ### Changes:

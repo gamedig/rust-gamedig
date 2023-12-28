@@ -5,10 +5,9 @@
 use crate::{
     buffer::Buffer,
     protocols::{
-        types::{CommonPlayer, CommonResponse, GenericPlayer},
+        types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer},
         GenericResponse,
     },
-    ExtraRequestSettings,
     GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast},
     GDResult,
 };

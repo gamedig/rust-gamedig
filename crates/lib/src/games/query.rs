@@ -7,8 +7,8 @@ use crate::games::{ffow, jc2m, minecraft, theship};
 use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
-use crate::protocols::types::{CommonResponse, ProprietaryProtocol, Protocol};
-use crate::{ExtraRequestSettings, GDResult, TimeoutSettings};
+use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol, Protocol};
+use crate::{GDResult, TimeoutSettings};
 
 /// Make a query given a game definition
 #[inline]
