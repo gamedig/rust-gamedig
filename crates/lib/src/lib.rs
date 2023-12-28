@@ -52,3 +52,6 @@ pub use games::*;
 pub use query::*;
 #[cfg(feature = "services")]
 pub use services::*;
+
+// Re-export types needed to call games::query::query in the root
+pub use protocols::types::{ExtraRequestSettings, TimeoutSettings};
