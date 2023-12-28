@@ -24,6 +24,9 @@ pub mod theship;
 pub mod types;
 pub use types::*;
 
+pub mod query;
+pub use query::*;
+
 #[cfg(feature = "game_defs")]
 mod definitions;
 

@@ -38,8 +38,6 @@ pub mod errors;
 #[cfg(feature = "games")]
 pub mod games;
 pub mod protocols;
-#[cfg(feature = "games")]
-pub mod query;
 #[cfg(feature = "services")]
 pub mod services;
 pub mod types;
