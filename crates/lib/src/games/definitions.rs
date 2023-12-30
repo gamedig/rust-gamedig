@@ -86,6 +86,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "quake1" => game!("Quake 1", 27500, Protocol::Quake(QuakeVersion::One)),
     "quake2" => game!("Quake 2", 27910, Protocol::Quake(QuakeVersion::Two)),
     "q3a" => game!("Quake 3 Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
+    "risingworld" => game!("Rising World", 4254, Protocol::Valve(Engine::new(324_080)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "ror2" => game!("Risk of Rain 2", 27016, Protocol::Valve(Engine::new(632_360))),
     "rust" => game!("Rust", 27015, Protocol::Valve(Engine::new(252_490))),
     "savage2" => game!("Savage 2", 11235, Protocol::PROPRIETARY(ProprietaryProtocol::Savage2)),

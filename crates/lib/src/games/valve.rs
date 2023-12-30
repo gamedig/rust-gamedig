@@ -107,6 +107,7 @@ game_query_mod!(
     Engine::new(108_600),
     16261
 );
+game_query_mod!(risingworld, "Rising World", Engine::new(324_080), 4254);
 game_query_mod!(ror2, "Risk of Rain 2", Engine::new(632_360), 27016);
 game_query_mod!(rust, "Rust", Engine::new(252_490), 27015);
 game_query_mod!(sco, "Sven Co-op", Engine::new_gold_src(false), 27015);

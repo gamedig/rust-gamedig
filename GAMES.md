@@ -74,6 +74,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Post Scriptum                      | POSTSCRIPTUM        | Valve                |                                                                                                                                                                           |
 | Squad                              | SQUAD               | Valve                |                                                                                                                                                                           |
 | Savage 2                           | SAVAGE2             | Proprietary          |                                                                                                                                                                           |
+| Rising World                       | RISINGWORLD         | Valve                | Query port offset: -1                                                                                                                                                     |
 
 ## Planned to add support:
 _

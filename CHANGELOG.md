@@ -10,6 +10,7 @@ Games:
 - [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
 - [Squad](https://store.steampowered.com/app/393380/Squad/) support.
 - [Savage 2](https://savage2.net/) support.
+- [Rising World](https://store.steampowered.com/app/324080/Rising_World/) support.
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
 
