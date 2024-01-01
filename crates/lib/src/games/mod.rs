@@ -12,6 +12,8 @@ pub use valve::*;
 
 /// Battalion 1944
 pub mod battalion1944;
+/// Eco
+pub mod eco;
 /// Frontlines: Fuel of War
 pub mod ffow;
 /// Just Cause 2: Multiplayer

@@ -42,6 +42,7 @@ pub mod protocols;
 pub mod services;
 
 mod buffer;
+mod http;
 mod socket;
 mod utils;
 
