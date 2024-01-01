@@ -1,10 +1,7 @@
 use std::net::{IpAddr, ToSocketAddrs};
 
 use clap::{Parser, ValueEnum};
-use gamedig::{
-    games::*,
-    protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
-};
+use gamedig::{games::*, protocols::types::CommonResponse, ExtraRequestSettings, TimeoutSettings};
 
 mod error;
 
