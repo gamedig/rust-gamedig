@@ -52,9 +52,8 @@ const DEFAULT_PAYLOAD: [u8; 4] = [0xFF, 0xFF, 0xFF, 0x01];
 
 impl GameSpy3 {
     fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
-        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
@@ -70,9 +69,8 @@ impl GameSpy3 {
         payload: [u8; 4],
         single_packets: bool,
     ) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = TimeoutSettings::get_retries_or_default(&timeout_settings);
-        socket.apply_timeout(&timeout_settings)?;
 
         Ok(Self {
             socket,
@@ -284,7 +282,7 @@ fn parse_players_and_teams(packets: Vec<Vec<u8>>) -> GDResult<(Vec<Player>, Vec<
                 }
 
                 let entry_data = data.get_mut(offset).ok_or(PacketBad)?;
-                entry_data.insert(field_name.to_string(), item);
+                entry_data.insert((*field_name).to_string(), item);
 
                 offset += 1;
             }

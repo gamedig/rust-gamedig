@@ -32,12 +32,11 @@ pub(crate) struct Unreal2Protocol {
 
 impl Unreal2Protocol {
     pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
-        let retry_count = timeout_settings
-            .as_ref()
-            .map(|t| t.get_retries())
-            .unwrap_or_else(|| TimeoutSettings::default().get_retries());
-        socket.apply_timeout(&timeout_settings)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
+        let retry_count = timeout_settings.as_ref().map_or_else(
+            || TimeoutSettings::default().get_retries(),
+            TimeoutSettings::get_retries,
+        );
 
         Ok(Self {
             socket,
@@ -210,7 +209,7 @@ impl StringDecoder for Unreal2StringDecoder {
         let mut ucs2 = false;
         let mut length: usize = (*data
             .first()
-            .ok_or(PacketBad.context("Tried to decode string without length"))?)
+            .ok_or_else(|| PacketBad.context("Tried to decode string without length"))?)
         .into();
 
         let mut start = 0;
@@ -226,7 +225,7 @@ impl StringDecoder for Unreal2StringDecoder {
             // For UCS-2 strings, some unreal 2 games randomly insert an extra 0x01 here,
             // not included in the length. Skip it if present (hopefully this never happens
             // legitimately)
-            if let Some(1) = data[start ..].first() {
+            if data[start ..].first() == Some(&1) {
                 start += 1;
             }
         }

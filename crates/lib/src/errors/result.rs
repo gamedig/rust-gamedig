@@ -12,7 +12,7 @@ mod tests {
     #[test]
     fn test_gdresult_ok() {
         let result: GDResult<u32> = Ok(42);
-        assert_eq!(result.unwrap(), 42);
+        assert_eq!(result, Ok(42));
     }
 
     // Testing Err variant of the GDResult type

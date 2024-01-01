@@ -126,12 +126,11 @@ static PACKET_SIZE: usize = 6144;
 
 impl ValveProtocol {
     pub fn new(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = UdpSocket::new(address)?;
-        let retry_count = timeout_settings
-            .as_ref()
-            .map(|t| t.get_retries())
-            .unwrap_or_else(|| TimeoutSettings::default().get_retries());
-        socket.apply_timeout(&timeout_settings)?;
+        let socket = UdpSocket::new(address, &timeout_settings)?;
+        let retry_count = timeout_settings.as_ref().map_or_else(
+            || TimeoutSettings::default().get_retries(),
+            |t| t.get_retries(),
+        );
 
         Ok(Self {
             socket,
@@ -272,7 +271,7 @@ impl ValveProtocol {
             has_password,
             vac_secured,
             the_ship: None,
-            game_version: "".to_string(), // a version field only for the mod
+            game_version: String::new(), // a version field only for the mod
             extra_data: None,
             is_mod,
             mod_data,

@@ -3,7 +3,7 @@
 use std::net::{IpAddr, SocketAddr};
 
 use crate::games::types::Game;
-use crate::games::{ffow, jc2m, minecraft, theship};
+use crate::games::{ffow, jc2m, minecraft, savage2, theship};
 use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
@@ -42,7 +42,7 @@ pub fn query_with_timeout_and_extra_settings(
                 &socket_addr,
                 *engine,
                 extra_settings
-                    .or(Option::from(game.request_settings.clone()))
+                    .or_else(|| Option::from(game.request_settings.clone()))
                     .map(ExtraRequestSettings::into),
                 timeout_settings,
             )
@@ -76,6 +76,9 @@ pub fn query_with_timeout_and_extra_settings(
         }
         Protocol::PROPRIETARY(protocol) => {
             match protocol {
+                ProprietaryProtocol::Savage2 => {
+                    savage2::query_with_timeout(address, port, timeout_settings).map(Box::new)?
+                }
                 ProprietaryProtocol::TheShip => {
                     theship::query_with_timeout(address, port, timeout_settings).map(Box::new)?
                 }

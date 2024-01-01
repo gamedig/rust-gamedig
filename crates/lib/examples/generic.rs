@@ -47,6 +47,7 @@ fn main() {
         let timeout_settings = TimeoutSettings::new(
             TimeoutSettings::default().get_read(),
             TimeoutSettings::default().get_write(),
+            TimeoutSettings::default().get_connect(),
             2,
         )
         .unwrap();
@@ -92,6 +93,7 @@ mod test {
     fn test_game(game_name: &str) {
         let timeout_settings = Some(
             TimeoutSettings::new(
+                Some(Duration::from_nanos(1)),
                 Some(Duration::from_nanos(1)),
                 Some(Duration::from_nanos(1)),
                 0,

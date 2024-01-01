@@ -1,6 +1,8 @@
+#[cfg(feature = "games")]
+use crate::games::minecraft;
 use crate::protocols::{gamespy, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
-use crate::{minecraft, GDResult};
+use crate::GDResult;
 
 use std::time::Duration;
 
@@ -8,6 +10,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 /// Enumeration of all custom protocols
+#[cfg(feature = "games")]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ProprietaryProtocol {
@@ -15,6 +18,7 @@ pub enum ProprietaryProtocol {
     Minecraft(Option<minecraft::types::Server>),
     FFOW,
     JC2M,
+    Savage2,
 }
 
 /// Enumeration of all valid protocol types
@@ -30,6 +34,7 @@ pub enum Protocol {
 }
 
 /// All response types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericResponse<'a> {
     GameSpy(gamespy::VersionedResponse<'a>),
@@ -44,9 +49,12 @@ pub enum GenericResponse<'a> {
     FFOW(&'a crate::games::ffow::Response),
     #[cfg(feature = "games")]
     JC2M(&'a crate::games::jc2m::Response),
+    #[cfg(feature = "games")]
+    Savage2(&'a crate::games::savage2::Response),
 }
 
 /// All player types
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GenericPlayer<'a> {
     Valve(&'a valve::ServerPlayer),
@@ -146,12 +154,25 @@ pub struct CommonPlayerJson<'a> {
     pub score: Option<i32>,
 }
 
+#[cfg(feature = "clap")]
+fn parse_duration_secs(value: &str) -> Result<Duration, std::num::ParseIntError> {
+    let secs = value.parse()?;
+    Ok(Duration::from_secs(secs))
+}
+
 /// Timeout settings for socket operations
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimeoutSettings {
+    #[cfg_attr(feature = "clap", arg(long = "connect-timeout", value_parser = parse_duration_secs, help = "Socket connect timeout (in seconds)", default_value = "4"))]
+    connect: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long = "read-timeout", value_parser = parse_duration_secs, help = "Socket read timeout (in seconds)", default_value = "4"))]
     read: Option<Duration>,
+    #[cfg_attr(feature = "clap", arg(long = "write-timeout", value_parser = parse_duration_secs, help = "Socket write timeout (in seconds)", default_value = "4"))]
     write: Option<Duration>,
+    /// Number of retries per request
+    #[cfg_attr(feature = "clap", arg(long, default_value = "0"))]
     retries: usize,
 }
 
@@ -164,22 +185,34 @@ impl TimeoutSettings {
     /// "1" will try the request again once if it fails.
     /// The retry count is per-request so for multi-request queries (valve) if a
     /// single part fails that part can be retried up to `retries` times.
-    pub fn new(read: Option<Duration>, write: Option<Duration>, retries: usize) -> GDResult<Self> {
+    pub fn new(
+        read: Option<Duration>,
+        write: Option<Duration>,
+        connect: Option<Duration>,
+        retries: usize,
+    ) -> GDResult<Self> {
         if let Some(read_duration) = read {
-            if read_duration == Duration::new(0, 0) {
+            if read_duration.is_zero() {
                 return Err(InvalidInput.context("Read duration must not be 0"));
             }
         }
 
         if let Some(write_duration) = write {
-            if write_duration == Duration::new(0, 0) {
+            if write_duration.is_zero() {
                 return Err(InvalidInput.context("Write duration must not be 0"));
+            }
+        }
+
+        if let Some(connect_duration) = connect {
+            if connect_duration.is_zero() {
+                return Err(InvalidInput.context("Connect duration must not be 0"));
             }
         }
 
         Ok(Self {
             read,
             write,
+            connect,
             retries,
         })
     }
@@ -190,29 +223,41 @@ impl TimeoutSettings {
     /// Get the write timeout.
     pub const fn get_write(&self) -> Option<Duration> { self.write }
 
+    /// Get the connect timeout.
+    pub const fn get_connect(&self) -> Option<Duration> { self.connect }
+
     /// Get number of retries
     pub const fn get_retries(&self) -> usize { self.retries }
 
     /// Get the number of retries if there are timeout settings else fall back
     /// to the default
-    pub const fn get_retries_or_default(timeout_settings: &Option<TimeoutSettings>) -> usize {
+    pub const fn get_retries_or_default(timeout_settings: &Option<Self>) -> usize {
         if let Some(timeout_settings) = timeout_settings {
             timeout_settings.get_retries()
         } else {
-            TimeoutSettings::const_default().get_retries()
+            Self::const_default().get_retries()
         }
     }
 
     /// Get the read and write durations if there are timeout settings else fall
     /// back to the defaults
     pub const fn get_read_and_write_or_defaults(
-        timeout_settings: &Option<TimeoutSettings>,
+        timeout_settings: &Option<Self>,
     ) -> (Option<Duration>, Option<Duration>) {
         if let Some(timeout_settings) = timeout_settings {
             (timeout_settings.get_read(), timeout_settings.get_write())
         } else {
-            let default = TimeoutSettings::const_default();
+            let default = Self::const_default();
             (default.get_read(), default.get_write())
+        }
+    }
+
+    /// Get the connect duration given timeout settings or get the default.
+    pub const fn get_connect_or_default(timeout_settings: &Option<Self>) -> Option<Duration> {
+        if let Some(timeout_settings) = timeout_settings {
+            timeout_settings.get_connect()
+        } else {
+            Self::const_default().get_connect()
         }
     }
 
@@ -221,6 +266,7 @@ impl TimeoutSettings {
         Self {
             read: Some(Duration::from_secs(4)),
             write: Some(Duration::from_secs(4)),
+            connect: Some(Duration::from_secs(4)),
             retries: 0,
         }
     }
@@ -251,32 +297,38 @@ impl Default for TimeoutSettings {
 /// let valve_settings: valve::GatheringSettings = ExtraRequestSettings::default().set_check_app_id(false).into();
 /// ```
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::Args))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct ExtraRequestSettings {
     /// The server's hostname.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.hostname]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub hostname: Option<String>,
     /// The protocol version to use.
     ///
     /// Used by:
     /// - [minecraft::RequestSettings#structfield.protocol_version]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub protocol_version: Option<i32>,
     /// Whether to gather player information
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.players]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_players: Option<bool>,
     /// Whether to gather rule information.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.rules]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub gather_rules: Option<bool>,
     /// Whether to check if the App ID is valid.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.check_app_id]
+    #[cfg_attr(feature = "clap", arg(long))]
     pub check_app_id: Option<bool>,
 }
 
@@ -288,22 +340,22 @@ impl ExtraRequestSettings {
     }
     /// [Sets protocol
     /// version](ExtraRequestSettings#structfield.protocol_version)
-    pub fn set_protocol_version(mut self, protocol_version: i32) -> Self {
+    pub const fn set_protocol_version(mut self, protocol_version: i32) -> Self {
         self.protocol_version = Some(protocol_version);
         self
     }
     /// [Sets gather players](ExtraRequestSettings#structfield.gather_players)
-    pub fn set_gather_players(mut self, gather_players: bool) -> Self {
+    pub const fn set_gather_players(mut self, gather_players: bool) -> Self {
         self.gather_players = Some(gather_players);
         self
     }
     /// [Sets gather rules](ExtraRequestSettings#structfield.gather_rules)
-    pub fn set_gather_rules(mut self, gather_rules: bool) -> Self {
+    pub const fn set_gather_rules(mut self, gather_rules: bool) -> Self {
         self.gather_rules = Some(gather_rules);
         self
     }
     /// [Sets check app ID](ExtraRequestSettings#structfield.check_app_id)
-    pub fn set_check_app_id(mut self, check_app_id: bool) -> Self {
+    pub const fn set_check_app_id(mut self, check_app_id: bool) -> Self {
         self.check_app_id = Some(check_app_id);
         self
     }
@@ -320,9 +372,15 @@ mod tests {
         // Define valid read and write durations
         let read_duration = Duration::from_secs(1);
         let write_duration = Duration::from_secs(2);
+        let connect_duration = Duration::from_secs(3);
 
         // Create new TimeoutSettings with the valid durations
-        let timeout_settings = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0)?;
+        let timeout_settings = TimeoutSettings::new(
+            Some(read_duration),
+            Some(write_duration),
+            Some(connect_duration),
+            0,
+        )?;
 
         // Verify that the get_read and get_write methods return the expected values
         assert_eq!(timeout_settings.get_read(), Some(read_duration));
@@ -337,10 +395,16 @@ mod tests {
         // Define a zero read duration and a valid write duration
         let read_duration = Duration::new(0, 0);
         let write_duration = Duration::from_secs(2);
+        let connect_duration = Duration::from_secs(3);
 
         // Try to create new TimeoutSettings with the zero read duration (this should
         // fail)
-        let result = TimeoutSettings::new(Some(read_duration), Some(write_duration), 0);
+        let result = TimeoutSettings::new(
+            Some(read_duration),
+            Some(write_duration),
+            Some(connect_duration),
+            0,
+        );
 
         // Verify that the function returned an error and that the error type is
         // InvalidInput

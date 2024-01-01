@@ -13,7 +13,10 @@ use std::{
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
 pub trait Socket {
-    fn new(address: &SocketAddr) -> GDResult<Self>
+    /// Create a new socket and connect to the remote address (if required).
+    ///
+    /// Calls [Self::apply_timeout] with the given timeout settings.
+    fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self>
     where Self: Sized;
 
     fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()>;
@@ -30,11 +33,20 @@ pub struct TcpSocket {
 }
 
 impl Socket for TcpSocket {
-    fn new(address: &SocketAddr) -> GDResult<Self> {
-        Ok(Self {
-            socket: net::TcpStream::connect(address).map_err(|e| SocketConnect.context(e))?,
+    fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
+        let socket = TimeoutSettings::get_connect_or_default(timeout_settings).map_or_else(
+            || net::TcpStream::connect(address),
+            |timeout| net::TcpStream::connect_timeout(address, timeout),
+        );
+
+        let socket = Self {
+            socket: socket.map_err(|e| SocketConnect.context(e))?,
             address: *address,
-        })
+        };
+
+        socket.apply_timeout(timeout_settings)?;
+
+        Ok(socket)
     }
 
     fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()> {
@@ -68,13 +80,17 @@ pub struct UdpSocket {
 }
 
 impl Socket for UdpSocket {
-    fn new(address: &SocketAddr) -> GDResult<Self> {
+    fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| SocketBind.context(e))?;
 
-        Ok(Self {
+        let socket = Self {
             socket,
             address: *address,
-        })
+        };
+
+        socket.apply_timeout(timeout_settings)?;
+
+        Ok(socket)
     }
 
     fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()> {
@@ -125,7 +141,7 @@ mod tests {
         });
 
         // Create a TCP socket and send a message to the server
-        let mut socket = TcpSocket::new(&bound_address).unwrap();
+        let mut socket = TcpSocket::new(&bound_address, &None).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
@@ -156,7 +172,7 @@ mod tests {
         });
 
         // Create a UDP socket and send a message to the server
-        let mut socket = UdpSocket::new(&bound_address).unwrap();
+        let mut socket = UdpSocket::new(&bound_address, &None).unwrap();
         let message = b"hello, world!";
         socket.send(message).unwrap();
 
