@@ -10,11 +10,17 @@ game_query_mod!(
 );
 game_query_mod!(alienswarm, "Alien Swarm", Engine::new(630), 27015);
 game_query_mod!(aoc, "Age of Chivalry", Engine::new(17510), 27015);
-game_query_mod!(aapg, "America's Army: Proving Grounds", Engine::new(203_290), 27020, GatheringSettings {
+game_query_mod!(
+    aapg,
+    "America's Army: Proving Grounds",
+    Engine::new(203_290),
+    27020,
+    GatheringSettings {
         players: true,
         rules: false,
         check_app_id: true,
-    });
+    }
+);
 game_query_mod!(ase, "ARK: Survival Evolved", Engine::new(346_110), 27015);
 game_query_mod!(
     asrd,
