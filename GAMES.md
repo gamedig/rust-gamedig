@@ -76,6 +76,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Savage 2                           | SAVAGE2             | Proprietary          |                                                                                                                                                                           |
 | Rising World                       | RISINGWORLD         | Valve                | Query port offset: -1                                                                                                                                                     |
 | ATLAS                              | ATLAS               | Valve                | Query port offset: 51800                                                                                                                                                  |
+| America's Army: Proving Grounds    | AAPG                | Valve                | Query port: 27020. Does not respond to the rules query.                                                                                                                   |
 
 ## Planned to add support:
 _

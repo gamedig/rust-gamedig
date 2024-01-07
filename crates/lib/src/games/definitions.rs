@@ -39,6 +39,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "minecraftlegacy16" => game!("Minecraft (legacy 1.6)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6))))),
     "minecraftlegacy14" => game!("Minecraft (legacy 1.4)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4))))),
     "minecraftlegacyb18" => game!("Minecraft (legacy b1.8)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8))))),
+    "aapg" => game!("America's Army: Proving Grounds", 27020, Protocol::Valve(Engine::new(203_290)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
