@@ -52,6 +52,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(834_910))),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
     "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(Engine::new(602_960))),
+    "basedefense" => game!("Base Defense", 27015, Protocol::Valve(Engine::new(632_730)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "battalion1944" => game!("Battalion 1944", 7780, Protocol::Valve(Engine::new(489_940))),
     "brainbread2" => game!("BrainBread 2", 27015, Protocol::Valve(Engine::new(346_330))),
     "battlefield1942" => game!("Battlefield 1942", 23000, Protocol::Gamespy(GameSpyVersion::One)),

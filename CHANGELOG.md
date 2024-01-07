@@ -13,6 +13,7 @@ Games:
 - [Rising World](https://store.steampowered.com/app/324080/Rising_World/) support.
 - [ATLAS](https://store.steampowered.com/app/834910/ATLAS/) support.
 - [America's Army: Proving Grounds](https://store.steampowered.com/app/203290/Americas_Army_Proving_Grounds/) support.
+- [Base Defense](https://store.steampowered.com/app/632730/Base_Defense/) support.
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
 
