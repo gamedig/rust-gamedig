@@ -17,6 +17,7 @@ game_query_mod!(
     Engine::new(563_560),
     2304
 );
+game_query_mod!(atlas, "ATLAS", Engine::new(834_910), 57561);
 game_query_mod!(avorion, "Avorion", Engine::new(445_220), 27020);
 game_query_mod!(
     ballisticoverkill,

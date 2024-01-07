@@ -44,6 +44,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(Engine::new(346_110))),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
+    "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(563_560))), //game_query_mod!(atlas, "ATLAS", Engine::new(834_910), 57561);
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
     "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(Engine::new(602_960))),
     "battalion1944" => game!("Battalion 1944", 7780, Protocol::Valve(Engine::new(489_940))),
