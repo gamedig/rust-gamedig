@@ -395,7 +395,7 @@ fn check_definitions_match_name_rules() {
 fn check_node_definitions_match_name_rules() {
     let mut file = fs::OpenOptions::new()
         .read(true)
-        .open("./node-gamedig/games.txt")
+        .open("GAMES_LIST.md")
         .unwrap();
 
     let mut text = String::new();
@@ -403,12 +403,12 @@ fn check_node_definitions_match_name_rules() {
 
     let games = text
         .split('\n')
-        .map(|line| line.trim())
-        .filter(|line| !line.starts_with('#') && !line.is_empty())
+        .filter(|line| line.starts_with("| "))
+        .skip(1) // the header
         .filter_map(|line| {
-            let parts: Vec<_> = line.splitn(3, '|').collect();
-            if parts.len() > 1 {
-                Some((parts[0].split(',').next().unwrap(), parts[1]))
+            let parts: Vec<_> = line.splitn(4, '|').collect();
+            if parts.len() > 3 {
+                Some((parts[1].trim(), parts[2].trim()))
             } else {
                 None
             }
