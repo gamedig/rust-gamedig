@@ -38,8 +38,7 @@ phf = { version = "0.11", optional = true, features = ["macros"] }
 clap = { version = "4.1.11", optional = true, features = ["derive"] }
 
 [dev-dependencies]
-number_to_words = "0.1"
-roman_numeral = "0.1"
+gamedig-id-tests = { path = "../id-tests", no-default-features = true }
 
 # Examples
 [[example]]

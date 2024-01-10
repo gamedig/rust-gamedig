@@ -1,10 +1,7 @@
-#![cfg(all(test, feature = "game_defs"))]
+use std::collections::HashMap;
 
-use std::{collections::HashMap, fs, io::Read};
-
-use gamedig::GAMES;
-
-use utils::*;
+mod utils;
+use utils::{extract_bracketed_suffix, split_on_switch_between_alpha_numeric};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IDRule {
@@ -384,42 +381,9 @@ pub fn test_game_name_rules<'a, I: Iterator<Item = (&'a str, &'a str)>>(games: I
     wrong_ids
 }
 
-#[test]
-fn check_definitions_match_name_rules() {
-    let wrong = test_game_name_rules(GAMES.entries().map(|(id, game)| (id.to_owned(), game.name)));
-    assert!(wrong.is_empty());
-}
+pub fn test_single_game_rule(id: &str, name: &str) -> Vec<IDFail> { test_game_name_rules(std::iter::once((id, name))) }
 
-#[test]
-#[ignore = "Don't test node by default"]
-fn check_node_definitions_match_name_rules() {
-    let mut file = fs::OpenOptions::new()
-        .read(true)
-        .open("./node-gamedig/games.txt")
-        .unwrap();
-
-    let mut text = String::new();
-    file.read_to_string(&mut text).unwrap();
-
-    let games = text
-        .split('\n')
-        .map(|line| line.trim())
-        .filter(|line| !line.starts_with('#') && !line.is_empty())
-        .filter_map(|line| {
-            let parts: Vec<_> = line.splitn(3, '|').collect();
-            if parts.len() > 1 {
-                Some((parts[0].split(',').next().unwrap(), parts[1]))
-            } else {
-                None
-            }
-        });
-
-    let wrong = test_game_name_rules(games);
-    assert!(wrong.is_empty());
-}
-
-fn test_single_game_rule(id: &str, name: &str) -> Vec<IDFail> { test_game_name_rules(std::iter::once((id, name))) }
-
+#[cfg(test)]
 mod id_tests {
     use super::{test_game_name_rules, test_single_game_rule};
     #[test]
@@ -483,74 +447,5 @@ mod id_tests {
     fn id_rule_eight() {
         assert!(test_single_game_rule("fivem", "Grand Theft Auto V - FiveM (2013)").is_empty());
         assert!(test_single_game_rule("jc3m", "Just Cause 3 - Multiplayer").is_empty());
-    }
-}
-
-mod utils {
-    /// Split a str when characters swap between being digits and not digits.
-    pub fn split_on_switch_between_alpha_numeric(text: &str) -> Vec<String> {
-        if text.is_empty() {
-            return vec![];
-        }
-
-        let mut parts = Vec::with_capacity(text.len());
-        let mut current = Vec::with_capacity(text.len());
-
-        let mut iter = text.chars();
-        let c = iter.next().unwrap();
-        let mut last_was_numeric = c.is_ascii_digit();
-        current.push(c);
-
-        for c in iter {
-            if c.is_ascii_digit() == last_was_numeric {
-                current.push(c);
-            } else {
-                parts.push(current.iter().collect());
-                current.clear();
-                current.push(c);
-                last_was_numeric = !last_was_numeric;
-            }
-        }
-
-        parts.push(current.into_iter().collect());
-
-        parts
-    }
-
-    #[test]
-    fn split_correctly() {
-        assert_eq!(
-            split_on_switch_between_alpha_numeric("2D45A"),
-            &["2", "D", "45", "A"]
-        );
-    }
-
-    #[test]
-    fn split_symbol_broken_numbers() {
-        let game_name = super::extract_game_parts_from_name("Darkest Hour: Europe '44-'45");
-        assert_eq!(game_name.words, &["Darkest", "Hour", "Europe", "4445"]);
-    }
-
-    /// Extract parts at end of string enclosed in brackets.
-    pub fn extract_bracketed_suffix(text: &str) -> (&str, Option<&str>) {
-        if let Some(text) = text.strip_suffix(')') {
-            if let Some((text, extra)) = text.rsplit_once('(') {
-                return (text, Some(extra));
-            }
-        }
-
-        (text, None)
-    }
-
-    #[test]
-    fn extract_brackets_correctly() {
-        assert_eq!(
-            extract_bracketed_suffix("no brackets here"),
-            ("no brackets here", None)
-        );
-        assert_eq!(
-            extract_bracketed_suffix("Game name (with protocol here)"),
-            ("Game name ", Some("with protocol here"))
-        );
     }
 }
