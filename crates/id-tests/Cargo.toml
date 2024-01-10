@@ -7,8 +7,8 @@ authors = [
     "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
 ]
 license = "MIT"
-description = "Query game servers and not only."
-homepage = "https://github.com/gamedig/rust-gamedig"
+description = "Test if IDs match the gamedig rules"
+homepage = "https://github.com/gamedig/rust-gamedig/CONTRIBUTING.md#naming"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 rust-version = "1.65.0"
