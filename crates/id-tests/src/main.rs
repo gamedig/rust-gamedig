@@ -8,15 +8,6 @@ type GamesInput = HashMap<String, Game>;
 #[derive(Debug, Clone, PartialEq, serde::Deserialize)]
 struct Game {
     name: String,
-    options: Option<GameOptions>,
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
-struct GameOptions {
-    port: Option<u16>,
-    protocol: Option<String>,
-    port_query: Option<u16>,
-    port_query_offset: Option<u16>,
 }
 
 use gamedig_id_tests::test_game_name_rules;
