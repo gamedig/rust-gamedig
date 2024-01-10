@@ -15,6 +15,7 @@ rust-version = "1.65.0"
 
 [features]
 cli = ["dep:serde_json", "dep:serde"]
+default = ["cli"]
 
 [[bin]]
 name = "gamedig-id-tests"
