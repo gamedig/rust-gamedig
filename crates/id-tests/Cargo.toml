@@ -1,0 +1,18 @@
+[package]
+name = "gamedig-id-tests"
+version = "0.0.1"
+edition = "2021"
+authors = [
+    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
+    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
+]
+license = "MIT"
+description = "Query game servers and not only."
+homepage = "https://github.com/gamedig/rust-gamedig"
+repository = "https://github.com/gamedig/rust-gamedig"
+readme = "README.md"
+rust-version = "1.65.0"
+
+[dependencies]
+number_to_words = "0.1"
+roman_numeral = "0.1"
