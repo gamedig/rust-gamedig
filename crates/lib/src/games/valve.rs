@@ -148,3 +148,4 @@ game_query_mod!(
     }
 );
 game_query_mod!(vrising, "V Rising", Engine::new(1_604_030), 27016);
+game_query_mod!(zps, "Zombie Panic: Source", Engine::new(17_500), 27015);

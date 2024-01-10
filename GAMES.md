@@ -78,6 +78,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | ATLAS                              | ATLAS               | Valve                | Query port offset: 51800                                                                                                                                                  |
 | America's Army: Proving Grounds    | AAPG                | Valve                | Query port: 27020. Does not respond to the rules query.                                                                                                                   |
 | Base Defense                       | BASEDEFENSE         | Valve                | Query port: 27015. Does not respond to the rules query.                                                                                                                   |
+| Zombie Panic: Source               | ZPS                 | Valve                | Query port: 27015.                                                                                                                                                        |
 
 ## Planned to add support:
 _
