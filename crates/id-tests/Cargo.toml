@@ -13,6 +13,16 @@ repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 rust-version = "1.65.0"
 
+[features]
+cli = ["dep:serde_json", "dep:serde"]
+
+[[bin]]
+name = "gamedig-id-tests"
+required-features = ["cli"]
+
 [dependencies]
 number_to_words = "0.1"
 roman_numeral = "0.1"
+
+serde_json = { version = "1", optional = true }
+serde = { version = "1", optional = true, features = ["derive"] }
