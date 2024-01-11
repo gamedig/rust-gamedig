@@ -17,6 +17,7 @@ Games:
 - [Zombie Panic: Source](https://store.steampowered.com/app/17500/Zombie_Panic_Source/) support.
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
+- [Mindustry](https://mindustrygame.github.io/) support.
 
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).

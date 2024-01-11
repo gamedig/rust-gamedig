@@ -19,6 +19,7 @@ pub enum ProprietaryProtocol {
     FFOW,
     JC2M,
     Savage2,
+    Mindustry,
 }
 
 /// Enumeration of all valid protocol types
@@ -41,6 +42,8 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     Unreal2(&'a unreal2::Response),
+    #[cfg(feature = "games")]
+    Mindustry(&'a crate::games::mindustry::types::ServerData),
     #[cfg(feature = "games")]
     Minecraft(minecraft::VersionedResponse<'a>),
     #[cfg(feature = "games")]
