@@ -9,7 +9,7 @@ use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
 macro_rules! game {
-    ($name: literal, $default_port: literal, $protocol: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr) => {
         game!(
             $name,
             $default_port,
@@ -18,7 +18,7 @@ macro_rules! game {
         )
     };
 
-    ($name: literal, $default_port: literal, $protocol: expr, $extra_request_settings: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr, $extra_request_settings: expr) => {
         Game {
             name: $name,
             default_port: $default_port,
