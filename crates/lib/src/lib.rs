@@ -46,7 +46,7 @@ mod socket;
 mod utils;
 
 #[cfg(feature = "packet_capture")]
-pub mod capture;
+pub(crate) mod capture;
 
 pub use errors::*;
 #[cfg(feature = "games")]
