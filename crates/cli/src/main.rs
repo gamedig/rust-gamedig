@@ -13,10 +13,7 @@ mod error;
 
 use self::error::{Error, Result};
 
-// NOTE: For some reason without setting long_about here the doc comment for
-// ExtraRequestSettings gets set as the about for the CLI.
-#[derive(Debug, Parser)]
-#[command(author, version, long_about = None, about = r"
+const GAMEDIG_HEADER: &str = r"
 
   _____                      _____  _          _____ _      _____ 
  / ____|                    |  __ \(_)        / ____| |    |_   _|
@@ -30,7 +27,12 @@ use self::error::{Error, Result};
         A command line interface for querying game servers.
   Copyright (C) 2022 - Present GameDig Organization & Contributors
                   Licensed under the MIT license
-")]
+";
+
+// NOTE: For some reason without setting long_about here the doc comment for
+// ExtraRequestSettings gets set as the about for the CLI.
+#[derive(Debug, Parser)]
+#[command(author, version, about = GAMEDIG_HEADER, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     action: Action,
