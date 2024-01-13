@@ -78,6 +78,9 @@ enum Action {
         #[command(flatten, next_help_heading = "Query options")]
         extra_options: Option<ExtraRequestSettings>,
     },
+
+    /// Check out the source code
+    Source,
     /// Display the MIT License information
     License,
 }
@@ -223,6 +226,13 @@ fn main() -> Result<()> {
 
             let result = query_with_timeout_and_extra_settings(game, &ip, port, timeout_settings, extra_options)?;
             output_result(output_mode, json, result.as_ref());
+        }
+        Action::Source => {
+            println!("{}", GAMEDIG_HEADER);
+
+            // Print the source code location
+            println!("Source code: https://github.com/gamedig/rust-gamedig\n");
+            println!("Be sure to leave a star if you like the project :)\n");
         }
         Action::License => {
             // Bake the license into the binary
