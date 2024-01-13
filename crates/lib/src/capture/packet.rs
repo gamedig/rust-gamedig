@@ -30,7 +30,7 @@ pub(crate) enum Protocol {
 }
 
 /// Trait for handling different types of IP addresses (IPv4, IPv6).
-pub trait IpAddress: Sized {
+pub(crate) trait IpAddress: Sized {
     /// Creates an instance from a standard `IpAddr`, returning `None` if the types are incompatible.
     fn from_std(ip: IpAddr) -> Option<Self>;
 }
@@ -53,8 +53,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (u16, u16): Tuple of (source port, destination port).
-    #[allow(dead_code)]
-    pub(crate) const fn ports_by_direction(&self) -> (u16, u16) {
+    pub(super) const fn ports_by_direction(&self) -> (u16, u16) {
         let (local, remote) = (self.local_address.port(), self.remote_address.port());
         self.direction.order(local, remote)
     }
@@ -63,20 +62,9 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (IpAddr, IpAddr): Tuple of (local IP, remote IP).
-    #[allow(dead_code)]
-    pub(crate) fn ip_addr(&self) -> (IpAddr, IpAddr) {
+    pub(super) fn ip_addr(&self) -> (IpAddr, IpAddr) {
         let (local, remote) = (self.local_address.ip(), self.remote_address.ip());
         (local, remote)
-    }
-
-    /// Retrieves IP addresses based on the packet's direction.
-    ///
-    /// Returns:
-    /// - (IpAddr, IpAddr): Tuple of (source IP, destination IP).
-    #[allow(dead_code)]
-    pub(crate) fn ip_addr_by_direction(&self) -> (IpAddr, IpAddr) {
-        let (local, remote) = self.ip_addr();
-        self.direction.order(local, remote)
     }
 
     /// Retrieves IP addresses of a specific type (IPv4 or IPv6) based on the packet's direction.
@@ -85,8 +73,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (T, T): Tuple of (source IP, destination IP) of the specified type in order.
-    #[allow(dead_code)]
-    pub(crate) fn ipvt_by_direction<T: IpAddress>(&self) -> (T, T) {
+    pub(super) fn ipvt_by_direction<T: IpAddress>(&self) -> (T, T) {
         let (local, remote) = (
             T::from_std(self.local_address.ip()).expect("Incorrect IP type for local address"),
             T::from_std(self.remote_address.ip()).expect("Incorrect IP type for remote address"),
@@ -101,7 +88,7 @@ impl Direction {
     ///
     /// Returns:
     /// - (T, T): Ordered tuple (source, destination).
-    pub(crate) const fn order<T>(&self, source: T, remote: T) -> (T, T) {
+    pub(self) const fn order<T>(&self, source: T, remote: T) -> (T, T) {
         match self {
             Direction::Send => (source, remote),
             Direction::Receive => (remote, source),
@@ -162,65 +149,33 @@ mod tests {
     }
 
     #[test]
-    fn test_ip_addr_by_direction_ipv4() {
+    fn test_ip_addr() {
         let packet_send = CapturePacket {
             direction: Direction::Send,
-            protocol: Protocol::UDP,
-            local_address: &socket_addr("10.0.0.1:3000"),
-            remote_address: &socket_addr("10.0.0.2:3001"),
+            protocol: Protocol::TCP,
+            local_address: &socket_addr("127.0.0.1:8080"),
+            remote_address: &socket_addr("192.168.1.1:80"),
         };
 
         let packet_receive = CapturePacket {
             direction: Direction::Receive,
-            protocol: Protocol::UDP,
-            local_address: &socket_addr("10.0.0.1:3000"),
-            remote_address: &socket_addr("10.0.0.2:3001"),
+            protocol: Protocol::TCP,
+            local_address: &socket_addr("127.0.0.1:8080"),
+            remote_address: &socket_addr("192.168.1.1:80"),
         };
 
         assert_eq!(
-            packet_send.ip_addr_by_direction(),
+            packet_send.ip_addr(),
             (
-                IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)),
-                IpAddr::V4(Ipv4Addr::new(10, 0, 0, 2))
+                IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+                IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1))
             )
         );
         assert_eq!(
-            packet_receive.ip_addr_by_direction(),
+            packet_receive.ip_addr(),
             (
-                IpAddr::V4(Ipv4Addr::new(10, 0, 0, 2)),
-                IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1))
-            )
-        );
-    }
-
-    #[test]
-    fn test_ip_addr_by_direction_ipv6() {
-        let packet_send = CapturePacket {
-            direction: Direction::Send,
-            protocol: Protocol::UDP,
-            local_address: &socket_addr("[::1]:3000"),
-            remote_address: &socket_addr("[::2]:3001"),
-        };
-
-        let packet_receive = CapturePacket {
-            direction: Direction::Receive,
-            protocol: Protocol::UDP,
-            local_address: &socket_addr("[::1]:3000"),
-            remote_address: &socket_addr("[::2]:3001"),
-        };
-
-        assert_eq!(
-            packet_send.ip_addr_by_direction(),
-            (
-                IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)),
-                IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 2))
-            )
-        );
-        assert_eq!(
-            packet_receive.ip_addr_by_direction(),
-            (
-                IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 2)),
-                IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1))
+                IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+                IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1))
             )
         );
     }
@@ -241,18 +196,5 @@ mod tests {
         let ipv6_result: Result<(Ipv6Addr, Ipv6Addr), _> =
             std::panic::catch_unwind(|| packet.ipvt_by_direction::<Ipv6Addr>());
         assert!(ipv6_result.is_err());
-    }
-
-    #[test]
-    #[should_panic(expected = "Local and remote IP addresses must be of the same version")]
-    fn test_mismatched_ip_version_panic() {
-        let packet = CapturePacket {
-            direction: Direction::Send,
-            protocol: Protocol::UDP,
-            local_address: &socket_addr("127.0.0.1:8080"), // IPv4
-            remote_address: &socket_addr("[::1]:80"),      // IPv6
-        };
-
-        packet.ip_addr_by_direction();
     }
 }

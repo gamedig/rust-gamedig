@@ -1,6 +1,9 @@
-use std::net::{IpAddr, ToSocketAddrs};
+use std::{
+    net::{IpAddr, ToSocketAddrs},
+    path::PathBuf,
+};
 
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use gamedig::{
     games::*,
     protocols::types::{CommonResponse, ExtraRequestSettings, TimeoutSettings},
@@ -13,42 +16,68 @@ use self::error::{Error, Result};
 // NOTE: For some reason without setting long_about here the doc comment for
 // ExtraRequestSettings gets set as the about for the CLI.
 #[derive(Debug, Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, long_about = None, about = r"
+
+  _____                      _____  _          _____ _      _____ 
+ / ____|                    |  __ \(_)        / ____| |    |_   _|
+| |  __  __ _ _ __ ___   ___| |  | |_  __ _  | |    | |      | |  
+| | |_ |/ _` | '_ ` _ \ / _ \ |  | | |/ _` | | |    | |      | |  
+| |__| | (_| | | | | | |  __/ |__| | | (_| | | |____| |____ _| |_ 
+ \_____|\__,_|_| |_| |_|\___|_____/|_|\__, |  \_____|______|_____|
+                                       __/ |                      
+                                      |___/      
+
+        A command line interface for querying game servers.
+  Copyright (C) 2022 - Present GameDig Organization & Contributors
+                  Licensed under the MIT license
+")]
 struct Cli {
-    /// Unique identifier of the game for which server information is being
-    /// queried.
-    #[arg(short, long)]
-    game: String,
+    #[command(subcommand)]
+    action: Action,
+}
 
-    /// Hostname or IP address of the server.
-    #[arg(short, long)]
-    ip: String,
+#[derive(Subcommand, Debug)]
+enum Action {
+    /// Query game server information
+    Query {
+        /// Unique identifier of the game for which server information is being
+        /// queried.
+        #[arg(short, long)]
+        game: String,
 
-    /// Optional query port number for the server. If not provided the default
-    /// port for the game is used.
-    #[arg(short, long)]
-    port: Option<u16>,
+        /// Hostname or IP address of the server.
+        #[arg(short, long)]
+        ip: String,
 
-    /// Flag indicating if the output should be in JSON format.
-    #[cfg(feature = "json")]
-    #[arg(short, long)]
-    json: bool,
+        /// Optional query port number for the server. If not provided the default
+        /// port for the game is used.
+        #[arg(short, long)]
+        port: Option<u16>,
 
-    /// Which response variant to use when outputting.
-    #[arg(short, long, default_value = "generic")]
-    output_mode: OutputMode,
+        /// Flag indicating if the output should be in JSON format for programmatic use.
+        #[cfg(feature = "json")]
+        #[arg(short, long)]
+        json: bool,
 
-    #[cfg(feature = "packet_capture")]
-    #[arg(short, long)]
-    capture: Option<String>,
+        /// Which response variant to use when outputting
+        #[arg(short, long, default_value = "generic")]
+        output_mode: OutputMode,
 
-    /// Optional timeout settings for the server query.
-    #[command(flatten, next_help_heading = "Timeouts")]
-    timeout_settings: Option<TimeoutSettings>,
+        /// Optional file path for packet capture file writer
+        #[cfg(feature = "packet_capture")]
+        #[arg(short, long)]
+        capture: Option<PathBuf>,
 
-    /// Optional extra settings for the server query.
-    #[command(flatten, next_help_heading = "Query options")]
-    extra_options: Option<ExtraRequestSettings>,
+        /// Optional timeout settings for the server query
+        #[command(flatten, next_help_heading = "Timeouts")]
+        timeout_settings: Option<TimeoutSettings>,
+
+        /// Optional extra settings for the server query
+        #[command(flatten, next_help_heading = "Query options")]
+        extra_options: Option<ExtraRequestSettings>,
+    },
+    /// Display the MIT License information
+    License,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
@@ -139,12 +168,12 @@ fn set_hostname_if_missing(host: &str, extra_options: &mut Option<ExtraRequestSe
 /// # Arguments
 /// * `args` - A reference to the command line options.
 /// * `result` - A reference to the result of the query.
-fn output_result(args: &Cli, result: &dyn CommonResponse) {
-    match args.output_mode {
+fn output_result(output: OutputMode, json: bool, result: &dyn CommonResponse) {
+    match output {
         #[cfg(feature = "json")]
-        OutputMode::Generic if args.json => output_result_json(result.as_json()),
+        OutputMode::Generic if json => output_result_json(result.as_json()),
         #[cfg(feature = "json")]
-        OutputMode::ProtocolSpecific if args.json => output_result_json(result.as_original()),
+        OutputMode::ProtocolSpecific if json => output_result_json(result.as_original()),
 
         OutputMode::Generic => output_result_debug(result.as_json()),
         OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
@@ -169,27 +198,36 @@ fn output_result_json<R: serde::Serialize>(result: R) {
 }
 
 fn main() -> Result<()> {
-    // Parse the command line arguments
     let args = Cli::parse();
 
-    // Retrieve the game based on the provided ID
-    let game = find_game(&args.game)?;
+    match args.action {
+        Action::Query {
+            game,
+            ip,
+            port,
+            json,
+            output_mode,
+            capture,
+            timeout_settings,
+            extra_options,
+        } => {
+            // Process the query command
+            let game = find_game(&game)?;
+            let mut extra_options = extra_options;
+            let ip = resolve_ip_or_domain(&ip, &mut extra_options)?;
 
-    // Extract extra options for use in setup
-    let mut extra_options = args.extra_options.clone();
+            #[cfg(feature = "packet_capture")]
+            gamedig::capture::setup_capture(capture);
 
-    // Resolve the IP address
-    let ip = resolve_ip_or_domain(&args.ip, &mut extra_options)?;
-
-    #[cfg(feature = "packet_capture")]
-    gamedig::capture::setup_capture(args.capture.clone());
-
-    // Query the server using game definition, parsed IP, and user command line
-    // flags.
-    let result = query_with_timeout_and_extra_settings(game, &ip, args.port, args.timeout_settings, extra_options)?;
-
-    // Output the result in the specified format
-    output_result(&args, result.as_ref());
+            let result = query_with_timeout_and_extra_settings(game, &ip, port, timeout_settings, extra_options)?;
+            output_result(output_mode, json, result.as_ref());
+        }
+        Action::License => {
+            // Bake the license into the binary
+            // so we don't have to ship it separately
+            println!("{}", include_str!("../../../LICENSE.md"));
+        }
+    }
 
     Ok(())
 }

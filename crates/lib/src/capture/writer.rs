@@ -1,22 +1,20 @@
-use std::io::Write;
+use std::{io::Write, sync::Mutex};
 
-use crate::{
-    capture::packet::{CapturePacket, Protocol},
-    GDResult,
+use super::{
+    packet::{CapturePacket, Protocol},
+    pcap::Pcap,
 };
-
-use super::pcap::Pcap;
-
+use crate::GDResult;
 use lazy_static::lazy_static;
-use std::sync::Mutex;
 
 lazy_static! {
     pub(crate) static ref CAPTURE_WRITER: Mutex<Option<Box<dyn Writer + Send + Sync>>> = Mutex::new(None);
 }
 
 pub(crate) trait Writer {
-    fn write(&mut self, packet: &CapturePacket, data: &[u8]) -> crate::GDResult<()>;
-    fn new_connect(&mut self, packet: &CapturePacket) -> crate::GDResult<()>;
+    fn write(&mut self, packet: &CapturePacket, data: &[u8]) -> GDResult<()>;
+    fn new_connect(&mut self, packet: &CapturePacket) -> GDResult<()>;
+    //TODO: Close connection
 }
 
 impl<W: Write> Writer for Pcap<W> {

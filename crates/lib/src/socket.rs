@@ -4,10 +4,9 @@ use crate::{
     GDResult,
 };
 
-use std::net::SocketAddr;
 use std::{
     io::{Read, Write},
-    net,
+    net::{self, SocketAddr},
 };
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
@@ -227,7 +226,7 @@ pub mod capture {
     }
 
     /// Represents the UDP protocol provider.
-    pub struct ProtocolUDP;
+    pub(crate) struct ProtocolUDP;
     impl ProtocolProvider for ProtocolUDP {
         fn protocol() -> Protocol {
             Protocol::UDP
@@ -240,7 +239,7 @@ pub mod capture {
     /// * `I` - The inner socket type.
     /// * `P` - The protocol provider.
     #[derive(Clone, Debug)]
-    pub struct WrappedCaptureSocket<I, P> {
+    pub(crate) struct WrappedCaptureSocket<I, P> {
         inner: I,
         remote_address: SocketAddr,
         _protocol: PhantomData<P>,
@@ -292,7 +291,7 @@ pub mod capture {
         ///
         /// # Returns
         /// A result indicating success or error in sending data.
-        fn send(&mut self, data: &[u8]) -> crate::GDResult<()> {
+        fn send(&mut self, data: &[u8]) -> GDResult<()> {
             let info = CapturePacket {
                 direction: Direction::Send,
                 protocol: P::protocol(),

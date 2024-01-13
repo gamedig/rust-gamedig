@@ -15,7 +15,6 @@ use super::packet::{
     PACKET_SIZE,
 };
 
-
 const BUFFER_SIZE: usize = PACKET_SIZE
     - (if HEADER_SIZE_IP4 > HEADER_SIZE_IP6 {
         HEADER_SIZE_IP4
@@ -48,10 +47,7 @@ impl<W: Write> Pcap<W> {
     pub(crate) fn write_transport_packet(&mut self, info: &CapturePacket, payload: &[u8]) {
         let mut buf = vec![0; BUFFER_SIZE];
 
-        let (source_port, dest_port) = match info.direction {
-            Direction::Send => (info.local_address.port(), info.remote_address.port()),
-            Direction::Receive => (info.remote_address.port(), info.local_address.port()),
-        };
+        let (source_port, dest_port) = info.ports_by_direction();
 
         match info.protocol {
             Protocol::TCP => {
@@ -150,13 +146,9 @@ impl<W: Write> Pcap<W> {
         protocol: IpNextHeaderProtocol,
         payload: &[u8],
     ) -> (usize, EtherType) {
-        match (info.local_address.ip(), info.remote_address.ip()) {
-            (IpAddr::V4(local_address), IpAddr::V4(remote_address)) => {
-                let (source, destination) = if info.direction == Direction::Send {
-                    (local_address, remote_address)
-                } else {
-                    (remote_address, local_address)
-                };
+        match info.ip_addr() {
+            (IpAddr::V4(_), IpAddr::V4(_)) => {
+                let (source, destination) = info.ipvt_by_direction();
 
                 let header_size = HEADER_SIZE_IP4 + (32 / 8);
 
@@ -185,11 +177,8 @@ impl<W: Write> Pcap<W> {
 
                 (ip.packet_size(), pnet_packet::ethernet::EtherTypes::Ipv4)
             }
-            (IpAddr::V6(local_address), IpAddr::V6(remote_address)) => {
-                let (source, destination) = match info.direction {
-                    Direction::Send => (local_address, remote_address),
-                    Direction::Receive => (remote_address, local_address),
-                };
+            (IpAddr::V6(_), IpAddr::V6(_)) => {
+                let (source, destination) = info.ipvt_by_direction();
 
                 let mut ip = MutableIpv6Packet::new(buf).unwrap();
                 ip.set_version(6);
