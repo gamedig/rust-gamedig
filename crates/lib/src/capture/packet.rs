@@ -53,6 +53,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (u16, u16): Tuple of (source port, destination port).
+    #[allow(dead_code)]
     pub(crate) const fn ports_by_direction(&self) -> (u16, u16) {
         let (local, remote) = (self.local_address.port(), self.remote_address.port());
         self.direction.order(local, remote)
@@ -62,6 +63,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (IpAddr, IpAddr): Tuple of (local IP, remote IP).
+    #[allow(dead_code)]
     pub(crate) fn ip_addr(&self) -> (IpAddr, IpAddr) {
         let (local, remote) = (self.local_address.ip(), self.remote_address.ip());
         (local, remote)
@@ -71,6 +73,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (IpAddr, IpAddr): Tuple of (source IP, destination IP).
+    #[allow(dead_code)]
     pub(crate) fn ip_addr_by_direction(&self) -> (IpAddr, IpAddr) {
         let (local, remote) = self.ip_addr();
         self.direction.order(local, remote)
@@ -82,6 +85,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (T, T): Tuple of (source IP, destination IP) of the specified type in order.
+    #[allow(dead_code)]
     pub(crate) fn ipvt_by_direction<T: IpAddress>(&self) -> (T, T) {
         let (local, remote) = (
             T::from_std(self.local_address.ip()).expect("Incorrect IP type for local address"),

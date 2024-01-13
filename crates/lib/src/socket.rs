@@ -213,13 +213,13 @@ pub mod capture {
     }
 
     /// A trait representing a provider of a network protocol.
-    pub trait ProtocolProvider {
+    pub(crate) trait ProtocolProvider {
         /// Returns the protocol used by the provider.
         fn protocol() -> Protocol;
     }
 
     /// Represents the TCP protocol provider.
-    pub struct ProtocolTCP;
+    pub(crate) struct ProtocolTCP;
     impl ProtocolProvider for ProtocolTCP {
         fn protocol() -> Protocol {
             Protocol::TCP
@@ -375,14 +375,14 @@ pub mod capture {
     ///
     /// This type captures and processes UDP packets, wrapping around standard UDP socket
     /// functionalities with additional packet capture capabilities.
-    pub type CapturedUdpSocket = WrappedCaptureSocket<UdpSocketImpl, ProtocolUDP>;
+    pub(crate) type CapturedUdpSocket = WrappedCaptureSocket<UdpSocketImpl, ProtocolUDP>;
 
     /// A specialized `WrappedCaptureSocket` for TCP, using `TcpSocketImpl` as the inner socket
     /// and `ProtocolTCP` as the protocol provider.
     ///
     /// This type captures and processes TCP packets, wrapping around standard TCP socket
     /// functionalities with additional packet capture capabilities.
-    pub type CapturedTcpSocket = WrappedCaptureSocket<TcpSocketImpl, ProtocolTCP>;
+    pub(crate) type CapturedTcpSocket = WrappedCaptureSocket<TcpSocketImpl, ProtocolTCP>;
 }
 
 #[cfg(not(feature = "packet_capture"))]
@@ -391,9 +391,9 @@ pub type UdpSocket = UdpSocketImpl;
 pub type TcpSocket = TcpSocketImpl;
 
 #[cfg(feature = "packet_capture")]
-pub type UdpSocket = capture::CapturedUdpSocket;
+pub(crate) type UdpSocket = capture::CapturedUdpSocket;
 #[cfg(feature = "packet_capture")]
-pub type TcpSocket = capture::CapturedTcpSocket;
+pub(crate) type TcpSocket = capture::CapturedTcpSocket;
 
 #[cfg(test)]
 mod tests {

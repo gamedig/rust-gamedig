@@ -14,7 +14,7 @@ lazy_static! {
     pub(crate) static ref CAPTURE_WRITER: Mutex<Option<Box<dyn Writer + Send + Sync>>> = Mutex::new(None);
 }
 
-pub trait Writer {
+pub(crate) trait Writer {
     fn write(&mut self, packet: &CapturePacket, data: &[u8]) -> crate::GDResult<()>;
     fn new_connect(&mut self, packet: &CapturePacket) -> crate::GDResult<()>;
 }

@@ -182,7 +182,7 @@ fn main() -> Result<()> {
     let ip = resolve_ip_or_domain(&args.ip, &mut extra_options)?;
 
     #[cfg(feature = "packet_capture")]
-    gamedig::capture::setup_capture(args.capture);
+    gamedig::capture::setup_capture(args.capture.clone());
 
     // Query the server using game definition, parsed IP, and user command line
     // flags.

@@ -18,7 +18,7 @@ pub fn setup_capture(file_name: Option<String>) {
         let mut pcap_writer = pcap_file::pcapng::PcapNgWriter::new(file).unwrap();
 
         // Write headers
-        pcap_writer.write_block(
+         let _ = pcap_writer.write_block(
             &pcap_file::pcapng::blocks::interface_description::InterfaceDescriptionBlock {
                 linktype: pcap_file::DataLink::ETHERNET,
                 snaplen: 0xFFFF,
