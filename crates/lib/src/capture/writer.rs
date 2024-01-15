@@ -14,7 +14,7 @@ lazy_static! {
 pub(crate) trait Writer {
     fn write(&mut self, packet: &CapturePacket, data: &[u8]) -> GDResult<()>;
     fn new_connect(&mut self, packet: &CapturePacket) -> GDResult<()>;
-    //TODO: Close connection
+    fn close_connection(&mut self, packet: &CapturePacket) -> GDResult<()>;
 }
 
 impl<W: Write> Writer for Pcap<W> {
@@ -34,6 +34,16 @@ impl<W: Write> Writer for Pcap<W> {
 
         self.state.stream_count = self.state.stream_count.wrapping_add(1);
 
+        Ok(())
+    }
+
+    fn close_connection(&mut self, packet: &CapturePacket) -> GDResult<()> {
+        match packet.protocol {
+            Protocol::TCP => {
+                self.send_tcp_fin(packet);
+            }
+            Protocol::UDP => {}
+        }
         Ok(())
     }
 }

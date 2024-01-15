@@ -114,7 +114,7 @@ impl<W: Write> Pcap<W> {
                     &info,
                     IpNextHeaderProtocols::Tcp,
                     &buf[..buf_size],
-                    vec![EnhancedPacketOption::Comment("Generated TCP ack".into())],
+                    vec![EnhancedPacketOption::Comment("Generated TCP ACK".into())],
                 );
             }
             Protocol::UDP => {
@@ -285,8 +285,50 @@ impl<W: Write> Pcap<W> {
         self.state.has_sent_handshake = true;
     }
 
-    /// Take a transport layer packet as a buffer and write it after encoding
-    /// all the layers under it.
+    pub(crate) fn send_tcp_fin(&mut self, info: &CapturePacket) {
+        let mut buf = vec![0; BUFFER_SIZE];
+        let (source_port, dest_port) = info.ports_by_direction();
+
+        let buf_size = {
+            let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+            tcp.set_source(source_port);
+            tcp.set_destination(dest_port);
+            tcp.set_data_offset(5);
+            tcp.set_window(43440);
+
+            match info.direction {
+                Direction::Send => {
+                    tcp.set_sequence(self.state.send_seq);
+                    tcp.set_acknowledgement(self.state.rec_seq);
+                }
+                Direction::Receive => {
+                    tcp.set_sequence(self.state.rec_seq);
+                    tcp.set_acknowledgement(self.state.send_seq);
+                }
+            }
+
+            tcp.set_flags(TcpFlags::FIN | TcpFlags::ACK);
+            tcp.packet_size()
+        };
+
+        self.write_transport_payload(
+            info,
+            IpNextHeaderProtocols::Tcp,
+            &buf[..buf_size],
+            vec![EnhancedPacketOption::Comment("Generated TCP FIN".into())],
+        );
+
+        // Update sequence number
+        match info.direction {
+            Direction::Send => {
+                self.state.send_seq = self.state.send_seq.wrapping_add(1);
+            }
+            Direction::Receive => {
+                self.state.rec_seq = self.state.rec_seq.wrapping_add(1);
+            }
+        }
+    }
+
     fn write_transport_payload(
         &mut self,
         info: &CapturePacket,

@@ -239,7 +239,7 @@ pub mod capture {
     /// * `I` - The inner socket type.
     /// * `P` - The protocol provider.
     #[derive(Clone, Debug)]
-    pub(crate) struct WrappedCaptureSocket<I, P> {
+    pub(crate) struct WrappedCaptureSocket<I: Socket, P: ProtocolProvider> {
         inner: I,
         remote_address: SocketAddr,
         _protocol: PhantomData<P>,
@@ -366,6 +366,26 @@ pub mod capture {
         /// The local SocketAddr.
         fn local_addr(&self) -> std::io::Result<SocketAddr> {
             self.inner.local_addr()
+        }
+    }
+
+    // this seems a bad way to do this, but its safe
+    impl<I: Socket, P: ProtocolProvider> Drop for WrappedCaptureSocket<I, P> {
+        fn drop(&mut self) {
+            // Construct the CapturePacket info
+            let info = CapturePacket {
+                direction: Direction::Send,
+                protocol: P::protocol(),
+                remote_address: &self.remote_address,
+                local_address: &self
+                    .local_addr()
+                    .unwrap_or_else(|_| SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED), 0)),
+            };
+
+            // If a capture writer is set, close the connection and capture the packet.
+            if let Some(writer) = CAPTURE_WRITER.lock().unwrap().as_mut() {
+                let _ = writer.close_connection(&info);
+            }
         }
     }
 
