@@ -11,15 +11,42 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["json", "packet_capture"]
-json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
+default = ["packet_capture", "bson", "json", "xml", "browser"]
+
+# Tools
 packet_capture = ["gamedig/packet_capture"]
 
-[dependencies]
-clap = { version = "4.1.11", features = ["derive"] }
-gamedig = { version = "*", path = "../lib", features = ["clap"] }
-thiserror = "1.0.43"
+# Output formats
+bson = ["dep:serde", "dep:bson", "dep:hex", "gamedig/serde"]
+json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
+xml = ["dep:serde", "dep:serde-xml-rs", "gamedig/serde"]
 
-# JSON dependencies
-serde = { version = "1", optional = true }
-serde_json = { version = "1", optional = true }
+# Misc
+browser = ["dep:webbrowser"]
+
+[dependencies]
+# Core Dependencies
+thiserror = "1.0.43"
+clap = { version = "4.1.11", default-features = false, features = ["derive"] }
+gamedig = { version = "*", path = "../lib", default-features = false, features = [
+    "clap",
+    "games",
+    "game_defs",
+] }
+
+# Feature Dependencies
+# Serialization / Deserialization
+serde = { version = "1", optional = true, default-features = false }
+
+# BSON
+bson = { version = "2.8.1", optional = true, default-features = false }
+hex = { version = "0.4.3", optional = true, default-features = false }
+
+# JSON
+serde_json = { version = "1", optional = true, default-features = false }
+
+# XML
+serde-xml-rs = { version = "0.6.0", optional = true, default-features = false }
+
+# Browser
+webbrowser = { version = "0.8.12", optional = true, default-features = false }

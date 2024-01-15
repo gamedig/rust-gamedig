@@ -25,7 +25,7 @@ const GAMEDIG_HEADER: &str = r"
                                       |___/      
 
         A command line interface for querying game servers.
-  Copyright (C) 2022 - Present GameDig Organization & Contributors
+  Copyright (C) 2022 - 2023 GameDig Organization & Contributors
                   Licensed under the MIT license
 ";
 
@@ -56,10 +56,9 @@ enum Action {
         #[arg(short, long)]
         port: Option<u16>,
 
-        /// Flag indicating if the output should be in JSON format for programmatic use.
-        #[cfg(feature = "json")]
-        #[arg(short, long)]
-        json: bool,
+        /// Specifies the output format
+        #[arg(short, long, default_value = "debug", value_enum)]
+        format: OutputFormat,
 
         /// Which response variant to use when outputting
         #[arg(short, long, default_value = "generic")]
@@ -95,6 +94,19 @@ enum OutputMode {
     ProtocolSpecific,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
+enum OutputFormat {
+    Debug,
+    #[cfg(feature = "json")]
+    JsonPretty,
+    #[cfg(feature = "json")]
+    Json,
+    #[cfg(feature = "xml")]
+    Xml,
+    #[cfg(feature = "bson")]
+    Bson,
+}
+
 /// Attempt to find a game from the [library game definitions](GAMES) based on
 /// its unique identifier.
 ///
@@ -122,13 +134,13 @@ fn find_game(game_id: &str) -> Result<&'static Game> {
 /// # Returns
 /// * `Result<IpAddr>` - On sucess returns a resolved IP address; on failure
 ///   returns an [Error::InvalidHostname] error.
-fn resolve_ip_or_domain(host: &str, extra_options: &mut Option<ExtraRequestSettings>) -> Result<IpAddr> {
-    if let Ok(parsed_ip) = host.parse() {
+fn resolve_ip_or_domain<T: AsRef<str>>(host: T, extra_options: &mut Option<ExtraRequestSettings>) -> Result<IpAddr> {
+    let host_str = host.as_ref();
+    if let Ok(parsed_ip) = host_str.parse() {
         Ok(parsed_ip)
     } else {
-        set_hostname_if_missing(host, extra_options);
-
-        resolve_domain(host)
+        set_hostname_if_missing(host_str, extra_options);
+        resolve_domain(host_str)
     }
 }
 
@@ -173,15 +185,36 @@ fn set_hostname_if_missing(host: &str, extra_options: &mut Option<ExtraRequestSe
 /// # Arguments
 /// * `args` - A reference to the command line options.
 /// * `result` - A reference to the result of the query.
-fn output_result(output: OutputMode, json: bool, result: &dyn CommonResponse) {
-    match output {
+fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: OutputFormat, result: &T) {
+    match format {
+        OutputFormat::Debug => match output_mode {
+            OutputMode::Generic => output_result_debug(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
+        },
         #[cfg(feature = "json")]
-        OutputMode::Generic if json => output_result_json(result.as_json()),
+        OutputFormat::JsonPretty => match output_mode {
+            OutputMode::Generic => output_result_json_pretty(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_json_pretty(result.as_original()),
+        },
         #[cfg(feature = "json")]
-        OutputMode::ProtocolSpecific if json => output_result_json(result.as_original()),
-
-        OutputMode::Generic => output_result_debug(result.as_json()),
-        OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
+        OutputFormat::Json => match output_mode {
+            OutputMode::Generic => output_result_json(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_json(result.as_original()),
+        },
+        #[cfg(feature = "xml")]
+        OutputFormat::Xml => match output_mode {
+            OutputMode::Generic => output_result_xml(result.as_json()),
+            //BUG: In this case we get a writer error with all serde write methods some reason with xml 0.6.0
+            //BUG: gamedig-cli.exe query -g <GAME> -i <IP> -p <PORT> -f xml --output-mode protocol-specific
+            //BUG: Writer: emitter error: document start event has already been emitted
+            //BUG: With xml 0.5.1 we get unsupported operation: 'serialize_unit_variant'
+            OutputMode::ProtocolSpecific => panic!("XML format is not supported for protocol specific output"),
+        },
+        #[cfg(feature = "bson")]
+        OutputFormat::Bson => match output_mode {
+            OutputMode::Generic => output_result_bson(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_bson(result.as_original()),
+        },
     }
 }
 
@@ -198,8 +231,33 @@ fn output_result_debug<R: std::fmt::Debug>(result: R) {
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "json")]
-fn output_result_json<R: serde::Serialize>(result: R) {
-    serde_json::to_writer_pretty(std::io::stdout(), &result).unwrap();
+fn output_result_json<T: serde::Serialize>(result: T) {
+    println!("{}", serde_json::to_string(&result).unwrap());
+}
+
+#[cfg(feature = "json")]
+fn output_result_json_pretty<T: serde::Serialize>(result: T) {
+    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+}
+
+/// Output the result as an XML object.
+/// # Arguments
+/// * `result` - A serde serializable result.
+fn output_result_xml<T: serde::Serialize>(result: T) {
+    println!("{}", serde_xml_rs::to_string(&result).unwrap());
+}
+
+#[cfg(feature = "bson")]
+fn output_result_bson<T: serde::Serialize>(result: T) {
+    let bson = bson::to_bson(&result).unwrap();
+
+    if let bson::Bson::Document(document) = bson {
+        let bytes = bson::to_vec(&document).unwrap();
+
+        println!("{}", hex::encode(bytes));
+    } else {
+        panic!("Failed to convert result to BSON");
+    }
 }
 
 fn main() -> Result<()> {
@@ -210,7 +268,7 @@ fn main() -> Result<()> {
             game,
             ip,
             port,
-            json,
+            format,
             output_mode,
             capture,
             timeout_settings,
@@ -225,14 +283,38 @@ fn main() -> Result<()> {
             gamedig::capture::setup_capture(capture);
 
             let result = query_with_timeout_and_extra_settings(game, &ip, port, timeout_settings, extra_options)?;
-            output_result(output_mode, json, result.as_ref());
+            output_result(output_mode, format, result.as_ref());
         }
         Action::Source => {
             println!("{}", GAMEDIG_HEADER);
 
-            // Print the source code location
-            println!("Source code: https://github.com/gamedig/rust-gamedig\n");
-            println!("Be sure to leave a star if you like the project :)\n");
+            #[cfg(feature = "browser")]
+            {
+                // Directly offering to open the URL
+                println!("\nWould you like to open the GitHub repository in your default browser? [Y/n]");
+
+                let mut choice = String::new();
+                std::io::stdin().read_line(&mut choice).unwrap();
+                if choice.trim().eq_ignore_ascii_case("Y") {
+                    if webbrowser::open("https://github.com/gamedig/rust-gamedig").is_ok() {
+                        println!("Opening GitHub repository in default browser...");
+                    } else {
+                        println!("Failed to open GitHub repository in default browser.");
+                        println!("Please use the following URL: https://github.com/gamedig/rust-gamedig");
+                    }
+                } else {
+                    println!("Not to worry, you can always open the repository manually");
+                    println!("by visiting the following URL: https://github.com/gamedig/rust-gamedig");
+                }
+            }
+
+            #[cfg(not(feature = "browser"))]
+            {
+                println!("\nYou can find the source code for this project at the following URL:");
+                println!("https://github.com/gamedig/rust-gamedig");
+            }
+
+            println!("\nBe sure to leave a star if you like the project :)");
         }
         Action::License => {
             // Bake the license into the binary
