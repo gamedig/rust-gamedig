@@ -96,15 +96,23 @@ enum OutputMode {
 
 #[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
 enum OutputFormat {
+    /// Human readable structured output
     Debug,
+    /// RFC 8259
     #[cfg(feature = "json")]
     JsonPretty,
+    /// RFC 8259
     #[cfg(feature = "json")]
     Json,
+    /// Parser tries to be mostly XML 1.1 (RFC 7303) compliant
     #[cfg(feature = "xml")]
     Xml,
+    /// RFC 4648 section 8
     #[cfg(feature = "bson")]
-    Bson,
+    BsonHex,
+    /// RFC 4648 section 4
+    #[cfg(feature = "bson")]
+    BsonBase64,
 }
 
 /// Attempt to find a game from the [library game definitions](GAMES) based on
@@ -211,9 +219,14 @@ fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: Ou
             OutputMode::ProtocolSpecific => panic!("XML format is not supported for protocol specific output"),
         },
         #[cfg(feature = "bson")]
-        OutputFormat::Bson => match output_mode {
-            OutputMode::Generic => output_result_bson(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_bson(result.as_original()),
+        OutputFormat::BsonHex => match output_mode {
+            OutputMode::Generic => output_result_bson_hex(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_bson_hex(result.as_original()),
+        },
+        #[cfg(feature = "bson")]
+        OutputFormat::BsonBase64 => match output_mode {
+            OutputMode::Generic => output_result_bson_base64(result.as_json()),
+            OutputMode::ProtocolSpecific => output_result_bson_base64(result.as_original()),
         },
     }
 }
@@ -248,7 +261,7 @@ fn output_result_xml<T: serde::Serialize>(result: T) {
 }
 
 #[cfg(feature = "bson")]
-fn output_result_bson<T: serde::Serialize>(result: T) {
+fn output_result_bson_hex<T: serde::Serialize>(result: T) {
     let bson = bson::to_bson(&result).unwrap();
 
     if let bson::Bson::Document(document) = bson {
@@ -256,7 +269,22 @@ fn output_result_bson<T: serde::Serialize>(result: T) {
 
         println!("{}", hex::encode(bytes));
     } else {
-        panic!("Failed to convert result to BSON");
+        panic!("Failed to convert result to BSON Hex");
+    }
+}
+
+#[cfg(feature = "bson")]
+fn output_result_bson_base64<T: serde::Serialize>(result: T) {
+    use base64::Engine;
+
+    let bson = bson::to_bson(&result).unwrap();
+
+    if let bson::Bson::Document(document) = bson {
+        let bytes = bson::to_vec(&document).unwrap();
+
+        println!("{}", base64::prelude::BASE64_STANDARD.encode(&bytes));
+    } else {
+        panic!("Failed to convert result to BSON Base64");
     }
 }
 

@@ -17,7 +17,7 @@ default = ["packet_capture", "bson", "json", "xml", "browser"]
 packet_capture = ["gamedig/packet_capture"]
 
 # Output formats
-bson = ["dep:serde", "dep:bson", "dep:hex", "gamedig/serde"]
+bson = ["dep:serde", "dep:bson", "dep:hex", "dep:base64", "gamedig/serde"]
 json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
 xml = ["dep:serde", "dep:serde-xml-rs", "gamedig/serde"]
 
@@ -40,6 +40,7 @@ serde = { version = "1", optional = true, default-features = false }
 
 # BSON
 bson = { version = "2.8.1", optional = true, default-features = false }
+base64 = { version = "0.21.7", optional = true, default-features = false, features = ["std"]}
 hex = { version = "0.4.3", optional = true, default-features = false }
 
 # JSON
@@ -50,3 +51,4 @@ serde-xml-rs = { version = "0.6.0", optional = true, default-features = false }
 
 # Browser
 webbrowser = { version = "0.8.12", optional = true, default-features = false }
+
