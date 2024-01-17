@@ -361,6 +361,55 @@ impl StringDecoder for Utf8Decoder {
     }
 }
 
+/// A decoder for UTF-8 encoded strings prefixed by a single byte denoting the
+/// string's length.
+///
+/// This decoder uses a single null byte (`0x00`) as the default delimiter.
+pub struct Utf8LengthPrefixedDecoder;
+
+impl StringDecoder for Utf8LengthPrefixedDecoder {
+    type Delimiter = [u8; 1];
+
+    const DELIMITER: Self::Delimiter = [0x00];
+
+    /// Decodes a UTF-8 string from the given data, updating the cursor position
+    /// accordingly.
+    fn decode_string(data: &[u8], cursor: &mut usize, delimiter: Self::Delimiter) -> GDResult<String> {
+        // Find the maximum length of the string
+        let length = *data
+            .first()
+            .ok_or(PacketBad.context("Length of string not found"))?;
+
+        // Find the position of the delimiter in the data. If the delimiter is not
+        // found, the length is returned.
+        let position = data
+        // Create an iterator over the data.
+            .iter()
+            .skip(1)
+            .take(length as usize)
+            // Find the position of the delimiter
+            .position(|&b| b == delimiter.as_ref()[0])
+            // If the delimiter is not found, use the whole data slice.
+            .unwrap_or(length as usize);
+
+        // Convert the data until the found position into a UTF-8 string.
+        let result = std::str::from_utf8(
+            // Take a slice of data until the position.
+            &data[1 .. position + 1]
+        )
+        // If the data cannot be converted into a UTF-8 string, return an error
+            .map_err(|e| PacketBad.context(e))?
+            // Convert the resulting &str into a String
+            .to_owned();
+
+        // Update the cursor position
+        // The +1 is to skip t length
+        *cursor += position + 1;
+
+        Ok(result)
+    }
+}
+
 /// A decoder for UTF-16 encoded strings.
 ///
 /// This decoder uses a pair of null bytes (`0x00, 0x00`) as the default

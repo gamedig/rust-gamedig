@@ -9,7 +9,7 @@ use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
 macro_rules! game {
-    ($name: literal, $default_port: literal, $protocol: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr) => {
         game!(
             $name,
             $default_port,
@@ -18,7 +18,7 @@ macro_rules! game {
         )
     };
 
-    ($name: literal, $default_port: literal, $protocol: expr, $extra_request_settings: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr, $extra_request_settings: expr) => {
         Game {
             name: $name,
             default_port: $default_port,
@@ -132,4 +132,5 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "unrealtournament2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
     "unrealtournament2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
     "zps" => game!("Zombie Panic: Source", 27015, Protocol::Valve(Engine::new(17_500))),
+    "mindustry" => game!("Mindustry", crate::games::mindustry::DEFAULT_PORT, Protocol::PROPRIETARY(ProprietaryProtocol::Mindustry)),
 };
