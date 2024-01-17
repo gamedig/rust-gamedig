@@ -1,3 +1,4 @@
+use gamedig::protocols::types::GatherToggle;
 use gamedig::protocols::valve;
 use gamedig::protocols::valve::{Engine, GatheringSettings};
 use gamedig::TimeoutSettings;
@@ -8,9 +9,9 @@ fn main() {
     let address = &SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 27015);
     let engine = Engine::Source(None); // We don't specify a steam app id, let the query try to find it.
     let gather_settings = GatheringSettings {
-        players: true,       // We want to query for players
-        rules: false,        // We don't want to query for rules
-        check_app_id: false, // Loosen up the query a bit by not checking app id
+        players: GatherToggle::Required, // We want to query for players
+        rules: GatherToggle::DontGather, // We don't want to query for rules
+        check_app_id: false,             // Loosen up the query a bit by not checking app id
     };
 
     let read_timeout = Duration::from_secs(2);

@@ -29,11 +29,62 @@ pub fn retry_on_timeout<T>(mut retry_count: usize, mut fetch: impl FnMut() -> GD
     Err(last_err)
 }
 
+/// Run gather_fn based on the value of gather_toggle.
+///
+/// # Parameters
+/// - `gather_toggle` should be an expression resolving to a
+///   [crate::protocols::types::GatherToggle].
+/// - `gather_fn` should be an expression that returns a [crate::GDResult].
+///
+/// # States
+/// - [DontGather](crate::protocols::types::GatherToggle::DontGather) - Don't
+///   run gather function, returns None.
+/// - [AttemptGather](crate::protocols::types::GatherToggle::AttemptGather) -
+///   Runs the gather function, if it returns an error return None, else return
+///   Some.
+/// - [Required](crate::protocols::types::GatherToggle::Required) - Runs the
+///   gather function, if it returns an error propagate it using the `?`
+///   operator, else return Some.
+///
+/// # Examples
+///
+/// ```ignore,Doctests cannot access private items
+/// use gamedig::protocols::types::GatherToggle;
+/// use gamedig::utils::maybe_gather;
+///
+/// let query_fn = || { Err("Query error") };
+///
+/// // query_fn() is not called
+/// let response = maybe_gather!(GatherToggle::DontGather, query_fn());
+/// assert!(response.is_none());
+///
+/// // query_fn() is called but Err is converted to None
+/// let response = maybe_gather!(GatherToggle::AttemptGather, query_fn());
+/// assert!(response.is_none());
+///
+/// // query_fn() is called and Err is propagated.
+/// let response = maybe_gather!(GatherToggle::Required, query_fn());
+/// unreachable!();
+/// ```
+macro_rules! maybe_gather {
+    ($gather_toggle: expr, $gather_fn: expr) => {
+        match $gather_toggle {
+            crate::protocols::types::GatherToggle::DontGather => None,
+            crate::protocols::types::GatherToggle::AttemptGather => $gather_fn.ok(),
+            crate::protocols::types::GatherToggle::Required => Some($gather_fn?),
+        }
+    };
+}
+
+pub(crate) use maybe_gather;
+
 #[cfg(test)]
 mod tests {
     use super::retry_on_timeout;
     use crate::{
-        GDErrorKind::{PacketBad, PacketReceive, PacketSend},
+        protocols::types::GatherToggle,
+        GDError,
+        GDErrorKind::{self, PacketBad, PacketReceive, PacketSend},
         GDResult,
     };
 
@@ -104,5 +155,54 @@ mod tests {
         });
         assert!(r.is_err());
         assert_eq!(r.unwrap_err().kind, PacketBad);
+    }
+
+    fn gather_success(n: i32) -> GDResult<i32> { Ok(n) }
+
+    fn gather_fail(err: &'static str) -> GDResult<i32> { Err(GDErrorKind::PacketSend.context(err)) }
+
+    #[test]
+    fn gather_success_dont_gather() -> GDResult<()> {
+        let result = maybe_gather!(GatherToggle::DontGather, gather_success(5));
+        assert!(result.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn gather_success_attempt_gather() -> GDResult<()> {
+        let result = maybe_gather!(GatherToggle::AttemptGather, gather_success(10));
+        assert_eq!(result, Some(10));
+        Ok(())
+    }
+
+    #[test]
+    fn gather_success_required() -> GDResult<()> {
+        let result = maybe_gather!(GatherToggle::Required, gather_success(15));
+        assert_eq!(result, Some(15));
+        Ok(())
+    }
+
+    #[test]
+    fn gather_fail_dont_gather() -> GDResult<()> {
+        let result = maybe_gather!(GatherToggle::DontGather, gather_fail("dont"));
+        assert!(result.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn gather_fail_attempt_gather() -> GDResult<()> {
+        let result = maybe_gather!(GatherToggle::AttemptGather, gather_fail("attempt"));
+        assert!(result.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn gather_fail_required() {
+        let inner = || {
+            let result = maybe_gather!(GatherToggle::Required, gather_fail("required"));
+            assert_eq!(result, Some(10));
+            Ok::<(), GDError>(())
+        };
+        assert!(inner().is_err());
     }
 }

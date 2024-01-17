@@ -2,7 +2,7 @@ use crate::buffer::{Buffer, StringDecoder};
 use crate::errors::GDErrorKind::PacketBad;
 use crate::protocols::types::TimeoutSettings;
 use crate::socket::{Socket, UdpSocket};
-use crate::utils::retry_on_timeout;
+use crate::utils::{maybe_gather, retry_on_timeout};
 use crate::GDResult;
 
 use super::{GatheringSettings, MutatorsAndRules, PacketKind, Players, Response, ServerInfo};
@@ -168,24 +168,22 @@ impl Unreal2Protocol {
         // Fetch the server info, this can only handle one response packet
         let mut server_info = self.query_server_info()?;
 
-        let mutators_and_rules = if gather_settings.mutators_and_rules {
-            let response = self.query_mutators_and_rules()?;
+        let mutators_and_rules = maybe_gather!(
+            gather_settings.mutators_and_rules,
+            self.query_mutators_and_rules()
+        )
+        .unwrap_or_default();
 
-            if let Some(password) = response.rules.get("GamePassword") {
-                let string = password.concat().to_lowercase();
-                server_info.password = string == "true";
-            }
+        if let Some(password) = mutators_and_rules.rules.get("GamePassword") {
+            let string = password.concat().to_lowercase();
+            server_info.password = string == "true";
+        }
 
-            response
-        } else {
-            MutatorsAndRules::default()
-        };
-
-        let players = if gather_settings.players {
-            self.query_players(Some(&server_info))?
-        } else {
-            Players::with_capacity(0)
-        };
+        let players = maybe_gather!(
+            gather_settings.players,
+            self.query_players(Some(&server_info))
+        )
+        .unwrap_or_else(|| Players::with_capacity(0));
 
         // TODO: Handle extra info parsing when we detect certain game types (or maybe
         // include that in gather settings).
