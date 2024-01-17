@@ -150,8 +150,8 @@ pub fn test_game_name_rule(
         let mut game_names_same = other_game_name_words.len() == game.words.len();
         // Check all words in game name are the same
         if game_names_same {
-            for i in 0 .. game.words.len() {
-                if game.words[i].to_lowercase() != other_game_name_words[i].to_lowercase() {
+            for (our_word, their_word) in game.words.iter().zip(other_game_name_words.iter()) {
+                if our_word.to_lowercase() != their_word.to_lowercase() {
                     game_names_same = false;
                     break;
                 }
