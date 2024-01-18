@@ -54,7 +54,7 @@ impl CapturePacket<'_> {
     ///
     /// Returns:
     /// - (u16, u16): Tuple of (source port, destination port).
-    pub(super) const fn ports_by_direction(&self) -> (u16, u16) {
+    pub(super) fn ports_by_direction(&self) -> (u16, u16) {
         let (local, remote) = (self.local_address.port(), self.remote_address.port());
         self.direction.order(local, remote)
     }
