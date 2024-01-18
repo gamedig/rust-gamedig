@@ -210,13 +210,13 @@ pub mod capture {
     /// Represents the TCP protocol provider.
     pub(crate) struct ProtocolTCP;
     impl ProtocolProvider for ProtocolTCP {
-        fn protocol() -> Protocol { Protocol::TCP }
+        fn protocol() -> Protocol { Protocol::Tcp }
     }
 
     /// Represents the UDP protocol provider.
     pub(crate) struct ProtocolUDP;
     impl ProtocolProvider for ProtocolUDP {
-        fn protocol() -> Protocol { Protocol::UDP }
+        fn protocol() -> Protocol { Protocol::Udp }
     }
 
     /// A socket wrapper that allows capturing packets.

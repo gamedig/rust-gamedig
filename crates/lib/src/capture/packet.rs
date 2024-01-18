@@ -24,9 +24,9 @@ pub(crate) enum Direction {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) enum Protocol {
     /// Transmission Control Protocol.
-    TCP,
+    Tcp,
     /// User Datagram Protocol.
-    UDP,
+    Udp,
 }
 
 /// Trait for handling different types of IP addresses (IPv4, IPv6).
@@ -41,7 +41,7 @@ pub(crate) trait IpAddress: Sized {
 pub(crate) struct CapturePacket<'a> {
     /// Direction of the packet (Send/Receive).
     pub(crate) direction: Direction,
-    /// Protocol of the packet (TCP/UDP).
+    /// Protocol of the packet (Tcp/UDP).
     pub(crate) protocol: Protocol,
     /// Remote socket address.
     pub(crate) remote_address: &'a SocketAddr,
@@ -135,14 +135,14 @@ mod tests {
     fn test_ports_by_direction() {
         let packet_send = CapturePacket {
             direction: Direction::Send,
-            protocol: Protocol::TCP,
+            protocol: Protocol::Tcp,
             local_address: &socket_addr("127.0.0.1:8080"),
             remote_address: &socket_addr("192.168.1.1:80"),
         };
 
         let packet_receive = CapturePacket {
             direction: Direction::Receive,
-            protocol: Protocol::TCP,
+            protocol: Protocol::Tcp,
             local_address: &socket_addr("127.0.0.1:8080"),
             remote_address: &socket_addr("192.168.1.1:80"),
         };
@@ -155,14 +155,14 @@ mod tests {
     fn test_ip_addr() {
         let packet_send = CapturePacket {
             direction: Direction::Send,
-            protocol: Protocol::TCP,
+            protocol: Protocol::Tcp,
             local_address: &socket_addr("127.0.0.1:8080"),
             remote_address: &socket_addr("192.168.1.1:80"),
         };
 
         let packet_receive = CapturePacket {
             direction: Direction::Receive,
-            protocol: Protocol::TCP,
+            protocol: Protocol::Tcp,
             local_address: &socket_addr("127.0.0.1:8080"),
             remote_address: &socket_addr("192.168.1.1:80"),
         };
@@ -187,7 +187,7 @@ mod tests {
     fn test_ip_by_direction_type_specific() {
         let packet = CapturePacket {
             direction: Direction::Send,
-            protocol: Protocol::TCP,
+            protocol: Protocol::Tcp,
             local_address: &socket_addr("127.0.0.1:8080"),
             remote_address: &socket_addr("192.168.1.1:80"),
         };

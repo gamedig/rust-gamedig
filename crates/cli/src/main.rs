@@ -304,7 +304,7 @@ fn output_result_bson_base64<T: serde::Serialize>(result: T) {
     if let bson::Bson::Document(document) = bson {
         let bytes = bson::to_vec(&document).unwrap();
 
-        println!("{}", base64::prelude::BASE64_STANDARD.encode(&bytes));
+        println!("{}", base64::prelude::BASE64_STANDARD.encode(bytes));
     } else {
         panic!("Failed to convert result to BSON Base64");
     }

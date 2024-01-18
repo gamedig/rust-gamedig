@@ -56,7 +56,7 @@ impl<W: Write> Pcap<W> {
         let (source_port, dest_port) = info.ports_by_direction();
 
         match info.protocol {
-            Protocol::TCP => {
+            Protocol::Tcp => {
                 let buf_size = {
                     let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
                     tcp.set_source(source_port);
@@ -123,7 +123,7 @@ impl<W: Write> Pcap<W> {
                     vec![EnhancedPacketOption::Comment("Generated TCP ACK".into())],
                 );
             }
-            Protocol::UDP => {
+            Protocol::Udp => {
                 let buf_size = {
                     let mut udp = MutableUdpPacket::new(&mut buf).unwrap();
                     udp.set_source(source_port);
