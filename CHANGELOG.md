@@ -1,7 +1,80 @@
 
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/2023
+# 0.X.Y - DD/MM/YYYY
+### Changes:
+Games:
+- [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
+- [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
+- [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
+- [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
+- [Squad](https://store.steampowered.com/app/393380/Squad/) support.
+- [Savage 2](https://savage2.net/) support.
+- [Rising World](https://store.steampowered.com/app/324080/Rising_World/) support.
+- [ATLAS](https://store.steampowered.com/app/834910/ATLAS/) support.
+- [America's Army: Proving Grounds](https://store.steampowered.com/app/203290/Americas_Army_Proving_Grounds/) support.
+- [Base Defense](https://store.steampowered.com/app/632730/Base_Defense/) support.
+- [Zombie Panic: Source](https://store.steampowered.com/app/17500/Zombie_Panic_Source/) support.
+- Added a valve protocol query example.
+- Made all of Just Cause 2: Multiplayer Response and Player fields public.
+- [Mindustry](https://mindustrygame.github.io/) support.
+
+Protocols:
+- Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
+
+CLI:
+- Added a CLI (by @cainthebest).
+- Added DNS lookup support (by @Douile).
+- Added JSON output option (by @Douile).
+- Added ExtraRequestSettings as CLI arguments (by @Douile).
+- Added TimeoutSettings as CLI argument (by @Douile).
+
+### Breaking:
+Game:
+- Changed identifications of the following games as they weren't properly expecting the naming rules:
+- - Left 4 Dead: `left4dead` -> `l4d`.
+- - 7 Days to Die: `7d2d` in definitions and `sd2d` in game declaration -> `sdtd`.
+- - Quake 3 Arena: `quake3arena` -> `q3a`.
+- - Unreal tournament 2003: `ut2003` -> `unrealtournament2003`
+- - Unreal tournament 2004: `ut2004` -> `unrealtournament2004`
+- - Darkest Hour: Europe '44-'45: `darkesthour` -> `dhe4445`
+- Minecraft: 
+- - Legacy 1.5 and 1.3 were renamed to 1.4 and beta 1.8 respectively to show the lowest version they support, this change includes Structs, Enum and game id renames, also removed the "v" from the game definition name.
+- - Moved the Minecraft protocol implementation in the games folder as its proprietary.
+
+Protocols:
+- Valve: Removed `SteamApp` due to it not being really useful at all, replaced all instances with `Engine`.
+
+Query:
+- Added a connection timeout to TimeoutSettings (at the moment this only applies to TCP)
+  - Sockets are now expected to apply timeout settings in new()
+
+# 0.4.1 - 13/10/2023
+### Changes:
+Game:
+- Added [Barotrauma](https://store.steampowered.com/app/602960/Barotrauma/) support.
+
+Crate:
+- Added `Send` and `Sync` on `Error::source` to fix some async issues.
+
+Protocols:
+- Minecraft Java: Add derives to `RequestSettings` and add `new_just_hostname` that creates new settings just by specifying
+the hostname, `protocol_version` defaults to -1.
+
+Games:
+- Organised game modules into protocols (when protocol used by other games),
+  you can now access a game by its name or by its protocol name:
+  - `use gamedig::games::teamfortress2;`
+  - `use gamedig::games::valve::teamfortress2;`
+
+Generics:
+- Added standard derives to `ProprietaryProtocol`, `CommonResponseJson`, `CommonPlayerJson`, `TimeoutSettings` and
+`ExtraRequestSettings`.
+
+### Breaking...
+None, yaay!
+
+# 0.4.0 - 07/10/2023
 ### Changes:
 Games:
 - [Creativerse](https://store.steampowered.com/app/280790/Creativerse/) support.
@@ -11,14 +84,15 @@ Protocols:
 - The Ship: Removed instances of using `unwrap` without handling the panics.
 
 Crate:
-- Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`.
+- Updated [byteorder](https://crates.io/crates/byteorder) dependency from 1.4 to 1.5.
+- Rich errors, capturing backtrace is done on `RUST_BACKTRACE=1`. (by @Douile)
 - Applied some nursery Clippy lints.
-- The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query)
+- The `retries` field was added to `TimeoutSettings` that specifies the number of times to retry a failed request (request being individual send, receive sequence, some protocols can include multiple requests in a single query). (by @Douile)
     - By default `retries` is set to `0`, meaning no retries will be attempted
 
 Generics:
-- Added `ExtraRequestSettings` containing all possible extra request settings.
-- Added `query_with_timeout_and_extra_settings()` to allow generic queries with extra settings.
+- Added `ExtraRequestSettings` containing all possible extra request settings. (by @Douile)
+- Added `query_with_timeout_and_extra_settings()` to allow generic queries with extra settings. (by @Douile)
 
 ### Breaking...
 Crate:
@@ -33,8 +107,7 @@ Generics:
 - Changed `score` type (and the function) of player from `u32` to `i32`.
 
 Games:
-- Renamed game definitions to better match node-gamedig
-- Renamed game implementations to match new definition names
+- Rename some game definitions and implementations to follow a stable ID naming system.
 
 Protocols:
 - Valve:
@@ -43,7 +116,7 @@ Protocols:
 3. Renamed `game` to `game_mode`.
 4. Fixed `player`'s `score` field being `u32` when it needed to be `i32`, as specified in the protocol.
 5. Added the field `check_app_id` to `GatherSettings` which controls if the app id specified to the request and 
-reported by the server are the same, errors if not, enabled by default.
+reported by the server are the same, errors if not, enabled by default. (by @Douile)
 6. Valve: Renamed SteamApp enum variants to match new definition names
 
 - GameSpy (1, 2, 3):
@@ -51,8 +124,8 @@ reported by the server are the same, errors if not, enabled by default.
 2. Changed `players_maximum` and `players_online` (and their functions) types from `usize` to `u32`.
 
 - GameSpy 1:
-1. Changed `score` type of player from `u32` to `i32`.
-2. Renamed the players `frags` field to `score`.
+1. Renamed the player's `frags` to `score` and type from `u32` to `i32`.
+2. Made `Option` the following response fields `team`, `face`, `skin`, `mesh` and `secret` to fix missing fields issues. (by @Douile)
 
 - Quake (1, 2):
 1. Renamed `game_type` to `game_mode`.
@@ -63,7 +136,9 @@ reported by the server are the same, errors if not, enabled by default.
 2. Renamed `version_name` to `game_version`.
 3. Renamed `players_sample` to `players`.
 4. Added an optional parameter, `RequestSettings`, which contains fields that are used when creating the handshake
-packet (this solves some servers not responding to the query).
+packet (this solves some servers not responding to the query). (by @Douile)
+5. Legacy versions naming has been changed to represent up to what version they can query, `LegacyBV1_8` (Beta 1.8 to 
+1.3) -> `LegacyV1_3` and `LegacyV1_4` (1.4 to 1.5) -> `LegacyV1_5` (and their enums accordingly).
 
 - Minecraft Bedrock
 1. Renamed `version_protocol` to `protocol_version`.

@@ -5,10 +5,13 @@ ci:
   - .pre-commit-config.yaml
 
 protocol:
-  - src/protocols/**
+  - crates/lib/src/protocols/**
 
 game:
-  - src/games/**
+  - crates/lib/src/games/**
+
+cli:
+  - crates/cli/**
 
 crate:
   - Cargo.toml

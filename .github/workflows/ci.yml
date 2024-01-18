@@ -6,14 +6,14 @@ on:
     branches: [ "main" ]
     paths:
       - "**.rs" # Any rust file
-      - "Cargo.toml"
+      - "**/Cargo.toml" # Any Cargo.toml
       - ".rustfmt.toml"
       - ".github/workflows/ci.yml" # This action
   pull_request:
     branches: [ "main" ]
     paths:
       - "**.rs" # Any rust file
-      - "Cargo.toml"
+      - "**/Cargo.toml" # Any Cargo.toml
       - ".rustfmt.toml"
       - ".github/workflows/ci.yml" # This action
 
@@ -21,22 +21,39 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # First check that we can build EVERYTHING and that tests pass
   build_first:
     name: "Build, check, and test with all features"
     runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.filter.outputs.cli }}
+      lib: ${{ steps.filter.outputs.lib }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
           cache-targets: false
       - name: Run Build
-        run: cargo build --verbose --bins --lib --examples --all-features
+        run: cargo check --verbose --workspace --bins --lib --examples --all-features
       - name: Run Tests
-        run: cargo test --verbose --bins --lib --examples --all-features
-  build:
+        run: cargo test --verbose --workspace --bins --lib --examples --tests --all-features
+      # Check what paths were modified so we only run the required tests
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            cli:
+              - 'crates/cli/**'
+            lib:
+              - 'crates/lib/**'
+
+  # If we were able to build then test different feature combinations compile with the library
+  build_lib:
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
+    # Only run if library files were modified
+    if: ${{ needs.build_first.outputs.lib == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -53,36 +70,84 @@ jobs:
             build_name: "Just Game definitions"
           - build_type: "--no-default-features --features serde"
             build_name: "Just serde" 
-    name: "Build ${{ matrix.build_name }}"
+    name: "Build library ${{ matrix.build_name }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       - name: Run Build
-        run: cargo build --verbose --bins --lib ${{ matrix.build_type }}
-  build_msrv:
-    name: "Build using MSRV"
+        run: cargo check -p gamedig --verbose --lib --examples --tests ${{ matrix.build_type }}
+
+  # If we were able to build then test different feature combinations compile with the CLI
+  build_cli:
     runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    # Only run if CLI files were modified
+    if: ${{ needs.build_first.outputs.cli == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_type: ""
+            build_name: "Default"
+          - build_type: "--no-default-features"
+            build_name: "No features"
+    name: "Build CLI ${{ matrix.build_name }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cargo-deps"
+          cache-targets: false
+          save-if: false
+      - name: Run Build
+        run: cargo check -p gamedig-cli --verbose --bins --examples --tests ${{ matrix.build_type }}
+
+  # If we were able to build then test the MSRV compiles (for the libary as not enforced for CLI)
+  build_msrv:
+    name: "Build using MSRV (lib only)"
+    runs-on: ubuntu-latest
+    needs: [ "build_first" ]
+    # Only run if library files were modified
+    if: ${{ needs.build_first.outputs.lib == 'true' }}
+    # Unfortunate hard-coding of rustup directory so that rust-cache caches it
+    env:
+      RUSTUP_HOME: /home/runner/.rustup
+    steps:
+      # Act's rust runner has rustup in a different place
+      - if: ${{ env.ACT }}
+        run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
+          cache-directories: ${{ env.RUSTUP_HOME }}/toolchains
       - name: Install MSRV
         uses: actions-rs/toolchain@v1
         with:
           toolchain: 1.65.0
           override: true
       - name: Run MSRV
-        run: cargo build
+        run: cargo check -p gamedig
+  # Check the code is formatted properly
   formatting:
     name: "Check code formatting"
     runs-on: ubuntu-latest
+    # Unfortunate hard-coding of rustup directory so that rust-cache caches it
+    env:
+      RUSTUP_HOME: /home/runner/.rustup
     steps:
-      - uses: actions/checkout@v3
+      # Act's rust runner has rustup in a different place
+      - if: ${{ env.ACT }}
+        run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
+          cache-directories: ${{ env.RUSTUP_HOME }}/toolchains
       - name: Install Formatting nightly
         uses: actions-rs/toolchain@v1
         with:
@@ -91,36 +156,44 @@ jobs:
           override: true
       - name: Run Formatting check
         run: cargo fmt --check --verbose
+
+  # If we were able to build then lint the codebase with clippy
   clippy:
     name: "Run clippy tests"
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
+      # Run github actions version of clippy that adds annotations
       - name: Run Clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --bins --lib --examples --all-features
+          args: --workspace --bins --lib --examples --tests --all-features
         if: ${{ !env.ACT }} # skip during local actions testing
+      # Run clippy binary
       - name: Run clippy (local)
-        run: cargo clippy --verbose --bins --lib --examples --all-features
+        run: cargo clippy --verbose --workspace --bins --lib --examples --tests --all-features
         if: ${{ env.ACT }} # only run during local actions testing
+
+  # If we were able to build then test that rustdoc (and rustdoc examples) compile
   doc:
     name: "Check rustdoc"
     runs-on: ubuntu-latest
     needs: [ "build_first" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
           cache-targets: false
+          save-if: false
       - name: "Run cargo doc"
-        run: cargo doc
+        run: cargo doc --workspace
         env:
           RUSTDOCFLAGS: "-D warnings"

@@ -4,10 +4,11 @@ name: "Generate node comparison badge"
 on:
   push:
     paths:
-      - "src/games/definitions.rs"
+      - "crates/lib/src/games/definitions.rs"
       - ".github/workflows/node-badge.yml"
+      - ".github/workflows/scripts/node-badge.mjs"
   schedule:
-    - cron: '0 0 * * 1' # Update once a week in case node-gamedig has changed
+    - cron: '34 3 * * 2' # Update once a week in case node-gamedig has changed
   workflow_dispatch:
 
 jobs:
@@ -17,34 +18,23 @@ jobs:
     env:
       BADGE_PATH: ".github/badges/node.svg"
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> "${GITHUB_OUTPUT}"
+        id: extract_branch
+
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: "gamedig/node-gamedig"
-          sparse-checkout: "games.txt"
           path: "node-gamedig"
+          sparse-checkout: |
+            lib/games.js
+            package.json
 
       - name: Calculate comparison
         id: comparison
-        run: |
-          # Find list of node games
-          node_games=$(awk -F "|" '/^[^#]/ {if(length($1) > 0) print $1 }' ./node-gamedig/games.txt)
-          node_games_count=$(printf "%s\n" "$node_games" | wc -l)
-
-          # Calculate how many of those games we have definitions for
-          rust_games_count=0
-          for game in $node_games; do
-            if grep "\"$game\" *=>" ./src/games/definitions.rs; then
-              rust_games_count=$(( rust_games_count + 1 ))
-            fi
-          done
-
-          # Calculate percent
-          percent=$(( rust_games_count * 100 / node_games_count))
-
-          echo "$rust_games_count/$node_games_count $percent%"
-          # Output percentage
-          echo "percent=$percent" >> "${GITHUB_OUTPUT}"
+        run: node .github/workflows/scripts/node-badge.mjs
 
       - name: Generate the badge SVG image
         uses: emibcn/badge-action@v2.0.2
@@ -68,3 +58,4 @@ jobs:
         if: ${{ success() }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.extract_branch.outputs.branch }}

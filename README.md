@@ -40,10 +40,10 @@ Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.m
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 ```rust
-use gamedig::games::tf2;
+use gamedig::games::teamfortress2;
 
 fn main() {
-    let response = tf2::query(&"127.0.0.1".parse().unwrap(), None); 
+    let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None); 
         // None is the default port (which is 27015), could also be Some(27015)
     
     match response { // Result type, must check what it is...
@@ -81,11 +81,13 @@ Response (note that some games have a different structure):
 }
 ```
 
-Want to see more examples? Checkout the [examples](examples) folder.
+Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
 Curious about the history and what changed between versions? Everything is in the [CHANGELOG](CHANGELOG.md) file.
 
 ## Contributing
-If you want see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
+If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
+
+Before contributing please read [CONTRIBUTING](CONTRIBUTING.md).
