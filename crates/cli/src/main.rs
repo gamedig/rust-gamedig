@@ -150,7 +150,6 @@ fn resolve_ip_or_domain<T: AsRef<str>>(host: T, extra_options: &mut Option<Extra
         set_hostname_if_missing(host_str, extra_options);
         resolve_domain(host_str)
     }
-
 }
 
 /// Resolve a domain name to one of its IP addresses (the first one returned).
@@ -249,6 +248,10 @@ fn output_result_json<T: serde::Serialize>(result: T) {
     println!("{}", serde_json::to_string(&result).unwrap());
 }
 
+/// Output the result as a pretty printed JSON object.
+///
+/// # Arguments
+/// * `result` - A serde serializable result.
 #[cfg(feature = "json")]
 fn output_result_json_pretty<T: serde::Serialize>(result: T) {
     println!("{}", serde_json::to_string_pretty(&result).unwrap());
@@ -261,6 +264,10 @@ fn output_result_xml<T: serde::Serialize>(result: T) {
     println!("{}", serde_xml_rs::to_string(&result).unwrap());
 }
 
+/// Output the result as a BSON object encoded as a hex string.
+///
+/// # Arguments
+/// * `result` - A serde serializable result.
 #[cfg(feature = "bson")]
 fn output_result_bson_hex<T: serde::Serialize>(result: T) {
     let bson = bson::to_bson(&result).unwrap();
@@ -274,6 +281,10 @@ fn output_result_bson_hex<T: serde::Serialize>(result: T) {
     }
 }
 
+/// Output the result as a BSON object encoded as a base64 string.
+///
+/// # Arguments
+/// * `result` - A serde serializable result.
 #[cfg(feature = "bson")]
 fn output_result_bson_base64<T: serde::Serialize>(result: T) {
     use base64::Engine;
