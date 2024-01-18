@@ -81,7 +81,7 @@ Response (note that some games have a different structure):
 }
 ```
 
-Want to see more examples? Checkout the [examples](examples) folder.
+Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  

@@ -150,6 +150,7 @@ fn resolve_ip_or_domain<T: AsRef<str>>(host: T, extra_options: &mut Option<Extra
         set_hostname_if_missing(host_str, extra_options);
         resolve_domain(host_str)
     }
+
 }
 
 /// Resolve a domain name to one of its IP addresses (the first one returned).

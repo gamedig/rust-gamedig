@@ -18,7 +18,7 @@ pub fn default_master_address() -> SocketAddr {
 fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &str, last_port: u16) -> Vec<u8> {
     let filters_bytes: Vec<u8> = filters
         .as_ref()
-        .map_or_else(|| vec![0x00], |f| f.to_bytes());
+        .map_or_else(|| vec![0x00], SearchFilters::to_bytes);
 
     let region_byte = &[region as u8];
 

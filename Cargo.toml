@@ -1,6 +1,5 @@
 [workspace]
-name = "gamedig-workspace"
-members = ["crates/cli", "crates/lib"]
+members = ["crates/cli", "crates/lib", "crates/id-tests"]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"

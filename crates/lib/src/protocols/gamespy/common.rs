@@ -4,7 +4,7 @@ use std::collections::HashMap;
 pub fn has_password(server_vars: &mut HashMap<String, String>) -> GDResult<bool> {
     let password_value = server_vars
         .remove("password")
-        .ok_or(GDErrorKind::PacketBad.context("Missing password (exists) field"))?
+        .ok_or_else(|| GDErrorKind::PacketBad.context("Missing password (exists) field"))?
         .to_lowercase();
 
     if let Ok(has) = password_value.parse::<bool>() {

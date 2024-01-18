@@ -75,11 +75,10 @@ pub struct TcpSocketImpl {
 
 impl Socket for TcpSocketImpl {
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
-        let socket = if let Some(timeout) = TimeoutSettings::get_connect_or_default(timeout_settings) {
-            net::TcpStream::connect_timeout(address, timeout)
-        } else {
-            net::TcpStream::connect(address)
-        };
+        let socket = TimeoutSettings::get_connect_or_default(timeout_settings).map_or_else(
+            || net::TcpStream::connect(address),
+            |timeout| net::TcpStream::connect_timeout(address, timeout),
+        );
 
         let socket = Self {
             socket: socket.map_err(|e| SocketConnect.context(e))?,

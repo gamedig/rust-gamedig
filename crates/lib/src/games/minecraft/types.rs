@@ -115,7 +115,7 @@ impl Default for RequestSettings {
 impl RequestSettings {
     /// Make a new *RequestSettings* with just the hostname, the protocol
     /// version defaults to -1
-    pub fn new_just_hostname(hostname: String) -> Self {
+    pub const fn new_just_hostname(hostname: String) -> Self {
         Self {
             hostname,
             protocol_version: -1,

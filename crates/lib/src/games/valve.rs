@@ -8,8 +8,20 @@ game_query_mod!(
     Engine::new(33930),
     2304
 );
+game_query_mod!(basedefense, "Base Defense", Engine::new(632_730), 27015);
 game_query_mod!(alienswarm, "Alien Swarm", Engine::new(630), 27015);
 game_query_mod!(aoc, "Age of Chivalry", Engine::new(17510), 27015);
+game_query_mod!(
+    aapg,
+    "America's Army: Proving Grounds",
+    Engine::new(203_290),
+    27020,
+    GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }
+);
 game_query_mod!(ase, "ARK: Survival Evolved", Engine::new(346_110), 27015);
 game_query_mod!(
     asrd,
@@ -17,6 +29,7 @@ game_query_mod!(
     Engine::new(563_560),
     2304
 );
+game_query_mod!(atlas, "ATLAS", Engine::new(834_910), 57561);
 game_query_mod!(avorion, "Avorion", Engine::new(445_220), 27020);
 game_query_mod!(
     ballisticoverkill,
@@ -100,16 +113,19 @@ game_query_mod!(
     27005
 );
 game_query_mod!(onset, "Onset", Engine::new(1_105_810), 7776);
+game_query_mod!(postscriptum, "Post Scriptum", Engine::new(736_220), 10037);
 game_query_mod!(
     projectzomboid,
     "Project Zomboid",
     Engine::new(108_600),
     16261
 );
+game_query_mod!(risingworld, "Rising World", Engine::new(324_080), 4254);
 game_query_mod!(ror2, "Risk of Rain 2", Engine::new(632_360), 27016);
 game_query_mod!(rust, "Rust", Engine::new(252_490), 27015);
 game_query_mod!(sco, "Sven Co-op", Engine::new_gold_src(false), 27015);
 game_query_mod!(sdtd, "7 Days to Die", Engine::new(251_570), 26900);
+game_query_mod!(squad, "Squad", Engine::new(393_380), 27165);
 game_query_mod!(teamfortress2, "Team Fortress 2", Engine::new(440), 27015);
 game_query_mod!(
     tfc,
@@ -132,3 +148,4 @@ game_query_mod!(
     }
 );
 game_query_mod!(vrising, "V Rising", Engine::new(1_604_030), 27016);
+game_query_mod!(zps, "Zombie Panic: Source", Engine::new(17_500), 27015);

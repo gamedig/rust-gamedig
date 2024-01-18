@@ -9,7 +9,7 @@ use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
 macro_rules! game {
-    ($name: literal, $default_port: literal, $protocol: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr) => {
         game!(
             $name,
             $default_port,
@@ -18,7 +18,7 @@ macro_rules! game {
         )
     };
 
-    ($name: literal, $default_port: literal, $protocol: expr, $extra_request_settings: expr) => {
+    ($name: literal, $default_port: expr, $protocol: expr, $extra_request_settings: expr) => {
         Game {
             name: $name,
             default_port: $default_port,
@@ -39,13 +39,24 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "minecraftlegacy16" => game!("Minecraft (legacy 1.6)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_6))))),
     "minecraftlegacy14" => game!("Minecraft (legacy 1.4)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4))))),
     "minecraftlegacyb18" => game!("Minecraft (legacy b1.8)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8))))),
+    "aapg" => game!("America's Army: Proving Grounds", 27020, Protocol::Valve(Engine::new(203_290)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(Engine::new(346_110))),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
+    "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(834_910))),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
     "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(Engine::new(602_960))),
+    "basedefense" => game!("Base Defense", 27015, Protocol::Valve(Engine::new(632_730)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "battalion1944" => game!("Battalion 1944", 7780, Protocol::Valve(Engine::new(489_940))),
     "brainbread2" => game!("BrainBread 2", 27015, Protocol::Valve(Engine::new(346_330))),
     "battlefield1942" => game!("Battlefield 1942", 23000, Protocol::Gamespy(GameSpyVersion::One)),
@@ -81,16 +92,24 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "l4d2" => game!("Left 4 Dead 2", 27015, Protocol::Valve(Engine::new(550))),
     "ohd" => game!("Operation: Harsh Doorstop", 27005, Protocol::Valve(Engine::new_with_dedicated(736_590, 950_900))),
     "onset" => game!("Onset", 7776, Protocol::Valve(Engine::new(1_105_810))),
+    "postscriptum" => game!("Post Scriptum", 10037, Protocol::Valve(Engine::new(736_220))),
     "projectzomboid" => game!("Project Zomboid", 16261, Protocol::Valve(Engine::new(108_600))),
     "quake1" => game!("Quake 1", 27500, Protocol::Quake(QuakeVersion::One)),
     "quake2" => game!("Quake 2", 27910, Protocol::Quake(QuakeVersion::Two)),
     "q3a" => game!("Quake 3 Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
+    "risingworld" => game!("Rising World", 4254, Protocol::Valve(Engine::new(324_080)), GatheringSettings {
+        players: true,
+        rules: false,
+        check_app_id: true,
+    }.into_extra()),
     "ror2" => game!("Risk of Rain 2", 27016, Protocol::Valve(Engine::new(632_360))),
     "rust" => game!("Rust", 27015, Protocol::Valve(Engine::new(252_490))),
+    "savage2" => game!("Savage 2", 11235, Protocol::PROPRIETARY(ProprietaryProtocol::Savage2)),
     "sco" => game!("Sven Co-op", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "sdtd" => game!("7 Days to Die", 26900, Protocol::Valve(Engine::new(251_570))),
     "sof2" => game!("Soldier of Fortune 2", 20100, Protocol::Quake(QuakeVersion::Three)),
     "serioussam" => game!("Serious Sam", 25601, Protocol::Gamespy(GameSpyVersion::One)),
+    "squad" => game!("Squad", 27165, Protocol::Valve(Engine::new(393_380))),
     "theforest" => game!("The Forest", 27016, Protocol::Valve(Engine::new(556_450))),
     "thefront" => game!("The Front", 27015, Protocol::Valve(Engine::new(2_285_150))),
     "teamfortress2" => game!("Team Fortress 2", 27015, Protocol::Valve(Engine::new(440))),
@@ -106,10 +125,12 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "vrising" => game!("V Rising", 27016, Protocol::Valve(Engine::new(1_604_030))),
     "jc2m" => game!("Just Cause 2: Multiplayer", 7777, Protocol::PROPRIETARY(ProprietaryProtocol::JC2M)),
     "warsow" => game!("Warsow", 44400, Protocol::Quake(QuakeVersion::Three)),
-    "darkesthour" => game!("Darkest Hour: Europe '44-'45 (2008)", 7758, Protocol::Unreal2),
+    "dhe4445" => game!("Darkest Hour: Europe '44-'45 (2008)", 7758, Protocol::Unreal2),
     "devastation" => game!("Devastation (2003)", 7778, Protocol::Unreal2),
     "killingfloor" => game!("Killing Floor", 7708, Protocol::Unreal2),
     "redorchestra" => game!("Red Orchestra", 7759, Protocol::Unreal2),
-    "ut2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
-    "ut2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
+    "unrealtournament2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
+    "unrealtournament2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
+    "zps" => game!("Zombie Panic: Source", 27015, Protocol::Valve(Engine::new(17_500))),
+    "mindustry" => game!("Mindustry", crate::games::mindustry::DEFAULT_PORT, Protocol::PROPRIETARY(ProprietaryProtocol::Mindustry)),
 };

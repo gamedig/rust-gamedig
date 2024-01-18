@@ -7,7 +7,17 @@ Games:
 - [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
 - [The Front](https://store.steampowered.com/app/2285150/The_Front/) support.
 - [Conan Exiles](https://store.steampowered.com/app/440900/Conan_Exiles/) support.
+- [Post Scriptum](https://store.steampowered.com/app/736220/Post_Scriptum/) support.
+- [Squad](https://store.steampowered.com/app/393380/Squad/) support.
+- [Savage 2](https://savage2.net/) support.
+- [Rising World](https://store.steampowered.com/app/324080/Rising_World/) support.
+- [ATLAS](https://store.steampowered.com/app/834910/ATLAS/) support.
+- [America's Army: Proving Grounds](https://store.steampowered.com/app/203290/Americas_Army_Proving_Grounds/) support.
+- [Base Defense](https://store.steampowered.com/app/632730/Base_Defense/) support.
+- [Zombie Panic: Source](https://store.steampowered.com/app/17500/Zombie_Panic_Source/) support.
 - Added a valve protocol query example.
+- Made all of Just Cause 2: Multiplayer Response and Player fields public.
+- [Mindustry](https://mindustrygame.github.io/) support.
 
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
@@ -25,6 +35,9 @@ Game:
 - - Left 4 Dead: `left4dead` -> `l4d`.
 - - 7 Days to Die: `7d2d` in definitions and `sd2d` in game declaration -> `sdtd`.
 - - Quake 3 Arena: `quake3arena` -> `q3a`.
+- - Unreal tournament 2003: `ut2003` -> `unrealtournament2003`
+- - Unreal tournament 2004: `ut2004` -> `unrealtournament2004`
+- - Darkest Hour: Europe '44-'45: `darkesthour` -> `dhe4445`
 - Minecraft: 
 - - Legacy 1.5 and 1.3 were renamed to 1.4 and beta 1.8 respectively to show the lowest version they support, this change includes Structs, Enum and game id renames, also removed the "v" from the game definition name.
 - - Moved the Minecraft protocol implementation in the games folder as its proprietary.

@@ -78,7 +78,7 @@ fn get_server_values(bufferer: &mut Buffer<LittleEndian>) -> GDResult<HashMap<St
 
         if let Some(k) = key {
             if let Some(v) = value {
-                vars.insert(k.to_string(), v.to_string());
+                vars.insert((*k).to_string(), (*v).to_string());
             }
         }
     }
@@ -116,23 +116,23 @@ pub fn client_query<Client: QuakeClient>(
     Ok(Response {
         name: server_vars
             .remove("hostname")
-            .or(server_vars.remove("sv_hostname"))
+            .or_else(|| server_vars.remove("sv_hostname"))
             .ok_or(GDErrorKind::PacketBad)?,
         map: server_vars
             .remove("mapname")
-            .or(server_vars.remove("map"))
+            .or_else(|| server_vars.remove("map"))
             .ok_or(GDErrorKind::PacketBad)?,
         players_online: players.len() as u8,
         players_maximum: server_vars
             .remove("maxclients")
-            .or(server_vars.remove("sv_maxclients"))
+            .or_else(|| server_vars.remove("sv_maxclients"))
             .ok_or(GDErrorKind::PacketBad)?
             .parse()
             .map_err(|e| TypeParse.context(e))?,
         players,
         game_version: server_vars
             .remove("version")
-            .or(server_vars.remove("*version")),
+            .or_else(|| server_vars.remove("*version")),
         unused_entries: server_vars,
     })
 }

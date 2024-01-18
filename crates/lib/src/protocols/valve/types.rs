@@ -310,7 +310,7 @@ impl GatheringSettings {
 }
 
 impl Default for GatheringSettings {
-    fn default() -> Self { GatheringSettings::default() }
+    fn default() -> Self { Self::default() }
 }
 
 impl From<ExtraRequestSettings> for GatheringSettings {

@@ -15,7 +15,7 @@
 //!
 //! ## Using a game definition
 //! ```
-//! use gamedig::games::{GAMES, query};
+//! use gamedig::{GAMES, query};
 //!
 //! let game = GAMES.get("teamfortress2").unwrap(); // Get a game definition, the full list can be found in src/games/mod.rs
 //! let response = query(game, &"127.0.0.1".parse().unwrap(), None); // None will use the default port
@@ -51,5 +51,10 @@ pub mod capture;
 pub use errors::*;
 #[cfg(feature = "games")]
 pub use games::*;
+#[cfg(feature = "games")]
+pub use query::*;
 #[cfg(feature = "services")]
 pub use services::*;
+
+// Re-export types needed to call games::query::query in the root
+pub use protocols::types::{ExtraRequestSettings, TimeoutSettings};
