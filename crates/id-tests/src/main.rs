@@ -13,7 +13,7 @@ struct Game {
 use gamedig_id_tests::test_game_name_rules;
 
 fn main() {
-    let games: GamesInput = if let Some(file) = std::env::args_os().skip(1).next() {
+    let games: GamesInput = if let Some(file) = std::env::args_os().nth(1) {
         let file = std::fs::OpenOptions::new().read(true).open(file).unwrap();
 
         serde_json::from_reader(file).unwrap()

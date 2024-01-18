@@ -6,49 +6,49 @@ repos:
       - id: clippy
         name: Check clippy
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: rustup run --install nightly-2023-07-09 cargo-clippy -- --workspace --all-features -- -D warnings
 
       - id: build-no-features
         name: Check crate build with no features
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: cargo check --workspace --no-default-features
 
       - id: build-all-features
         name: Check crate builds with all features
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: cargo check --workspace --all-features --lib --bins --examples
 
       - id: test
         name: Check tests pass
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: cargo test --workspace --bins --lib --examples --tests --all-features
 
       - id: format
         name: Check rustfmt
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: rustup run --install nightly-2023-07-09 cargo-fmt --check
 
       - id: msrv
         name: Check MSRV compiles (lib only)
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: rustup run --install 1.65 cargo check -p gamedig
 
       - id: docs
         name: Check rustdoc compiles
         language: system
-        files: '[.]rs$'
+        files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
         entry: env RUSTDOCFLAGS="-D warnings" cargo doc
         
