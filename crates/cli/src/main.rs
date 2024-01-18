@@ -1,7 +1,4 @@
-use std::{
-    net::{IpAddr, ToSocketAddrs},
-    path::PathBuf,
-};
+use std::net::{IpAddr, ToSocketAddrs};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use gamedig::{
@@ -67,7 +64,7 @@ enum Action {
         /// Optional file path for packet capture file writer
         #[cfg(feature = "packet_capture")]
         #[arg(short, long)]
-        capture: Option<PathBuf>,
+        capture: Option<std::path::PathBuf>,
 
         /// Optional timeout settings for the server query
         #[command(flatten, next_help_heading = "Timeouts")]
@@ -272,6 +269,7 @@ fn output_result_json_pretty<T: serde::Serialize>(result: T) {
 /// Output the result as an XML object.
 /// # Arguments
 /// * `result` - A serde serializable result.
+#[cfg(feature = "xml")]
 fn output_result_xml<T: serde::Serialize>(result: T) {
     println!("{}", serde_xml_rs::to_string(&result).unwrap());
 }
