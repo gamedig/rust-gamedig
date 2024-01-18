@@ -22,8 +22,7 @@ pub trait Socket {
     /// # Returns
     /// A result containing the socket instance or an error.
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self>
-    where
-        Self: Sized;
+    where Self: Sized;
 
     /// Apply read and write timeouts to the socket.
     ///
@@ -112,12 +111,8 @@ impl Socket for TcpSocketImpl {
         Ok(buf)
     }
 
-    fn port(&self) -> u16 {
-        self.address.port()
-    }
-    fn local_addr(&self) -> std::io::Result<SocketAddr> {
-        self.socket.local_addr()
-    }
+    fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
 /// Implementation of a UDP socket.
@@ -165,15 +160,11 @@ impl Socket for UdpSocketImpl {
             .recv_from(&mut buf)
             .map_err(|e| PacketReceive.context(e))?;
 
-        Ok(buf[..number_of_bytes_received].to_vec())
+        Ok(buf[.. number_of_bytes_received].to_vec())
     }
 
-    fn port(&self) -> u16 {
-        self.address.port()
-    }
-    fn local_addr(&self) -> std::io::Result<SocketAddr> {
-        self.socket.local_addr()
-    }
+    fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
 /// Things used for capturing packets.
@@ -219,17 +210,13 @@ pub mod capture {
     /// Represents the TCP protocol provider.
     pub(crate) struct ProtocolTCP;
     impl ProtocolProvider for ProtocolTCP {
-        fn protocol() -> Protocol {
-            Protocol::TCP
-        }
+        fn protocol() -> Protocol { Protocol::TCP }
     }
 
     /// Represents the UDP protocol provider.
     pub(crate) struct ProtocolUDP;
     impl ProtocolProvider for ProtocolUDP {
-        fn protocol() -> Protocol {
-            Protocol::UDP
-        }
+        fn protocol() -> Protocol { Protocol::UDP }
     }
 
     /// A socket wrapper that allows capturing packets.
@@ -247,8 +234,9 @@ pub mod capture {
     impl<I: Socket, P: ProtocolProvider> Socket for WrappedCaptureSocket<I, P> {
         /// Creates a new wrapped socket for capturing packets.
         ///
-        /// Initializes a new socket of type `I`, wrapping it to enable packet capturing.
-        /// Capturing is protocol-specific, as indicated by the `ProtocolProvider`.
+        /// Initializes a new socket of type `I`, wrapping it to enable packet
+        /// capturing. Capturing is protocol-specific, as indicated by
+        /// the `ProtocolProvider`.
         ///
         /// # Arguments
         /// * `address` - The address to connect the socket to.
@@ -257,9 +245,7 @@ pub mod capture {
         /// # Returns
         /// A `GDResult` containing either the wrapped socket or an error.
         fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self>
-        where
-            Self: Sized,
-        {
+        where Self: Sized {
             let v = Self {
                 inner: I::new(address, timeout_settings)?,
                 remote_address: *address,
@@ -282,8 +268,8 @@ pub mod capture {
 
         /// Sends data over the socket and captures the packet.
         ///
-        /// The method sends data using the inner socket and captures the sent packet
-        /// if a capture writer is set.
+        /// The method sends data using the inner socket and captures the sent
+        /// packet if a capture writer is set.
         ///
         /// # Arguments
         /// * `data` - Data to be sent.
@@ -307,8 +293,8 @@ pub mod capture {
 
         /// Receives data from the socket and captures the packet.
         ///
-        /// The method receives data using the inner socket and captures the incoming packet
-        /// if a capture writer is set.
+        /// The method receives data using the inner socket and captures the
+        /// incoming packet if a capture writer is set.
         ///
         /// # Arguments
         /// * `size` - Optional size of data to receive.
@@ -353,9 +339,7 @@ pub mod capture {
         ///
         /// # Returns
         /// The remote port number.
-        fn port(&self) -> u16 {
-            self.inner.port()
-        }
+        fn port(&self) -> u16 { self.inner.port() }
 
         /// Returns the local SocketAddr of the wrapped socket.
         ///
@@ -363,9 +347,7 @@ pub mod capture {
         ///
         /// # Returns
         /// The local SocketAddr.
-        fn local_addr(&self) -> std::io::Result<SocketAddr> {
-            self.inner.local_addr()
-        }
+        fn local_addr(&self) -> std::io::Result<SocketAddr> { self.inner.local_addr() }
     }
 
     // this seems a bad way to do this, but its safe
@@ -388,18 +370,20 @@ pub mod capture {
         }
     }
 
-    /// A specialized `WrappedCaptureSocket` for UDP, using `UdpSocketImpl` as the inner socket
-    /// and `ProtocolUDP` as the protocol provider.
+    /// A specialized `WrappedCaptureSocket` for UDP, using `UdpSocketImpl` as
+    /// the inner socket and `ProtocolUDP` as the protocol provider.
     ///
-    /// This type captures and processes UDP packets, wrapping around standard UDP socket
-    /// functionalities with additional packet capture capabilities.
+    /// This type captures and processes UDP packets, wrapping around standard
+    /// UDP socket functionalities with additional packet capture
+    /// capabilities.
     pub(crate) type CapturedUdpSocket = WrappedCaptureSocket<UdpSocketImpl, ProtocolUDP>;
 
-    /// A specialized `WrappedCaptureSocket` for TCP, using `TcpSocketImpl` as the inner socket
-    /// and `ProtocolTCP` as the protocol provider.
+    /// A specialized `WrappedCaptureSocket` for TCP, using `TcpSocketImpl` as
+    /// the inner socket and `ProtocolTCP` as the protocol provider.
     ///
-    /// This type captures and processes TCP packets, wrapping around standard TCP socket
-    /// functionalities with additional packet capture capabilities.
+    /// This type captures and processes TCP packets, wrapping around standard
+    /// TCP socket functionalities with additional packet capture
+    /// capabilities.
     pub(crate) type CapturedTcpSocket = WrappedCaptureSocket<TcpSocketImpl, ProtocolTCP>;
 }
 

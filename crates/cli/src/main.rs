@@ -51,8 +51,8 @@ enum Action {
         #[arg(short, long)]
         ip: String,
 
-        /// Optional query port number for the server. If not provided the default
-        /// port for the game is used.
+        /// Optional query port number for the server. If not provided the
+        /// default port for the game is used.
         #[arg(short, long)]
         port: Option<u16>,
 
@@ -195,39 +195,51 @@ fn set_hostname_if_missing(host: &str, extra_options: &mut Option<ExtraRequestSe
 /// * `result` - A reference to the result of the query.
 fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: OutputFormat, result: &T) {
     match format {
-        OutputFormat::Debug => match output_mode {
-            OutputMode::Generic => output_result_debug(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
-        },
+        OutputFormat::Debug => {
+            match output_mode {
+                OutputMode::Generic => output_result_debug(result.as_json()),
+                OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
+            }
+        }
         #[cfg(feature = "json")]
-        OutputFormat::JsonPretty => match output_mode {
-            OutputMode::Generic => output_result_json_pretty(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_json_pretty(result.as_original()),
-        },
+        OutputFormat::JsonPretty => {
+            match output_mode {
+                OutputMode::Generic => output_result_json_pretty(result.as_json()),
+                OutputMode::ProtocolSpecific => output_result_json_pretty(result.as_original()),
+            }
+        }
         #[cfg(feature = "json")]
-        OutputFormat::Json => match output_mode {
-            OutputMode::Generic => output_result_json(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_json(result.as_original()),
-        },
+        OutputFormat::Json => {
+            match output_mode {
+                OutputMode::Generic => output_result_json(result.as_json()),
+                OutputMode::ProtocolSpecific => output_result_json(result.as_original()),
+            }
+        }
         #[cfg(feature = "xml")]
-        OutputFormat::Xml => match output_mode {
-            OutputMode::Generic => output_result_xml(result.as_json()),
-            //BUG: In this case we get a writer error with all serde write methods some reason with xml 0.6.0
-            //BUG: gamedig-cli.exe query -g <GAME> -i <IP> -p <PORT> -f xml --output-mode protocol-specific
-            //BUG: Writer: emitter error: document start event has already been emitted
-            //BUG: With xml 0.5.1 we get unsupported operation: 'serialize_unit_variant'
-            OutputMode::ProtocolSpecific => panic!("XML format is not supported for protocol specific output"),
-        },
+        OutputFormat::Xml => {
+            match output_mode {
+                OutputMode::Generic => output_result_xml(result.as_json()),
+                // BUG: In this case we get a writer error with all serde write methods some reason with xml 0.6.0
+                // BUG: gamedig-cli.exe query -g <GAME> -i <IP> -p <PORT> -f xml --output-mode protocol-specific
+                // BUG: Writer: emitter error: document start event has already been emitted
+                // BUG: With xml 0.5.1 we get unsupported operation: 'serialize_unit_variant'
+                OutputMode::ProtocolSpecific => panic!("XML format is not supported for protocol specific output"),
+            }
+        }
         #[cfg(feature = "bson")]
-        OutputFormat::BsonHex => match output_mode {
-            OutputMode::Generic => output_result_bson_hex(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_bson_hex(result.as_original()),
-        },
+        OutputFormat::BsonHex => {
+            match output_mode {
+                OutputMode::Generic => output_result_bson_hex(result.as_json()),
+                OutputMode::ProtocolSpecific => output_result_bson_hex(result.as_original()),
+            }
+        }
         #[cfg(feature = "bson")]
-        OutputFormat::BsonBase64 => match output_mode {
-            OutputMode::Generic => output_result_bson_base64(result.as_json()),
-            OutputMode::ProtocolSpecific => output_result_bson_base64(result.as_original()),
-        },
+        OutputFormat::BsonBase64 => {
+            match output_mode {
+                OutputMode::Generic => output_result_bson_base64(result.as_json()),
+                OutputMode::ProtocolSpecific => output_result_bson_base64(result.as_original()),
+            }
+        }
     }
 }
 

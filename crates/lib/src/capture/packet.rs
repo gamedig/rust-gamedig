@@ -31,7 +31,8 @@ pub(crate) enum Protocol {
 
 /// Trait for handling different types of IP addresses (IPv4, IPv6).
 pub(crate) trait IpAddress: Sized {
-    /// Creates an instance from a standard `IpAddr`, returning `None` if the types are incompatible.
+    /// Creates an instance from a standard `IpAddr`, returning `None` if the
+    /// types are incompatible.
     fn from_std(ip: IpAddr) -> Option<Self>;
 }
 
@@ -67,12 +68,15 @@ impl CapturePacket<'_> {
         (local, remote)
     }
 
-    /// Retrieves IP addresses of a specific type (IPv4 or IPv6) based on the packet's direction.
+    /// Retrieves IP addresses of a specific type (IPv4 or IPv6) based on the
+    /// packet's direction.
     ///
-    /// Panics if the IP type of the addresses does not match the requested type.
+    /// Panics if the IP type of the addresses does not match the requested
+    /// type.
     ///
     /// Returns:
-    /// - (T, T): Tuple of (source IP, destination IP) of the specified type in order.
+    /// - (T, T): Tuple of (source IP, destination IP) of the specified type in
+    ///   order.
     pub(super) fn ipvt_by_direction<T: IpAddress>(&self) -> (T, T) {
         let (local, remote) = (
             T::from_std(self.local_address.ip()).expect("Incorrect IP type for local address"),
@@ -84,7 +88,8 @@ impl CapturePacket<'_> {
 }
 
 impl Direction {
-    /// Orders two elements (source and destination) based on the packet's direction.
+    /// Orders two elements (source and destination) based on the packet's
+    /// direction.
     ///
     /// Returns:
     /// - (T, T): Ordered tuple (source, destination).
@@ -124,9 +129,7 @@ mod tests {
     use std::str::FromStr;
 
     // Helper function to create a SocketAddr from a string
-    fn socket_addr(addr: &str) -> SocketAddr {
-        SocketAddr::from_str(addr).unwrap()
-    }
+    fn socket_addr(addr: &str) -> SocketAddr { SocketAddr::from_str(addr).unwrap() }
 
     #[test]
     fn test_ports_by_direction() {

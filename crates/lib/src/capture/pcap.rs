@@ -11,7 +11,13 @@ use pnet_packet::{
 use std::{io::Write, net::IpAddr, time::Instant};
 
 use super::packet::{
-    CapturePacket, Direction, Protocol, HEADER_SIZE_ETHERNET, HEADER_SIZE_IP4, HEADER_SIZE_IP6, HEADER_SIZE_UDP,
+    CapturePacket,
+    Direction,
+    Protocol,
+    HEADER_SIZE_ETHERNET,
+    HEADER_SIZE_IP4,
+    HEADER_SIZE_IP6,
+    HEADER_SIZE_UDP,
     PACKET_SIZE,
 };
 
@@ -80,7 +86,7 @@ impl<W: Write> Pcap<W> {
                 self.write_transport_payload(
                     info,
                     IpNextHeaderProtocols::Tcp,
-                    &buf[..buf_size + payload.len()],
+                    &buf[.. buf_size + payload.len()],
                     vec![],
                 );
 
@@ -113,7 +119,7 @@ impl<W: Write> Pcap<W> {
                 self.write_transport_payload(
                     &info,
                     IpNextHeaderProtocols::Tcp,
-                    &buf[..buf_size],
+                    &buf[.. buf_size],
                     vec![EnhancedPacketOption::Comment("Generated TCP ACK".into())],
                 );
             }
@@ -131,7 +137,7 @@ impl<W: Write> Pcap<W> {
                 self.write_transport_payload(
                     info,
                     IpNextHeaderProtocols::Udp,
-                    &buf[..buf_size + payload.len()],
+                    &buf[.. buf_size + payload.len()],
                     vec![],
                 );
             }
@@ -238,7 +244,7 @@ impl<W: Write> Pcap<W> {
         self.write_transport_payload(
             &info,
             IpNextHeaderProtocols::Tcp,
-            &buf[..buf_size],
+            &buf[.. buf_size],
             options.clone(),
         );
 
@@ -261,7 +267,7 @@ impl<W: Write> Pcap<W> {
         self.write_transport_payload(
             &info,
             IpNextHeaderProtocols::Tcp,
-            &buf[..buf_size],
+            &buf[.. buf_size],
             options.clone(),
         );
 
@@ -280,7 +286,12 @@ impl<W: Write> Pcap<W> {
 
             tcp.packet_size()
         };
-        self.write_transport_payload(&info, IpNextHeaderProtocols::Tcp, &buf[..buf_size], options);
+        self.write_transport_payload(
+            &info,
+            IpNextHeaderProtocols::Tcp,
+            &buf[.. buf_size],
+            options,
+        );
 
         self.state.has_sent_handshake = true;
     }
@@ -314,7 +325,7 @@ impl<W: Write> Pcap<W> {
         self.write_transport_payload(
             info,
             IpNextHeaderProtocols::Tcp,
-            &buf[..buf_size],
+            &buf[.. buf_size],
             vec![EnhancedPacketOption::Comment("Generated TCP FIN".into())],
         );
 
