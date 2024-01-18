@@ -320,6 +320,7 @@ fn main() -> Result<()> {
             port,
             format,
             output_mode,
+            #[cfg(feature = "packet_capture")]
             capture,
             timeout_settings,
             extra_options,
