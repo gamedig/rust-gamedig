@@ -217,8 +217,8 @@ impl GatheringSettings {
     /// Default values is attempt both players and rules.
     pub const fn default() -> Self {
         Self {
-            players: GatherToggle::AttemptGather,
-            mutators_and_rules: GatherToggle::Required,
+            players: GatherToggle::Try,
+            mutators_and_rules: GatherToggle::Enforce,
         }
     }
 

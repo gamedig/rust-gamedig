@@ -293,8 +293,8 @@ impl GatheringSettings {
     /// players and rules.
     pub const fn default() -> Self {
         Self {
-            players: GatherToggle::AttemptGather,
-            rules: GatherToggle::AttemptGather,
+            players: GatherToggle::Try,
+            rules: GatherToggle::Try,
             check_app_id: true,
         }
     }

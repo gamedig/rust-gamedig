@@ -69,9 +69,9 @@ pub fn retry_on_timeout<T>(mut retry_count: usize, mut fetch: impl FnMut() -> GD
 macro_rules! maybe_gather {
     ($gather_toggle: expr, $gather_fn: expr) => {
         match $gather_toggle {
-            crate::protocols::types::GatherToggle::DontGather => None,
-            crate::protocols::types::GatherToggle::AttemptGather => $gather_fn.ok(),
-            crate::protocols::types::GatherToggle::Required => Some($gather_fn?),
+            crate::protocols::types::GatherToggle::Skip => None,
+            crate::protocols::types::GatherToggle::Try => $gather_fn.ok(),
+            crate::protocols::types::GatherToggle::Enforce => Some($gather_fn?),
         }
     };
 }
@@ -163,35 +163,35 @@ mod tests {
 
     #[test]
     fn gather_success_dont_gather() -> GDResult<()> {
-        let result = maybe_gather!(GatherToggle::DontGather, gather_success(5));
+        let result = maybe_gather!(GatherToggle::Skip, gather_success(5));
         assert!(result.is_none());
         Ok(())
     }
 
     #[test]
     fn gather_success_attempt_gather() -> GDResult<()> {
-        let result = maybe_gather!(GatherToggle::AttemptGather, gather_success(10));
+        let result = maybe_gather!(GatherToggle::Try, gather_success(10));
         assert_eq!(result, Some(10));
         Ok(())
     }
 
     #[test]
     fn gather_success_required() -> GDResult<()> {
-        let result = maybe_gather!(GatherToggle::Required, gather_success(15));
+        let result = maybe_gather!(GatherToggle::Enforce, gather_success(15));
         assert_eq!(result, Some(15));
         Ok(())
     }
 
     #[test]
     fn gather_fail_dont_gather() -> GDResult<()> {
-        let result = maybe_gather!(GatherToggle::DontGather, gather_fail("dont"));
+        let result = maybe_gather!(GatherToggle::Skip, gather_fail("dont"));
         assert!(result.is_none());
         Ok(())
     }
 
     #[test]
     fn gather_fail_attempt_gather() -> GDResult<()> {
-        let result = maybe_gather!(GatherToggle::AttemptGather, gather_fail("attempt"));
+        let result = maybe_gather!(GatherToggle::Try, gather_fail("attempt"));
         assert!(result.is_none());
         Ok(())
     }
@@ -199,7 +199,7 @@ mod tests {
     #[test]
     fn gather_fail_required() {
         let inner = || {
-            let result = maybe_gather!(GatherToggle::Required, gather_fail("required"));
+            let result = maybe_gather!(GatherToggle::Enforce, gather_fail("required"));
             assert_eq!(result, Some(10));
             Ok::<(), GDError>(())
         };

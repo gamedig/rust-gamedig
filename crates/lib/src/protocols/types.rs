@@ -344,13 +344,19 @@ pub struct ExtraRequestSettings {
 #[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub enum GatherToggle {
-    /// Don't send a request.
+    /// No request is sent for the relevant data. This option bypasses data
+    /// gathering.
     #[default]
-    DontGather,
-    /// Send a request but ignore errors, instead return default or None.
-    AttemptGather,
-    /// Send a request and propagate any errors.
-    Required,
+    Skip,
+
+    /// A request will be sent, but errors are not treated as criticial.
+    /// In the case of an error, the operation will return a default value or
+    /// `None`.
+    Try,
+
+    /// A request will be sent, and any resulting errors will be propagated.
+    /// This option treats successful data gathering as mandatory.
+    Enforce,
 }
 
 impl ExtraRequestSettings {
