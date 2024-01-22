@@ -62,6 +62,13 @@ enum Action {
         output_mode: OutputMode,
 
         /// Optional file path for packet capture file writer
+        ///
+        /// When set a PCAP file will be written to the location. This file can
+        /// be read with a tool like wireshark. The PCAP contains a log of the
+        /// TCP and UDP data sent/recieved by the gamedig library, it does not
+        /// contain an accurate representation of the real packets sent on the
+        /// wire as some information has to be hallucinated in order for it to
+        /// display nicely.
         #[cfg(feature = "packet_capture")]
         #[arg(short, long)]
         capture: Option<std::path::PathBuf>,
