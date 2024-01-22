@@ -17,8 +17,8 @@ game_query_mod!(
     Engine::new(203_290),
     27020,
     GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }
 );
@@ -53,8 +53,8 @@ game_query_mod!(
     Engine::new(440_900),
     27015,
     GatheringSettings {
-        players: false,
-        rules: true,
+        players: GatherToggle::Skip,
+        rules: GatherToggle::Enforce,
         check_app_id: true,
     }
 );
@@ -142,8 +142,8 @@ game_query_mod!(
     Engine::new(892_970),
     2457,
     GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }
 );

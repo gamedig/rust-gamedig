@@ -319,20 +319,47 @@ pub struct ExtraRequestSettings {
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.players]
+    /// - [unreal2::GatheringSettings#structfield.players]
     #[cfg_attr(feature = "clap", arg(long))]
-    pub gather_players: Option<bool>,
+    pub gather_players: Option<GatherToggle>,
     /// Whether to gather rule information.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.rules]
+    /// - [unreal2::GatheringSettings#structfield.mutators_and_rules]
     #[cfg_attr(feature = "clap", arg(long))]
-    pub gather_rules: Option<bool>,
+    pub gather_rules: Option<GatherToggle>,
     /// Whether to check if the App ID is valid.
     ///
     /// Used by:
     /// - [valve::GatheringSettings#structfield.check_app_id]
     #[cfg_attr(feature = "clap", arg(long))]
     pub check_app_id: Option<bool>,
+}
+
+/// Select how to go about gathering extra information via additional requests.
+///
+/// Used by:
+/// - [ExtraRequestSettings]
+/// - [valve::GatheringSettings]
+/// - [unreal2::GatheringSettings]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
+pub enum GatherToggle {
+    /// No request is sent for the relevant data. This option bypasses data
+    /// gathering.
+    #[default]
+    Skip,
+
+    /// A request will be sent, but errors are not treated as criticial.
+    /// In the case of an error, the operation will return a default value or
+    /// `None`.
+    Try,
+
+    /// A request will be sent, and any resulting errors will be propagated.
+    /// This option treats successful data gathering as mandatory.
+    Enforce,
 }
 
 impl ExtraRequestSettings {
@@ -348,12 +375,12 @@ impl ExtraRequestSettings {
         self
     }
     /// [Sets gather players](ExtraRequestSettings#structfield.gather_players)
-    pub const fn set_gather_players(mut self, gather_players: bool) -> Self {
+    pub const fn set_gather_players(mut self, gather_players: GatherToggle) -> Self {
         self.gather_players = Some(gather_players);
         self
     }
     /// [Sets gather rules](ExtraRequestSettings#structfield.gather_rules)
-    pub const fn set_gather_rules(mut self, gather_rules: bool) -> Self {
+    pub const fn set_gather_rules(mut self, gather_rules: GatherToggle) -> Self {
         self.gather_rules = Some(gather_rules);
         self
     }

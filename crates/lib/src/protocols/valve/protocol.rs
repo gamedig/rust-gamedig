@@ -19,7 +19,7 @@ use crate::{
         },
     },
     socket::{Socket, UdpSocket},
-    utils::{retry_on_timeout, u8_lower_upper},
+    utils::{maybe_gather, retry_on_timeout, u8_lower_upper},
     GDErrorKind::{BadGame, Decompress, UnknownEnumCast},
     GDResult,
 };
@@ -470,13 +470,13 @@ fn get_response(
 
     Ok(Response {
         info,
-        players: match gather_settings.players {
-            false => None,
-            true => Some(client.get_server_players(&engine, protocol)?),
-        },
-        rules: match gather_settings.rules {
-            false => None,
-            true => Some(client.get_server_rules(&engine, protocol)?),
-        },
+        players: maybe_gather!(
+            gather_settings.players,
+            client.get_server_players(&engine, protocol)
+        ),
+        rules: maybe_gather!(
+            gather_settings.rules,
+            client.get_server_rules(&engine, protocol)
+        ),
     })
 }

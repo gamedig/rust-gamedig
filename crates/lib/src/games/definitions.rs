@@ -4,7 +4,7 @@ use crate::games::minecraft::types::{LegacyGroup, Server};
 use crate::protocols::{gamespy::GameSpyVersion, quake::QuakeVersion, valve::Engine, Protocol};
 use crate::Game;
 
-use crate::protocols::types::ProprietaryProtocol;
+use crate::protocols::types::{GatherToggle, ProprietaryProtocol};
 use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
@@ -40,8 +40,8 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "minecraftlegacy14" => game!("Minecraft (legacy 1.4)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::V1_4))))),
     "minecraftlegacyb18" => game!("Minecraft (legacy b1.8)", 25565, Protocol::PROPRIETARY(ProprietaryProtocol::Minecraft(Some(Server::Legacy(LegacyGroup::VB1_8))))),
     "aapg" => game!("America's Army: Proving Grounds", 27020, Protocol::Valve(Engine::new(203_290)), GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }.into_extra()),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
@@ -53,8 +53,8 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
     "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(Engine::new(602_960))),
     "basedefense" => game!("Base Defense", 27015, Protocol::Valve(Engine::new(632_730)), GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }.into_extra()),
     "battalion1944" => game!("Battalion 1944", 7780, Protocol::Valve(Engine::new(489_940))),
@@ -65,8 +65,8 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "codenamecure" => game!("Codename CURE", 27015, Protocol::Valve(Engine::new(355_180))),
     "colonysurvival" => game!("Colony Survival", 27004, Protocol::Valve(Engine::new(366_090))),
     "conanexiles" => game!("Conan Exiles", 27015, Protocol::Valve(Engine::new(440_900)), GatheringSettings {
-        players: false,
-        rules: true,
+        players: GatherToggle::Skip,
+        rules: GatherToggle::Enforce,
         check_app_id: true,
     }.into_extra()),
     "counterstrike" => game!("Counter-Strike", 27015, Protocol::Valve(Engine::new_gold_src(false))),
@@ -98,8 +98,8 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "quake2" => game!("Quake 2", 27910, Protocol::Quake(QuakeVersion::Two)),
     "q3a" => game!("Quake 3 Arena", 27960, Protocol::Quake(QuakeVersion::Three)),
     "risingworld" => game!("Rising World", 4254, Protocol::Valve(Engine::new(324_080)), GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }.into_extra()),
     "ror2" => game!("Risk of Rain 2", 27016, Protocol::Valve(Engine::new(632_360))),
@@ -118,8 +118,8 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "unturned" => game!("Unturned", 27015, Protocol::Valve(Engine::new(304_930))),
     "unrealtournament" => game!("Unreal Tournament", 7778, Protocol::Gamespy(GameSpyVersion::One)),
     "valheim" => game!("Valheim", 2457, Protocol::Valve(Engine::new(892_970)), GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }.into_extra()),
     "vrising" => game!("V Rising", 27016, Protocol::Valve(Engine::new(1_604_030))),
