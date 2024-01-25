@@ -39,7 +39,7 @@ jobs:
       - name: Run Tests
         run: cargo test --verbose --workspace --bins --lib --examples --tests --all-features
       # Check what paths were modified so we only run the required tests
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
