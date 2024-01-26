@@ -4,11 +4,11 @@ use std::net::{IpAddr, SocketAddr};
 
 use crate::games::types::Game;
 use crate::games::{ffow, jc2m, minecraft, savage2, theship};
-use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
 use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol, Protocol, TimeoutSettings};
 use crate::GDResult;
+use crate::{eco, protocols};
 
 /// Make a query given a game definition
 #[inline]
@@ -111,6 +111,8 @@ pub fn query_with_timeout_and_extra_settings(
                         }
                     }
                 }
+                #[cfg(feature = "serde")]
+                ProprietaryProtocol::Eco => eco::query_with_timeout(address, port, &timeout_settings).map(Box::new)?,
             }
         }
     })

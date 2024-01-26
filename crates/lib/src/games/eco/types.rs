@@ -2,6 +2,9 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::collections::HashMap;
 
+use crate::protocols::types::CommonPlayer;
+use crate::protocols::types::CommonResponse;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Root {
@@ -92,6 +95,14 @@ pub struct Info {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Player {
     pub name: String,
+}
+
+impl CommonPlayer for Player {
+    fn as_original(&self) -> crate::protocols::types::GenericPlayer {
+        crate::protocols::types::GenericPlayer::Eco(self)
+    }
+
+    fn name(&self) -> &str { &self.name }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -187,4 +198,20 @@ impl From<Root> for Response {
             connect: value.join_url,
         }
     }
+}
+
+impl CommonResponse for Response {
+    fn as_original(&self) -> crate::protocols::GenericResponse { crate::protocols::GenericResponse::Eco(self) }
+
+    fn players_online(&self) -> u32 { self.players_online }
+
+    fn players_maximum(&self) -> u32 { self.players_maximum }
+
+    fn description(&self) -> Option<&str> { Some(&self.description) }
+
+    fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
+
+    fn has_password(&self) -> Option<bool> { Some(self.has_password) }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { Some(self.players.iter().map(|p| p as _).collect()) }
 }

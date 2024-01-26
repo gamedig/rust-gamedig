@@ -19,6 +19,8 @@ pub enum ProprietaryProtocol {
     FFOW,
     JC2M,
     Savage2,
+    #[cfg(feature = "serde")]
+    Eco,
 }
 
 /// Enumeration of all valid protocol types
@@ -51,6 +53,8 @@ pub enum GenericResponse<'a> {
     JC2M(&'a crate::games::jc2m::Response),
     #[cfg(feature = "games")]
     Savage2(&'a crate::games::savage2::Response),
+    #[cfg(all(feature = "games", feature = "serde"))]
+    Eco(&'a crate::games::eco::Response),
 }
 
 /// All player types
@@ -68,6 +72,8 @@ pub enum GenericPlayer<'a> {
     TheShip(&'a crate::games::theship::TheShipPlayer),
     #[cfg(feature = "games")]
     JCMP2(&'a crate::games::jc2m::Player),
+    #[cfg(all(feature = "games", feature = "serde"))]
+    Eco(&'a crate::games::eco::Player),
 }
 
 pub trait CommonResponse {
