@@ -13,6 +13,7 @@ pub use valve::*;
 /// Battalion 1944
 pub mod battalion1944;
 /// Eco
+#[cfg(feature = "serde")]
 pub mod eco;
 /// Frontlines: Fuel of War
 pub mod ffow;
