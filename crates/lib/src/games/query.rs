@@ -3,12 +3,12 @@
 use std::net::{IpAddr, SocketAddr};
 
 use crate::games::types::Game;
-use crate::games::{ffow, jc2m, minecraft, savage2, theship};
+use crate::games::{eco, ffow, jc2m, minecraft, savage2, theship};
+use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
 use crate::protocols::types::{CommonResponse, ExtraRequestSettings, ProprietaryProtocol, Protocol, TimeoutSettings};
 use crate::GDResult;
-use crate::{eco, protocols};
 
 /// Make a query given a game definition
 #[inline]

@@ -20,9 +20,9 @@ pub struct HttpClient {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Protocol {
     #[default]
-    HTTP,
+    Http,
     #[cfg(feature = "tls")]
-    HTTPS,
+    Https,
 }
 
 impl Protocol {
@@ -31,9 +31,9 @@ impl Protocol {
     pub const fn as_str(&self) -> &'static str {
         use Protocol::*;
         match self {
-            HTTP => "http:",
+            Http => "http:",
             #[cfg(feature = "tls")]
-            HTTPS => "https:",
+            Https => "https:",
         }
     }
 }
