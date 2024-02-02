@@ -17,7 +17,7 @@ rust-version = "1.65.0"
 categories = ["parser-implementations", "parsing", "network-programming", "encoding"]
 
 [features]
-default = ["games", "services", "game_defs", "packet_capture",]
+default = ["games", "services", "game_defs"]
 games = []
 services = []
 game_defs = ["dep:phf", "games"]
