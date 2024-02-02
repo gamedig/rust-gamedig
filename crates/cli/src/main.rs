@@ -203,42 +203,42 @@ fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: Ou
             match output_mode {
                 OutputMode::Generic => output_result_debug(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_debug(result.as_original()),
-            }
+            };
         }
         #[cfg(feature = "json")]
         OutputFormat::JsonPretty => {
-            match output_mode {
+            let _ = match output_mode {
                 OutputMode::Generic => output_result_json_pretty(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_json_pretty(result.as_original()),
-            }
+            };
         }
         #[cfg(feature = "json")]
         OutputFormat::Json => {
-            match output_mode {
+            let _ = match output_mode {
                 OutputMode::Generic => output_result_json(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_json(result.as_original()),
-            }
+            };
         }
         #[cfg(feature = "xml")]
         OutputFormat::Xml => {
-            match output_mode {
+            let _ = match output_mode {
                 OutputMode::Generic => output_result_xml(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_xml(result.as_original()),
-            }
+            };
         }
         #[cfg(feature = "bson")]
         OutputFormat::BsonHex => {
-            match output_mode {
+            let _ = match output_mode {
                 OutputMode::Generic => output_result_bson_hex(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_bson_hex(result.as_original()),
-            }
+            };
         }
         #[cfg(feature = "bson")]
         OutputFormat::BsonBase64 => {
-            match output_mode {
+            let _ = match output_mode {
                 OutputMode::Generic => output_result_bson_base64(result.as_json()),
                 OutputMode::ProtocolSpecific => output_result_bson_base64(result.as_original()),
-            }
+            };
         }
     }
 }
@@ -256,8 +256,10 @@ fn output_result_debug<R: std::fmt::Debug>(result: R) {
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "json")]
-fn output_result_json<T: serde::Serialize>(result: T) {
-    println!("{}", serde_json::to_string(&result).unwrap());
+fn output_result_json<T: serde::Serialize>(result: T) -> Result<()> {
+    println!("{}", serde_json::to_string(&result)?);
+
+    Ok(())
 }
 
 /// Output the result as a pretty printed JSON object.
@@ -265,61 +267,92 @@ fn output_result_json<T: serde::Serialize>(result: T) {
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "json")]
-fn output_result_json_pretty<T: serde::Serialize>(result: T) {
-    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+fn output_result_json_pretty<T: serde::Serialize>(result: T) -> Result<()> {
+    println!("{}", serde_json::to_string_pretty(&result)?);
+
+    Ok(())
 }
 
 /// Output the result as an XML object.
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "xml")]
-fn output_result_xml<T: serde::Serialize>(result: T) {
-    use quick_xml::events::{BytesEnd, BytesStart, Event, BytesText};
-    use quick_xml::Writer;
+fn output_result_xml<T: serde::Serialize>(result: T) -> Result<()> {
+    use quick_xml::{
+        events::{BytesEnd, BytesStart, BytesText, Event},
+        Writer,
+    };
     use serde_json::Value;
-    use std::io::Cursor;
 
-    // Serialize the struct to a JSON Value first
-    let json = serde_json::to_value(result).expect("Failed to serialize struct to JSON");
+    // Serialize the input `result` of generic type `T` into a JSON value.
+    // This step converts the Rust data structure into a JSON format,
+    // which will then be used to generate the corresponding XML.
+    let json = serde_json::to_value(result)?;
 
-    // Create a buffer and a writer for XML output
-    let buffer = Cursor::new(Vec::new());
-    let mut writer = Writer::new(buffer);
+    // Initialize the XML writer with a new, empty vector to store the XML data.
+    let mut writer = Writer::new(Vec::new());
 
-    // Recursive function to convert JSON to XML
-    fn json_to_xml<W: std::io::Write>(
-        writer: &mut Writer<W>,
-        key: Option<&str>,
-        value: &Value,
-    ) -> Result<()> {
+    // Define a recursive function `json_to_xml` to convert the JSON value into XML
+    // format. The function takes a mutable reference to the XML writer, an
+    // optional key as a string slice, and a reference to the JSON value to be
+    // converted.
+    fn json_to_xml<W: std::io::Write>(writer: &mut Writer<W>, key: Option<&str>, value: &Value) -> Result<()> {
         match value {
+            // If the JSON value is an object, iterate through its properties,
+            // creating XML elements with corresponding keys and values.
             Value::Object(obj) => {
                 if let Some(key) = key {
+                    // Start an XML element for the object.
                     writer.write_event(Event::Start(BytesStart::new(key)))?;
                 }
+
                 for (k, v) in obj {
+                    // Recursively process each property of the object.
                     json_to_xml(writer, Some(k), v)?;
                 }
+
                 if let Some(key) = key {
+                    // Close the XML element for the object.
                     writer.write_event(Event::End(BytesEnd::new(key)))?;
                 }
-            },
+            }
+
+            // If the JSON value is an array, iterate through its elements,
+            // creating XML elements for each item.
             Value::Array(arr) => {
                 for v in arr {
+                    // Use "item" as the default key for array elements without keys.
                     json_to_xml(writer, key.or(Some("item")), v)?;
                 }
-            },
+            }
+
+            // If the JSON value is null, create an empty XML element.
+            Value::Null => {
+                if let Some(key) = key {
+                    writer.write_event(Event::Empty(BytesStart::new(key)))?;
+                }
+            }
+
+            // For all other JSON value types (String, Number, Bool),
+            // convert the value to a string and create an XML element with the text content.
+            // Note: We handle null strings here as well, as they are treated as a string type.
             _ => {
                 if let Some(key) = key {
+                    // Start the XML element with the given key.
                     writer.write_event(Event::Start(BytesStart::new(key)))?;
                 }
+
+                // Convert the JSON value to a string, trimming quotes for non-string values.
                 let text_string = match value {
                     Value::String(s) => s.to_string(),
-                    _ => value.to_string().trim_matches('"').to_string(), 
+                    _ => value.to_string().trim_matches('"').to_string(),
                 };
-                let text = text_string.as_str();
-                writer.write_event(Event::Text(BytesText::new(text)))?;
+
+                // Create a text node with the converted string value.
+                writer.write_event(Event::Text(BytesText::new(&text_string)))?;
+
                 if let Some(key) = key {
+                    // Close the XML element.
                     writer.write_event(Event::End(BytesEnd::new(key)))?;
                 }
             }
@@ -327,14 +360,20 @@ fn output_result_xml<T: serde::Serialize>(result: T) {
         Ok(())
     }
 
-    writer.write_event(Event::Start(BytesStart::new("data"))).expect("Failed to write start tag");
-    json_to_xml(&mut writer, None, &json).expect("Failed to convert JSON to XML");
-    writer.write_event(Event::End(BytesEnd::new("data"))).expect("Failed to write end tag");
+    // Start the root XML element named "data".
+    writer.write_event(Event::Start(BytesStart::new("data")))?;
+    // Convert the top-level JSON value to XML.
+    json_to_xml(&mut writer, None, &json)?;
+    // Close the root XML element.
+    writer.write_event(Event::End(BytesEnd::new("data")))?;
 
-    let xml_bytes = writer.into_inner().into_inner();
-    let xml_string = String::from_utf8(xml_bytes).expect("Failed to convert XML bytes to string");
+    // Convert the XML data stored in the writer to a UTF-8 string.
+    let xml_bytes = writer.into_inner();
+    let xml_string = String::from_utf8(xml_bytes).expect("Failed to convert XML bytes to UTF-8 string");
 
     println!("{}", xml_string);
+
+    Ok(())
 }
 
 /// Output the result as a BSON object encoded as a hex string.
@@ -342,15 +381,17 @@ fn output_result_xml<T: serde::Serialize>(result: T) {
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "bson")]
-fn output_result_bson_hex<T: serde::Serialize>(result: T) {
-    let bson = bson::to_bson(&result).unwrap();
+fn output_result_bson_hex<T: serde::Serialize>(result: T) -> Result<()> {
+    let bson = bson::to_bson(&result)?;
 
     if let bson::Bson::Document(document) = bson {
-        let bytes = bson::to_vec(&document).unwrap();
+        let bytes = bson::to_vec(&document)?;
 
         println!("{}", hex::encode(bytes));
+
+        Ok(())
     } else {
-        panic!("Failed to convert result to BSON Hex");
+        panic!("Failed to convert result to BSON Hex (BSON_DOCUMENT_UNAVAILABLE)");
     }
 }
 
@@ -359,17 +400,19 @@ fn output_result_bson_hex<T: serde::Serialize>(result: T) {
 /// # Arguments
 /// * `result` - A serde serializable result.
 #[cfg(feature = "bson")]
-fn output_result_bson_base64<T: serde::Serialize>(result: T) {
+fn output_result_bson_base64<T: serde::Serialize>(result: T) -> Result<()> {
     use base64::Engine;
 
-    let bson = bson::to_bson(&result).unwrap();
+    let bson = bson::to_bson(&result)?;
 
     if let bson::Bson::Document(document) = bson {
-        let bytes = bson::to_vec(&document).unwrap();
+        let bytes = bson::to_vec(&document)?;
 
         println!("{}", base64::prelude::BASE64_STANDARD.encode(bytes));
+
+        Ok(())
     } else {
-        panic!("Failed to convert result to BSON Base64");
+        panic!("Failed to convert result to BSON Base64 (BSON_DOCUMENT_UNAVAILABLE)");
     }
 }
 
