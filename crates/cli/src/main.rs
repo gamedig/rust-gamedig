@@ -278,7 +278,67 @@ fn output_result_json_pretty<T: serde::Serialize>(result: T) {
 /// * `result` - A serde serializable result.
 #[cfg(feature = "xml")]
 fn output_result_xml<T: serde::Serialize>(result: T) {
-    println!("{}", serde_xml_rs::to_string(&result).unwrap());
+    use quick_xml::events::{BytesEnd, BytesStart, Event, BytesText};
+    use quick_xml::Writer;
+    use serde_json::Value;
+    use std::io::Cursor;
+
+    // Serialize the struct to a JSON Value first
+    let json = serde_json::to_value(result).expect("Failed to serialize struct to JSON");
+
+    // Create a buffer and a writer for XML output
+    let buffer = Cursor::new(Vec::new());
+    let mut writer = Writer::new(buffer);
+
+    // Recursive function to convert JSON to XML
+    fn json_to_xml<W: std::io::Write>(
+        writer: &mut Writer<W>,
+        key: Option<&str>,
+        value: &Value,
+    ) -> Result<()> {
+        match value {
+            Value::Object(obj) => {
+                if let Some(key) = key {
+                    writer.write_event(Event::Start(BytesStart::new(key)))?;
+                }
+                for (k, v) in obj {
+                    json_to_xml(writer, Some(k), v)?;
+                }
+                if let Some(key) = key {
+                    writer.write_event(Event::End(BytesEnd::new(key)))?;
+                }
+            },
+            Value::Array(arr) => {
+                for v in arr {
+                    json_to_xml(writer, key.or(Some("item")), v)?;
+                }
+            },
+            _ => {
+                if let Some(key) = key {
+                    writer.write_event(Event::Start(BytesStart::new(key)))?;
+                }
+                let text_string = match value {
+                    Value::String(s) => s.to_string(),
+                    _ => value.to_string().trim_matches('"').to_string(), 
+                };
+                let text = text_string.as_str();
+                writer.write_event(Event::Text(BytesText::new(text)))?;
+                if let Some(key) = key {
+                    writer.write_event(Event::End(BytesEnd::new(key)))?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    writer.write_event(Event::Start(BytesStart::new("data"))).expect("Failed to write start tag");
+    json_to_xml(&mut writer, None, &json).expect("Failed to convert JSON to XML");
+    writer.write_event(Event::End(BytesEnd::new("data"))).expect("Failed to write end tag");
+
+    let xml_bytes = writer.into_inner().into_inner();
+    let xml_string = String::from_utf8(xml_bytes).expect("Failed to convert XML bytes to string");
+
+    println!("{}", xml_string);
 }
 
 /// Output the result as a BSON object encoded as a hex string.
