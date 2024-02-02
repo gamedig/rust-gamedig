@@ -19,7 +19,7 @@ packet_capture = ["gamedig/packet_capture"]
 # Output formats
 bson = ["dep:serde", "dep:bson", "dep:hex", "dep:base64", "gamedig/serde"]
 json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
-xml = ["dep:serde", "dep:quick-xml", "gamedig/serde"]
+xml = ["dep:serde", "dep:serde_json", "dep:quick-xml", "gamedig/serde"]
 
 # Misc
 browser = ["dep:webbrowser"]
