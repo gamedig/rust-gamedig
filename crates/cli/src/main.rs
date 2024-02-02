@@ -279,7 +279,7 @@ fn output_result_json_pretty<T: serde::Serialize>(result: T) -> Result<()> {
 #[cfg(feature = "xml")]
 fn output_result_xml<T: serde::Serialize>(result: T) -> Result<()> {
     use quick_xml::{
-        events::{BytesEnd, BytesStart, BytesText, Event},
+        events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
         Writer,
     };
     use serde_json::Value;
@@ -291,6 +291,9 @@ fn output_result_xml<T: serde::Serialize>(result: T) -> Result<()> {
 
     // Initialize the XML writer with a new, empty vector to store the XML data.
     let mut writer = Writer::new(Vec::new());
+
+    // Write the XML 1.1 declaration
+    writer.write_event(Event::Decl(BytesDecl::new("1.1", Some("utf-8"), None)))?;
 
     // Define a recursive function `json_to_xml` to convert the JSON value into XML
     // format. The function takes a mutable reference to the XML writer, an
