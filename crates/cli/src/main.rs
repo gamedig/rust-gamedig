@@ -223,11 +223,7 @@ fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: Ou
         OutputFormat::Xml => {
             match output_mode {
                 OutputMode::Generic => output_result_xml(result.as_json()),
-                // BUG: In this case we get a writer error with all serde write methods some reason with xml 0.6.0
-                // BUG: gamedig-cli.exe query -g <GAME> -i <IP> -p <PORT> -f xml --output-mode protocol-specific
-                // BUG: Writer: emitter error: document start event has already been emitted
-                // BUG: With xml 0.5.1 we get unsupported operation: 'serialize_unit_variant'
-                OutputMode::ProtocolSpecific => panic!("XML format is not supported for protocol specific output"),
+                OutputMode::ProtocolSpecific => output_result_xml(result.as_original()),
             }
         }
         #[cfg(feature = "bson")]
