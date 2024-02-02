@@ -22,7 +22,7 @@ const GAMEDIG_HEADER: &str = r"
                                       |___/      
 
         A command line interface for querying game servers.
-  Copyright (C) 2022 - 2023 GameDig Organization & Contributors
+  Copyright (C) 2022 - 2024 GameDig Organization & Contributors
                   Licensed under the MIT license
 ";
 
