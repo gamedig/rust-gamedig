@@ -22,7 +22,7 @@ pub enum GDErrorKind {
     SocketBind,
     /// Invalid input to the library.
     InvalidInput,
-    /// The server is a different game than the game queried.
+    /// The server response indicated that it is a different game than the game queried.
     BadGame,
     /// Couldn't automatically query (none of the attempted protocols were successful).
     AutoQuery,
