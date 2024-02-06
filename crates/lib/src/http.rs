@@ -1,6 +1,7 @@
-use crate::GDErrorKind::{InvalidInput, PacketSend, ProtocolFormat};
+use crate::GDErrorKind::{InvalidInput, PacketReceive, PacketSend, ProtocolFormat};
 use crate::{GDResult, TimeoutSettings};
 
+use std::io::Read;
 use std::net::SocketAddr;
 
 use ureq::{Agent, AgentBuilder};
@@ -8,6 +9,9 @@ use url::Url;
 
 #[cfg(feature = "serde")]
 use serde::{de::DeserializeOwned, Serialize};
+
+/// Max length of HTTP responses in bytes: 1GB
+const MAX_RESPONSE_LENGTH: usize = 1024 * 1024 * 1024;
 
 /// HTTP request client. Define parameters host parameters on new, then re-use
 /// for each request.
@@ -161,6 +165,9 @@ impl HttpClient {
         })
     }
 
+    /// Send a HTTP GET request and return the response data as a buffer.
+    pub fn get(&mut self, path: &str) -> GDResult<Vec<u8>> { self.request("GET", path) }
+
     /// Send a HTTP GET request and parse the JSON resonse.
     #[cfg(feature = "serde")]
     pub fn get_json<T: DeserializeOwned>(&mut self, path: &str) -> GDResult<T> { self.request_json("GET", path) }
@@ -171,7 +178,42 @@ impl HttpClient {
         self.request_with_json_data("POST", path, data)
     }
 
-    // NOTE: More methods can be added here as required
+    // NOTE: More methods can be added here as required using the request_json or
+    // request_with_json methods
+
+    #[inline]
+    fn request(&mut self, method: &str, path: &str) -> GDResult<Vec<u8>> {
+        // Append the path to the pre-parsed URL and create a request object.
+        self.address.set_path(path);
+        let mut request = self.client.request_url(method, &self.address);
+
+        // Set the request headers.
+        for (key, value) in self.headers.iter() {
+            request = request.set(key, value);
+        }
+
+        // Send the request.
+        let http_response = request.call().map_err(|e| PacketSend.context(e))?;
+
+        let length = if let Some(length) = http_response.header("Content-Length") {
+            length
+                .parse::<usize>()
+                .map_err(|e| ProtocolFormat.context(e))?
+                .min(MAX_RESPONSE_LENGTH)
+        } else {
+            5012 // Sensible default allocation
+        };
+
+        let mut buffer: Vec<u8> = Vec::with_capacity(length);
+
+        let _ = http_response
+            .into_reader()
+            .take(MAX_RESPONSE_LENGTH as u64)
+            .read_to_end(&mut buffer)
+            .map_err(|e| PacketReceive.context(e))?;
+
+        Ok(buffer)
+    }
 
     /// Send a HTTP request without any data and parse the JSON response.
     #[inline]
