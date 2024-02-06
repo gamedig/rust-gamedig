@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::http::HttpSettings;
+use crate::http::{HttpProtocol, HttpSettings};
 use crate::protocols::types::{CommonPlayer, CommonResponse};
 use crate::ExtraRequestSettings;
 
@@ -233,7 +233,7 @@ impl From<ExtraRequestSettings> for EcoRequestSettings {
 impl From<EcoRequestSettings> for HttpSettings<String> {
     fn from(value: EcoRequestSettings) -> Self {
         HttpSettings {
-            protocol: crate::http::Protocol::Http,
+            protocol: HttpProtocol::Http,
             hostname: value.hostname,
             headers: Vec::with_capacity(0),
         }

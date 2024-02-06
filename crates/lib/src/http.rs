@@ -27,18 +27,18 @@ pub struct HttpClient {
 ///
 /// Note: if the `tls` feature is disabled this will only contain Http.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub enum Protocol {
+pub enum HttpProtocol {
     #[default]
     Http,
     #[cfg(feature = "tls")]
     Https,
 }
 
-impl Protocol {
+impl HttpProtocol {
     /// Convert [Protocol] to a static str for use in a [Url].
     /// e.g. "http:"
     pub const fn as_str(&self) -> &'static str {
-        use Protocol::*;
+        use HttpProtocol::*;
         match self {
             Http => "http:",
             #[cfg(feature = "tls")]
@@ -61,7 +61,7 @@ impl Protocol {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct HttpSettings<S: Into<String>> {
     /// Choose whether to use HTTP or HTTPS.
-    pub protocol: Protocol,
+    pub protocol: HttpProtocol,
     /// Choose a hostname override (used to set the [Host](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header) and for TLS.
     pub hostname: Option<S>,
     /// Choose HTTP headers to send with requests.
@@ -70,7 +70,7 @@ pub struct HttpSettings<S: Into<String>> {
 
 impl<S: Into<String>> HttpSettings<S> {
     /// Set the HTTP protocol (defaults to HTTP).
-    pub const fn protocol(mut self, protocol: Protocol) -> HttpSettings<S> {
+    pub const fn protocol(mut self, protocol: HttpProtocol) -> HttpSettings<S> {
         self.protocol = protocol;
         self
     }
@@ -273,9 +273,9 @@ mod tests {
         const HOSTNAME: &str = "example.org";
 
         #[cfg(feature = "tls")]
-        const PROTOCOL: Protocol = Protocol::Https;
+        const PROTOCOL: HttpProtocol = HttpProtocol::Https;
         #[cfg(not(feature = "tls"))]
-        const PROTOCOL: Protocol = Protocol::Http;
+        const PROTOCOL: HttpProtocol = HttpProtocol::Http;
 
         let settings = HttpSettings::default()
             .hostname(HOSTNAME)
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     fn http_client_new() {
-        const PROTOCOL: Protocol = Protocol::Http;
+        const PROTOCOL: HttpProtocol = HttpProtocol::Http;
 
         const ADDRESS: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 8000));
 
@@ -321,7 +321,7 @@ mod tests {
             .unwrap();
 
         let settings = HttpSettings::default()
-            .protocol(Protocol::Https)
+            .protocol(HttpProtocol::Https)
             .hostname("api.github.com");
 
         let mut client = HttpClient::new(&address, &None, settings).unwrap();
