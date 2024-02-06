@@ -12,7 +12,7 @@ pub enum GDErrorKind {
     PacketBad,
     /// Couldn't send the packet.
     PacketSend,
-    /// Couldn't send the receive.
+    /// Couldn't receieve data when it was expected.
     PacketReceive,
     /// Couldn't decompress data.
     Decompress,
@@ -20,11 +20,11 @@ pub enum GDErrorKind {
     SocketConnect,
     /// Couldn't bind a socket.
     SocketBind,
-    /// Invalid input.
+    /// Invalid input to the library.
     InvalidInput,
-    /// The server queried is not the queried game server.
+    /// The server is a different game than the game queried.
     BadGame,
-    /// Couldn't automatically query.
+    /// Couldn't automatically query (none of the attempted protocols were successful).
     AutoQuery,
     /// A protocol-defined expected format was not met.
     ProtocolFormat,
