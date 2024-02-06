@@ -15,6 +15,8 @@ const MAX_RESPONSE_LENGTH: usize = 1024 * 1024 * 1024;
 
 /// HTTP request client. Define parameters host parameters on new, then re-use
 /// for each request.
+///
+/// For example usage see [tests].
 pub struct HttpClient {
     client: Agent,
     address: Url,
@@ -257,5 +259,109 @@ impl HttpClient {
             .map_err(|e| PacketSend.context(e))?
             .into_json::<T>()
             .map_err(|e| ProtocolFormat.context(e))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::net::{Ipv4Addr, SocketAddrV4, ToSocketAddrs};
+
+    use super::*;
+
+    #[test]
+    fn http_settings_builder() {
+        const HOSTNAME: &str = "example.org";
+
+        #[cfg(feature = "tls")]
+        const PROTOCOL: Protocol = Protocol::Https;
+        #[cfg(not(feature = "tls"))]
+        const PROTOCOL: Protocol = Protocol::Http;
+
+        let settings = HttpSettings::default()
+            .hostname(HOSTNAME)
+            .protocol(PROTOCOL)
+            .header("Gamedig", "Is Awesome")
+            .headers(vec![("Foo", "bar")])
+            .header("Baz", "Buzz");
+
+        assert_eq!(settings.hostname, Some(HOSTNAME));
+        assert_eq!(settings.protocol, PROTOCOL);
+        assert_eq!(settings.headers, vec![("Foo", "bar"), ("Baz", "Buzz"),]);
+    }
+
+    #[test]
+    fn http_client_new() {
+        const PROTOCOL: Protocol = Protocol::Http;
+
+        const ADDRESS: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 8000));
+
+        let settings = HttpSettings {
+            protocol: PROTOCOL,
+            hostname: Some("github.com"),
+            headers: vec![("Authorization", "UUDDLRLRBA")],
+        };
+
+        let client = HttpClient::new(&ADDRESS, &None, settings).unwrap();
+
+        assert_eq!(client.address.as_str(), "http://github.com:8000/");
+        assert_eq!(
+            client.headers,
+            vec![(String::from("Authorization"), String::from("UUDDLRLRBA")),]
+        );
+    }
+
+    #[cfg(feature = "tls")]
+    #[test]
+    #[ignore = "HTTP requests won't work without internet"]
+    fn https_json_get_request() {
+        let address = "api.github.com:443"
+            .to_socket_addrs()
+            .unwrap()
+            .next()
+            .unwrap();
+
+        let settings = HttpSettings::default()
+            .protocol(Protocol::Https)
+            .hostname("api.github.com");
+
+        let mut client = HttpClient::new(&address, &None, settings).unwrap();
+
+        let response: serde_json::Value = client.get_json("/events").unwrap();
+
+        println!("{:?}", response);
+    }
+
+    #[test]
+    #[ignore = "HTTP requests won't work without internet"]
+    fn http_json_get_request() {
+        let address = "postman-echo.com:80"
+            .to_socket_addrs()
+            .unwrap()
+            .next()
+            .unwrap();
+
+        let settings = HttpSettings::default().hostname("postman-echo.com");
+
+        let mut client = HttpClient::new(&address, &None, settings).unwrap();
+
+        let response: serde_json::Value = client.get_json("/get").unwrap();
+
+        println!("{:?}", response);
+    }
+
+    #[test]
+    #[ignore = "HTTP requests won't work without internet"]
+    fn http_get_request() {
+        let address = "ifconfig.me:80".to_socket_addrs().unwrap().next().unwrap();
+
+        let settings = HttpSettings::default()
+            .hostname("ifconfig.me")
+            .header("User-Agent", "Curl/8.6.0");
+
+        let mut client = HttpClient::new(&address, &None, settings).unwrap();
+
+        let response = client.get("/").unwrap();
+
+        println!("{:?}", std::str::from_utf8(&response));
     }
 }
