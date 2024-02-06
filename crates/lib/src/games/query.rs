@@ -112,7 +112,15 @@ pub fn query_with_timeout_and_extra_settings(
                     }
                 }
                 #[cfg(feature = "serde")]
-                ProprietaryProtocol::Eco => eco::query_with_timeout(address, port, &timeout_settings).map(Box::new)?,
+                ProprietaryProtocol::Eco => {
+                    eco::query_with_timeout_and_extra_settings(
+                        address,
+                        port,
+                        &timeout_settings,
+                        extra_settings.map(ExtraRequestSettings::into),
+                    )
+                    .map(Box::new)?
+                }
             }
         }
     })

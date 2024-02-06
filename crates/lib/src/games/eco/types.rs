@@ -1,9 +1,9 @@
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::protocols::types::CommonPlayer;
-use crate::protocols::types::CommonResponse;
+use crate::http::HttpSettings;
+use crate::protocols::types::{CommonPlayer, CommonResponse};
+use crate::ExtraRequestSettings;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -214,4 +214,28 @@ impl CommonResponse for Response {
     fn has_password(&self) -> Option<bool> { Some(self.has_password) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { Some(self.players.iter().map(|p| p as _).collect()) }
+}
+
+/// Extra request settings for eco queries.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct EcoRequestSettings {
+    hostname: Option<String>,
+}
+
+impl From<ExtraRequestSettings> for EcoRequestSettings {
+    fn from(value: ExtraRequestSettings) -> Self {
+        EcoRequestSettings {
+            hostname: value.hostname,
+        }
+    }
+}
+
+impl From<EcoRequestSettings> for HttpSettings<String> {
+    fn from(value: EcoRequestSettings) -> Self {
+        HttpSettings {
+            protocol: crate::http::Protocol::Http,
+            hostname: value.hostname,
+            headers: Vec::with_capacity(0),
+        }
+    }
 }
