@@ -1,5 +1,5 @@
 use crate::eco::{Response, Root};
-use crate::http::{HTTPSettings, HttpClient, Protocol};
+use crate::http::{HttpSettings, HttpClient, Protocol};
 use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
 
@@ -17,9 +17,10 @@ pub fn query_with_timeout(
     let mut client = HttpClient::new(
         address,
         timeout_settings,
-        HTTPSettings {
+        HttpSettings::<&str> {
             protocol: Protocol::Http,
             hostname: None,
+            headers: vec![],
         },
     )?;
 

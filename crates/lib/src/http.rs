@@ -14,9 +14,12 @@ use serde::{de::DeserializeOwned, Serialize};
 pub struct HttpClient {
     client: Agent,
     address: Url,
+    headers: Vec<(String, String)>,
 }
 
 /// HTTP Protocols.
+///
+/// Note: if the `tls` feature is disabled this will only contain Http.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Protocol {
     #[default]
@@ -39,12 +42,51 @@ impl Protocol {
 }
 
 /// Additional settings for HTTPClients.
+///
+/// # Can be created using builder functions:
+/// ```ignore, We cannot test private functionality
+/// use gamedig::http::{HttpSettings, Protocol};
+///
+/// let _ = HttpSettings::default()
+///   .protocol(Protocol::Http)
+///   .hostname(String::from("test.com"))
+///   .header(String::from("Authorization"), String::from("Bearer Token"));
+/// ```
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct HTTPSettings {
+pub struct HttpSettings<S: Into<String>> {
     /// Choose whether to use HTTP or HTTPS.
     pub protocol: Protocol,
     /// Choose a hostname override (used to set the [Host](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host) header) and for TLS.
-    pub hostname: Option<String>,
+    pub hostname: Option<S>,
+    /// Choose HTTP headers to send with requests.
+    pub headers: Vec<(S, S)>,
+}
+
+impl<S: Into<String>> HttpSettings<S> {
+    /// Set the HTTP protocol (defaults to HTTP).
+    pub const fn protocol(mut self, protocol: Protocol) -> HttpSettings<S> {
+        self.protocol = protocol;
+        self
+    }
+
+    /// Set the desired HTTP host name: used for the HTTP Host header and for
+    /// TLS negotiation.
+    pub fn hostname(mut self, hostname: S) -> HttpSettings<S> {
+        self.hostname = Some(hostname);
+        self
+    }
+
+    /// Overwrite all the current HTTP headers with new headers.
+    pub fn headers(mut self, headers: Vec<(S, S)>) -> HttpSettings<S> {
+        self.headers = headers;
+        self
+    }
+
+    /// Set one HTTP header value.
+    pub fn header(mut self, name: S, value: S) -> HttpSettings<S> {
+        self.headers.push((name, value));
+        self
+    }
 }
 
 impl HttpClient {
@@ -56,10 +98,10 @@ impl HttpClient {
     /// - [timeout_settings](TimeoutSettings): Used to set the connect and
     ///   socket timeouts for the requests.
     /// - [http_settings](HttpSettings): Additional settings for the HTTPClient.
-    pub fn new(
+    pub fn new<S: Into<String>>(
         address: &SocketAddr,
         timeout_settings: &Option<TimeoutSettings>,
-        http_settings: HTTPSettings,
+        http_settings: HttpSettings<S>,
     ) -> GDResult<Self>
     where
         Self: Sized,
@@ -96,7 +138,10 @@ impl HttpClient {
 
         let client = client_builder.build();
 
-        let host = http_settings.hostname.unwrap_or(address.ip().to_string());
+        let host = http_settings
+            .hostname
+            .map(S::into)
+            .unwrap_or(address.ip().to_string());
 
         Ok(Self {
             client,
@@ -108,6 +153,11 @@ impl HttpClient {
                 address.port()
             ))
             .map_err(|e| InvalidInput.context(e))?,
+            headers: http_settings
+                .headers
+                .into_iter()
+                .map(|(k, v)| (k.into(), v.into()))
+                .collect(),
         })
     }
 
@@ -127,9 +177,17 @@ impl HttpClient {
     #[inline]
     #[cfg(feature = "serde")]
     fn request_json<T: DeserializeOwned>(&mut self, method: &str, path: &str) -> GDResult<T> {
+        // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
-        self.client
-            .request_url(method, &self.address)
+        let mut request = self.client.request_url(method, &self.address);
+
+        // Set the request headers.
+        for (key, value) in self.headers.iter() {
+            request = request.set(key, value);
+        }
+
+        // Send the request and parse the response as JSON.
+        request
             .call()
             .map_err(|e| PacketSend.context(e))?
             .into_json::<T>()
@@ -146,8 +204,13 @@ impl HttpClient {
         data: S,
     ) -> GDResult<T> {
         self.address.set_path(path);
-        self.client
-            .request_url(method, &self.address)
+        let mut request = self.client.request_url(method, &self.address);
+
+        for (key, value) in self.headers.iter() {
+            request = request.set(key, value);
+        }
+
+        request
             .send_json(data)
             .map_err(|e| PacketSend.context(e))?
             .into_json::<T>()
