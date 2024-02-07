@@ -11,6 +11,18 @@ pub enum Error {
     #[error("Gamedig Error: {0}")]
     Gamedig(#[from] gamedig::errors::GDError),
 
+    #[cfg(any(feature = "json", feature = "xml"))]
+    #[error("Serde Error: {0}")]
+    Serde(#[from] serde_json::Error),
+
+    #[cfg(feature = "bson")]
+    #[error("Bson Error: {0}")]
+    Bson(#[from] bson::ser::Error),
+
+    #[cfg(feature = "xml")]
+    #[error("Xml Error: {0}")]
+    Xml(#[from] quick_xml::Error),
+
     #[error("Unknown Game: {0}")]
     UnknownGame(String),
 

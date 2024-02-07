@@ -12,14 +12,44 @@ default-run = "gamedig-cli"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["json"]
+default = ["json", "bson", "xml", "browser"]
+
+# Tools
+packet_capture = ["gamedig/packet_capture"]
+
+# Output formats
+bson = ["dep:serde", "dep:bson", "dep:hex", "dep:base64", "gamedig/serde"]
 json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
+xml = ["dep:serde", "dep:serde_json", "dep:quick-xml", "gamedig/serde"]
+
+# Misc
+browser = ["dep:webbrowser"]
 
 [dependencies]
-clap = { version = "4.1.11", features = ["derive"] }
-gamedig = { version = "*", path = "../lib", features = ["clap"] }
+# Core Dependencies
 thiserror = "1.0.43"
+clap = { version = "4.1.11", default-features = false, features = ["derive"] }
+gamedig = { version = "*", path = "../lib", default-features = false, features = [
+    "clap",
+    "games",
+    "game_defs",
+] }
 
-# JSON dependencies
-serde = { version = "1", optional = true }
-serde_json = { version = "1", optional = true }
+# Feature Dependencies
+# Serialization / Deserialization
+serde = { version = "1", optional = true, default-features = false }
+
+# BSON
+bson = { version = "2.8.1", optional = true, default-features = false }
+base64 = { version = "0.21.7", optional = true, default-features = false, features = ["std"]}
+hex = { version = "0.4.3", optional = true, default-features = false }
+
+# JSON
+serde_json = { version = "1", optional = true, default-features = false }
+
+# XML
+quick-xml = { version = "0.31.0", optional = true, default-features = false }
+
+# Browser
+webbrowser = { version = "0.8.12", optional = true, default-features = false }
+

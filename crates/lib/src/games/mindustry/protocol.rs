@@ -16,7 +16,7 @@ pub const MAX_BUFFER_SIZE: usize = 500;
 /// Send a ping packet.
 ///
 /// [Reference](https://github.com/Anuken/Mindustry/blob/a2e5fbdedb2fc1c8d3c157bf344d10ad6d321442/core/src/mindustry/net/ArcNetProvider.java#L248)
-pub fn send_ping(socket: &mut UdpSocket) -> GDResult<()> { socket.send(&[-2i8 as u8, 1i8 as u8]) }
+pub(crate) fn send_ping(socket: &mut UdpSocket) -> GDResult<()> { socket.send(&[-2i8 as u8, 1i8 as u8]) }
 
 /// Parse server data.
 ///
