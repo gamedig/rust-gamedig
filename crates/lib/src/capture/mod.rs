@@ -29,9 +29,6 @@ pub fn setup_capture(file_path: Option<PathBuf>) {
 
         let writer = Box::new(Pcap::new(pcap_writer));
         attach(writer)
-    } else {
-        // If no file path is provided
-        // Do nothing
     }
 }
 
