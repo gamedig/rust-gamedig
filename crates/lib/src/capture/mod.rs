@@ -1,5 +1,6 @@
 pub(crate) mod packet;
 mod pcap;
+pub(crate) mod socket;
 pub(crate) mod writer;
 
 use self::{pcap::Pcap, writer::Writer};
@@ -38,4 +39,4 @@ pub fn setup_capture(file_path: Option<PathBuf>) {
 ///
 /// # Errors
 /// Returns an Error if the writer is already set.
-fn attach(writer: Box<dyn Writer + Send + Sync>) { crate::socket::capture::set_writer(writer); }
+fn attach(writer: Box<dyn Writer + Send + Sync>) { crate::capture::socket::set_writer(writer); }
