@@ -21,13 +21,7 @@ use super::packet::{
     PACKET_SIZE,
 };
 
-const BUFFER_SIZE: usize = PACKET_SIZE
-    - (if HEADER_SIZE_IP4 > HEADER_SIZE_IP6 {
-        HEADER_SIZE_IP4
-    } else {
-        HEADER_SIZE_IP6
-    })
-    - HEADER_SIZE_ETHERNET;
+const BUFFER_SIZE: usize = PACKET_SIZE - HEADER_SIZE_IP6 - HEADER_SIZE_ETHERNET;
 
 pub(crate) struct Pcap<W: Write> {
     writer: PcapNgWriter<W>,
