@@ -168,7 +168,7 @@ impl Socket for UdpSocketImpl {
 }
 
 #[cfg(not(feature = "packet_capture"))]
-pub type UdpSocket = UdpSocketImpl; 
+pub type UdpSocket = UdpSocketImpl;
 #[cfg(not(feature = "packet_capture"))]
 pub type TcpSocket = TcpSocketImpl;
 
