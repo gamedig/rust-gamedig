@@ -39,7 +39,7 @@ jobs:
         run: node .github/workflows/scripts/node-badge.mjs
 
       - name: Generate the badge SVG image
-        uses: emibcn/badge-action@v2.0.2
+        uses: emibcn/badge-action@v2.0.3
         id: badge
         with:
           label: "Node game coverage"
