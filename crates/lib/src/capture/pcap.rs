@@ -45,14 +45,15 @@ impl<W: Write> Pcap<W> {
     }
 
     pub(crate) fn write_transport_packet(&mut self, info: &CapturePacket, payload: &[u8]) {
-        let mut buf = vec![0; BUFFER_SIZE];
+        let mut buffer_array: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+        let buf: &mut [u8] = &mut buffer_array[..];
 
         let (source_port, dest_port) = info.ports_by_direction();
 
         match info.protocol {
             Protocol::Tcp => {
                 let buf_size = {
-                    let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+                    let mut tcp = MutableTcpPacket::new(buf).unwrap();
                     tcp.set_source(source_port);
                     tcp.set_destination(dest_port);
                     tcp.set_payload(payload);
@@ -86,7 +87,7 @@ impl<W: Write> Pcap<W> {
 
                 let mut info = info.clone();
                 let buf_size = {
-                    let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+                    let mut tcp = MutableTcpPacket::new(buf).unwrap();
                     tcp.set_source(dest_port);
                     tcp.set_destination(source_port);
                     tcp.set_data_offset(5);
@@ -119,7 +120,7 @@ impl<W: Write> Pcap<W> {
             }
             Protocol::Udp => {
                 let buf_size = {
-                    let mut udp = MutableUdpPacket::new(&mut buf).unwrap();
+                    let mut udp = MutableUdpPacket::new(buf).unwrap();
                     udp.set_source(source_port);
                     udp.set_destination(dest_port);
                     udp.set_length((payload.len() + HEADER_SIZE_UDP) as u16);
@@ -216,7 +217,8 @@ impl<W: Write> Pcap<W> {
 
         let mut info = info.clone();
         info.direction = Direction::Send;
-        let mut buf = vec![0; PACKET_SIZE];
+        let mut buffer_array: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+        let buf: &mut [u8] = &mut buffer_array[..];
         // Add a generated comment to all packets
         let options = vec![
             pcap_file::pcapng::blocks::enhanced_packet::EnhancedPacketOption::Comment("Generated TCP handshake".into()),
@@ -224,7 +226,7 @@ impl<W: Write> Pcap<W> {
 
         // SYN
         let buf_size = {
-            let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+            let mut tcp = MutableTcpPacket::new(buf).unwrap();
             self.state.send_seq = 500;
             tcp.set_sequence(self.state.send_seq);
             tcp.set_flags(TcpFlags::SYN);
@@ -245,7 +247,7 @@ impl<W: Write> Pcap<W> {
         // SYN + ACK
         info.direction = Direction::Receive;
         let buf_size = {
-            let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+            let mut tcp = MutableTcpPacket::new(buf).unwrap();
             self.state.send_seq = self.state.send_seq.wrapping_add(1);
             tcp.set_acknowledgement(self.state.send_seq);
             self.state.rec_seq = 1000;
@@ -268,7 +270,7 @@ impl<W: Write> Pcap<W> {
         // ACK
         info.direction = Direction::Send;
         let buf_size = {
-            let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+            let mut tcp = MutableTcpPacket::new(buf).unwrap();
             tcp.set_sequence(self.state.send_seq);
             self.state.rec_seq = self.state.rec_seq.wrapping_add(1);
             tcp.set_acknowledgement(self.state.rec_seq);
@@ -291,11 +293,12 @@ impl<W: Write> Pcap<W> {
     }
 
     pub(crate) fn send_tcp_fin(&mut self, info: &CapturePacket) {
-        let mut buf = vec![0; BUFFER_SIZE];
+        let mut buffer_array: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+        let buf: &mut [u8] = &mut buffer_array[..];
         let (source_port, dest_port) = info.ports_by_direction();
 
         let buf_size = {
-            let mut tcp = MutableTcpPacket::new(&mut buf).unwrap();
+            let mut tcp = MutableTcpPacket::new(buf).unwrap();
             tcp.set_source(source_port);
             tcp.set_destination(dest_port);
             tcp.set_data_offset(5);
