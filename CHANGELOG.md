@@ -14,6 +14,9 @@ Games:
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
 
+Crate:
+- Changed the serde feature to only enable serde derive for some types: serde and serde_json is now a dependecy by default.
+
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
 

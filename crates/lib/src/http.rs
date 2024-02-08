@@ -7,7 +7,6 @@ use std::net::SocketAddr;
 use ureq::{Agent, AgentBuilder};
 use url::Url;
 
-#[cfg(feature = "serde")]
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Max length of HTTP responses in bytes: 1GB
@@ -171,11 +170,9 @@ impl HttpClient {
     pub fn get(&mut self, path: &str) -> GDResult<Vec<u8>> { self.request("GET", path) }
 
     /// Send a HTTP GET request and parse the JSON resonse.
-    #[cfg(feature = "serde")]
     pub fn get_json<T: DeserializeOwned>(&mut self, path: &str) -> GDResult<T> { self.request_json("GET", path) }
 
     /// Send a HTTP Post request with JSON data and parse a JSON response.
-    #[cfg(feature = "serde")]
     pub fn post_json<T: DeserializeOwned, S: Serialize>(&mut self, path: &str, data: S) -> GDResult<T> {
         self.request_with_json_data("POST", path, data)
     }
@@ -219,7 +216,6 @@ impl HttpClient {
 
     /// Send a HTTP request without any data and parse the JSON response.
     #[inline]
-    #[cfg(feature = "serde")]
     fn request_json<T: DeserializeOwned>(&mut self, method: &str, path: &str) -> GDResult<T> {
         // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
@@ -240,7 +236,6 @@ impl HttpClient {
 
     /// Send a HTTP request with JSON data and parse the JSON response.
     #[inline]
-    #[cfg(feature = "serde")]
     fn request_with_json_data<T: DeserializeOwned, S: Serialize>(
         &mut self,
         method: &str,

@@ -111,7 +111,6 @@ pub fn query_with_timeout_and_extra_settings(
                         }
                     }
                 }
-                #[cfg(feature = "serde")]
                 ProprietaryProtocol::Eco => {
                     eco::query_with_timeout_and_extra_settings(
                         address,
