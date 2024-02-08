@@ -74,5 +74,9 @@ name = "valve_master_server_query"
 required-features = ["services"]
 
 [[example]]
+name = "test_eco"
+required-features = ["games"]
+
+[[example]]
 name = "generic"
 required-features = ["games", "game_defs"]
