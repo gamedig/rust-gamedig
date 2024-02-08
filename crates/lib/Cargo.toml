@@ -32,6 +32,7 @@ serde = []
 
 # Enable clap derivations for our types
 clap = ["dep:clap"]
+packet_capture = ["dep:pcap-file", "dep:pnet_packet", "dep:lazy_static"]
 
 # Enable TLS for HTTP Client
 tls = ["ureq/tls"]
@@ -52,9 +53,12 @@ phf = { version = "0.11", optional = true, features = ["macros"] }
 
 clap = { version = "4.1.11", optional = true, features = ["derive"] }
 
+pcap-file = { version = "2.0", optional = true }
+pnet_packet = { version = "0.34", optional = true }
+lazy_static = { version = "1.4", optional = true }
+
 [dev-dependencies]
-number_to_words = "0.1"
-roman_numeral = "0.1"
+gamedig-id-tests = { path = "../id-tests", default-features = false }
 
 # Examples
 [[example]]

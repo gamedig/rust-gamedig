@@ -1,0 +1,29 @@
+[package]
+name = "gamedig-id-tests"
+version = "0.0.1"
+edition = "2021"
+authors = [
+    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
+    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
+]
+license = "MIT"
+description = "Test if IDs match the gamedig rules"
+homepage = "https://github.com/gamedig/rust-gamedig/CONTRIBUTING.md#naming"
+repository = "https://github.com/gamedig/rust-gamedig"
+readme = "README.md"
+rust-version = "1.65.0"
+
+[features]
+cli = ["dep:serde_json", "dep:serde"]
+default = ["cli"]
+
+[[bin]]
+name = "gamedig-id-tests"
+required-features = ["cli"]
+
+[dependencies]
+number_to_words = "0.1"
+roman_numeral = "0.1"
+
+serde_json = { version = "1", optional = true }
+serde = { version = "1", optional = true, features = ["derive"] }

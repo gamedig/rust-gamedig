@@ -1,6 +1,6 @@
 use crate::buffer::Buffer;
 use crate::errors::GDErrorKind::PacketBad;
-use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GatherToggle, GenericPlayer};
 use crate::protocols::GenericResponse;
 use crate::{GDError, GDResult};
 
@@ -209,16 +209,16 @@ impl CommonResponse for Response {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct GatheringSettings {
-    pub players: bool,
-    pub mutators_and_rules: bool,
+    pub players: GatherToggle,
+    pub mutators_and_rules: GatherToggle,
 }
 
 impl GatheringSettings {
-    /// Default values are true for both the players and the rules.
+    /// Default values is attempt both players and rules.
     pub const fn default() -> Self {
         Self {
-            players: true,
-            mutators_and_rules: true,
+            players: GatherToggle::Try,
+            mutators_and_rules: GatherToggle::Enforce,
         }
     }
 

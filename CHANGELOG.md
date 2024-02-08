@@ -11,8 +11,13 @@ Games:
 - [Squad](https://store.steampowered.com/app/393380/Squad/) support.
 - [Savage 2](https://savage2.net/) support.
 - [Rising World](https://store.steampowered.com/app/324080/Rising_World/) support.
+- [ATLAS](https://store.steampowered.com/app/834910/ATLAS/) support.
+- [America's Army: Proving Grounds](https://store.steampowered.com/app/203290/Americas_Army_Proving_Grounds/) support.
+- [Base Defense](https://store.steampowered.com/app/632730/Base_Defense/) support.
+- [Zombie Panic: Source](https://store.steampowered.com/app/17500/Zombie_Panic_Source/) support.
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
+- [Mindustry](https://mindustrygame.github.io/) support.
 
 Crate:
 - Changed the serde feature to only enable serde derive for some types: serde and serde_json is now a dependecy by default.

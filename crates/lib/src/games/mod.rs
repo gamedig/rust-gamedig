@@ -18,6 +18,8 @@ pub mod eco;
 pub mod ffow;
 /// Just Cause 2: Multiplayer
 pub mod jc2m;
+/// Mindustry
+pub mod mindustry;
 /// Minecraft
 pub mod minecraft;
 /// Savage 2

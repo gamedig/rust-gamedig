@@ -4,35 +4,75 @@ use crate::{
     GDResult,
 };
 
-use std::net::SocketAddr;
 use std::{
     io::{Read, Write},
-    net,
+    net::{self, SocketAddr},
 };
 
 const DEFAULT_PACKET_SIZE: usize = 1024;
 
+/// A trait defining the basic functionalities of a network socket.
 pub trait Socket {
-    /// Create a new socket and connect to the remote address (if required).
+    /// Create a new socket and connect to the remote address.
     ///
-    /// Calls [Self::apply_timeout] with the given timeout settings.
+    /// # Arguments
+    /// * `address` - The address to connect the socket to.
+    /// * `timeout_settings` - Optional timeout settings for the socket.
+    ///
+    /// # Returns
+    /// A result containing the socket instance or an error.
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self>
     where Self: Sized;
 
+    /// Apply read and write timeouts to the socket.
+    ///
+    /// # Arguments
+    /// * `timeout_settings` - Optional timeout settings to apply.
+    ///
+    /// # Returns
+    /// A result indicating success or error in applying timeouts.
     fn apply_timeout(&self, timeout_settings: &Option<TimeoutSettings>) -> GDResult<()>;
 
+    /// Send data over the socket.
+    ///
+    /// # Arguments
+    /// * `data` - Data to be sent.
+    ///
+    /// # Returns
+    /// A result indicating success or error in sending data.
     fn send(&mut self, data: &[u8]) -> GDResult<()>;
+
+    /// Receive data from the socket.
+    ///
+    /// # Arguments
+    /// * `size` - Optional size of data to receive.
+    ///
+    /// # Returns
+    /// A result containing received data or an error.
     fn receive(&mut self, size: Option<usize>) -> GDResult<Vec<u8>>;
 
+    /// Get the remote port of the socket.
+    ///
+    /// # Returns
+    /// The port number.
     fn port(&self) -> u16;
+
+    /// Get the local SocketAddr.
+    ///
+    /// # Returns
+    /// The local SocketAddr.
+    fn local_addr(&self) -> std::io::Result<SocketAddr>;
 }
 
-pub struct TcpSocket {
+/// Implementation of a TCP socket.
+pub struct TcpSocketImpl {
+    /// The underlying TCP socket stream.
     socket: net::TcpStream,
+    /// The address of the remote host.
     address: SocketAddr,
 }
 
-impl Socket for TcpSocket {
+impl Socket for TcpSocketImpl {
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = TimeoutSettings::get_connect_or_default(timeout_settings).map_or_else(
             || net::TcpStream::connect(address),
@@ -72,14 +112,18 @@ impl Socket for TcpSocket {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
-pub struct UdpSocket {
+/// Implementation of a UDP socket.
+pub struct UdpSocketImpl {
+    /// The underlying UDP socket.
     socket: net::UdpSocket,
+    /// The address of the remote host.
     address: SocketAddr,
 }
 
-impl Socket for UdpSocket {
+impl Socket for UdpSocketImpl {
     fn new(address: &SocketAddr, timeout_settings: &Option<TimeoutSettings>) -> GDResult<Self> {
         let socket = net::UdpSocket::bind("0.0.0.0:0").map_err(|e| SocketBind.context(e))?;
 
@@ -120,7 +164,18 @@ impl Socket for UdpSocket {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+    fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
+
+#[cfg(not(feature = "packet_capture"))]
+pub type UdpSocket = UdpSocketImpl;
+#[cfg(not(feature = "packet_capture"))]
+pub type TcpSocket = TcpSocketImpl;
+
+#[cfg(feature = "packet_capture")]
+pub(crate) type UdpSocket = crate::capture::socket::CapturedUdpSocket;
+#[cfg(feature = "packet_capture")]
+pub(crate) type TcpSocket = crate::capture::socket::CapturedTcpSocket;
 
 #[cfg(test)]
 mod tests {

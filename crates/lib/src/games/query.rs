@@ -3,7 +3,7 @@
 use std::net::{IpAddr, SocketAddr};
 
 use crate::games::types::Game;
-use crate::games::{eco, ffow, jc2m, minecraft, savage2, theship};
+use crate::games::{eco, ffow, jc2m, mindustry, minecraft, savage2, theship};
 use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
@@ -84,6 +84,7 @@ pub fn query_with_timeout_and_extra_settings(
                 }
                 ProprietaryProtocol::FFOW => ffow::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
                 ProprietaryProtocol::JC2M => jc2m::query_with_timeout(address, port, timeout_settings).map(Box::new)?,
+                ProprietaryProtocol::Mindustry => mindustry::query(address, port, &timeout_settings).map(Box::new)?,
                 ProprietaryProtocol::Minecraft(version) => {
                     match version {
                         Some(minecraft::Server::Java) => {

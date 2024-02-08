@@ -8,8 +8,20 @@ game_query_mod!(
     Engine::new(33930),
     2304
 );
+game_query_mod!(basedefense, "Base Defense", Engine::new(632_730), 27015);
 game_query_mod!(alienswarm, "Alien Swarm", Engine::new(630), 27015);
 game_query_mod!(aoc, "Age of Chivalry", Engine::new(17510), 27015);
+game_query_mod!(
+    aapg,
+    "America's Army: Proving Grounds",
+    Engine::new(203_290),
+    27020,
+    GatheringSettings {
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
+        check_app_id: true,
+    }
+);
 game_query_mod!(ase, "ARK: Survival Evolved", Engine::new(346_110), 27015);
 game_query_mod!(
     asrd,
@@ -17,6 +29,7 @@ game_query_mod!(
     Engine::new(563_560),
     2304
 );
+game_query_mod!(atlas, "ATLAS", Engine::new(834_910), 57561);
 game_query_mod!(avorion, "Avorion", Engine::new(445_220), 27020);
 game_query_mod!(
     ballisticoverkill,
@@ -40,8 +53,8 @@ game_query_mod!(
     Engine::new(440_900),
     27015,
     GatheringSettings {
-        players: false,
-        rules: true,
+        players: GatherToggle::Skip,
+        rules: GatherToggle::Enforce,
         check_app_id: true,
     }
 );
@@ -129,9 +142,10 @@ game_query_mod!(
     Engine::new(892_970),
     2457,
     GatheringSettings {
-        players: true,
-        rules: false,
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Skip,
         check_app_id: true,
     }
 );
 game_query_mod!(vrising, "V Rising", Engine::new(1_604_030), 27016);
+game_query_mod!(zps, "Zombie Panic: Source", Engine::new(17_500), 27015);

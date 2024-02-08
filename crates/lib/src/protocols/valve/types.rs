@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer};
+use crate::protocols::types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GatherToggle, GenericPlayer};
 use crate::GDErrorKind::UnknownEnumCast;
 use crate::GDResult;
 use crate::{buffer::Buffer, protocols::GenericResponse};
@@ -283,17 +283,18 @@ impl Engine {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct GatheringSettings {
-    pub players: bool,
-    pub rules: bool,
+    pub players: GatherToggle,
+    pub rules: GatherToggle,
     pub check_app_id: bool,
 }
 
 impl GatheringSettings {
-    /// Default values are true for both the players and the rules.
+    /// Default values are try to gather but don't fail on timeout for both
+    /// players and rules.
     pub const fn default() -> Self {
         Self {
-            players: true,
-            rules: true,
+            players: GatherToggle::Try,
+            rules: GatherToggle::Try,
             check_app_id: true,
         }
     }

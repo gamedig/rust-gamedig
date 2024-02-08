@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/cli", "crates/lib"]
+members = ["crates/cli", "crates/lib", "crates/id-tests"]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"
@@ -8,7 +8,8 @@ resolver = "2"
 opt-level = 3
 debug = false
 rpath = true
-lto = true
+lto = 'fat'
+codegen-units = 1
 
 [profile.release.package."*"]
 opt-level = 3

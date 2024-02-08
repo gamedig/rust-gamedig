@@ -28,7 +28,11 @@ macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $engine: expr, $default_port: literal, $gathering_settings: expr) => {
         #[doc = $pretty_name]
         pub mod $mod_name {
-            use crate::protocols::valve::{Engine, GatheringSettings};
+            #[allow(unused_imports)]
+            use crate::protocols::{
+                types::GatherToggle,
+                valve::{Engine, GatheringSettings},
+            };
 
             crate::protocols::valve::game_query_fn!($pretty_name, $engine, $default_port, $gathering_settings);
         }

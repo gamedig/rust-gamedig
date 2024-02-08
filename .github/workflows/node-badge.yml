@@ -7,7 +7,9 @@ on:
       - "crates/lib/src/games/definitions.rs"
       - ".github/workflows/node-badge.yml"
       - ".github/workflows/scripts/node-badge.mjs"
-  schedule:
+    branches:
+      - "main" # Limit badge commits to only happen on the main branch
+  schedule: # This runs on the default branch only, it could still trigger on PRs but only if they develop on default branch and enable actions.
     - cron: '34 3 * * 2' # Update once a week in case node-gamedig has changed
   workflow_dispatch:
 
@@ -37,7 +39,7 @@ jobs:
         run: node .github/workflows/scripts/node-badge.mjs
 
       - name: Generate the badge SVG image
-        uses: emibcn/badge-action@v2.0.2
+        uses: emibcn/badge-action@v2.0.3
         id: badge
         with:
           label: "Node game coverage"
