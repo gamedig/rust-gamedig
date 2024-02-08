@@ -1,11 +1,20 @@
-use crate::GDErrorKind::{InvalidInput, PacketReceive, PacketSend, ProtocolFormat};
+//! Client for making HTTP requests.
+//!
+//! This is the first draft implementation: feel free to change things to suit
+//! your needs.
+
+// Because this is first draft some functionality is not used yet.
+// TODO: When this is used in more places remove this and refine the interface.
+#![allow(dead_code)]
+
+use crate::GDErrorKind::{HostLookup, InvalidInput, PacketReceive, PacketSend, ProtocolFormat};
 use crate::{GDResult, TimeoutSettings};
 
 use std::io::Read;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6, ToSocketAddrs};
 
 use ureq::{Agent, AgentBuilder};
-use url::Url;
+use url::{Host, Url};
 
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -14,6 +23,12 @@ const MAX_RESPONSE_LENGTH: usize = 1024 * 1024 * 1024;
 
 /// HTTP request client. Define parameters host parameters on new, then re-use
 /// for each request.
+///
+/// When making requests directly to the server use [HttpClient::new] as this
+/// allows directly specifying the IP to connect to.
+///
+/// When requests must go through an intermediatary (that we don't know the IP
+/// of) use [HttpClient::from_url] which will perform a DNS lookup internally.
 ///
 /// For example usage see [tests].
 pub struct HttpClient {
@@ -164,6 +179,54 @@ impl HttpClient {
                 .map(|(k, v)| (k.into(), v.into()))
                 .collect(),
         })
+    }
+
+    /// Create a new HTTP client from a pre-existing URL, performing a DNS
+    /// lookup on the host when necessary.
+    ///
+    /// This is aimed to be used when we know the domain of the server but not
+    /// the IP i.e. when the server is not the service being directly queried
+    /// for server info.
+    pub fn from_url<U: TryInto<Url>>(
+        url: U,
+        timeout_settings: &Option<TimeoutSettings>,
+        headers: Option<Vec<(&str, &str)>>,
+    ) -> GDResult<HttpClient>
+    where
+        U::Error: std::error::Error + Send + Sync + 'static,
+    {
+        let url: Url = url.try_into().map_err(|e| InvalidInput.context(e))?;
+
+        let host = url
+            .host()
+            .ok_or_else(|| InvalidInput.context("URL used to create a HTTPClient must have a host"))?;
+        let port = url
+            .port_or_known_default()
+            .ok_or_else(|| InvalidInput.context("URL used to create HttpClient must have a port"))?;
+
+        let address = match host {
+            Host::Ipv4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, port)),
+            Host::Ipv6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, port, 0, 0)),
+            Host::Domain(domain) => {
+                format!("{}:{}", domain, port)
+                    .to_socket_addrs()
+                    .map_err(|e| HostLookup.context(e))?
+                    .next()
+                    .ok_or_else(|| HostLookup.context("No socket addresses found for host"))?
+            }
+        };
+
+        let http_settings = HttpSettings {
+            hostname: url.host_str(),
+            protocol: match url.scheme() {
+                #[cfg(feature = "tls")]
+                "https" => HttpProtocol::Https,
+                _ => HttpProtocol::Http,
+            },
+            headers: headers.unwrap_or_default(),
+        };
+
+        HttpClient::new(&address, timeout_settings, http_settings)
     }
 
     /// Send a HTTP GET request and return the response data as a buffer.
@@ -358,5 +421,27 @@ mod tests {
         let response = client.get("/").unwrap();
 
         println!("{:?}", std::str::from_utf8(&response));
+    }
+
+    #[test]
+    #[ignore = "HTTP requests won't work without internet"]
+    fn http_get_from_url() {
+        let mut client = HttpClient::from_url("http://postman-echo.com/path-is-ignored", &None, None).unwrap();
+
+        let response: serde_json::Value = client.get_json("/get").unwrap();
+
+        println!("{:?}", response);
+    }
+
+    #[test]
+    #[ignore = "HTTP requests won't work without internet"]
+    fn http_get_from_url_parsed() {
+        let url = Url::parse("http://postman-echo.com:443/path-is-ignored").unwrap();
+
+        let mut client = HttpClient::from_url(url, &None, None).unwrap();
+
+        let response: serde_json::Value = client.get_json("/get").unwrap();
+
+        println!("{:?}", response);
     }
 }

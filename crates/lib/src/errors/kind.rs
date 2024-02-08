@@ -34,6 +34,8 @@ pub enum GDErrorKind {
     JsonParse,
     /// Couldn't parse a value.
     TypeParse,
+    /// Couldn't find the host specified.
+    HostLookup,
 }
 
 impl GDErrorKind {
