@@ -22,12 +22,25 @@ Games:
 Protocols:
 - Added the unreal2 protocol and its associated games: Darkest Hour, Devastation, Killing Floor, Red Orchestra, Unreal Tournament 2003, Unreal Tournament 2004 (by @Douile).
 
+Crate:
+- Added a `packet_capture` feature to capture the raw packets sent and received by the socket (by @Douile).
+- Added packet emulation and socket retrevial using the `packet_capture` feature (by @Douile).
+- Added PCAP writing support to the `packet_capture` feature (by @Douile & @cainthebest).
+- Refactored socket to use a custom implementation of socket for packet capture when using the `packet_capture` feature (by @Douile).
+
 CLI:
 - Added a CLI (by @cainthebest).
 - Added DNS lookup support (by @Douile).
 - Added JSON output option (by @Douile).
+- Added BSON output in hex or base64 (by @cainthebest).
+- Added XML output option (by @cainthebest).
 - Added ExtraRequestSettings as CLI arguments (by @Douile).
 - Added TimeoutSettings as CLI argument (by @Douile).
+- Added Comprehensive end-user documentation for the CLI interface (by @Douile & @cainthebest).
+- Tweaked compile-time flags to allow for a more preformant binary (by @cainthebest).
+- Added client for socket capture, dev tools are not included by default (by @Douile).
+- Added license information to the CLI (by @cainthebest).
+- Added source code information to the CLI (by @cainthebest).
 
 ### Breaking:
 Game:
