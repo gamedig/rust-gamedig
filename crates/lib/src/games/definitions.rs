@@ -131,6 +131,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "redorchestra" => game!("Red Orchestra", 7759, Protocol::Unreal2),
     "unrealtournament2003" => game!("Unreal Tournament 2003", 7758, Protocol::Unreal2),
     "unrealtournament2004" => game!("Unreal Tournament 2004", 7778, Protocol::Unreal2),
+    "eco" => game!("Eco", 3000, Protocol::PROPRIETARY(ProprietaryProtocol::Eco)),
     "zps" => game!("Zombie Panic: Source", 27015, Protocol::Valve(Engine::new(17_500))),
     "mindustry" => game!("Mindustry", crate::games::mindustry::DEFAULT_PORT, Protocol::PROPRIETARY(ProprietaryProtocol::Mindustry)),
 };

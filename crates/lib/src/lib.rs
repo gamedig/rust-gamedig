@@ -28,11 +28,14 @@
 //! # Crate features:
 //! Enabled by default: `games`, `game_defs`, `services`
 //!
-//! `serde` - enables json serialization/deserialization for all response types.
-//! <br> `games` - include games support. <br>
+//! `serde` - enables serde serialization/deserialization for many gamedig types
+//! using serde derive. <br>
+//! `games` - include games support. <br>
 //! `services` - include services support. <br>
-//! `game_defs` - Include game definitions for programmatic access (enabled by
-//! default).
+//! `game_defs` - include game definitions for programmatic access (enabled by
+//! default). <br>
+//! `clap` - enable clap derivations for gamedig settings types. <br>
+//! `tls` - enable TLS support for the HTTP client.
 
 pub mod errors;
 #[cfg(feature = "games")]
@@ -42,6 +45,7 @@ pub mod protocols;
 pub mod services;
 
 mod buffer;
+mod http;
 mod socket;
 mod utils;
 

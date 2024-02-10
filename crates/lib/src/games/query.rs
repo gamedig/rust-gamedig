@@ -3,7 +3,7 @@
 use std::net::{IpAddr, SocketAddr};
 
 use crate::games::types::Game;
-use crate::games::{ffow, jc2m, mindustry, minecraft, savage2, theship};
+use crate::games::{eco, ffow, jc2m, mindustry, minecraft, savage2, theship};
 use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
@@ -111,6 +111,15 @@ pub fn query_with_timeout_and_extra_settings(
                             .map(Box::new)?
                         }
                     }
+                }
+                ProprietaryProtocol::Eco => {
+                    eco::query_with_timeout_and_extra_settings(
+                        address,
+                        port,
+                        &timeout_settings,
+                        extra_settings.map(ExtraRequestSettings::into),
+                    )
+                    .map(Box::new)?
                 }
             }
         }
