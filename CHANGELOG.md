@@ -19,6 +19,7 @@ Games:
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
 - [Mindustry](https://mindustrygame.github.io/) support.
 - Eco support (by @CosminPerRam).
+- [Call Of Duty: Black Ops 3](https://store.steampowered.com/agecheck/app/311210/) support.
 
 Crate:
 - Changed the serde feature to only enable serde derive for some types: serde and serde_json is now a dependecy by default.
