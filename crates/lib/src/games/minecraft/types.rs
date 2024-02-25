@@ -294,3 +294,41 @@ pub(crate) fn as_string(value: &str) -> GDResult<Vec<u8>> {
 
     Ok(buf)
 }
+
+#[cfg(test)]
+mod tests {
+    use byteorder::LittleEndian;
+    use crate::buffer::Buffer;
+    use crate::minecraft::get_string;
+    use super::{as_varint, get_varint, as_string};
+
+    #[test]
+    fn int_as_varint() {
+        assert_eq!(as_varint(1), [1]);
+        assert_eq!(as_varint(25565), [221, 199, 1]);
+        assert_eq!(as_varint(1298923567), [175, 128, 176, 235, 4]);
+    }
+
+    #[test]
+    fn varint_as_int() {
+        let mut buffer = Buffer::<LittleEndian>::new(&[1, 127, 221, 199, 1, 0]);
+        assert_eq!(get_varint(&mut buffer), Ok(1));
+        assert_eq!(get_varint(&mut buffer), Ok(127));
+        assert_eq!(get_varint(&mut buffer), Ok(25565));
+        assert_eq!(buffer.remaining_bytes(), [0]);
+    }
+
+    #[test]
+    fn string_as_minecraft_string() {
+        assert_eq!(as_string("A"), Ok(vec![1, 65]));
+        assert_eq!(as_string("VarString"), Ok(vec![9, 86, 97, 114, 83, 116, 114, 105, 110, 103]));
+    }
+
+    #[test]
+    fn minecraft_get_string() {
+        let mut buffer = Buffer::<LittleEndian>::new(&[3, 65, 65, 65, 1, 66]);
+        assert_eq!(get_string(&mut buffer), Ok("AAA".to_string()));
+        assert_eq!(get_string(&mut buffer), Ok("B".to_string()));
+        assert_eq!(buffer.remaining_length(), 0);
+    }
+}
