@@ -294,13 +294,3 @@ pub(crate) fn as_string(value: &str) -> GDResult<Vec<u8>> {
 
     Ok(buf)
 }
-
-#[cfg(tests)]
-mod tests {
-    #[test]
-    fn test_extra_request_settings() {
-        let settings = ExtraRequestSettings::default();
-
-        let _: minecraft::RequestSettings = settings.clone().into();
-    }
-}
