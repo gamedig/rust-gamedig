@@ -297,10 +297,10 @@ pub(crate) fn as_string(value: &str) -> GDResult<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
-    use byteorder::LittleEndian;
+    use super::{as_string, as_varint, get_varint};
     use crate::buffer::Buffer;
     use crate::minecraft::get_string;
-    use super::{as_varint, get_varint, as_string};
+    use byteorder::LittleEndian;
 
     #[test]
     fn int_as_varint() {
@@ -321,7 +321,10 @@ mod tests {
     #[test]
     fn string_as_minecraft_string() {
         assert_eq!(as_string("A"), Ok(vec![1, 65]));
-        assert_eq!(as_string("VarString"), Ok(vec![9, 86, 97, 114, 83, 116, 114, 105, 110, 103]));
+        assert_eq!(
+            as_string("VarString"),
+            Ok(vec![9, 86, 97, 114, 83, 116, 114, 105, 110, 103])
+        );
     }
 
     #[test]
