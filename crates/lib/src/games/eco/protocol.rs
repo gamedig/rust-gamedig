@@ -3,11 +3,11 @@ use crate::http::HttpClient;
 use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
 
-/// Query a eco server.
+/// Query an eco server.
 #[inline]
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, &None) }
 
-/// Query a eco server.
+/// Query an eco server.
 #[inline]
 pub fn query_with_timeout(
     address: &IpAddr,
@@ -17,7 +17,7 @@ pub fn query_with_timeout(
     query_with_timeout_and_extra_settings(address, port, timeout_settings, None)
 }
 
-/// Query a eco server.
+/// Query an eco server.
 pub fn query_with_timeout_and_extra_settings(
     address: &IpAddr,
     port: Option<u16>,
