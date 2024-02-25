@@ -62,6 +62,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "battlefield1942" => game!("Battlefield 1942", 23000, Protocol::Gamespy(GameSpyVersion::One)),
     "blackmesa" => game!("Black Mesa", 27015, Protocol::Valve(Engine::new(362_890))),
     "ballisticoverkill" => game!("Ballistic Overkill", 27016, Protocol::Valve(Engine::new(296_300))),
+    "codbo3" => game!("Call Of Duty: Black Ops 3", 27017, Protocol::Valve(Engine::new(311_210))),
     "codenamecure" => game!("Codename CURE", 27015, Protocol::Valve(Engine::new(355_180))),
     "colonysurvival" => game!("Colony Survival", 27004, Protocol::Valve(Engine::new(366_090))),
     "conanexiles" => game!("Conan Exiles", 27015, Protocol::Valve(Engine::new(440_900)), GatheringSettings {

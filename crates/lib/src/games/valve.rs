@@ -40,6 +40,7 @@ game_query_mod!(
 game_query_mod!(barotrauma, "Barotrauma", Engine::new(602_960), 27016);
 game_query_mod!(blackmesa, "Black Mesa", Engine::new(362_890), 27015);
 game_query_mod!(brainbread2, "BrainBread 2", Engine::new(346_330), 27015);
+game_query_mod!(codbo3, "Call Of Duty: Black Ops 3", Engine::new(311_210), 27017);
 game_query_mod!(codenamecure, "Codename CURE", Engine::new(355_180), 27015);
 game_query_mod!(
     colonysurvival,
