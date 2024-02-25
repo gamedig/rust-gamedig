@@ -41,7 +41,7 @@ pub fn query_with_timeout(
 
     let packets = client.get_server_packets()?;
     let data = packets
-        .get(0)
+        .first()
         .ok_or_else(|| PacketBad.context("First packet missing"))?;
 
     let (mut server_vars, remaining_data) = data_to_map(data)?;

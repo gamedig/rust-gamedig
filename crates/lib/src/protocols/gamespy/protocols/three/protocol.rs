@@ -354,7 +354,7 @@ pub fn query(address: &SocketAddr, timeout_settings: Option<TimeoutSettings>) ->
     let mut client = GameSpy3::new(address, timeout_settings)?;
     let packets = client.get_server_packets()?;
 
-    let (mut server_vars, remaining_data) = data_to_map(packets.get(0).ok_or(GDErrorKind::PacketBad)?)?;
+    let (mut server_vars, remaining_data) = data_to_map(packets.first().ok_or(GDErrorKind::PacketBad)?)?;
 
     let mut remaining_data_packets = vec![remaining_data];
     remaining_data_packets.extend_from_slice(&packets[1 ..]);
