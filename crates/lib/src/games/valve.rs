@@ -70,7 +70,7 @@ game_query_mod!(
     Engine::new_gold_src(false),
     27015
 );
-game_query_mod!(cs2, "Counter-Strike 2", Engine::new(730), 27015);
+game_query_mod!(counterstrike2, "Counter-Strike 2", Engine::new(730), 27015);
 game_query_mod!(creativerse, "Creativerse", Engine::new(280_790), 26901);
 game_query_mod!(
     cscz,
