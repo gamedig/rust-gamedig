@@ -71,6 +71,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
         check_app_id: true,
     }.into_extra()),
     "counterstrike" => game!("Counter-Strike", 27015, Protocol::Valve(Engine::new_gold_src(false))),
+    "cs2" => game!("Counter-Strike 2", 27015, Protocol::Valve(Engine::new(730))),
     "cscz" => game!("Counter Strike: Condition Zero", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "csgo" => game!("Counter-Strike: Global Offensive", 27015, Protocol::Valve(Engine::new(730))),
     "css" => game!("Counter-Strike: Source", 27015, Protocol::Valve(Engine::new(240))),

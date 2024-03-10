@@ -20,6 +20,7 @@ Games:
 - [Mindustry](https://mindustrygame.github.io/) support.
 - Eco support (by @CosminPerRam).
 - [Call Of Duty: Black Ops 3](https://store.steampowered.com/agecheck/app/311210/) support.
+- [Counter-Strike 2](https://store.steampowered.com/app/730/CounterStrike_2/) support.
 
 Crate:
 - Changed the serde feature to only enable serde derive for some types: serde and serde_json is now a dependecy by default.
