@@ -13,7 +13,7 @@
     <img src="https://img.shields.io/crates/d/gamedig?color=purple" alt="Crates.io">
   </a>
   <a href="https://github.com/gamedig/node-gamedig">
-    <img src="../.././.github/badges/node.svg" alt="Node-GameDig Game Coverage">
+    <img src="https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg" alt="Node-GameDig Game Coverage">
   </a>
 </div>
 
@@ -85,7 +85,7 @@ Want to see more examples? Checkout the [examples](https://github.com/gamedig/ru
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
-Curious about the history and what changed between versions? Everything is in the [CHANGELOG](CHANGELOG.md) file.
+Curious about the history and what changed between versions? Everything is in the [CHANGELOG](https://github.com/gamedig/rust-gamedig/blob/main/crates/lib/CHANGELOG.md) file.
 
 ## Contributing
 If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
