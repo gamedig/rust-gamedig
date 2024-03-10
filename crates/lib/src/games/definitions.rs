@@ -77,6 +77,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "css" => game!("Counter-Strike: Source", 27015, Protocol::Valve(Engine::new(240))),
     "creativerse" => game!("Creativerse", 26901, Protocol::Valve(Engine::new(280_790))),
     "crysiswars" => game!("Crysis Wars", 64100, Protocol::Gamespy(GameSpyVersion::Three)),
+    "dab" => game!("Double Action: Boogaloo", 27015, Protocol::Valve(Engine::new(317_360))),
     "dod" => game!("Day of Defeat", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "dods" => game!("Day of Defeat: Source", 27015, Protocol::Valve(Engine::new(300))),
     "doi" => game!("Day of Infamy", 27015, Protocol::Valve(Engine::new(447_820))),

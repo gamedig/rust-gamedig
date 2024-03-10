@@ -85,6 +85,7 @@ game_query_mod!(
     27015
 );
 game_query_mod!(css, "Counter-Strike: Source", Engine::new(240), 27015);
+game_query_mod!(dab, "Double Action: Boogaloo", Engine::new(317_360), 27015);
 game_query_mod!(dod, "Day of Defeat", Engine::new_gold_src(false), 27015);
 game_query_mod!(dods, "Day of Defeat: Source", Engine::new(300), 27015);
 game_query_mod!(doi, "Day of Infamy", Engine::new(447_820), 27015);

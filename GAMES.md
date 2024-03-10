@@ -81,6 +81,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Zombie Panic: Source               | ZPS                 | Valve                | Query port: 27015.                                                                                                                                                        |
 | Call Of Duty: Black Ops 3          | CODBO3              | Valve                | Query port: 27017.                                                                                                                                                        |
 | Counter-Strike 2                   | CS2                 | Valve                |                                                                                                                                                                           |
+| Double Action: Boogaloo            | DAB                 | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 _
