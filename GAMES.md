@@ -80,6 +80,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Base Defense                       | BASEDEFENSE         | Valve                | Query port: 27015. Does not respond to the rules query.                                                                                                                   |
 | Zombie Panic: Source               | ZPS                 | Valve                | Query port: 27015.                                                                                                                                                        |
 | Call Of Duty: Black Ops 3          | CODBO3              | Valve                | Query port: 27017.                                                                                                                                                        |
+| Chivalry: Medieval Warfare         | CMW                 | Valve                | Query port offset: 2                                                                                                                                                      |
 
 ## Planned to add support:
 _
