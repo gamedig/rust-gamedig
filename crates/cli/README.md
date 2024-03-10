@@ -15,10 +15,10 @@ Just by running `gamedig-cli` prints the usage.
 
 Here's also a quick rundown of a simple query with the `json-pretty` format:
 
-Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.
+Pick a game/service/protocol (check the [GAMES](https://github.com/gamedig/rust-gamedig/blob/main/GAMES.md), [SERVICES](https://github.com/gamedig/rust-gamedig/blob/main/SERVICES.md) and [PROTOCOLS](https://github.com/gamedig/rust-gamedig/blob/main/PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
-```rust
+```
 gamedig-cli query -g teamfortress2 -i 127.0.0.1 -f json-pretty
 ```
 What we are doing here:
@@ -45,4 +45,4 @@ Response (note that some games have a different structure):
 ```
 
 ## Contributing
-Please read [CONTRIBUTING](../../CONTRIBUTING.md).
+Please read [CONTRIBUTING](https://github.com/gamedig/rust-gamedig/blob/main/CONTRIBUTING.md).

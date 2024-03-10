@@ -36,7 +36,7 @@ on Discord.
 ## Usage
 Minimum Supported Rust Version is `1.65.0` and the code is cross-platform.
 
-Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.
+Pick a game/service/protocol (check the [GAMES](https://github.com/gamedig/rust-gamedig/blob/main/GAMES.md), [SERVICES](https://github.com/gamedig/rust-gamedig/blob/main/SERVICES.md) and [PROTOCOLS](https://github.com/gamedig/rust-gamedig/blob/main/PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 ```rust
@@ -81,7 +81,7 @@ Response (note that some games have a different structure):
 }
 ```
 
-Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
+Want to see more examples? Checkout the [examples](https://github.com/gamedig/rust-gamedig/tree/main/crates/lib/examples) folder.
 
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
@@ -90,4 +90,4 @@ Curious about the history and what changed between versions? Everything is in th
 ## Contributing
 If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
 
-Before contributing please read [CONTRIBUTING](CONTRIBUTING.md).
+Before contributing please read [CONTRIBUTING](https://github.com/gamedig/rust-gamedig/blob/main/CONTRIBUTING.md).
