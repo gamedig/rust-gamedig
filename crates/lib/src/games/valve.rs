@@ -46,6 +46,7 @@ game_query_mod!(
     Engine::new(311_210),
     27017
 );
+game_query_mod!(cmw, "Chivalry: Medieval Warfare", Engine::new(219_640), 7779);
 game_query_mod!(codenamecure, "Codename CURE", Engine::new(355_180), 27015);
 game_query_mod!(
     colonysurvival,
