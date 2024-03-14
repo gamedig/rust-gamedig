@@ -68,10 +68,10 @@ impl HttpProtocol {
 ///
 /// # Can be created using builder functions:
 /// ```ignore, We cannot test private functionality
-/// use gamedig::http::{HttpSettings, Protocol};
+/// use gamedig::http::{HttpSettings, HttpProtocol};
 ///
 /// let _ = HttpSettings::default()
-///   .protocol(Protocol::Http)
+///   .protocol(HttpProtocol::Http)
 ///   .hostname(String::from("test.com"))
 ///   .header(String::from("Authorization"), String::from("Bearer Token"));
 /// ```
@@ -464,7 +464,7 @@ mod tests {
     #[test]
     #[ignore = "HTTP requests won't work without internet"]
     fn http_get_from_url_parsed() {
-        let url = Url::parse("http://postman-echo.com:443/path-is-ignored").unwrap();
+        let url = Url::parse("http://postman-echo.com/path-is-ignored").unwrap();
 
         let mut client = HttpClient::from_url(url, &None, None).unwrap();
 
