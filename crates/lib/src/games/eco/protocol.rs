@@ -31,7 +31,7 @@ pub fn query_with_timeout_and_extra_settings(
         extra_settings.unwrap_or_default().into(),
     )?;
 
-    let response = client.get_json::<Root>("/frontpage")?;
+    let response = client.get_json::<Root>("/frontpage", None)?;
 
     Ok(response.into())
 }

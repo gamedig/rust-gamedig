@@ -37,6 +37,9 @@ pub struct HttpClient {
     headers: Vec<(String, String)>,
 }
 
+/// HttpHeaders for use with a single request.
+pub type HttpHeaders<'a> = Option<&'a [(&'a str, &'a str)]>;
+
 /// HTTP Protocols.
 ///
 /// Note: if the `tls` feature is disabled this will only contain Http.
@@ -230,21 +233,29 @@ impl HttpClient {
     }
 
     /// Send a HTTP GET request and return the response data as a buffer.
-    pub fn get(&mut self, path: &str) -> GDResult<Vec<u8>> { self.request("GET", path) }
+    pub fn get(&mut self, path: &str, headers: HttpHeaders) -> GDResult<Vec<u8>> { self.request("GET", path, headers) }
 
     /// Send a HTTP GET request and parse the JSON resonse.
-    pub fn get_json<T: DeserializeOwned>(&mut self, path: &str) -> GDResult<T> { self.request_json("GET", path) }
+    pub fn get_json<T: DeserializeOwned>(&mut self, path: &str, headers: HttpHeaders) -> GDResult<T> {
+        self.request_json("GET", path, headers)
+    }
 
     /// Send a HTTP Post request with JSON data and parse a JSON response.
-    pub fn post_json<T: DeserializeOwned, S: Serialize>(&mut self, path: &str, data: S) -> GDResult<T> {
-        self.request_with_json_data("POST", path, data)
+    pub fn post_json<T: DeserializeOwned, S: Serialize>(
+        &mut self,
+        path: &str,
+        headers: HttpHeaders,
+        data: S,
+    ) -> GDResult<T> {
+        self.request_with_json_data("POST", path, headers, data)
     }
 
     // NOTE: More methods can be added here as required using the request_json or
     // request_with_json methods
 
+    /// Internal request method, makes a request with an arbitrary HTTP method.
     #[inline]
-    fn request(&mut self, method: &str, path: &str) -> GDResult<Vec<u8>> {
+    fn request(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<Vec<u8>> {
         // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
         let mut request = self.client.request_url(method, &self.address);
@@ -252,6 +263,12 @@ impl HttpClient {
         // Set the request headers.
         for (key, value) in self.headers.iter() {
             request = request.set(key, value);
+        }
+
+        if let Some(headers) = headers {
+            for (key, value) in headers {
+                request = request.set(key, value);
+            }
         }
 
         // Send the request.
@@ -279,7 +296,7 @@ impl HttpClient {
 
     /// Send a HTTP request without any data and parse the JSON response.
     #[inline]
-    fn request_json<T: DeserializeOwned>(&mut self, method: &str, path: &str) -> GDResult<T> {
+    fn request_json<T: DeserializeOwned>(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<T> {
         // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
         let mut request = self.client.request_url(method, &self.address);
@@ -287,6 +304,11 @@ impl HttpClient {
         // Set the request headers.
         for (key, value) in self.headers.iter() {
             request = request.set(key, value);
+        }
+        if let Some(headers) = headers {
+            for (key, value) in headers {
+                request = request.set(key, value);
+            }
         }
 
         // Send the request and parse the response as JSON.
@@ -303,6 +325,7 @@ impl HttpClient {
         &mut self,
         method: &str,
         path: &str,
+        headers: HttpHeaders,
         data: S,
     ) -> GDResult<T> {
         self.address.set_path(path);
@@ -310,6 +333,11 @@ impl HttpClient {
 
         for (key, value) in self.headers.iter() {
             request = request.set(key, value);
+        }
+        if let Some(headers) = headers {
+            for (key, value) in headers {
+                request = request.set(key, value);
+            }
         }
 
         request
@@ -384,7 +412,7 @@ mod tests {
 
         let mut client = HttpClient::new(&address, &None, settings).unwrap();
 
-        let response: serde_json::Value = client.get_json("/events").unwrap();
+        let response: serde_json::Value = client.get_json("/events", None).unwrap();
 
         println!("{:?}", response);
     }
@@ -402,7 +430,7 @@ mod tests {
 
         let mut client = HttpClient::new(&address, &None, settings).unwrap();
 
-        let response: serde_json::Value = client.get_json("/get").unwrap();
+        let response: serde_json::Value = client.get_json("/get", None).unwrap();
 
         println!("{:?}", response);
     }
@@ -418,7 +446,7 @@ mod tests {
 
         let mut client = HttpClient::new(&address, &None, settings).unwrap();
 
-        let response = client.get("/").unwrap();
+        let response = client.get("/", None).unwrap();
 
         println!("{:?}", std::str::from_utf8(&response));
     }
@@ -428,7 +456,7 @@ mod tests {
     fn http_get_from_url() {
         let mut client = HttpClient::from_url("http://postman-echo.com/path-is-ignored", &None, None).unwrap();
 
-        let response: serde_json::Value = client.get_json("/get").unwrap();
+        let response: serde_json::Value = client.get_json("/get", None).unwrap();
 
         println!("{:?}", response);
     }
@@ -440,7 +468,7 @@ mod tests {
 
         let mut client = HttpClient::from_url(url, &None, None).unwrap();
 
-        let response: serde_json::Value = client.get_json("/get").unwrap();
+        let response: serde_json::Value = client.get_json("/get", None).unwrap();
 
         println!("{:?}", response);
     }
