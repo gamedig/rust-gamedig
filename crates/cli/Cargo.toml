@@ -8,6 +8,13 @@ license = "MIT"
 version = "0.4.1"
 edition = "2021"
 default-run = "gamedig-cli"
+homepage = "https://gamedig.github.io/"
+documentation = "https://docs.rs/gamedig-cli/latest/gamedig-cli/"
+repository = "https://github.com/gamedig/rust-gamedig"
+readme = "README.md"
+keywords = ["server", "query", "game", "check", "status"]
+rust-version = "1.65.0"
+categories = ["parsing", "command-line-interface"]
 
 [features]
 default = ["json", "bson", "xml", "browser"]
