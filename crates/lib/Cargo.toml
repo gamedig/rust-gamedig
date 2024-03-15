@@ -8,7 +8,7 @@ authors = [
 ]
 license = "MIT"
 description = "Query game servers and not only."
-homepage = "https://github.com/gamedig/rust-gamedig"
+homepage = "https://gamedig.github.io/"
 documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
