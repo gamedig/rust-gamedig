@@ -21,7 +21,7 @@ Games:
 - Added a valve protocol query example.
 - Made all of Just Cause 2: Multiplayer Response and Player fields public.
 - [Mindustry](https://mindustrygame.github.io/) support.
-- Eco support (by @CosminPerRam).
+- [Eco](https://store.steampowered.com/app/382310/Eco/) support.
 - [Call Of Duty: Black Ops 3](https://store.steampowered.com/agecheck/app/311210/) support.
 - [Counter-Strike 2](https://store.steampowered.com/app/730/CounterStrike_2/) support.
 - [Double Action: Boogaloo](https://store.steampowered.com/app/317360/Double_Action_Boogaloo/) support.
