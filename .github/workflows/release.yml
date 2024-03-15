@@ -4,8 +4,11 @@ on:
   release:
     types: [created]
 
+  workflow_dispatch:
+
 jobs:
   release:
+    if: startsWith(github.event.release.tag_name, 'cli-')
     name: Release ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:

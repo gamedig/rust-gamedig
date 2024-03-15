@@ -13,7 +13,7 @@
     <img src="https://img.shields.io/crates/d/gamedig?color=purple" alt="Crates.io">
   </a>
   <a href="https://github.com/gamedig/node-gamedig">
-    <img src="./.github/badges/node.svg" alt="Node-GameDig Game Coverage">
+    <img src="https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg" alt="Node-GameDig Game Coverage">
   </a>
 </div>
 
@@ -83,9 +83,13 @@ Response (note that some games have a different structure):
 
 Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 
+## Command Line Interface
+The library also has an official CLI: [GameDig-CLI](https://crates.io/crates/gamedig-cli).
+
 ## Documentation
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
-Curious about the history and what changed between versions? Everything is in the [CHANGELOG](CHANGELOG.md) file.
+Curious about the history and what changed between versions?  
+Everything is in the changelogs file: [lib](crates/lib/CHANGELOG.md) and [cli](crates/lib/CHANGELOG.md).
 
 ## Contributing
 If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!

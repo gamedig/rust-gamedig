@@ -1,6 +1,6 @@
 [package]
 name = "gamedig"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2021"
 authors = [
     "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
@@ -8,7 +8,7 @@ authors = [
 ]
 license = "MIT"
 description = "Query game servers and not only."
-homepage = "https://github.com/gamedig/rust-gamedig"
+homepage = "https://gamedig.github.io/"
 documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"

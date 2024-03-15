@@ -5,11 +5,16 @@ authors = [
 ]
 description = "A command line interface for gamedig"
 license = "MIT"
-version = "0.4.1"
+version = "0.1.0"
 edition = "2021"
 default-run = "gamedig-cli"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+homepage = "https://gamedig.github.io/"
+documentation = "https://docs.rs/gamedig-cli/latest/gamedig-cli/"
+repository = "https://github.com/gamedig/rust-gamedig"
+readme = "README.md"
+keywords = ["server", "query", "game", "check", "status"]
+rust-version = "1.65.0"
+categories = ["parsing", "command-line-interface"]
 
 [features]
 default = ["json", "bson", "xml", "browser"]
