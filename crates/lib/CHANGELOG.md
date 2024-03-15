@@ -2,6 +2,9 @@
 Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
+Nothing... yet!
+
+# 0.5.0 - 15/03/2024
 ### Changes:
 Games:
 - [Valheim](https://store.steampowered.com/app/892970/Valheim/) support.
