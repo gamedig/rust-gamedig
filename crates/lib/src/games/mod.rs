@@ -10,6 +10,8 @@ pub use quake::*;
 pub use unreal2::*;
 pub use valve::*;
 
+/// Ark: Survival Ascended
+pub mod asa;
 /// Battalion 1944
 pub mod battalion1944;
 /// Eco
