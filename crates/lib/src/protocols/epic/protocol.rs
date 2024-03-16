@@ -1,6 +1,7 @@
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use crate::GDResult;
 use crate::http::HttpClient;
 
@@ -44,5 +45,14 @@ impl EpicProtocol {
 
         let response = self.client.post_json_with_form::<ClientTokenResponse>("/auth/v1/oauth/token", Some(&headers), &body)?;
         Ok(response.access_token)
+    }
+
+    pub fn query(&mut self) -> GDResult<Value> {
+        let token = self.auth_by_client()?;
+        let authorization = format!("Bearer {}", token);
+        let headers = [("Content-Type", "application/json"), ("Accept", "application/json"), ("Authorization", authorization.as_str())];
+
+        let url = format!("/matchmaking/v1/{}/filter", self.deployment);
+        self.client.post_json(url.as_str(), Some(&headers), ())
     }
 }
