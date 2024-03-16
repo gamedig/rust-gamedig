@@ -14,5 +14,6 @@ pub mod types;
 pub mod unreal2;
 /// Reference: [Server Query](https://developer.valvesoftware.com/wiki/Server_queries)
 pub mod valve;
+pub mod epic;
 
 pub use types::{ExtraRequestSettings, GenericResponse, Protocol};
