@@ -13,7 +13,7 @@ use crate::{GDResult, TimeoutSettings};
 use std::io::Read;
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6, ToSocketAddrs};
 
-use ureq::{Agent, AgentBuilder};
+use ureq::{Agent, AgentBuilder, Request};
 use url::{Host, Url};
 
 use serde::{de::DeserializeOwned, Serialize};
@@ -250,14 +250,20 @@ impl HttpClient {
         self.request_with_json_data("POST", path, headers, data)
     }
 
+    /// Send a HTTP Post request with FORM data and parse a JSON response.
+    pub fn post_json_with_form<T: DeserializeOwned>(
+        &mut self,
+        path: &str,
+        headers: HttpHeaders,
+        data: &[(&str, &str)],
+    ) -> GDResult<T> {
+        self.request_with_form_data("POST", path, headers, data)
+    }
+
     // NOTE: More methods can be added here as required using the request_json or
     // request_with_json methods
 
-    /// Internal request method, makes a request with an arbitrary HTTP method.
-    #[inline]
-    fn request(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<Vec<u8>> {
-        // Append the path to the pre-parsed URL and create a request object.
-        self.address.set_path(path);
+    fn make_request(&self, method: &str, headers: HttpHeaders) -> Request {
         let mut request = self.client.request_url(method, &self.address);
 
         // Set the request headers.
@@ -270,6 +276,16 @@ impl HttpClient {
                 request = request.set(key, value);
             }
         }
+
+        request
+    }
+
+    /// Internal request method, makes a request with an arbitrary HTTP method.
+    #[inline]
+    fn request(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<Vec<u8>> {
+        // Append the path to the pre-parsed URL and create a request object.
+        self.address.set_path(path);
+        let request = self.make_request(method, headers);
 
         // Send the request.
         let http_response = request.call().map_err(|e| PacketSend.context(e))?;
@@ -299,17 +315,7 @@ impl HttpClient {
     fn request_json<T: DeserializeOwned>(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<T> {
         // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
-        let mut request = self.client.request_url(method, &self.address);
-
-        // Set the request headers.
-        for (key, value) in self.headers.iter() {
-            request = request.set(key, value);
-        }
-        if let Some(headers) = headers {
-            for (key, value) in headers {
-                request = request.set(key, value);
-            }
-        }
+        let request = self.make_request(method, headers);
 
         // Send the request and parse the response as JSON.
         request
@@ -329,19 +335,29 @@ impl HttpClient {
         data: S,
     ) -> GDResult<T> {
         self.address.set_path(path);
-        let mut request = self.client.request_url(method, &self.address);
-
-        for (key, value) in self.headers.iter() {
-            request = request.set(key, value);
-        }
-        if let Some(headers) = headers {
-            for (key, value) in headers {
-                request = request.set(key, value);
-            }
-        }
+        let request = self.make_request(method, headers);
 
         request
             .send_json(data)
+            .map_err(|e| PacketSend.context(e))?
+            .into_json::<T>()
+            .map_err(|e| ProtocolFormat.context(e))
+    }
+
+    /// Send a HTTP request with FORM data and parse the JSON response.
+    #[inline]
+    fn request_with_form_data<T: DeserializeOwned>(
+        &mut self,
+        method: &str,
+        path: &str,
+        headers: HttpHeaders,
+        data: &[(&str, &str)]
+    ) -> GDResult<T> {
+        self.address.set_path(path);
+        let request = self.make_request(method, headers);
+
+        request
+            .send_form(data)
             .map_err(|e| PacketSend.context(e))?
             .into_json::<T>()
             .map_err(|e| ProtocolFormat.context(e))

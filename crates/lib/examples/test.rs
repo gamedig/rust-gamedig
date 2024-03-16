@@ -1,6 +1,7 @@
 use gamedig::protocols::epic::EpicProtocol;
 
 // THIS IS JUST FOR TESTING DEV PURPOSES, REMOVE AFTERWARDS
+// cargo r --example test --all-features
 
 pub fn main() {
     let deployment = String::from("ad9a8feffb3b4b2ca315546f038c3ae2");
