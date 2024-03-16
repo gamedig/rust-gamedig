@@ -1,9 +1,8 @@
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use crate::GDResult;
-use crate::http::{HttpClient, HttpHeaders};
+use crate::http::HttpClient;
 
 const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 
@@ -34,7 +33,7 @@ impl EpicProtocol {
     }
 
     pub fn auth_by_client(&mut self) -> GDResult<String> {
-        let body = format!("grant_type=client_credentials&deployment_id={}", self.deployment);
+        let body = [("grant_type", "client_credentials"), ("deployment_id", self.deployment.as_str())];
 
         let auth_format = format!("{}:{}", self.id, self.secret);
         let auth_base = BASE64_STANDARD.encode(auth_format);
@@ -43,7 +42,7 @@ impl EpicProtocol {
 
         let headers = [("Authorization", authorization), ("Content-Type", "application/x-www-form-urlencoded")];
 
-        let response = self.client.post_json::<ClientTokenResponse, String>("/auth/v1/oauth/token", Some(&headers), body)?;
+        let response = self.client.post_json_with_form::<ClientTokenResponse>("/auth/v1/oauth/token", Some(&headers), &body)?;
         Ok(response.access_token)
     }
 }
