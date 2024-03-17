@@ -1,3 +1,5 @@
+use serde_json::Value;
+
 #[derive(Debug)]
 pub struct Response {
     pub name: String,
@@ -6,6 +8,7 @@ pub struct Response {
     pub players_online: u32,
     pub players_maxmimum: u32,
     pub players: Vec<Player>,
+    pub raw: Value,
 }
 
 #[derive(Debug)]
