@@ -19,7 +19,7 @@ pub struct EpicProtocol {
 
 #[derive(Deserialize)]
 struct ClientTokenResponse {
-    pub access_token: String,
+    access_token: String,
 }
 
 #[derive(Deserialize)]
