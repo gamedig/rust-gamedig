@@ -10,5 +10,5 @@ pub fn main() {
     let mut epic = EpicProtocol::new(deployment, id, secret).unwrap();
     // 148.251.176.37:7080
     let data = epic.query("148.251.176.37".to_string(), 7080).unwrap();
-    println!("{}", data.to_string());
+    println!("{:#?}", data);
 }
