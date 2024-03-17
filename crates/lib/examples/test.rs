@@ -9,6 +9,6 @@ pub fn main() {
     let secret = String::from("PP5UGxysEieNfSrEicaD1N2Bb3TdXuD7xHYcsdUHZ7s");
     let mut epic = EpicProtocol::new(deployment, id, secret).unwrap();
     // 148.251.176.37:7080
-    let data = epic.query("148.251.176.37".to_string(), 7080).unwrap();
+    let data = epic.query_raw("148.251.176.37".to_string(), 7080).unwrap();
     println!("{:#?}", data);
 }

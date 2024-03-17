@@ -72,7 +72,7 @@ impl EpicProtocol {
         Ok(response.access_token)
     }
 
-    pub fn query_raw_value(&mut self, address: String, port: u16) -> GDResult<Value> {
+    pub fn query_raw(&mut self, address: String, port: u16) -> GDResult<Value> {
         let body = format!(
             "{{\"criteria\":[{{\"key\":\"attributes.ADDRESS_s\",\"op\":\"EQUAL\",\"value\":\"{}\"}}]}}",
             address
@@ -121,7 +121,7 @@ impl EpicProtocol {
     }
 
     pub fn query(&mut self, address: String, port: u16) -> GDResult<Response> {
-        let value = self.query_raw_value(address, port)?;
+        let value = self.query_raw(address, port)?;
 
         Ok(Response {
             name: extract_field!(value, ["attributes", "CUSTOMSERVERNAME_s"], Value::as_str).to_string(),
