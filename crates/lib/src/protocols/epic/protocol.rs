@@ -1,10 +1,12 @@
 use crate::http::HttpClient;
+use crate::protocols::epic::Response;
 use crate::GDErrorKind::{JsonParse, PacketBad};
 use crate::GDResult;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Value;
+use std::any::Any;
 
 const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 
@@ -23,6 +25,17 @@ pub struct ClientTokenResponse {
 #[derive(Deserialize)]
 struct QueryResponse {
     sessions: Value,
+}
+
+macro_rules! extract_field {
+    ($value:expr, $fields:expr, $map_func:expr) => {
+        $fields
+            .iter()
+            .fold(Some(&$value), |acc, &key| acc.and_then(|val| val.get(key)))
+            .map($map_func)
+            .ok_or(PacketBad.context("Missing field!"))?
+            .ok_or(PacketBad.context("Field is not parsable."))?
+    };
 }
 
 impl EpicProtocol {
@@ -59,7 +72,7 @@ impl EpicProtocol {
         Ok(response.access_token)
     }
 
-    pub fn query(&mut self, address: String, port: u16) -> GDResult<Value> {
+    pub fn query_raw_value(&mut self, address: String, port: u16) -> GDResult<Value> {
         let body = format!(
             "{{\"criteria\":[{{\"key\":\"attributes.ADDRESS_s\",\"op\":\"EQUAL\",\"value\":\"{}\"}}]}}",
             address
@@ -105,5 +118,18 @@ impl EpicProtocol {
         }
 
         Err(PacketBad.context("Expected session field to be an array."))
+    }
+
+    pub fn query(&mut self, address: String, port: u16) -> GDResult<Response> {
+        let value = self.query_raw_value(address, port)?;
+
+        Ok(Response {
+            name: extract_field!(value, ["attributes", "CUSTOMSERVERNAME_s"], Value::as_str).to_string(),
+            map: extract_field!(value, ["attributes", "MAPNAME_s"], Value::as_str).to_string(),
+            has_password: extract_field!(value, ["attributes", "SERVERPASSWORD_b"], Value::as_bool),
+            players_online: extract_field!(value, ["totalPlayers"], Value::as_u64) as u32,
+            players_maxmimum: extract_field!(value, ["settings", "maxPublicPlayers"], Value::as_u64) as u32,
+            players: vec![],
+        })
     }
 }
