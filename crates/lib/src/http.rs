@@ -351,7 +351,7 @@ impl HttpClient {
         method: &str,
         path: &str,
         headers: HttpHeaders,
-        data: &[(&str, &str)]
+        data: &[(&str, &str)],
     ) -> GDResult<T> {
         self.address.set_path(path);
         let request = self.make_request(method, headers);
