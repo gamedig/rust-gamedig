@@ -78,6 +78,10 @@ impl EpicProtocol {
         let response: QueryResponse = self.client.post_json(url.as_str(), Some(&headers), body)?;
 
         if let Value::Array(sessions) = response.sessions {
+            if sessions.is_empty() {
+                return Err(PacketBad.context("No servers provided."));
+            }
+
             for session in sessions.into_iter() {
                 let attributes = session
                     .get("attributes")
@@ -97,7 +101,7 @@ impl EpicProtocol {
                 }
             }
 
-            return Err(PacketBad.context("No servers provided."));
+            return Err(PacketBad.context("Servers were provided but the specified one couldn't be find amonst them."));
         }
 
         Err(PacketBad.context("Expected session field to be an array."))
