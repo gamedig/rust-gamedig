@@ -6,7 +6,7 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use serde::Deserialize;
 use serde_json::Value;
-use std::any::Any;
+use std::net::SocketAddr;
 
 const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 
@@ -18,7 +18,7 @@ pub struct EpicProtocol {
 }
 
 #[derive(Deserialize)]
-pub struct ClientTokenResponse {
+struct ClientTokenResponse {
     pub access_token: String,
 }
 
@@ -72,7 +72,10 @@ impl EpicProtocol {
         Ok(response.access_token)
     }
 
-    pub fn query_raw(&mut self, address: String, port: u16) -> GDResult<Value> {
+    pub fn query_raw(&mut self, address: &SocketAddr) -> GDResult<Value> {
+        let port = address.port();
+        let address = address.ip().to_string();
+
         let body = format!(
             "{{\"criteria\":[{{\"key\":\"attributes.ADDRESS_s\",\"op\":\"EQUAL\",\"value\":\"{}\"}}]}}",
             address
@@ -120,8 +123,8 @@ impl EpicProtocol {
         Err(PacketBad.context("Expected session field to be an array."))
     }
 
-    pub fn query(&mut self, address: String, port: u16) -> GDResult<Response> {
-        let value = self.query_raw(address, port)?;
+    pub fn query(&mut self, address: &SocketAddr) -> GDResult<Response> {
+        let value = self.query_raw(address)?;
 
         Ok(Response {
             name: extract_field!(value, ["attributes", "CUSTOMSERVERNAME_s"], Value::as_str).to_string(),
