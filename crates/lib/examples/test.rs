@@ -8,8 +8,7 @@ pub fn main() {
     let id = String::from("xyza7891muomRmynIIHaJB9COBKkwj6n");
     let secret = String::from("PP5UGxysEieNfSrEicaD1N2Bb3TdXuD7xHYcsdUHZ7s");
     let mut epic = EpicProtocol::new(deployment, id, secret).unwrap();
-    //148.251.176.37:7080
+    // 148.251.176.37:7080
     let data = epic.query("148.251.176.37".to_string(), 7080).unwrap();
     println!("{}", data.to_string());
 }
-
