@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::GDErrorKind::{JsonParse, PacketBad};
 use crate::GDResult;
 use crate::http::HttpClient;
 
@@ -15,9 +15,14 @@ pub struct EpicProtocol {
     secret: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct ClientTokenResponse {
     pub access_token: String,
+}
+
+#[derive(Deserialize)]
+struct QueryResponse {
+    sessions: Value,
 }
 
 impl EpicProtocol {
@@ -50,13 +55,28 @@ impl EpicProtocol {
 
     pub fn query(&mut self, address: String, port: u16) -> GDResult<Value> {
         let body = format!("{{\"criteria\":[{{\"key\":\"attributes.ADDRESS_s\",\"op\":\"EQUAL\",\"value\":\"{}\"}}]}}", address);
-        let body = serde_json::from_str::<Value>(body.as_str()).unwrap();
+        let body = serde_json::from_str::<Value>(body.as_str()).map_err(|e| JsonParse.context(e))?;
 
         let token = self.auth_by_client()?;
         let authorization = format!("Bearer {}", token);
         let headers = [("Content-Type", "application/json"), ("Accept", "application/json"), ("Authorization", authorization.as_str())];
 
         let url = format!("/matchmaking/v1/{}/filter", self.deployment);
-        self.client.post_json(url.as_str(), Some(&headers), body)
+        let response: QueryResponse = self.client.post_json(url.as_str(), Some(&headers), body)?;
+
+        if let Value::Array(sessions) = response.sessions {
+            for session in sessions.into_iter() {
+                let attributes = session.get("attributes").ok_or(PacketBad.context("Expected attributes field missing in sessions."))?;
+                if attributes.get("ADDRESSBOUND_s").and_then(Value::as_str).map_or(false, |v| v.contains(&address) || v.contains(&port.to_string())) ||
+                    attributes.get("ADDRESS_s").and_then(Value::as_str).map_or(false, |v| v.contains(&address))
+                {
+                    return Ok(session);
+                }
+            }
+
+            return Err(PacketBad.context("No servers provided."));
+        }
+
+        Err(PacketBad.context("Expected session field to be an array."))
     }
 }
