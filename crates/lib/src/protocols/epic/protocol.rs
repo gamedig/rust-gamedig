@@ -130,6 +130,7 @@ impl EpicProtocol {
             players_online: extract_field!(value, ["totalPlayers"], Value::as_u64) as u32,
             players_maxmimum: extract_field!(value, ["settings", "maxPublicPlayers"], Value::as_u64) as u32,
             players: vec![],
+            raw: value,
         })
     }
 }
