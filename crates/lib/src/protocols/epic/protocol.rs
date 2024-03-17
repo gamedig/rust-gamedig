@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use serde::{Deserialize, Serialize};
@@ -47,12 +48,15 @@ impl EpicProtocol {
         Ok(response.access_token)
     }
 
-    pub fn query(&mut self) -> GDResult<Value> {
+    pub fn query(&mut self, address: String, port: u16) -> GDResult<Value> {
+        let body = format!("{{\"criteria\":[{{\"key\":\"attributes.ADDRESS_s\",\"op\":\"EQUAL\",\"value\":\"{}\"}}]}}", address);
+        let body = serde_json::from_str::<Value>(body.as_str()).unwrap();
+
         let token = self.auth_by_client()?;
         let authorization = format!("Bearer {}", token);
         let headers = [("Content-Type", "application/json"), ("Accept", "application/json"), ("Authorization", authorization.as_str())];
 
         let url = format!("/matchmaking/v1/{}/filter", self.deployment);
-        self.client.post_json(url.as_str(), Some(&headers), ())
+        self.client.post_json(url.as_str(), Some(&headers), body)
     }
 }
