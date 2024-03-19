@@ -11,6 +11,7 @@ pub struct Response {
     pub players_online: u32,
     pub players_maxmimum: u32,
     pub players: Vec<Player>,
+    pub game_version: Option<String>,
     pub raw: Value,
 }
 
@@ -32,6 +33,8 @@ impl CommonResponse for Response {
                 .collect(),
         )
     }
+
+    fn game_version(&self) -> Option<&str> { self.game_version.as_deref() }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

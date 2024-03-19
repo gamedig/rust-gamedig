@@ -33,14 +33,20 @@ struct QueryResponse {
     sessions: Value,
 }
 
-macro_rules! extract_field {
+macro_rules! extract_optional_field {
     ($value:expr, $fields:expr, $map_func:expr) => {
         $fields
             .iter()
             .fold(Some(&$value), |acc, &key| acc.and_then(|val| val.get(key)))
             .map($map_func)
-            .ok_or(PacketBad.context("Missing field!"))?
-            .ok_or(PacketBad.context("Field is not parsable."))?
+            .flatten()
+    };
+}
+
+macro_rules! extract_field {
+    ($value:expr, $fields:expr, $map_func:expr) => {
+        extract_optional_field!($value, $fields, $map_func)
+            .ok_or(PacketBad.context("Field is missing or is not parsable."))?
     };
 }
 
@@ -134,6 +140,14 @@ impl EpicProtocol {
     pub fn query(&mut self, address: &SocketAddr) -> GDResult<Response> {
         let value = self.query_raw(address)?;
 
+        let build_version = extract_optional_field!(value, ["attributes", "BUILDID_s"], Value::as_str);
+        let minor_version = extract_optional_field!(value, ["attributes", "MINORBUILDID_s"], Value::as_str);
+
+        let game_version = match (build_version, minor_version) {
+            (Some(b), Some(m)) => Some(format!("{b}.{m}")),
+            _ => None,
+        };
+
         Ok(Response {
             name: extract_field!(value, ["attributes", "CUSTOMSERVERNAME_s"], Value::as_str).to_string(),
             map: extract_field!(value, ["attributes", "MAPNAME_s"], Value::as_str).to_string(),
@@ -141,6 +155,7 @@ impl EpicProtocol {
             players_online: extract_field!(value, ["totalPlayers"], Value::as_u64) as u32,
             players_maxmimum: extract_field!(value, ["settings", "maxPublicPlayers"], Value::as_u64) as u32,
             players: vec![],
+            game_version,
             raw: value,
         })
     }
