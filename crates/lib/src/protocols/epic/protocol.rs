@@ -1,20 +1,26 @@
 use crate::http::HttpClient;
 use crate::protocols::epic::Response;
 use crate::GDErrorKind::{JsonParse, PacketBad};
-use crate::GDResult;
+use crate::{GDResult, TimeoutSettings};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::net::SocketAddr;
 
 const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Credentials {
+    pub deployment: String,
+    pub id: String,
+    pub secret: String,
+    pub auth_by_external: bool,
+}
+
 pub struct EpicProtocol {
     client: HttpClient,
-    deployment: String,
-    id: String,
-    secret: String,
+    credentials: Credentials,
 }
 
 #[derive(Deserialize)]
@@ -39,12 +45,10 @@ macro_rules! extract_field {
 }
 
 impl EpicProtocol {
-    pub fn new(deployment: String, id: String, secret: String) -> GDResult<Self> {
+    pub fn new(credentials: Credentials, timeout_settings: TimeoutSettings) -> GDResult<Self> {
         Ok(Self {
-            client: HttpClient::from_url(EPIC_API_ENDPOINT, &None, None)?,
-            deployment,
-            id,
-            secret,
+            client: HttpClient::from_url(EPIC_API_ENDPOINT, &Some(timeout_settings), None)?,
+            credentials,
         })
     }
 
@@ -53,10 +57,10 @@ impl EpicProtocol {
     pub fn auth_by_client(&mut self) -> GDResult<String> {
         let body = [
             ("grant_type", "client_credentials"),
-            ("deployment_id", self.deployment.as_str()),
+            ("deployment_id", self.credentials.deployment.as_str()),
         ];
 
-        let auth_format = format!("{}:{}", self.id, self.secret);
+        let auth_format = format!("{}:{}", self.credentials.id, self.credentials.secret);
         let auth_base = BASE64_STANDARD.encode(auth_format);
         let auth = format!("Basic {}", auth_base.as_str());
         let authorization = auth.as_str();
@@ -82,7 +86,11 @@ impl EpicProtocol {
         );
         let body = serde_json::from_str::<Value>(body.as_str()).map_err(|e| JsonParse.context(e))?;
 
-        let token = self.auth_by_client()?;
+        let token = if self.credentials.auth_by_external {
+            self.auth_by_external()?
+        } else {
+            self.auth_by_client()?
+        };
         let authorization = format!("Bearer {}", token);
         let headers = [
             ("Content-Type", "application/json"),
@@ -90,7 +98,7 @@ impl EpicProtocol {
             ("Authorization", authorization.as_str()),
         ];
 
-        let url = format!("/matchmaking/v1/{}/filter", self.deployment);
+        let url = format!("/matchmaking/v1/{}/filter", self.credentials.deployment);
         let response: QueryResponse = self.client.post_json(url.as_str(), Some(&headers), body)?;
 
         if let Value::Array(sessions) = response.sessions {
@@ -136,4 +144,17 @@ impl EpicProtocol {
             raw: value,
         })
     }
+}
+
+pub fn query(credentials: Credentials, address: &SocketAddr) -> GDResult<Response> {
+    query_with_timeout(credentials, address, None)
+}
+
+pub fn query_with_timeout(
+    credentials: Credentials,
+    address: &SocketAddr,
+    timeout_settings: Option<TimeoutSettings>,
+) -> GDResult<Response> {
+    let mut client = EpicProtocol::new(credentials, timeout_settings.unwrap_or_default())?;
+    client.query(address)
 }
