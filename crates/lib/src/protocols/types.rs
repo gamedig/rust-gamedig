@@ -33,6 +33,8 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::Engine),
     Unreal2,
+    #[cfg(feature = "serde")]
+    Epic(epic::Credentials),
     #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
 }

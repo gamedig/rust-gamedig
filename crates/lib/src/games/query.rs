@@ -48,6 +48,9 @@ pub fn query_with_timeout_and_extra_settings(
             )
             .map(Box::new)?
         }
+        Protocol::Epic(credentials) => {
+            protocols::epic::query_with_timeout(credentials.clone(), &socket_addr, timeout_settings).map(Box::new)?
+        }
         Protocol::Gamespy(version) => {
             match version {
                 GameSpyVersion::One => protocols::gamespy::one::query(&socket_addr, timeout_settings).map(Box::new)?,
