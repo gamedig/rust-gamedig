@@ -33,7 +33,6 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::Engine),
     Unreal2,
-    #[cfg(feature = "serde")]
     Epic(epic::Credentials),
     #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
@@ -47,7 +46,6 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     Unreal2(&'a unreal2::Response),
-    #[cfg(feature = "serde")]
     Epic(&'a epic::Response),
     #[cfg(feature = "games")]
     Mindustry(&'a crate::games::mindustry::types::ServerData),
@@ -73,7 +71,6 @@ pub enum GenericPlayer<'a> {
     QuakeOne(&'a quake::one::Player),
     QuakeTwo(&'a quake::two::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
-    #[cfg(feature = "serde")]
     Epic(&'a epic::Player),
     Unreal2(&'a unreal2::Player),
     #[cfg(feature = "games")]

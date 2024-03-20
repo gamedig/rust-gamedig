@@ -9,6 +9,10 @@ Games:
 - [Myth of Empires](https://store.steampowered.com/app/1371580/Myth_of_Empires/) support.
 - [Pirates, Vikings, and Knights II](https://store.steampowered.com/app/17570/Pirates_Vikings_and_Knights_II/) support.
 - [PixARK](https://store.steampowered.com/app/593600/PixARK/) support.
+- [Ark: Survival Ascended](https://store.steampowered.com/app/2399830/ARK_Survival_Ascended/) support.
+
+Protocols:
+- Epic (EOS) support.
 
 # 0.5.0 - 15/03/2024
 
