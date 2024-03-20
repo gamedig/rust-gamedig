@@ -35,6 +35,7 @@ pub use query::*;
 
 #[cfg(feature = "game_defs")]
 mod definitions;
+mod epic;
 
 #[cfg(feature = "game_defs")]
 pub use definitions::GAMES;
