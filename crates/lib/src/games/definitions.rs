@@ -4,6 +4,7 @@ use crate::games::minecraft::types::{LegacyGroup, Server};
 use crate::protocols::{gamespy::GameSpyVersion, quake::QuakeVersion, valve::Engine, Protocol};
 use crate::Game;
 
+use crate::protocols::epic::Credentials;
 use crate::protocols::types::{GatherToggle, ProprietaryProtocol};
 use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
@@ -47,6 +48,12 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
+    "asa" => game!("Ark: Survival Ascended", 7777, Protocol::Epic(Credentials {
+        deployment: "ad9a8feffb3b4b2ca315546f038c3ae2",
+        id: "xyza7891muomRmynIIHaJB9COBKkwj6n",
+        secret: "PP5UGxysEieNfSrEicaD1N2Bb3TdXuD7xHYcsdUHZ7s",
+        auth_by_external: false,
+    })),
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(Engine::new(346_110))),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
     "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(834_910))),
