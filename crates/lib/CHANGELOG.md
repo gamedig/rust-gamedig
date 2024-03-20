@@ -2,7 +2,12 @@
 Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
-Nothing... yet!
+### Changes:
+Games:
+- [Ark: Survival Ascended](https://store.steampowered.com/app/2399830/ARK_Survival_Ascended/) support.
+
+Protocols:
+- Epic (EOS) support.
 
 # 0.5.0 - 15/03/2024
 ### Changes:

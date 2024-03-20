@@ -5,7 +5,6 @@
 //! independently queried.
 
 /// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/epic.js)
-#[cfg(feature = "serde")]
 pub mod epic;
 /// Reference: [node-GameDig](https://github.com/gamedig/node-gamedig/blob/master/protocols/gamespy1.js)
 pub mod gamespy;

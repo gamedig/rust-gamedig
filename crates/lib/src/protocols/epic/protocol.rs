@@ -10,11 +10,15 @@ use std::net::SocketAddr;
 
 const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Credentials {
-    pub deployment: String,
-    pub id: String,
-    pub secret: String,
+    #[serde(skip_deserializing, skip_serializing)]
+    pub deployment: &'static str,
+    #[serde(skip_deserializing, skip_serializing)]
+    pub id: &'static str,
+    #[serde(skip_deserializing, skip_serializing)]
+    pub secret: &'static str,
     pub auth_by_external: bool,
 }
 
@@ -63,7 +67,7 @@ impl EpicProtocol {
     pub fn auth_by_client(&mut self) -> GDResult<String> {
         let body = [
             ("grant_type", "client_credentials"),
-            ("deployment_id", self.credentials.deployment.as_str()),
+            ("deployment_id", &self.credentials.deployment),
         ];
 
         let auth_format = format!("{}:{}", self.credentials.id, self.credentials.secret);
