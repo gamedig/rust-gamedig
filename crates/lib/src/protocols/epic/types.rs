@@ -1,9 +1,11 @@
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Response {
     pub name: String,
     pub map: String,
@@ -37,7 +39,8 @@ impl CommonResponse for Response {
     fn game_version(&self) -> Option<&str> { self.game_version.as_deref() }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Player {
     pub name: String,
 }
