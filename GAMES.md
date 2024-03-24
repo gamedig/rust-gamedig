@@ -82,6 +82,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Call Of Duty: Black Ops 3          | CODBO3              | Valve                | Query port: 27017.                                                                                                                                                        |
 | Counter-Strike 2                   | COUNTERSTRIKE2      | Valve                |                                                                                                                                                                           |
 | Double Action: Boogaloo            | DAB                 | Valve                |                                                                                                                                                                           |
+| Mordhau                            | MORDHAU             | Valve                |
 
 ## Planned to add support:
 _
