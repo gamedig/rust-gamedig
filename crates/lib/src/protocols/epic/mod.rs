@@ -12,8 +12,7 @@ pub use types::*;
 ///   conventions in CONTRIBUTING.md).
 /// * `pretty_name` - The full name of the game, will be used as the
 ///   documentation for the created module.
-/// * `steam_app`, `default_port` - Passed through to
-///   [crate::protocols::epic::game_query_fn].
+/// * `steam_app`, `default_port` - Passed through to [game_query_fn].
 #[cfg(feature = "games")]
 macro_rules! game_query_mod {
     ($mod_name: ident, $pretty_name: expr, $default_port: literal, $credentials: expr) => {

@@ -1,8 +1,6 @@
 #[cfg(feature = "games")]
 use crate::games::minecraft;
-#[cfg(feature = "serde")]
-use crate::protocols::epic;
-use crate::protocols::{gamespy, quake, unreal2, valve};
+use crate::protocols::{epic, gamespy, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
 use crate::GDResult;
 
