@@ -4,7 +4,9 @@ use crate::GDErrorKind::{JsonParse, PacketBad};
 use crate::{GDResult, TimeoutSettings};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+#[cfg(feature = "serde")]
+use serde::Serialize;
 use serde_json::Value;
 use std::net::SocketAddr;
 
@@ -13,11 +15,11 @@ const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Credentials {
-    #[serde(skip_deserializing, skip_serializing)]
+    #[cfg_attr(feature = "serde", serde(skip_deserializing, skip_serializing))]
     pub deployment: &'static str,
-    #[serde(skip_deserializing, skip_serializing)]
+    #[cfg_attr(feature = "serde", serde(skip_deserializing, skip_serializing))]
     pub id: &'static str,
-    #[serde(skip_deserializing, skip_serializing)]
+    #[cfg_attr(feature = "serde", serde(skip_deserializing, skip_serializing))]
     pub secret: &'static str,
     pub auth_by_external: bool,
 }
