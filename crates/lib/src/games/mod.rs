@@ -1,10 +1,12 @@
 //! Currently supported games.
 
+pub mod epic;
 pub mod gamespy;
 pub mod quake;
 pub mod unreal2;
 pub mod valve;
 
+pub use epic::*;
 pub use gamespy::*;
 pub use quake::*;
 pub use unreal2::*;
@@ -35,7 +37,6 @@ pub use query::*;
 
 #[cfg(feature = "game_defs")]
 mod definitions;
-mod epic;
 
 #[cfg(feature = "game_defs")]
 pub use definitions::GAMES;
