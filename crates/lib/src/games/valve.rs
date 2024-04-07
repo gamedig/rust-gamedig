@@ -90,6 +90,7 @@ game_query_mod!(dod, "Day of Defeat", Engine::new_gold_src(false), 27015);
 game_query_mod!(dods, "Day of Defeat: Source", Engine::new(300), 27015);
 game_query_mod!(doi, "Day of Infamy", Engine::new(447_820), 27015);
 game_query_mod!(dst, "Don't Starve Together", Engine::new(322_320), 27016);
+game_query_mod!(enshrouded, "Enshrouded", Engine::new(1_203_620), 15637);
 game_query_mod!(garrysmod, "Garry's Mod", Engine::new(4000), 27016);
 game_query_mod!(hl2d, "Half-Life 2 Deathmatch", Engine::new(320), 27015);
 game_query_mod!(

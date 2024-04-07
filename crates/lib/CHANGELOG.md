@@ -4,6 +4,7 @@ Who knows what the future holds...
 # 0.X.Y - DD/MM/YYYY
 Games:
 - [Mordhau](https://store.steampowered.com/app/629760/MORDHAU/) support.
+- [Enshrouded](https://store.steampowered.com/app/1203620/Enshrouded/) support.
 
 # 0.5.0 - 15/03/2024
 ### Changes:
