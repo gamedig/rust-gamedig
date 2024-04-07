@@ -1,11 +1,13 @@
 //! Currently supported games.
 
+#[cfg(feature = "tls")]
 pub mod epic;
 pub mod gamespy;
 pub mod quake;
 pub mod unreal2;
 pub mod valve;
 
+#[cfg(feature = "tls")]
 pub use epic::*;
 pub use gamespy::*;
 pub use quake::*;

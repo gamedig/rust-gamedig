@@ -48,6 +48,7 @@ pub fn query_with_timeout_and_extra_settings(
             )
             .map(Box::new)?
         }
+        #[cfg(feature = "tls")]
         Protocol::Epic(credentials) => {
             protocols::epic::query_with_timeout(credentials.clone(), &socket_addr, timeout_settings).map(Box::new)?
         }

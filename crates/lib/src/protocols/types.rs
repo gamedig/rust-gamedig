@@ -1,8 +1,10 @@
 #[cfg(feature = "games")]
 use crate::games::minecraft;
-use crate::protocols::{epic, gamespy, quake, unreal2, valve};
+use crate::protocols::{gamespy, quake, unreal2, valve};
 use crate::GDErrorKind::InvalidInput;
 use crate::GDResult;
+#[cfg(feature = "tls")]
+use crate::protocols::epic;
 
 use std::time::Duration;
 
@@ -31,6 +33,7 @@ pub enum Protocol {
     Quake(quake::QuakeVersion),
     Valve(valve::Engine),
     Unreal2,
+    #[cfg(feature = "tls")]
     Epic(epic::Credentials),
     #[cfg(feature = "games")]
     PROPRIETARY(ProprietaryProtocol),
@@ -44,6 +47,7 @@ pub enum GenericResponse<'a> {
     Quake(quake::VersionedResponse<'a>),
     Valve(&'a valve::Response),
     Unreal2(&'a unreal2::Response),
+    #[cfg(feature = "tls")]
     Epic(&'a epic::Response),
     #[cfg(feature = "games")]
     Mindustry(&'a crate::games::mindustry::types::ServerData),
@@ -69,8 +73,9 @@ pub enum GenericPlayer<'a> {
     QuakeOne(&'a quake::one::Player),
     QuakeTwo(&'a quake::two::Player),
     Gamespy(gamespy::VersionedPlayer<'a>),
-    Epic(&'a epic::Player),
     Unreal2(&'a unreal2::Player),
+    #[cfg(feature = "tls")]
+    Epic(&'a epic::Player),
     #[cfg(feature = "games")]
     Minecraft(&'a minecraft::Player),
     #[cfg(feature = "games")]
