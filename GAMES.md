@@ -84,6 +84,7 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Double Action: Boogaloo            | DAB                 | Valve                |                                                                                                                                                                           |
 | Mordhau                            | MORDHAU             | Valve                |                                                                                                                                                                           |
 | Enshrouded                         | ENSHROUDED          | Valve                |                                                                                                                                                                           |
+| Myth of Empires                    | MOE                 | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 _

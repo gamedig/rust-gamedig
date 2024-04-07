@@ -158,4 +158,5 @@ game_query_mod!(
 );
 game_query_mod!(vrising, "V Rising", Engine::new(1_604_030), 27016);
 game_query_mod!(zps, "Zombie Panic: Source", Engine::new(17_500), 27015);
+game_query_mod!(moe, "Myth of Empires", Engine::new(1_371_580), 12888);
 game_query_mod!(mordhau, "Mordhau", Engine::new(629_760), 27015);
