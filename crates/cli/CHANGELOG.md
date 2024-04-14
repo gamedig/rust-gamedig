@@ -1,11 +1,13 @@
-
 Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
+
 Nothing... yet.
 
 # 0.1.0 - 15/03/2024
+
 ### Changes:
+
 - Added the CLI (by @cainthebest).
 - Added DNS lookup support (by @Douile).
 - Added JSON output option (by @Douile).

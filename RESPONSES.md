@@ -1,7 +1,8 @@
 Every protocol has its own response type(s), below is a listing of the overlapping fields on these responses.
 
 If a cell is blank it doesn't exist, otherwise it contains the type of that data in the current column's response type.
-In the case that a field that performs the same function exists in the current column's response type that name is annotated in brackets.
+In the case that a field that performs the same function exists in the current column's response type that name is
+annotated in brackets.
 
 # Response table
 

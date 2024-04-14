@@ -28,31 +28,38 @@
 **Warning**: This project goes through frequent API breaking changes and hasn't been thoroughly tested.
 
 ## Community
+
 Checkout the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).  
 Note that it isn't be a replacement for GitHub issues, if you have found a problem
 within the library or want to request a feature, it's better to do so here rather than
 on Discord.
 
 ## Usage
+
 Minimum Supported Rust Version is `1.65.0` and the code is cross-platform.
 
-Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port for the info queries, the port can also be optional if the server is running the default ports) then query on it.  
+Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files
+to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port
+for the info queries, the port can also be optional if the server is running the default ports) then query on it.
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
+
 ```rust
 use gamedig::games::teamfortress2;
 
 fn main() {
-    let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None); 
-        // None is the default port (which is 27015), could also be Some(27015)
-    
+    let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None);
+    // None is the default port (which is 27015), could also be Some(27015)
+
     match response { // Result type, must check what it is...
         Err(error) => println!("Couldn't query, error: {}", error),
         Ok(r) => println!("{:#?}", r)
     }
 }
 ```
+
 Response (note that some games have a different structure):
+
 ```json5
 {
   protocol: 17,
@@ -72,10 +79,16 @@ Response (note that some games have a different structure):
   steam_id: Some(69753253289735296),
   tv_port: None,
   tv_name: None,
-  keywords: Some("alltalk,nocrits"),
+  keywords: Some(
+  "alltalk,nocrits"
+  ),
   rules: [
-    "mp_autoteambalance": "1",
-    "mp_maxrounds": "5",
+    "mp_autoteambalance"
+    :
+    "1",
+    "mp_maxrounds"
+    :
+    "5",
     //....
   ]
 }
@@ -84,14 +97,18 @@ Response (note that some games have a different structure):
 Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 
 ## Command Line Interface
+
 The library also has an official CLI: [GameDig-CLI](https://crates.io/crates/gamedig-cli).
 
 ## Documentation
+
 The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
 Curious about the history and what changed between versions?  
 Everything is in the changelogs file: [lib](crates/lib/CHANGELOG.md) and [cli](crates/lib/CHANGELOG.md).
 
 ## Contributing
-If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull request if you want to implement it yourself)!
+
+If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull
+request if you want to implement it yourself)!
 
 Before contributing please read [CONTRIBUTING](CONTRIBUTING.md).
