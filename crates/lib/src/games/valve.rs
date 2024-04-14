@@ -163,7 +163,7 @@ game_query_mod!(mordhau, "Mordhau", Engine::new(629_760), 27015);
 game_query_mod!(
     pvak2,
     "Pirates, Vikings, and Knights II",
-    Engine::new(17570),
+    Engine::new(17_570),
     27015
 );
 game_query_mod!(pixark, "PixARK", Engine::new(593_600), 27015);
