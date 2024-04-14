@@ -1,8 +1,10 @@
-A supported game is defined as a game that has been successfully tested, other games that are not present here but use 
+A supported game is defined as a game that has been successfully tested, other games that are not present here but use
 one of the implemented protocols might work too, but that isn't guaranteed.  
-Beware of the `Notes` column, as it contains information about query port offsets or other query requirements/information.
+Beware of the `Notes` column, as it contains information about query port offsets or other query
+requirements/information.
 
 # Supported games:
+
 | Game                               | Use name            | Protocol             | Notes                                                                                                                                                                     |
 |------------------------------------|---------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Team Fortress 2                    | TEAMFORTRESS2       | Valve                |                                                                                                                                                                           |
@@ -85,6 +87,8 @@ Beware of the `Notes` column, as it contains information about query port offset
 | Mordhau                            | MORDHAU             | Valve                |                                                                                                                                                                           |
 | Enshrouded                         | ENSHROUDED          | Valve                |                                                                                                                                                                           |
 | Myth of Empires                    | MOE                 | Valve                |                                                                                                                                                                           |
+| Pirates, Vikings, and Knights II   | PVAK2               | Valve                |
 
 ## Planned to add support:
+
 _

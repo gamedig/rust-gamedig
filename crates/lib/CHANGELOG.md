@@ -6,6 +6,7 @@ Games:
 - [Mordhau](https://store.steampowered.com/app/629760/MORDHAU/) support.
 - [Enshrouded](https://store.steampowered.com/app/1203620/Enshrouded/) support.
 - [Myth of Empires](https://store.steampowered.com/app/1371580/Myth_of_Empires/) support.
+- [Pirates, Vikings, and Knights II](https://store.steampowered.com/app/17570/Pirates_Vikings_and_Knights_II/) support.
 
 # 0.5.0 - 15/03/2024
 ### Changes:
