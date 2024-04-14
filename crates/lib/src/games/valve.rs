@@ -166,3 +166,4 @@ game_query_mod!(
     Engine::new(17570),
     27015
 );
+game_query_mod!(pixark, "PixARK", Engine::new(593_600), 27015);

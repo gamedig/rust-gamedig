@@ -8,6 +8,7 @@ Games:
 - [Enshrouded](https://store.steampowered.com/app/1203620/Enshrouded/) support.
 - [Myth of Empires](https://store.steampowered.com/app/1371580/Myth_of_Empires/) support.
 - [Pirates, Vikings, and Knights II](https://store.steampowered.com/app/17570/Pirates_Vikings_and_Knights_II/) support.
+- [PixARK](https://store.steampowered.com/app/593600/PixARK/) support.
 
 # 0.5.0 - 15/03/2024
 

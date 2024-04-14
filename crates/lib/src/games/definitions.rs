@@ -96,6 +96,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "l4d2" => game!("Left 4 Dead 2", 27015, Protocol::Valve(Engine::new(550))),
     "ohd" => game!("Operation: Harsh Doorstop", 27005, Protocol::Valve(Engine::new_with_dedicated(736_590, 950_900))),
     "onset" => game!("Onset", 7776, Protocol::Valve(Engine::new(1_105_810))),
+    "pixark" => game!("PixARK", 27015, Protocol::Valve(Engine::new(593_600))),
     "postscriptum" => game!("Post Scriptum", 10037, Protocol::Valve(Engine::new(736_220))),
     "projectzomboid" => game!("Project Zomboid", 16261, Protocol::Valve(Engine::new(108_600))),
     "pvak2" => game!("Pirates, Vikings, and Knights II", 27015, Protocol::Valve(Engine::new(17570))),

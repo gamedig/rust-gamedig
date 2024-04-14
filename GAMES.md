@@ -87,7 +87,8 @@ requirements/information.
 | Mordhau                            | MORDHAU             | Valve                |                                                                                                                                                                           |
 | Enshrouded                         | ENSHROUDED          | Valve                |                                                                                                                                                                           |
 | Myth of Empires                    | MOE                 | Valve                |                                                                                                                                                                           |
-| Pirates, Vikings, and Knights II   | PVAK2               | Valve                |
+| Pirates, Vikings, and Knights II   | PVAK2               | Valve                |                                                                                                                                                                           |
+| PixARK                             | PIXARK              |                      |                                                                                                                                                                           |
 
 ## Planned to add support:
 
