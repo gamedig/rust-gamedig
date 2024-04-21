@@ -89,6 +89,7 @@ requirements/information.
 | Myth of Empires                    | MOE                 | Valve                |                                                                                                                                                                           |
 | Pirates, Vikings, and Knights II   | PVAK2               | Valve                |                                                                                                                                                                           |
 | PixARK                             | PIXARK              |                      |                                                                                                                                                                           |
+| Ark: Survival Ascended             | ASA                 | Epic                 | Available on the 'tls' feature                                                                                                                                            |
 
 ## Planned to add support:
 
