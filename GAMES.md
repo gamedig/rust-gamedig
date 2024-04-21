@@ -88,7 +88,7 @@ requirements/information.
 | Enshrouded                         | ENSHROUDED          | Valve                |                                                                                                                                                                           |
 | Myth of Empires                    | MOE                 | Valve                |                                                                                                                                                                           |
 | Pirates, Vikings, and Knights II   | PVAK2               | Valve                |                                                                                                                                                                           |
-| PixARK                             | PIXARK              |                      |                                                                                                                                                                           |
+| PixARK                             | PIXARK              | Valve                |                                                                                                                                                                           |
 | Ark: Survival Ascended             | ASA                 | Epic                 | Available on the 'tls' feature                                                                                                                                            |
 
 ## Planned to add support:
