@@ -90,7 +90,7 @@ requirements/information.
 | Pirates, Vikings, and Knights II   | PVAK2               | Valve                |                                                                                                                                                                           |
 | PixARK                             | PIXARK              | Valve                |                                                                                                                                                                           |
 | Ark: Survival Ascended             | ASA                 | Epic                 | Available on the 'tls' feature                                                                                                                                            |
-| Aliens vs. Predator                | AVP                 | Valve                |                                                                                                                                                                           |
+| Aliens vs. Predator 2010           | AVP                 | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 

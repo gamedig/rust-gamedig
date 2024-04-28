@@ -54,7 +54,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
     "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(834_910))),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
-    "avp" => game!("Aliens vs. Predator", 27015, Protocol::Valve(Engine::new(10_680))),
+    "avp2010" => game!("Aliens vs. Predator 2010", 27015, Protocol::Valve(Engine::new(10_680))),
     "barotrauma" => game!("Barotrauma", 27016, Protocol::Valve(Engine::new(602_960))),
     "basedefense" => game!("Base Defense", 27015, Protocol::Valve(Engine::new(632_730)), GatheringSettings {
         players: GatherToggle::Enforce,
