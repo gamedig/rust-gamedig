@@ -37,6 +37,7 @@ game_query_mod!(
     Engine::new(296_300),
     27016
 );
+game_query_mod!(avp, "Aliens vs. Predator", Engine::new(10_680), 27015);
 game_query_mod!(barotrauma, "Barotrauma", Engine::new(602_960), 27016);
 game_query_mod!(blackmesa, "Black Mesa", Engine::new(362_890), 27015);
 game_query_mod!(brainbread2, "BrainBread 2", Engine::new(346_330), 27015);

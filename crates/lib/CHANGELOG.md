@@ -11,6 +11,7 @@ Games:
 - [PixARK](https://store.steampowered.com/app/593600/PixARK/) support.
 - [Ark: Survival Ascended](https://store.steampowered.com/app/2399830/ARK_Survival_Ascended/) support, note: not yet in
   the games definitions.
+- [Aliens vs. Predator](https://store.steampowered.com/app/10680/Aliens_vs_Predator/) support.
 
 Protocols:
 
