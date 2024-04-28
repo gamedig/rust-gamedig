@@ -52,6 +52,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(Engine::new(346_110))),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
+    "armareforger" => game!("Arma Reforger", 17777, Protocol::Valve(Engine::new(1_874_880)), GatheringSettings {
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Enforce,
+        check_app_id: false,
+    }.into_extra()),
     "atlas" => game!("ATLAS", 57561, Protocol::Valve(Engine::new(834_910))),
     "avorion" => game!("Avorion", 27020, Protocol::Valve(Engine::new(445_220))),
     "avp2010" => game!("Aliens vs. Predator 2010", 27015, Protocol::Valve(Engine::new(10_680))),

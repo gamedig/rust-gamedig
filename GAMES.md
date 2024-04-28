@@ -91,6 +91,7 @@ requirements/information.
 | PixARK                             | PIXARK              | Valve                |                                                                                                                                                                           |
 | Ark: Survival Ascended             | ASA                 | Epic                 | Available on the 'tls' feature                                                                                                                                            |
 | Aliens vs. Predator 2010           | AVP                 | Valve                |                                                                                                                                                                           |
+| Arma Reforger                      | ARMAREFORGER        | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 
