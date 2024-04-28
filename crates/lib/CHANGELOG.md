@@ -12,6 +12,7 @@ Games:
 - [Ark: Survival Ascended](https://store.steampowered.com/app/2399830/ARK_Survival_Ascended/) support, note: not yet in
   the games definitions.
 - [Aliens vs. Predator 2010](https://store.steampowered.com/app/10680/Aliens_vs_Predator/) support.
+- [Arma Reforger](https://store.steampowered.com/app/1874880/Arma_Reforger/) support.
 
 Protocols:
 

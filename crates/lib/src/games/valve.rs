@@ -38,6 +38,17 @@ game_query_mod!(
     27016
 );
 game_query_mod!(
+    armareforger,
+    "Arma Reforger",
+    Engine::new(0),
+    17777,
+    GatheringSettings {
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Enforce,
+        check_app_id: false,
+    }
+);
+game_query_mod!(
     avp2010,
     "Aliens vs. Predator 2010",
     Engine::new(10_680),
