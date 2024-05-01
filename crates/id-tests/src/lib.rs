@@ -264,7 +264,7 @@ pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
         // First split all text on space or dash
         .split_inclusive(&[' ', '-'])
         // Remove whitespace surrounding words (leave in dash because it is important information)
-        .map(|w| w.trim())
+        .map(str::trim)
         // If a word is entirely surrounded in brackets move it to optional parts
         .filter_map(|w| {
             if w.starts_with('(') && w.ends_with(')') {

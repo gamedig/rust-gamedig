@@ -129,7 +129,7 @@ impl ValveProtocol {
         let socket = UdpSocket::new(address, &timeout_settings)?;
         let retry_count = timeout_settings.as_ref().map_or_else(
             || TimeoutSettings::default().get_retries(),
-            |t| t.get_retries(),
+            TimeoutSettings::get_retries,
         );
 
         Ok(Self {
