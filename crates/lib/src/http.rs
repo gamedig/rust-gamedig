@@ -194,7 +194,7 @@ impl HttpClient {
         url: U,
         timeout_settings: &Option<TimeoutSettings>,
         headers: Option<Vec<(&str, &str)>>,
-    ) -> GDResult<HttpClient>
+    ) -> GDResult<Self>
     where
         U::Error: std::error::Error + Send + Sync + 'static,
     {
@@ -229,7 +229,7 @@ impl HttpClient {
             headers: headers.unwrap_or_default(),
         };
 
-        HttpClient::new(&address, timeout_settings, http_settings)
+        Self::new(&address, timeout_settings, http_settings)
     }
 
     /// Send a HTTP GET request and return the response data as a buffer.

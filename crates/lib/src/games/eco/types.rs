@@ -224,7 +224,7 @@ pub struct EcoRequestSettings {
 
 impl From<ExtraRequestSettings> for EcoRequestSettings {
     fn from(value: ExtraRequestSettings) -> Self {
-        EcoRequestSettings {
+        Self {
             hostname: value.hostname,
         }
     }
@@ -232,7 +232,7 @@ impl From<ExtraRequestSettings> for EcoRequestSettings {
 
 impl From<EcoRequestSettings> for HttpSettings<String> {
     fn from(value: EcoRequestSettings) -> Self {
-        HttpSettings {
+        Self {
             protocol: HttpProtocol::Http,
             hostname: value.hostname,
             headers: Vec::with_capacity(0),
