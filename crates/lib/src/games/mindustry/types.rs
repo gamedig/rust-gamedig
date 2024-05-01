@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// [Reference](https://github.com/Anuken/Mindustry/blob/a2e5fbdedb2fc1c8d3c157bf344d10ad6d321442/core/src/mindustry/net/NetworkIO.java#L122-L135)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ServerData {
     pub host: String,
     pub map: String,
@@ -27,7 +27,7 @@ pub struct ServerData {
 ///
 /// [Reference](https://github.com/Anuken/Mindustry/blob/a2e5fbdedb2fc1c8d3c157bf344d10ad6d321442/core/src/mindustry/game/Gamemode.java)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameMode {
     Survival,
     Sandbox,

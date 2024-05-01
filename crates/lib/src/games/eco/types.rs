@@ -217,7 +217,7 @@ impl CommonResponse for Response {
 }
 
 /// Extra request settings for eco queries.
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct EcoRequestSettings {
     hostname: Option<String>,
 }

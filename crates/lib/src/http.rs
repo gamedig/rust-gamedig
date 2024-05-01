@@ -75,7 +75,7 @@ impl HttpProtocol {
 ///   .hostname(String::from("test.com"))
 ///   .header(String::from("Authorization"), String::from("Bearer Token"));
 /// ```
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct HttpSettings<S: Into<String>> {
     /// Choose whether to use HTTP or HTTPS.
     pub protocol: HttpProtocol,
