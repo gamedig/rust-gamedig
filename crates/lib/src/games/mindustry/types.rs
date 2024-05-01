@@ -52,14 +52,13 @@ impl TryFrom<u8> for GameMode {
 }
 
 impl GameMode {
-    fn as_str(&self) -> &'static str {
-        use GameMode::*;
+    const fn as_str(&self) -> &'static str {
         match self {
-            Survival => "survival",
-            Sandbox => "sandbox",
-            Attack => "attack",
-            PVP => "pvp",
-            Editor => "editor",
+            Self::Survival => "survival",
+            Self::Sandbox => "sandbox",
+            Self::Attack => "attack",
+            Self::PVP => "pvp",
+            Self::Editor => "editor",
         }
     }
 }
