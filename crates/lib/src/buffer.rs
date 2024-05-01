@@ -378,7 +378,7 @@ impl StringDecoder for Utf8LengthPrefixedDecoder {
         // Find the maximum length of the string
         let length = *data
             .first()
-            .ok_or(PacketBad.context("Length of string not found"))?;
+            .ok_or_else(|| PacketBad.context("Length of string not found"))?;
 
         // Find the position of the delimiter in the data. If the delimiter is not
         // found, the length is returned.

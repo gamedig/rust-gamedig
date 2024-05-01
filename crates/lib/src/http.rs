@@ -164,7 +164,7 @@ impl HttpClient {
         let host = http_settings
             .hostname
             .map(S::into)
-            .unwrap_or(address.ip().to_string());
+            .unwrap_or_else(|| address.ip().to_string());
 
         Ok(Self {
             client,
