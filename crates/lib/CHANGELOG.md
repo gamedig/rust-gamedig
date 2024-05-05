@@ -13,6 +13,7 @@ Games:
   the games definitions.
 - [Aliens vs. Predator 2010](https://store.steampowered.com/app/10680/Aliens_vs_Predator/) support.
 - [Arma Reforger](https://store.steampowered.com/app/1874880/Arma_Reforger/) support.
+- [Nova-Life: Amboise](https://store.steampowered.com/app/885570/NovaLife_Amboise/) support.
 
 Protocols:
 

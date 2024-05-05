@@ -183,4 +183,5 @@ game_query_mod!(
     Engine::new(17_570),
     27015
 );
+game_query_mod!(nla, "Nova-Life: Amboise", Engine::new(885_570), 27015);
 game_query_mod!(pixark, "PixARK", Engine::new(593_600), 27015);
