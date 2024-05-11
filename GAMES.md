@@ -93,6 +93,7 @@ requirements/information.
 | Aliens vs. Predator 2010           | AVP                 | Valve                |                                                                                                                                                                           |
 | Arma Reforger                      | ARMAREFORGER        | Valve                |                                                                                                                                                                           |
 | Nova-Life: Amboise                 | NLA                 | Valve                |                                                                                                                                                                           |
+| Abiotic Factor                     | ABIOTICFACTOR       | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 

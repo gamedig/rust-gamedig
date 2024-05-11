@@ -2,6 +2,7 @@
 
 use crate::protocols::valve::game_query_mod;
 
+game_query_mod!(abioticfactor, "Abiotic Factor", Engine::new(427_410), 27015);
 game_query_mod!(
     a2oa,
     "ARMA 2: Operation Arrowhead",

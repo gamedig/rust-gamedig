@@ -47,6 +47,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
         rules: GatherToggle::Skip,
         check_app_id: true,
     }.into_extra()),
+    "abioticfactor" => game!("Abiotic Factor", 27015, Protocol::Valve(Engine::new(427_410))),
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
