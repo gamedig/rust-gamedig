@@ -33,7 +33,7 @@ browser = ["dep:webbrowser"]
 [dependencies]
 # Core Dependencies
 thiserror = "1.0.43"
-clap = { version = "4.1.11", default-features = false, features = ["derive"] }
+clap = { version = "4.5.4", default-features = false, features = ["derive"] }
 gamedig = { version = "*", path = "../lib", default-features = false, features = [
     "clap",
     "games",
@@ -46,7 +46,7 @@ serde = { version = "1", optional = true, default-features = false }
 
 # BSON
 bson = { version = "2.8.1", optional = true, default-features = false }
-base64 = { version = "0.22.0", optional = true, default-features = false, features = ["std"]}
+base64 = { version = "0.22.0", optional = true, default-features = false, features = ["std"] }
 hex = { version = "0.4.3", optional = true, default-features = false }
 
 # JSON
