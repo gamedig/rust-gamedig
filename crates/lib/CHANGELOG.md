@@ -20,6 +20,10 @@ Protocols:
 
 - Epic (EOS) support, available only on the `tls` feature.
 
+Crate:
+
+- Updated some dependencies: `crc32fast` to `1.4.0`, `clap` to `4.5.4` and `ureq` to `ureq`.
+
 # 0.5.0 - 15/03/2024
 
 ### Changes:
