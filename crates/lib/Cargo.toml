@@ -26,3 +26,32 @@ categories = [
 
 tokio = { version = "1.37.0", features = ["full"] }
 error-stack = "0.4.1"
+maybe-async = "0.2.10"
+async-trait = { version = "0.1.51", optional = true }
+
+[features]
+default = ["async-tokio-client"]
+
+# Internal Clients / Interfaces
+async-tokio-client = []
+async-std-client = []
+sync-std-client = []
+
+# Generic Features for all Clients
+## Networking
+tcp = []
+udp = []
+rcon = []
+http = []
+tls = []
+
+## Protocols
+source = ["tcp"]
+
+## Games
+### Proprietary
+minecraft = []
+
+### Extensions
+tf2 = ["source"]
+
