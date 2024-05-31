@@ -1,0 +1,18 @@
+[package]
+name = "errorkind"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = [
+    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
+    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
+]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2.0.66"
+quote = "1.0.36"
+proc-macro2 = "1.0.84"
+lazy_static = "1.4.0"
