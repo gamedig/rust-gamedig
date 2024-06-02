@@ -23,11 +23,11 @@ categories = [
 
 
 [dependencies]
-
 tokio = { version = "1.37.0", features = ["full"] }
 error-stack = "0.4.1"
-maybe-async = "0.2.10"
-async-trait = { version = "0.1.51", optional = true }
+maybe-async = { version = "0.2.10" }
+async-trait = { version = "0.1.51" }
+async-std = "1.12.0"
 
 [features]
 default = ["async-tokio-client"]
@@ -35,13 +35,13 @@ default = ["async-tokio-client"]
 # Internal Clients / Interfaces
 async-tokio-client = []
 async-std-client = []
-sync-std-client = []
+sync-std-client = ["maybe-async/is_sync"]
 
 # Generic Features for all Clients
 ## Networking
 tcp = []
 udp = []
-rcon = []
+rcon = ["tcp"]
 http = []
 tls = []
 
@@ -54,4 +54,3 @@ minecraft = []
 
 ### Extensions
 tf2 = ["source"]
-

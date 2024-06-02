@@ -1,113 +1,93 @@
+#[cfg(feature = "async-std-client")]
+mod async_std;
+#[cfg(feature = "sync-std-client")]
+mod sync_std;
+#[cfg(feature = "async-tokio-client")]
+mod tokio;
+
 use std::{
     fmt::{self, Display, Formatter},
     net::SocketAddr,
-    sync::Arc,
 };
 
-mod stream;
+use error_stack::{Context, Report, Result, ResultExt};
 
-use error_stack::{Context, Report, ResultExt};
+pub(crate) struct TcpClient {
+    #[cfg(feature = "async-tokio-client")]
+    inner: tokio::AsyncTokioTcpClient,
 
-use crate::error::ResultConstrustor;
+    #[cfg(feature = "sync-std-client")]
+    inner: sync_std::SyncStdTcpClient,
 
-use self::stream::TcpSplitStream;
-
-/// Error type representing failures within the `Tcp` module.
-#[derive(Debug)]
-pub(crate) struct TcpError;
-
-impl Display for TcpError {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result { fmt.write_str("GameDig Core Net Runtime Error: Tcp") }
+    #[cfg(feature = "async-std-client")]
+    inner: async_std::AsyncStdTcpClient,
 }
 
-impl Context for TcpError {}
+#[maybe_async::maybe_async]
+impl TcpClient {
+    pub(crate) async fn new(addr: &SocketAddr) -> Result<Self, TCPClientError> {
+        Ok(Self {
+            #[cfg(feature = "async-tokio-client")]
+            inner: tokio::AsyncTokioTcpClient::new(addr)
+                .await
+                .map_err(Report::from)
+                .attach_printable("Unable to create a tokio TCP client")
+                .change_context(TCPClientError)?,
 
-/// A specialized `Result` type for `Tcp` operations.
-type Result<T> = ResultConstrustor<T, TcpError>;
+            #[cfg(feature = "sync-std-client")]
+            inner: sync_std::SyncStdTcpClient::new(addr)
+                .map_err(Report::from)
+                .attach_printable("Unable to create a sync std TCP client")
+                .change_context(TCPClientError)?,
 
-/// Represents a TCP client that encapsulates the functionality to read from and
-/// write to a TCP stream.
-///
-/// This struct uses an `Arc` to manage the shared ownership of the underlying
-/// `TcpSplitStream`.
-pub(crate) struct Tcp {
-    stream: Arc<TcpSplitStream>,
-}
-
-impl Tcp {
-    /// Creates a new `Tcp` instance by establishing a TCP connection to the
-    /// specified address.
-    ///
-    /// # Arguments
-    ///
-    /// * `addr` - The socket address to connect to.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the initialized `Tcp` instance if successful, or a
-    /// `TcpError` otherwise.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if it fails to establish a TCP
-    /// connection.
-    pub(crate) async fn new(addr: &SocketAddr) -> Result<Self> {
-        Ok(Tcp {
-            stream: Arc::new(
-                TcpSplitStream::new(addr)
-                    .await
-                    .map_err(Report::from)
-                    .attach_printable("Unable to initialize a new TCP split stream")
-                    .change_context(TcpError)?,
-            ),
+            #[cfg(feature = "async-std-client")]
+            inner: async_std::AsyncStdTcpClient::new(addr)
+                .await
+                .map_err(Report::from)
+                .attach_printable("Unable to create an async std TCP client")
+                .change_context(TCPClientError)?,
         })
     }
 
-    /// Reads data from the TCP stream into the provided buffer.
-    ///
-    /// # Arguments
-    ///
-    /// * `buf` - The buffer to store the read data.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the number of bytes read, or a `TcpError` if the
-    /// read operation fails.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if it fails to read from the TCP
-    /// stream.
-    pub(crate) async fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        Arc::clone(&self.stream)
+    pub(crate) async fn read(&mut self, buf: &mut [u8]) -> Result<usize, TCPClientError> {
+        Ok(self
+            .inner
             .read(buf)
             .await
             .map_err(Report::from)
-            .attach_printable("Unable to read from the TCP stream")
-            .change_context(TcpError)
+            .attach_printable("Failed to read data from the TCP Client")
+            .change_context(TCPClientError)?)
     }
 
-    /// Writes data to the TCP stream from the provided buffer.
-    ///
-    /// # Arguments
-    ///
-    /// * `buf` - The buffer containing the data to write.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the number of bytes written, or a `TcpError` if
-    /// the write operation fails.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if it fails to write to the TCP
-    /// stream.
-    pub(crate) async fn write(&self, buf: &[u8]) -> Result<usize> {
-        Arc::clone(&self.stream)
+    pub(crate) async fn write(&mut self, buf: &[u8]) -> Result<usize, TCPClientError> {
+        Ok(self
+            .inner
             .write(buf)
             .await
             .map_err(Report::from)
-            .attach_printable("Unable to write to the TCP stream")
-            .change_context(TcpError)
+            .attach_printable("Failed to write data to the TCP Client")
+            .change_context(TCPClientError)?)
     }
+}
+
+#[derive(Debug)]
+pub struct TCPClientError;
+
+impl Context for TCPClientError {}
+
+impl Display for TCPClientError {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+        write!(fmt, "GameDig Core Net Runtime Error: TcpClient")
+    }
+}
+
+#[maybe_async::maybe_async]
+pub(super) trait Tcp {
+    type Error: Context;
+
+    async fn new(addr: &SocketAddr) -> Result<Self, Self::Error>
+    where Self: Sized;
+
+    async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error>;
+    async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error>;
 }
