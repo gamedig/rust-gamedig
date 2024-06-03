@@ -19,26 +19,31 @@ impl super::Tcp for SyncStdTcpClient {
             stream: TcpStream::connect(addr)
                 .map_err(Report::from)
                 .attach_printable("Failed to establish a TCP connection")
+                .attach_printable(format!("Attempted to connect to address: {addr:?}"))
                 .change_context(SyncStdTcpClientError)?,
         })
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize, SyncStdTcpClientError> {
-        Ok(self
-            .stream
-            .read(buf)
+    fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, SyncStdTcpClientError> {
+        let mut buf = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
+
+        self.stream
+            .read_to_end(&mut buf)
             .map_err(Report::from)
             .attach_printable("Failed to read data from the TCP stream")
-            .change_context(SyncStdTcpClientError)?)
+            .change_context(SyncStdTcpClientError)?;
+
+        Ok(buf)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result<usize, SyncStdTcpClientError> {
-        Ok(self
-            .stream
-            .write(buf)
+    fn write(&mut self, data: &[u8]) -> Result<(), SyncStdTcpClientError> {
+        self.stream
+            .write(data)
             .map_err(Report::from)
             .attach_printable("Failed to write data to the TCP stream")
-            .change_context(SyncStdTcpClientError)?)
+            .change_context(SyncStdTcpClientError)?;
+
+        Ok(())
     }
 }
 
@@ -49,9 +54,6 @@ impl Context for SyncStdTcpClientError {}
 
 impl Display for SyncStdTcpClientError {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            fmt,
-            "GameDig Core Net Sync Std Runtime Error: SyncStdTcpClient"
-        )
+        write!(fmt, "GameDig Core Net Runtime Error (sync_std_tcp_client)")
     }
 }

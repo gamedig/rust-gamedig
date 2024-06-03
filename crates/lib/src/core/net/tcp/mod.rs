@@ -49,20 +49,20 @@ impl TcpClient {
         })
     }
 
-    pub(crate) async fn read(&mut self, buf: &mut [u8]) -> Result<usize, TCPClientError> {
+    pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, TCPClientError> {
         Ok(self
             .inner
-            .read(buf)
+            .read(size)
             .await
             .map_err(Report::from)
             .attach_printable("Failed to read data from the TCP Client")
             .change_context(TCPClientError)?)
     }
 
-    pub(crate) async fn write(&mut self, buf: &[u8]) -> Result<usize, TCPClientError> {
+    pub(crate) async fn write(&mut self, data: &[u8]) -> Result<(), TCPClientError> {
         Ok(self
             .inner
-            .write(buf)
+            .write(data)
             .await
             .map_err(Report::from)
             .attach_printable("Failed to write data to the TCP Client")
@@ -77,7 +77,7 @@ impl Context for TCPClientError {}
 
 impl Display for TCPClientError {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write!(fmt, "GameDig Core Net Runtime Error: TcpClient")
+        write!(fmt, "GameDig Core Net Runtime Error (tcp_client)")
     }
 }
 
@@ -85,9 +85,11 @@ impl Display for TCPClientError {
 pub(super) trait Tcp {
     type Error: Context;
 
+    const DEFAULT_PACKET_SIZE: u16 = 1024;
+
     async fn new(addr: &SocketAddr) -> Result<Self, Self::Error>
     where Self: Sized;
 
-    async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error>;
-    async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error>;
+    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, Self::Error>;
+    async fn write(&mut self, data: &[u8]) -> Result<(), Self::Error>;
 }
