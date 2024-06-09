@@ -12,6 +12,8 @@ use std::{
 
 use error_stack::{Context, Report, Result, ResultExt};
 
+use crate::settings::Timeout;
+
 pub(crate) struct TcpClient {
     #[cfg(feature = "async-tokio-client")]
     inner: tokio::AsyncTokioTcpClient,
@@ -25,10 +27,15 @@ pub(crate) struct TcpClient {
 
 #[maybe_async::maybe_async]
 impl TcpClient {
-    pub(crate) async fn new(addr: &SocketAddr) -> Result<Self, TCPClientError> {
+    pub(crate) async fn new(
+        addr: &SocketAddr,
+        timeout: Option<&Timeout>,
+    ) -> Result<Self, TCPClientError> {
+        let timeout = timeout.unwrap_or(&Timeout::DEFAULT);
+
         Ok(Self {
             #[cfg(feature = "async-tokio-client")]
-            inner: tokio::AsyncTokioTcpClient::new(addr)
+            inner: tokio::AsyncTokioTcpClient::new(addr, timeout)
                 .await
                 .map_err(Report::from)
                 .attach_printable("Unable to create a tokio TCP client")
@@ -87,7 +94,7 @@ pub(super) trait Tcp {
 
     const DEFAULT_PACKET_SIZE: u16 = 1024;
 
-    async fn new(addr: &SocketAddr) -> Result<Self, Self::Error>
+    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self, Self::Error>
     where Self: Sized;
 
     async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, Self::Error>;
