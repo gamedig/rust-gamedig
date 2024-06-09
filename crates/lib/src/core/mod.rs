@@ -1,4 +1,4 @@
-mod io;
+pub(crate) mod io;
 pub(crate) mod net;
 
 // Ensure that exactly one client feature is enabled
