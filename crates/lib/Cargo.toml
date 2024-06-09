@@ -1,40 +1,41 @@
 [package]
 name = "gamedig"
-version = "0.5.0"
+version = "1.0.0-alpha"
 edition = "2021"
-authors = [
-    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
-    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
-]
 license = "MIT"
-description = "Query game servers and not only."
-homepage = "https://gamedig.github.io/"
-documentation = "https://docs.rs/gamedig/latest/gamedig/"
-repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
-keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.65.0"
+homepage = "https://gamedig.github.io/"
+repository = "https://github.com/gamedig/rust-gamedig"
+documentation = "https://docs.rs/gamedig/latest/gamedig"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+keywords = ["status", "query", "game", "protocol", "service"]
+description = "Query game servers and not only."
 categories = [
-    "parser-implementations",
     "parsing",
-    "network-programming",
     "encoding",
+    "asynchronous",
+    "network-programming",
+    "parser-implementations",
 ]
 
 
 [dependencies]
-tokio = { version = "1.37.0", features = ["full"] }
+# Required Dependencies
 error-stack = "0.4.1"
-maybe-async = { version = "0.2.10" }
-async-trait = { version = "0.1.51" }
-async-std = "1.12.0"
+maybe-async = "0.2.10"
+
+# Optional Dependencies
+async-trait = { version = "0.1.51", optional = true }
+tokio = { version = "1.37.0", features = ["full"], optional = true }
+async-std = { version = "1.12.0", features = ["attributes"], optional = true }
+
 
 [features]
 default = ["async-tokio-client"]
 
 # Internal Clients / Interfaces
-async-tokio-client = []
-async-std-client = []
+async-tokio-client = ["dep:async-trait", "dep:tokio"]
+async-std-client = ["dep:async-trait", "dep:async-std"]
 sync-std-client = ["maybe-async/is_sync"]
 
 # Generic Features for all Clients
