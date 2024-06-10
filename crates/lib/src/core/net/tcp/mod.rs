@@ -42,13 +42,13 @@ impl TcpClient {
                 .change_context(TCPClientError)?,
 
             #[cfg(feature = "sync-std-client")]
-            inner: sync_std::SyncStdTcpClient::new(addr)
+            inner: sync_std::SyncStdTcpClient::new(addr, timeout)
                 .map_err(Report::from)
                 .attach_printable("Unable to create a sync std TCP client")
                 .change_context(TCPClientError)?,
 
             #[cfg(feature = "async-std-client")]
-            inner: async_std::AsyncStdTcpClient::new(addr)
+            inner: async_std::AsyncStdTcpClient::new(addr, timeout)
                 .await
                 .map_err(Report::from)
                 .attach_printable("Unable to create an async std TCP client")

@@ -6,6 +6,8 @@ use std::{
 
 use error_stack::{Context, Report, Result, ResultExt};
 
+use crate::settings::Timeout;
+
 pub(super) struct SyncStdTcpClient {
     stream: TcpStream,
 }
@@ -14,14 +16,26 @@ pub(super) struct SyncStdTcpClient {
 impl super::Tcp for SyncStdTcpClient {
     type Error = SyncStdTcpClientError;
 
-    fn new(addr: &SocketAddr) -> Result<Self, SyncStdTcpClientError> {
-        Ok(Self {
-            stream: TcpStream::connect(addr)
-                .map_err(Report::from)
-                .attach_printable("Failed to establish a TCP connection")
-                .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                .change_context(SyncStdTcpClientError)?,
-        })
+    fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self, SyncStdTcpClientError> {
+        let stream = TcpStream::connect_timeout(addr, timeout.connect)
+            .map_err(Report::from)
+            .attach_printable("Failed to establish a TCP connection")
+            .attach_printable(format!("Attempted to connect to address: {addr:?}"))
+            .change_context(SyncStdTcpClientError)?;
+
+        stream
+            .set_read_timeout(Some(timeout.read))
+            .map_err(Report::from)
+            .attach_printable("Failed to set read timeout")
+            .change_context(SyncStdTcpClientError)?;
+
+        stream
+            .set_write_timeout(Some(timeout.write))
+            .map_err(Report::from)
+            .attach_printable("Failed to set write timeout")
+            .change_context(SyncStdTcpClientError)?;
+
+        Ok(Self { stream })
     }
 
     fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, SyncStdTcpClientError> {
@@ -38,7 +52,7 @@ impl super::Tcp for SyncStdTcpClient {
 
     fn write(&mut self, data: &[u8]) -> Result<(), SyncStdTcpClientError> {
         self.stream
-            .write(data)
+            .write_all(data)
             .map_err(Report::from)
             .attach_printable("Failed to write data to the TCP stream")
             .change_context(SyncStdTcpClientError)?;
