@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-
 pub struct Timeout {
     pub connect: Duration,
     pub read: Duration,
@@ -43,8 +42,4 @@ impl Timeout {
             },
         }
     }
-}
-
-impl Default for Timeout {
-    fn default() -> Self { Self::DEFAULT }
 }
