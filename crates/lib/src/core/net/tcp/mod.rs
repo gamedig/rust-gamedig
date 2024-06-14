@@ -12,7 +12,7 @@ use std::{
 
 use error_stack::{Context, Report, Result, ResultExt};
 
-use crate::settings::Timeout;
+use crate::settings::timeout::Timeout;
 
 #[derive(Debug)]
 pub(crate) struct TcpClient {
@@ -34,6 +34,7 @@ impl TcpClient {
     ) -> Result<Self, TCPClientError> {
         let timeout = timeout.unwrap_or(&Timeout::DEFAULT);
 
+        
         Ok(Self {
             #[cfg(feature = "async-tokio-client")]
             inner: tokio::AsyncTokioTcpClient::new(addr, timeout)
@@ -105,7 +106,6 @@ pub(super) trait Tcp {
 #[cfg(test)]
 mod tests {
     use super::TcpClient;
-
     use std::net::SocketAddr;
 
     #[cfg(feature = "async-std-client")]
@@ -126,8 +126,10 @@ mod tests {
         net::TcpListener,
     };
 
+    const MOCK_DATA: &[u8; 7] = b"Gamedig";
+
     #[maybe_async::maybe_async]
-    async fn create_mock_server() -> (SocketAddr, TcpListener) {
+    async fn mock_tcp_server() -> (SocketAddr, TcpListener) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
 
         (listener.local_addr().unwrap(), listener)
@@ -139,7 +141,7 @@ mod tests {
         async(feature = "async-tokio-client", tokio::test)
     )]
     async fn test_client_new() {
-        let (addr, _listener) = create_mock_server().await;
+        let (addr, _listener) = mock_tcp_server().await;
         let client = TcpClient::new(&addr, None).await;
 
         assert!(
@@ -171,28 +173,28 @@ mod tests {
         async(feature = "async-tokio-client", tokio::test)
     )]
     async fn test_client_read() {
-        let (addr, listener) = create_mock_server().await;
+        let (addr, listener) = mock_tcp_server().await;
         let mut client = TcpClient::new(&addr, None).await.unwrap();
 
         #[cfg(feature = "sync-std-client")]
         let handle = std::thread::spawn(move || {
             let (mut socket, _) = listener.accept().unwrap();
-            socket.write_all(b"hello").unwrap();
+            socket.write_all(MOCK_DATA).unwrap();
         });
 
         #[cfg(feature = "async-std-client")]
         let handle = async_std::task::spawn(async move {
             let (mut socket, _) = listener.accept().await.unwrap();
-            socket.write_all(b"hello").await.unwrap();
+            socket.write_all(MOCK_DATA).await.unwrap();
         });
 
         #[cfg(feature = "async-tokio-client")]
         let handle = tokio::spawn(async move {
             let (mut socket, _) = listener.accept().await.unwrap();
-            socket.write_all(b"hello").await.unwrap();
+            socket.write_all(MOCK_DATA).await.unwrap();
         });
 
-        let result = client.read(Some(5)).await;
+        let result = client.read(Some(7)).await;
 
         #[cfg(feature = "sync-std-client")]
         {
@@ -210,7 +212,7 @@ mod tests {
             result.err()
         );
 
-        assert_eq!(result.unwrap(), b"hello");
+        assert_eq!(result.unwrap(), MOCK_DATA);
     }
 
     #[maybe_async::test(
@@ -219,40 +221,40 @@ mod tests {
         async(feature = "async-tokio-client", tokio::test)
     )]
     async fn test_client_write() {
-        let (addr, listener) = create_mock_server().await;
+        let (addr, listener) = mock_tcp_server().await;
         let mut client = TcpClient::new(&addr, None).await.unwrap();
 
         #[cfg(feature = "sync-std-client")]
         let handle = std::thread::spawn(move || {
             let (mut socket, _) = listener.accept().unwrap();
 
-            let mut buf = vec![0; 5];
+            let mut buf = vec![0; 7];
             socket.read_exact(&mut buf).unwrap();
 
-            assert_eq!(buf, b"hello");
+            assert_eq!(buf, MOCK_DATA);
         });
 
         #[cfg(feature = "async-std-client")]
         let handle = async_std::task::spawn(async move {
             let (mut socket, _) = listener.accept().await.unwrap();
 
-            let mut buf = vec![0; 5];
+            let mut buf = vec![0; 7];
             socket.read_exact(&mut buf).await.unwrap();
 
-            assert_eq!(buf, b"hello");
+            assert_eq!(buf, MOCK_DATA);
         });
 
         #[cfg(feature = "async-tokio-client")]
         let handle = tokio::spawn(async move {
             let (mut socket, _) = listener.accept().await.unwrap();
 
-            let mut buf = vec![0; 5];
+            let mut buf = vec![0; 7];
             socket.read_exact(&mut buf).await.unwrap();
 
-            assert_eq!(buf, b"hello");
+            assert_eq!(buf, MOCK_DATA);
         });
 
-        let result = client.write(b"hello").await;
+        let result = client.write(MOCK_DATA).await;
 
         #[cfg(feature = "sync-std-client")]
         {
