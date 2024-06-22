@@ -6,6 +6,10 @@ Games:
 
 - [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support.
 
+Services:
+
+- MineTest Master Server support.
+
 # 0.5.1 - 12/05/2024
 
 Games:
