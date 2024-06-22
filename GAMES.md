@@ -94,6 +94,7 @@ requirements/information.
 | Arma Reforger                      | ARMAREFORGER        | Valve                |                                                                                                                                                                           |
 | Nova-Life: Amboise                 | NLA                 | Valve                |                                                                                                                                                                           |
 | Abiotic Factor                     | ABIOTICFACTOR       | Valve                |                                                                                                                                                                           |
+| Soulmask                           | SOULMASK            | Valve                |                                                                                                                                                                           |
 
 ## Planned to add support:
 

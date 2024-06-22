@@ -124,6 +124,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "sco" => game!("Sven Co-op", 27015, Protocol::Valve(Engine::new_gold_src(false))),
     "sdtd" => game!("7 Days to Die", 26900, Protocol::Valve(Engine::new(251_570))),
     "sof2" => game!("Soldier of Fortune 2", 20100, Protocol::Quake(QuakeVersion::Three)),
+    "soulmask" => game!("Soulmask", 27015, Protocol::Valve(Engine::new(2_646_460))),
     "serioussam" => game!("Serious Sam", 25601, Protocol::Gamespy(GameSpyVersion::One)),
     "squad" => game!("Squad", 27165, Protocol::Valve(Engine::new(393_380))),
     "theforest" => game!("The Forest", 27016, Protocol::Valve(Engine::new(556_450))),
