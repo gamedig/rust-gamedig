@@ -4,6 +4,7 @@ pub mod protocol;
 /// All types used by the implementation.
 pub mod types;
 
+#[allow(unused_imports)]
 pub use protocol::*;
 pub use types::*;
 
