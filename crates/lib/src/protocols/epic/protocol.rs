@@ -10,7 +10,7 @@ use serde::Serialize;
 use serde_json::Value;
 use std::net::SocketAddr;
 
-const EPIC_API_ENDPOINT: &'static str = "https://api.epicgames.dev";
+const EPIC_API_ENDPOINT: &str = "https://api.epicgames.dev";
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -69,7 +69,7 @@ impl EpicProtocol {
     pub fn auth_by_client(&mut self) -> GDResult<String> {
         let body = [
             ("grant_type", "client_credentials"),
-            ("deployment_id", &self.credentials.deployment),
+            ("deployment_id", self.credentials.deployment),
         ];
 
         let auth_format = format!("{}:{}", self.credentials.id, self.credentials.secret);
