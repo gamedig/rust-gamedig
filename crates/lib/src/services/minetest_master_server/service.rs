@@ -9,5 +9,5 @@ pub fn query(timeout_settings: TimeoutSettings) -> GDResult<Response> {
         None,
     )?;
 
-    client.get_json("/list", Default::default())
+    client.get_json("/list", None)
 }
