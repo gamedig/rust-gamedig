@@ -8,9 +8,6 @@ use crate::protocols::types::{GatherToggle, ProprietaryProtocol};
 use crate::protocols::valve::GatheringSettings;
 use phf::{phf_map, Map};
 
-#[cfg(feature = "tls")]
-use crate::protocols::epic::Credentials;
-
 macro_rules! game {
     ($name: literal, $default_port: expr, $protocol: expr) => {
         game!(

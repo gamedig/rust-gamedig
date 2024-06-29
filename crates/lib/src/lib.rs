@@ -55,6 +55,7 @@ pub mod capture;
 pub use errors::*;
 #[cfg(feature = "games")]
 pub use games::*;
+#[allow(unused_imports)]
 #[cfg(feature = "games")]
 pub use query::*;
 #[cfg(feature = "services")]
