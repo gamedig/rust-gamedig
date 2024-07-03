@@ -6,10 +6,10 @@ use std::{
 
 use error_stack::{Context, Report, Result, ResultExt};
 
-use crate::settings::timeout::Timeout;
+use crate::settings::Timeout;
 
 #[derive(Debug)]
-pub(super) struct SyncStdTcpClient {
+pub(crate) struct SyncStdTcpClient {
     stream: TcpStream,
 }
 
@@ -40,15 +40,15 @@ impl super::Tcp for SyncStdTcpClient {
     }
 
     fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, SyncStdTcpClientError> {
-        let mut buf = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
+        let mut vec = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
 
         self.stream
-            .read_to_end(&mut buf)
+            .read_to_end(&mut vec)
             .map_err(Report::from)
             .attach_printable("Failed to read data from the TCP stream")
             .change_context(SyncStdTcpClientError)?;
 
-        Ok(buf)
+        Ok(vec)
     }
 
     fn write(&mut self, data: &[u8]) -> Result<(), SyncStdTcpClientError> {

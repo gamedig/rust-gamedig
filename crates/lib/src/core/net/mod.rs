@@ -1,8 +1,8 @@
-#[cfg(feature = "http")]
+#[cfg(feature = "_HTTP")]
 pub(crate) mod http;
-#[cfg(feature = "rcon")]
+#[cfg(feature = "_RCON")]
 pub(crate) mod rcon;
-#[cfg(feature = "tcp")]
+#[cfg(feature = "_TCP")]
 pub(crate) mod tcp;
-#[cfg(feature = "udp")]
+#[cfg(feature = "_UDP")]
 pub(crate) mod udp;
