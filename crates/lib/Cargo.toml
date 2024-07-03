@@ -23,35 +23,74 @@ categories = [
 # Required Dependencies
 error-stack = "0.4.1"
 maybe-async = "0.2.10"
+byteorder = "1.5.0"
 
 # Optional Dependencies
 async-trait = { version = "0.1.51", optional = true }
 tokio = { version = "1.37.0", features = ["full"], optional = true }
 async-std = { version = "1.12.0", features = ["attributes"], optional = true }
 
-
 [features]
-default = ["async-tokio-client"]
+default = ["client_std", "client_tokio"]
 
-# Internal Clients / Interfaces
-async-tokio-client = ["dep:async-trait", "dep:tokio"]
-async-std-client = ["dep:async-trait", "dep:async-std"]
-sync-std-client = ["maybe-async/is_sync"]
+# Internal Features
+## I/O
+_BUFFER = []
 
-# Generic Features for all Clients
-## Networking
-tcp = []
-udp = []
-rcon = ["tcp"]
-http = []
-tls = []
+## Net
+_TCP = ["_BUFFER"]
+_UDP = ["_BUFFER"]
+_HTTP = []
+_TLS = ["_HTTP"]
+_RCON = ["_TCP"]
+
+# Client Types
+# Note: Only 1 client type can be enabled at a time
+client_std = ["maybe-async/is_sync"]
+client_tokio = ["dep:async-trait", "dep:tokio"]
+client_async_std = ["dep:async-trait", "dep:async-std"]
+
+# Library Features
+## Attributes
+serde = []
+
+## Services
+valve_master_server = ["_UDP"]
 
 ## Protocols
-source = ["tcp"]
+valve = ["_UDP"]
+valve_gold_src = ["_UDP"]
+
+unreal_2 = ["_UDP"]
+
+gamespy_1 = ["_UDP"]
+gamespy_2 = ["_UDP"]
+gamespy_3 = ["_UDP"]
+
+quake_1 = ["_UDP"]
+quake_2 = ["_UDP"]
+quake_3 = ["_UDP"]
+
+epic = ["_TLS"]
 
 ## Games
 ### Proprietary
-minecraft = []
 
-### Extensions
-tf2 = ["source"]
+### Extentions
+
+## Index
+all = ["all_attributes", "all_services", "all_protocols", "all_games"]
+all_attributes = ["serde"]
+all_services = ["valve_master_server"]
+all_protocols = [
+    "valve",
+    "epic",
+    "unreal_2",
+    "gamespy_1",
+    "gamespy_2",
+    "gamespy_3",
+    "quake_1",
+    "quake_2",
+    "quake_3",
+]
+all_games = []
