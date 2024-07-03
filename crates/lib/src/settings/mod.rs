@@ -1,1 +1,3 @@
-pub mod timeout;
+mod timeout;
+
+pub use timeout::Timeout;
