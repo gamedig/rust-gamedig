@@ -4,26 +4,27 @@ pub(crate) mod net;
 // Ensure that exactly one client feature is enabled
 #[cfg(not(any(
     all(
-        feature = "async-tokio-client",
-        not(any(feature = "async-std-client", feature = "sync-std-client"))
+        feature = "client_std",
+        not(any(feature = "client_tokio", feature = "client_async_std"))
     ),
     all(
-        feature = "async-std-client",
-        not(any(feature = "async-tokio-client", feature = "sync-std-client"))
+        feature = "client_tokio",
+        not(any(feature = "client_std", feature = "client_async_std"))
     ),
     all(
-        feature = "sync-std-client",
-        not(any(feature = "async-tokio-client", feature = "async-std-client"))
-    )
+        feature = "client_async_std",
+        not(any(feature = "client_std", feature = "client_tokio"))
+    ),
 )))]
 compile_error!(
-    "GameDig Core Compiler Error: Exactly one client feature must be enabled: \
-     \n`async-tokio-client`, `async-std-client`, or `sync-std-client`. \n\nEnsure that exactly \
-     one client feature is selected and all others are disabled. \nBy default, the \
-     `async-tokio-client` feature is enabled.\n\nExample usage in Cargo.toml:\n\nTo use the \
-     default async-tokio-client:\n[dependencies]\ngamedig = \"X\"\n\nTo use a different client, \
-     disable default features and specify the desired client:\n\nFor \
-     async-std-client:\n[dependencies]\ngamedig = { version = \"X\", default-features = false, \
-     features = [\"async-std-client\"] }\n\nFor sync-std-client:\n[dependencies]\ngamedig = { \
-     version = \"X\", default-features = false, features = [\"sync-std-client\"] }\n"
+    "GameDig Core Compiler Error: Exactly 1 client feature must be enabled: \n`client_std`, \
+     `client_tokio`, or `client_async_std`. \n\nEnsure that exactly 1 client feature is selected \
+     and all others are disabled. \nBy default, the `client_std` feature is enabled.\n\nExample \
+     usage in Cargo.toml:\n\nTo use the default `client_std`:\n[dependencies]\ngamedig = { version \
+     = \"X\" features = [\"some_non_client_feature\"] }\n\nTo use a different client, disable \
+     default features and specify the desired client:\n\nFor tokio use:\n[dependencies]\ngamedig \
+     = { version = \"X\", default-features = false, features = [\"client_tokio\", \
+     \"non_client_feature\"] }\n\nFor async_std use:\n[dependencies]\ngamedig = { version = \
+     \"X\", default-features = false, features = [\"client_async_std\", \"non_client_feature\"] \
+     }\n"
 );
