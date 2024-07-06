@@ -21,7 +21,8 @@ categories = [
 
 [dependencies]
 # Required Dependencies
-error-stack = "0.4.1"
+thiserror = "1.0.61"
+error-stack = { version = "0.4.1", features = ["spantrace"] }
 maybe-async = "0.2.10"
 byteorder = "1.5.0"
 
