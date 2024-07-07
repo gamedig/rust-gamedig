@@ -33,17 +33,10 @@ macro_rules! define_error {
                 $( { $($(#[$field_meta])* $field_name: $field_type),* } )?,
             )+
         }
-
-        // This allows converting from the custom error enum to an error stack report
-        impl From<$enum_name> for crate::error::ErrorKind {
-            fn from(error: $enum_name) -> Self {
-                crate::error::ErrorKind::$enum_name(error)
-            }
-        }
     };
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, derive_more::From)]
 pub enum ErrorKind {
     #[error(transparent)]
     IoError(IoError),
