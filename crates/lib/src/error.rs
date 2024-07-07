@@ -1,5 +1,4 @@
-use std::{net::SocketAddr, time::Duration};
-
+pub(crate) use error_stack::{Report, ResultExt};
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
 
 macro_rules! define_error {
@@ -36,9 +35,9 @@ macro_rules! define_error {
         }
 
         // This allows converting from the custom error enum to an error stack report
-        impl From<$enum_name> for error_stack::Report<crate::error::ErrorKind> {
+        impl From<$enum_name> for crate::error::ErrorKind {
             fn from(error: $enum_name) -> Self {
-                error_stack::Report::from(crate::error::ErrorKind::$enum_name(error))
+                crate::error::ErrorKind::$enum_name(error)
             }
         }
     };
@@ -68,64 +67,98 @@ define_error!(
     /// This error occurs when a connection of some sort to a remote server cannot be established.
     /// This can be due to a variety of reasons, the OS should propagate the true cause.
     ConnectionError {
-        /// The protocol used to establish the connection
-        protocol: String,
-        /// The client in context
-        client: String,
-        /// The address that the connection was attempted to
-        addr: SocketAddr
+        _protocol: _metadata::NetworkProtocol,
+        _interface: _metadata::NetworkInterface
     }(
-        "[GameDig::Net::{protocol}::{client}::ConnectionError] Failed to establish a connection to address: \
-         {addr:#?}"
+        "[GameDig]::[{_protocol}::<{_interface}>::ConnectionError]: Failed to establish a connection"
     ),
 
     /// Network Read Error
     ///
     /// This error occurs when data cannot be read from a network stream.
     ReadError {
-        /// The type of protocol used to read data
-        protocol: String,
-        /// The client in context
-        client: String,
-        /// The address that the data was attempted to be read from
-        addr: SocketAddr
+        _protocol: _metadata::NetworkProtocol,
+        _interface: _metadata::NetworkInterface
     }(
-        "[GameDig::Net::{protocol}::{client}::ReadError] Failed to read data from address: {addr:#?}"
+        "[GameDig]::[{_protocol}::<{_interface}>::ReadError]: Failed to read data"
     ),
 
     /// Network Write Error
     ///
     /// This error occurs when data cannot be written to a network stream.
     WriteError {
-        /// The type of protocol used to write data
-        protocol: String,
-        /// The client in context
-        client: String,
-        /// The address that the data was attempted to be written to
-        addr: SocketAddr
+        _protocol: _metadata::NetworkProtocol,
+        _interface: _metadata::NetworkInterface
     }(
-        "[GameDig::Net::{protocol}::{client}::WriteError] Failed to write data to address: {addr:#?}"
+        "[GameDig]::[{_protocol}::<{_interface}>::WriteError]: Failed to write data"
     ),
 
     /// Network Set Timeout Error
     ///
     /// This error occurs when a timeout cannot be set on a network stream.
     /// Its usally due to the duration being equal to zero somehow.
-    /// It is a edge case error due to timeout not being managed 
+    /// It is a edge case error due to timeout not being managed
     /// within the library itself with `client_std` feature.
     #[cfg(feature = "client_std")]
     SetTimeoutError {
-        /// The type of protocol used to set the timeout
-        protocol: String,
-        /// The duration that was attempted to be set
-        duration: Duration,
-        /// The kind of stream that the timeout was attempted to be set on
-        /// (e.g. Read, Write)
-        kind: String
+        _protocol: _metadata::NetworkProtocol,
+        _interface: _metadata::NetworkInterface
     }(
-        "[GameDig::Net::{protocol}::client_std::SetTimeoutError::{kind}] Failed to set timeout of \
-         {duration:#?} on stream"
+        "[GameDig]::[{_protocol}::<{_interface}>::SetTimeoutError]: Failed to set timeout"
     ),
-
 );
 
+pub mod _metadata {
+    use derive_more::Display;
+
+    #[derive(Debug, Display)]
+    pub enum NetworkProtocol {
+        #[display(fmt = "TCP")]
+        Tcp,
+        #[display(fmt = "UDP")]
+        Udp,
+        #[display(fmt = "RCON")]
+        Rcon,
+        #[display(fmt = "HTTP")]
+        Http,
+        #[display(fmt = "HTTPS")]
+        Https,
+    }
+
+    #[derive(Debug, Display)]
+    pub enum NetworkInterface {
+        #[display(fmt = "C")]
+        Client,
+        #[display(fmt = "SCI")]
+        SealedClientInner,
+        #[display(fmt = "SCS")]
+        SealedClientStd,
+        #[display(fmt = "SCT")]
+        SealedClientTokio,
+        #[display(fmt = "SCAS")]
+        SealedClientAsyncStd,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_network_error() {
+        let error = NetworkError::ConnectionError {
+            _protocol: _metadata::NetworkProtocol::Tcp,
+            _interface: _metadata::NetworkInterface::Client,
+        };
+
+        // come up with large number of bytes that are high numbers
+        let data = vec![255; 1024];
+        let report = Report::from(error).attach_printable(format!("Data: {:x?}", data));
+        print!("{:#?}", report);
+        println!("{:?}", data);
+        assert_eq!(
+            report.to_string(),
+            "[GameDig]::[TCP::<C>::ConnectionError]: Failed to establish a connection"
+        );
+    }
+}
