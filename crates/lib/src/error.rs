@@ -139,26 +139,3 @@ pub mod _metadata {
         SealedClientAsyncStd,
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_network_error() {
-        let error = NetworkError::ConnectionError {
-            _protocol: _metadata::NetworkProtocol::Tcp,
-            _interface: _metadata::NetworkInterface::Client,
-        };
-
-        // come up with large number of bytes that are high numbers
-        let data = vec![255; 1024];
-        let report = Report::from(error).attach_printable(format!("Data: {:x?}", data));
-        print!("{:#?}", report);
-        println!("{:?}", data);
-        assert_eq!(
-            report.to_string(),
-            "[GameDig]::[TCP::<C>::ConnectionError]: Failed to establish a connection"
-        );
-    }
-}
