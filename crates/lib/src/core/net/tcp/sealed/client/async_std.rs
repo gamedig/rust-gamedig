@@ -1,21 +1,23 @@
+use std::{net::SocketAddr, time::Duration};
+
 use async_std::{
     future::timeout as async_timeout,
     io::{ReadExt, WriteExt},
     net::TcpStream,
 };
 
-use std::{
-    fmt::{self, Display, Formatter},
-    net::SocketAddr,
-    time::Duration,
+use crate::{
+    error::{
+        NetworkError,
+        Report,
+        Result,
+        _metadata::{NetworkInterface, NetworkProtocol},
+    },
+    settings::Timeout,
 };
 
-use error_stack::{Context, Report, Result};
-
-use crate::settings::timeout::Timeout;
-
 #[derive(Debug)]
-pub(super) struct AsyncStdTcpClient {
+pub(crate) struct AsyncStdTcpClient {
     stream: TcpStream,
     read_timeout: Duration,
     write_timeout: Duration,
@@ -23,9 +25,7 @@ pub(super) struct AsyncStdTcpClient {
 
 #[maybe_async::async_impl]
 impl super::Tcp for AsyncStdTcpClient {
-    type Error = AsyncStdTcpClientError;
-
-    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self, AsyncStdTcpClientError> {
+    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
         Ok(Self {
             stream: match async_timeout(timeout.connect, TcpStream::connect(addr)).await {
                 Ok(Ok(stream)) => stream,
@@ -33,13 +33,25 @@ impl super::Tcp for AsyncStdTcpClient {
                     return Err(Report::from(e)
                         .attach_printable("Failed to establish a TCP connection")
                         .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                        .change_context(AsyncStdTcpClientError));
+                        .change_context(
+                            NetworkError::ConnectionError {
+                                _protocol: NetworkProtocol::Tcp,
+                                _interface: NetworkInterface::SealedClientAsyncStd,
+                            }
+                            .into(),
+                        ));
                 }
                 Err(e) => {
                     return Err(Report::from(e)
                         .attach_printable("Connection operation timed out")
                         .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                        .change_context(AsyncStdTcpClientError));
+                        .change_context(
+                            NetworkError::TimeoutElapsedError {
+                                _protocol: NetworkProtocol::Tcp,
+                                _interface: NetworkInterface::SealedClientAsyncStd,
+                            }
+                            .into(),
+                        ));
                 }
             },
             read_timeout: timeout.read,
@@ -47,7 +59,7 @@ impl super::Tcp for AsyncStdTcpClient {
         })
     }
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, AsyncStdTcpClientError> {
+    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
         let mut buf = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
 
         match async_timeout(self.read_timeout, self.stream.read_to_end(&mut buf)).await {
@@ -55,40 +67,53 @@ impl super::Tcp for AsyncStdTcpClient {
             Ok(Err(e)) => {
                 Err(Report::from(e)
                     .attach_printable("Failed to read data from the TCP stream")
-                    .change_context(AsyncStdTcpClientError))
+                    .change_context(
+                        NetworkError::ReadError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientAsyncStd,
+                        }
+                        .into(),
+                    ))
             }
             Err(e) => {
                 Err(Report::from(e)
                     .attach_printable("Read operation timed out")
-                    .change_context(AsyncStdTcpClientError))
+                    .change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientAsyncStd,
+                        }
+                        .into(),
+                    ))
             }
         }
     }
 
-    async fn write(&mut self, data: &[u8]) -> Result<(), AsyncStdTcpClientError> {
+    async fn write(&mut self, data: &[u8]) -> Result<()> {
         match async_timeout(self.write_timeout, self.stream.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
                 Err(Report::from(e)
                     .attach_printable("Failed to write data to the TCP stream")
-                    .change_context(AsyncStdTcpClientError))
+                    .change_context(
+                        NetworkError::WriteError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientAsyncStd,
+                        }
+                        .into(),
+                    ))
             }
             Err(e) => {
                 Err(Report::from(e)
                     .attach_printable("Write operation timed out")
-                    .change_context(AsyncStdTcpClientError))
+                    .change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientAsyncStd,
+                        }
+                        .into(),
+                    ))
             }
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct AsyncStdTcpClientError;
-
-impl Context for AsyncStdTcpClientError {}
-
-impl Display for AsyncStdTcpClientError {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write!(fmt, "GameDig Core Net Runtime Error (async_std_tcp_client)")
     }
 }
