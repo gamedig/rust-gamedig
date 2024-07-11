@@ -1,3 +1,5 @@
+use std::{net::SocketAddr, sync::Arc, time::Duration};
+
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{
@@ -8,16 +10,15 @@ use tokio::{
     time::timeout as tokio_timeout,
 };
 
-use std::{
-    fmt::{self, Display, Formatter},
-    net::SocketAddr,
-    sync::Arc,
-    time::Duration,
+use crate::{
+    error::{
+        NetworkError,
+        Report,
+        Result,
+        _metadata::{NetworkInterface, NetworkProtocol},
+    },
+    settings::Timeout,
 };
-
-use error_stack::{Context, Report, Result};
-
-use crate::settings::timeout::Timeout;
 
 #[derive(Debug)]
 pub(super) struct AsyncTokioTcpClient {
@@ -29,22 +30,32 @@ pub(super) struct AsyncTokioTcpClient {
 
 #[maybe_async::async_impl]
 impl super::Tcp for AsyncTokioTcpClient {
-    type Error = AsyncTokioTcpClientError;
-
-    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self, AsyncTokioTcpClientError> {
+    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
         let (orh, owh) = match tokio_timeout(timeout.connect, TcpStream::connect(addr)).await {
             Ok(Ok(stream)) => stream.into_split(),
             Ok(Err(e)) => {
                 return Err(Report::from(e)
                     .attach_printable("Failed to establish a TCP connection")
                     .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                    .change_context(AsyncTokioTcpClientError));
+                    .change_context(
+                        NetworkError::ConnectionError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ));
             }
             Err(e) => {
                 return Err(Report::from(e)
                     .attach_printable("Connection operation timed out")
                     .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                    .change_context(AsyncTokioTcpClientError));
+                    .change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ));
             }
         };
 
@@ -56,7 +67,7 @@ impl super::Tcp for AsyncTokioTcpClient {
         })
     }
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, AsyncTokioTcpClientError> {
+    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
         let read_half = Arc::clone(&self.read_stream);
         let mut orh = read_half.lock().await;
 
@@ -67,17 +78,29 @@ impl super::Tcp for AsyncTokioTcpClient {
             Ok(Err(e)) => {
                 Err(Report::from(e)
                     .attach_printable("Failed to read data from its half of the TCP split stream")
-                    .change_context(AsyncTokioTcpClientError))
+                    .change_context(
+                        NetworkError::ReadError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ))
             }
             Err(e) => {
                 Err(Report::from(e)
                     .attach_printable("Read operation timed out")
-                    .change_context(AsyncTokioTcpClientError))
+                    .change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ))
             }
         }
     }
 
-    async fn write(&mut self, data: &[u8]) -> Result<(), AsyncTokioTcpClientError> {
+    async fn write(&mut self, data: &[u8]) -> Result<()> {
         let write_half = Arc::clone(&self.write_stream);
         let mut owh = write_half.lock().await;
 
@@ -86,27 +109,25 @@ impl super::Tcp for AsyncTokioTcpClient {
             Ok(Err(e)) => {
                 Err(Report::from(e)
                     .attach_printable("Failed to write data to its half of the TCP split stream")
-                    .change_context(AsyncTokioTcpClientError))
+                    .change_context(
+                        NetworkError::WriteError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ))
             }
             Err(e) => {
                 Err(Report::from(e)
                     .attach_printable("Write operation timed out")
-                    .change_context(AsyncTokioTcpClientError))
+                    .change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            _interface: NetworkInterface::SealedClientTokio,
+                        }
+                        .into(),
+                    ))
             }
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct AsyncTokioTcpClientError;
-
-impl Context for AsyncTokioTcpClientError {}
-
-impl Display for AsyncTokioTcpClientError {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            fmt,
-            "GameDig Core Net Runtime Error (async_tokio_tcp_client)"
-        )
     }
 }
