@@ -1,10 +1,15 @@
 use std::net::SocketAddr;
 
-use std::fmt::{self, Display, Formatter};
-
-use error_stack::{Context, Report, Result, ResultExt};
-
-use crate::settings::Timeout;
+use crate::{
+    error::{
+        NetworkError,
+        Report,
+        Result,
+        ResultExt,
+        _metadata::{NetworkInterface, NetworkProtocol},
+    },
+    settings::Timeout,
+};
 
 #[cfg(feature = "client_async_std")]
 mod async_std;
@@ -15,68 +20,70 @@ mod tokio;
 
 #[maybe_async::maybe_async]
 pub(crate) trait Tcp {
-    type Error: Context;
-
     const DEFAULT_PACKET_SIZE: u16 = 1024;
 
-    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self, Self::Error>
+    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self>
     where Self: Sized;
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>, Self::Error>;
-    async fn write(&mut self, data: &[u8]) -> Result<(), Self::Error>;
+    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>>;
+    async fn write(&mut self, data: &[u8]) -> Result<()>;
 }
 
 #[derive(Debug)]
 pub(crate) struct Inner {
-    #[cfg(feature = "async-tokio-client")]
-    pub(crate) inner: tokio::AsyncTokioTcpClient,
+    #[cfg(feature = "client_async_std")]
+    pub(crate) inner: async_std::AsyncStdTcpClient,
 
-    #[cfg(feature = "sync-std-client")]
+    #[cfg(feature = "client_std")]
     pub(crate) inner: sync_std::SyncStdTcpClient,
 
-    #[cfg(feature = "async-std-client")]
-    pub(crate) inner: async_std::AsyncStdTcpClient,
+    #[cfg(feature = "client_tokio")]
+    pub(crate) inner: tokio::AsyncTokioTcpClient,
 }
 
 #[maybe_async::maybe_async]
 impl Inner {
-    pub(crate) async fn new(
-        addr: &SocketAddr,
-        timeout: Option<&Timeout>,
-    ) -> Result<Self, TCPClientInnerError> {
+    pub(crate) async fn new(addr: &SocketAddr, timeout: Option<&Timeout>) -> Result<Self> {
         let timeout = timeout.unwrap_or(&Timeout::DEFAULT);
 
         Ok(Self {
-            #[cfg(feature = "async-tokio-client")]
-            inner: tokio::AsyncTokioTcpClient::new(addr, timeout)
-                .await
-                .map_err(Report::from)
-                .attach_printable("Unable to create a tokio TCP client")
-                .change_context(TCPClientInnerError)?,
-
-            #[cfg(feature = "sync-std-client")]
-            inner: sync_std::SyncStdTcpClient::new(addr, timeout)
-                .map_err(Report::from)
-                .attach_printable("Unable to create a sync std TCP client")
-                .change_context(TCPClientInnerError)?,
-
-            #[cfg(feature = "async-std-client")]
+            #[cfg(feature = "client_async_std")]
             inner: async_std::AsyncStdTcpClient::new(addr, timeout)
                 .await
                 .map_err(Report::from)
                 .attach_printable("Unable to create an async std TCP client")
-                .change_context(TCPClientInnerError)?,
+                .change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        _interface: NetworkInterface::SealedClientInner,
+                    }
+                    .into(),
+                )?,
+
+            #[cfg(feature = "client_std")]
+            inner: sync_std::SyncStdTcpClient::new(addr, timeout)
+                .map_err(Report::from)
+                .attach_printable("Unable to create a sync std TCP client")
+                .change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        _interface: NetworkInterface::SealedClientInner,
+                    }
+                    .into(),
+                )?,
+
+            #[cfg(feature = "client_tokio")]
+            inner: tokio::AsyncTokioTcpClient::new(addr, timeout)
+                .await
+                .map_err(Report::from)
+                .attach_printable("Unable to create an async tokio TCP client")
+                .change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        _interface: NetworkInterface::SealedClientInner,
+                    }
+                    .into(),
+                )?,
         })
-    }
-}
-
-#[derive(Debug)]
-pub struct TCPClientInnerError;
-
-impl Context for TCPClientInnerError {}
-
-impl Display for TCPClientInnerError {
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
-        write!(fmt, "GameDig Core Net Runtime Error (tcp_client_inner)")
     }
 }
