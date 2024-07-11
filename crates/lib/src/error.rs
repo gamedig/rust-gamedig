@@ -86,6 +86,17 @@ define_error!(
         "[GameDig]::[{_protocol}::<{_interface}>::WriteError]: Failed to write data"
     ),
 
+    /// Network Timeout Elapsed Error
+    ///
+    /// This error occurs when a timeout elapses while waiting for an operation to complete.
+    #[cfg(not(feature = "client_std"))]
+    TimeoutElapsedError {
+        _protocol: _metadata::NetworkProtocol,
+        _interface: _metadata::NetworkInterface
+    }(
+        "[GameDig]::[{_protocol}::<{_interface}>::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
+    ),
+
     /// Network Set Timeout Error
     ///
     /// This error occurs when a timeout cannot be set on a network stream.
