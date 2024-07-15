@@ -4,6 +4,16 @@ Who knows what the future holds...
 
 Nothing... yet.
 
+# 0.1.1 - 15/07/2024
+
+### Changes:
+
+- Dependency updates (by @cainthebest)
+  - `gamedig`: `v0.5.0 -> v0.5.1`
+  - `clap`: `v4.1.11 -> v4.5.4`
+  - `quick-xml`: `v0.31.0 -> v0.36.0`
+  - `webbrowser`: `v0.8.12 -> v1.0.0`
+
 # 0.1.0 - 15/03/2024
 
 ### Changes:

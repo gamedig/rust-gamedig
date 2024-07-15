@@ -2,7 +2,7 @@
 
 The official [rust-GameDig](https://crates.io/crates/gamedig) Command Line Interface.
 
-[![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![Latest Version](https://img.shields.io/crates/v/gamedig-cli.svg?color=yellow)](https://crates.io/crates/gamedig-cli) [![Crates.io](https://img.shields.io/crates/d/gamedig-cli?color=purple)](https://crates.io/crates/gamedig-cli) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](https://github.com/gamedig/rust-gamedig/blob/main/LICENSE.md) [![node coverage](https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
+[![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](https://github.com/gamedig/rust-gamedig/blob/main/LICENSE.md) [![node coverage](https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
 
 ## Community
 
@@ -32,9 +32,9 @@ gamedig-cli query -g teamfortress2 -i 127.0.0.1 -f json-pretty
 
 What we are doing here:
 
-* `-g` (or `--game`) specifies the game.
-* `-i` (or `--ip`) target ip.
-* `-f` (or `--format`) our preferred format.
+- `-g` (or `--game`) specifies the game.
+- `-i` (or `--ip`) target ip.
+- `-f` (or `--format`) our preferred format.
 
 Note: We haven't specified a port (via `-p` or `--port`), so the default one for the game will be used (`27015` in this
 case).
@@ -55,12 +55,6 @@ Response (note that some games have a different structure):
   "players": []
 }
 ```
-
-## Documentation
-
-The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig-cli/).  
-Curious about the history and what changed between versions? Everything is in
-the [CHANGELOG](https://github.com/gamedig/rust-gamedig/blob/main/crates/cli/CHANGELOG.md) file.
 
 ## Contributing
 
