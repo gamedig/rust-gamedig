@@ -1,0 +1,10 @@
+[profile.release]
+opt-level = 'z'
+debug = false
+rpath = true
+lto = 'fat'
+codegen-units = 1
+strip = 'debuginfo'
+
+[profile.release.package."*"]
+opt-level = 'z'
