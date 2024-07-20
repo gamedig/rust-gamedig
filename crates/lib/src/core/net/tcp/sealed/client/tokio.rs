@@ -11,21 +11,17 @@ use tokio::{
 };
 
 use crate::{
-    error::{
-        NetworkError,
-        Report,
-        Result,
-        _metadata::{NetworkInterface, NetworkProtocol},
-    },
+    error::{NetworkError, Report, Result, _metadata::NetworkProtocol},
     settings::Timeout,
 };
 
 #[derive(Debug)]
-pub(super) struct AsyncTokioTcpClient {
-    read_stream: Arc<Mutex<OwnedReadHalf>>,
+pub(crate) struct AsyncTokioTcpClient {
+    addr: SocketAddr,
     read_timeout: Duration,
-    write_stream: Arc<Mutex<OwnedWriteHalf>>,
     write_timeout: Duration,
+    read_stream: Arc<Mutex<OwnedReadHalf>>,
+    write_stream: Arc<Mutex<OwnedWriteHalf>>,
 }
 
 #[maybe_async::async_impl]
@@ -34,36 +30,31 @@ impl super::Tcp for AsyncTokioTcpClient {
         let (orh, owh) = match tokio_timeout(timeout.connect, TcpStream::connect(addr)).await {
             Ok(Ok(stream)) => stream.into_split(),
             Ok(Err(e)) => {
-                return Err(Report::from(e)
-                    .attach_printable("Failed to establish a TCP connection")
-                    .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                    .change_context(
-                        NetworkError::ConnectionError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ));
+                return Err(Report::from(e).change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: *addr,
+                    }
+                    .into(),
+                ));
             }
             Err(e) => {
-                return Err(Report::from(e)
-                    .attach_printable("Connection operation timed out")
-                    .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                    .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ));
+                return Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: *addr,
+                    }
+                    .into(),
+                ));
             }
         };
 
         Ok(AsyncTokioTcpClient {
-            read_stream: Arc::new(Mutex::new(orh)),
+            addr: *addr,
             read_timeout: timeout.read,
-            write_stream: Arc::new(Mutex::new(owh)),
             write_timeout: timeout.write,
+            read_stream: Arc::new(Mutex::new(orh)),
+            write_stream: Arc::new(Mutex::new(owh)),
         })
     }
 
@@ -76,26 +67,22 @@ impl super::Tcp for AsyncTokioTcpClient {
         match tokio_timeout(self.read_timeout, orh.read_to_end(&mut buf)).await {
             Ok(Ok(_)) => Ok(buf),
             Ok(Err(e)) => {
-                Err(Report::from(e)
-                    .attach_printable("Failed to read data from its half of the TCP split stream")
-                    .change_context(
-                        NetworkError::ReadError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::ReadError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
             Err(e) => {
-                Err(Report::from(e)
-                    .attach_printable("Read operation timed out")
-                    .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
         }
     }
@@ -107,26 +94,22 @@ impl super::Tcp for AsyncTokioTcpClient {
         match tokio_timeout(self.write_timeout, owh.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
-                Err(Report::from(e)
-                    .attach_printable("Failed to write data to its half of the TCP split stream")
-                    .change_context(
-                        NetworkError::WriteError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::WriteError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
             Err(e) => {
-                Err(Report::from(e)
-                    .attach_printable("Write operation timed out")
-                    .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientTokio,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
         }
     }

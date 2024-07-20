@@ -1,15 +1,6 @@
 use std::net::SocketAddr;
 
-use crate::{
-    error::{
-        NetworkError,
-        Report,
-        Result,
-        ResultExt,
-        _metadata::{NetworkInterface, NetworkProtocol},
-    },
-    settings::Timeout,
-};
+use crate::{error::Result, settings::Timeout};
 
 #[cfg(feature = "client_async_std")]
 mod async_std;
@@ -48,42 +39,13 @@ impl Inner {
 
         Ok(Self {
             #[cfg(feature = "client_async_std")]
-            inner: async_std::AsyncStdTcpClient::new(addr, timeout)
-                .await
-                .map_err(Report::from)
-                .attach_printable("Unable to create an async std TCP client")
-                .change_context(
-                    NetworkError::ConnectionError {
-                        _protocol: NetworkProtocol::Tcp,
-                        _interface: NetworkInterface::SealedClientInner,
-                    }
-                    .into(),
-                )?,
+            inner: async_std::AsyncStdTcpClient::new(addr, timeout).await?,
 
             #[cfg(feature = "client_std")]
-            inner: sync_std::SyncStdTcpClient::new(addr, timeout)
-                .map_err(Report::from)
-                .attach_printable("Unable to create a sync std TCP client")
-                .change_context(
-                    NetworkError::ConnectionError {
-                        _protocol: NetworkProtocol::Tcp,
-                        _interface: NetworkInterface::SealedClientInner,
-                    }
-                    .into(),
-                )?,
+            inner: sync_std::SyncStdTcpClient::new(addr, timeout)?,
 
             #[cfg(feature = "client_tokio")]
-            inner: tokio::AsyncTokioTcpClient::new(addr, timeout)
-                .await
-                .map_err(Report::from)
-                .attach_printable("Unable to create an async tokio TCP client")
-                .change_context(
-                    NetworkError::ConnectionError {
-                        _protocol: NetworkProtocol::Tcp,
-                        _interface: NetworkInterface::SealedClientInner,
-                    }
-                    .into(),
-                )?,
+            inner: tokio::AsyncTokioTcpClient::new(addr, timeout).await?,
         })
     }
 }

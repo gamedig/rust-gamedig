@@ -1,4 +1,6 @@
-pub(crate) use error_stack::{Report, ResultExt};
+pub(crate) use error_stack::Report;
+#[cfg(feature = "client_std")]
+pub(crate) use error_stack::ResultExt;
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
 
 macro_rules! define_error {
@@ -78,9 +80,9 @@ define_error_kind! {
         /// This can be due to a variety of reasons, the OS should propagate the true cause.
         ConnectionError {
             _protocol: _metadata::NetworkProtocol,
-            _interface: _metadata::NetworkInterface
+            addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::<{_interface}>::ConnectionError]: Failed to establish a connection"
+            "[GameDig]::[{_protocol}::ConnectionError]: Failed to establish a connection"
         ),
 
         /// Network Read Error
@@ -88,9 +90,9 @@ define_error_kind! {
         /// This error occurs when data cannot be read from a network stream.
         ReadError {
             _protocol: _metadata::NetworkProtocol,
-            _interface: _metadata::NetworkInterface
+            addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::<{_interface}>::ReadError]: Failed to read data"
+            "[GameDig]::[{_protocol}::ReadError]: Failed to read data"
         ),
 
         /// Network Write Error
@@ -98,9 +100,9 @@ define_error_kind! {
         /// This error occurs when data cannot be written to a network stream.
         WriteError {
             _protocol: _metadata::NetworkProtocol,
-            _interface: _metadata::NetworkInterface
+            addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::<{_interface}>::WriteError]: Failed to write data"
+            "[GameDig]::[{_protocol}::WriteError]: Failed to write data"
         ),
 
         /// Network Timeout Elapsed Error
@@ -109,9 +111,10 @@ define_error_kind! {
         #[cfg(not(feature = "client_std"))]
         TimeoutElapsedError {
             _protocol: _metadata::NetworkProtocol,
-            _interface: _metadata::NetworkInterface
+            addr: std::net::SocketAddr
+
         }(
-            "[GameDig]::[{_protocol}::<{_interface}>::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
+            "[GameDig]::[{_protocol}::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
         ),
 
         /// Network Set Timeout Error
@@ -123,17 +126,16 @@ define_error_kind! {
         #[cfg(feature = "client_std")]
         SetTimeoutError {
             _protocol: _metadata::NetworkProtocol,
-            _interface: _metadata::NetworkInterface
+            addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::<{_interface}>::SetTimeoutError]: Failed to set timeout"
+            "[GameDig]::[{_protocol}::SetTimeoutError]: Failed to set timeout"
         )
     }
 }
 
 pub mod _metadata {
-    use derive_more::Display;
 
-    #[derive(Debug, Display)]
+    #[derive(Debug, derive_more::Display)]
     pub enum NetworkProtocol {
         #[display(fmt = "TCP")]
         Tcp,
@@ -145,19 +147,5 @@ pub mod _metadata {
         Http,
         #[display(fmt = "HTTPS")]
         Https,
-    }
-
-    #[derive(Debug, Display)]
-    pub enum NetworkInterface {
-        #[display(fmt = "C")]
-        Client,
-        #[display(fmt = "SCI")]
-        SealedClientInner,
-        #[display(fmt = "SCS")]
-        SealedClientStd,
-        #[display(fmt = "SCT")]
-        SealedClientTokio,
-        #[display(fmt = "SCAS")]
-        SealedClientAsyncStd,
     }
 }

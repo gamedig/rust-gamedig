@@ -4,18 +4,13 @@ use std::{
 };
 
 use crate::{
-    error::{
-        NetworkError,
-        Report,
-        Result,
-        ResultExt,
-        _metadata::{NetworkInterface, NetworkProtocol},
-    },
+    error::{NetworkError, Report, Result, ResultExt, _metadata::NetworkProtocol},
     settings::Timeout,
 };
 
 #[derive(Debug)]
 pub(crate) struct SyncStdTcpClient {
+    addr: SocketAddr,
     stream: TcpStream,
 }
 
@@ -24,12 +19,10 @@ impl super::Tcp for SyncStdTcpClient {
     fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
         let stream = TcpStream::connect_timeout(addr, timeout.connect)
             .map_err(Report::from)
-            .attach_printable("Failed to establish a TCP connection")
-            .attach_printable(format!("Attempted to connect to address: {addr:?}"))
             .change_context(
                 NetworkError::ConnectionError {
                     _protocol: NetworkProtocol::Tcp,
-                    _interface: NetworkInterface::SealedClientStd,
+                    addr: *addr,
                 }
                 .into(),
             )?;
@@ -41,7 +34,7 @@ impl super::Tcp for SyncStdTcpClient {
             .change_context(
                 NetworkError::SetTimeoutError {
                     _protocol: NetworkProtocol::Tcp,
-                    _interface: NetworkInterface::SealedClientStd,
+                    addr: *addr,
                 }
                 .into(),
             )?;
@@ -53,12 +46,15 @@ impl super::Tcp for SyncStdTcpClient {
             .change_context(
                 NetworkError::SetTimeoutError {
                     _protocol: NetworkProtocol::Tcp,
-                    _interface: NetworkInterface::SealedClientStd,
+                    addr: *addr,
                 }
                 .into(),
             )?;
 
-        Ok(Self { stream })
+        Ok(Self {
+            addr: *addr,
+            stream,
+        })
     }
 
     fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
@@ -67,11 +63,10 @@ impl super::Tcp for SyncStdTcpClient {
         self.stream
             .read_to_end(&mut vec)
             .map_err(Report::from)
-            .attach_printable("Failed to read data from the TCP stream")
             .change_context(
                 NetworkError::ReadError {
                     _protocol: NetworkProtocol::Tcp,
-                    _interface: NetworkInterface::SealedClientStd,
+                    addr: self.addr,
                 }
                 .into(),
             )?;
@@ -83,11 +78,10 @@ impl super::Tcp for SyncStdTcpClient {
         self.stream
             .write_all(data)
             .map_err(Report::from)
-            .attach_printable("Failed to write data to the TCP stream")
             .change_context(
                 NetworkError::WriteError {
                     _protocol: NetworkProtocol::Tcp,
-                    _interface: NetworkInterface::SealedClientStd,
+                    addr: self.addr,
                 }
                 .into(),
             )?;

@@ -7,17 +7,13 @@ use async_std::{
 };
 
 use crate::{
-    error::{
-        NetworkError,
-        Report,
-        Result,
-        _metadata::{NetworkInterface, NetworkProtocol},
-    },
+    error::{NetworkError, Report, Result, _metadata::NetworkProtocol},
     settings::Timeout,
 };
 
 #[derive(Debug)]
 pub(crate) struct AsyncStdTcpClient {
+    addr: SocketAddr,
     stream: TcpStream,
     read_timeout: Duration,
     write_timeout: Duration,
@@ -27,31 +23,26 @@ pub(crate) struct AsyncStdTcpClient {
 impl super::Tcp for AsyncStdTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
         Ok(Self {
+            addr: *addr,
             stream: match async_timeout(timeout.connect, TcpStream::connect(addr)).await {
                 Ok(Ok(stream)) => stream,
                 Ok(Err(e)) => {
-                    return Err(Report::from(e)
-                        .attach_printable("Failed to establish a TCP connection")
-                        .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                        .change_context(
-                            NetworkError::ConnectionError {
-                                _protocol: NetworkProtocol::Tcp,
-                                _interface: NetworkInterface::SealedClientAsyncStd,
-                            }
-                            .into(),
-                        ));
+                    return Err(Report::from(e).change_context(
+                        NetworkError::ConnectionError {
+                            _protocol: NetworkProtocol::Tcp,
+                            addr: *addr,
+                        }
+                        .into(),
+                    ));
                 }
                 Err(e) => {
-                    return Err(Report::from(e)
-                        .attach_printable("Connection operation timed out")
-                        .attach_printable(format!("Attempted to connect to address: {addr:?}"))
-                        .change_context(
-                            NetworkError::TimeoutElapsedError {
-                                _protocol: NetworkProtocol::Tcp,
-                                _interface: NetworkInterface::SealedClientAsyncStd,
-                            }
-                            .into(),
-                        ));
+                    return Err(Report::from(e).change_context(
+                        NetworkError::TimeoutElapsedError {
+                            _protocol: NetworkProtocol::Tcp,
+                            addr: *addr,
+                        }
+                        .into(),
+                    ));
                 }
             },
             read_timeout: timeout.read,
@@ -65,26 +56,22 @@ impl super::Tcp for AsyncStdTcpClient {
         match async_timeout(self.read_timeout, self.stream.read_to_end(&mut buf)).await {
             Ok(Ok(_)) => Ok(buf),
             Ok(Err(e)) => {
-                Err(Report::from(e)
-                    .attach_printable("Failed to read data from the TCP stream")
-                    .change_context(
-                        NetworkError::ReadError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientAsyncStd,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::ReadError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
             Err(e) => {
-                Err(Report::from(e)
-                    .attach_printable("Read operation timed out")
-                    .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientAsyncStd,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
         }
     }
@@ -93,26 +80,22 @@ impl super::Tcp for AsyncStdTcpClient {
         match async_timeout(self.write_timeout, self.stream.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
-                Err(Report::from(e)
-                    .attach_printable("Failed to write data to the TCP stream")
-                    .change_context(
-                        NetworkError::WriteError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientAsyncStd,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::WriteError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
             Err(e) => {
-                Err(Report::from(e)
-                    .attach_printable("Write operation timed out")
-                    .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            _interface: NetworkInterface::SealedClientAsyncStd,
-                        }
-                        .into(),
-                    ))
+                Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
             }
         }
     }
