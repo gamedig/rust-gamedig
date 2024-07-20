@@ -28,7 +28,7 @@ pub struct Server {
     pub updates: u32,
     pub total_clients: u32,
     pub pop_v: f32,
-    pub geo_continent: String,
+    pub geo_continent: Option<String>,
     pub ping: f32,
 }
 
