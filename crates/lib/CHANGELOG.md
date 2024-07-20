@@ -8,7 +8,7 @@ Games:
 
 Services:
 
-- MineTest Master Server support.
+- MineTest Master Server support (available only on the `tls` and `serde` feature).
 
 # 0.5.1 - 12/05/2024
 
