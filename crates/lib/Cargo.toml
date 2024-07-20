@@ -1,83 +1,98 @@
 [package]
 name = "gamedig"
-version = "0.5.1"
+version = "1.0.0-alpha"
 edition = "2021"
-authors = [
-    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
-    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
-]
 license = "MIT"
-description = "Query game servers and not only."
-homepage = "https://gamedig.github.io/"
-documentation = "https://docs.rs/gamedig/latest/gamedig/"
-repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
-keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.65.0"
-categories = ["parser-implementations", "parsing", "network-programming", "encoding"]
+homepage = "https://gamedig.github.io/"
+repository = "https://github.com/gamedig/rust-gamedig"
+documentation = "https://docs.rs/gamedig/latest/gamedig"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+keywords = ["status", "query", "game", "protocol", "service"]
+description = "Query game servers and not only."
+categories = [
+    "parsing",
+    "encoding",
+    "asynchronous",
+    "network-programming",
+    "parser-implementations",
+]
 
-[features]
-default = ["games", "services", "game_defs"]
-
-# Enable query functions for specific games
-games = []
-# Enable game definitions for use with the generic query functions
-game_defs = ["dep:phf", "games"]
-
-# Enable service querying
-services = []
-
-# Enable serde derivations for our types
-serde = []
-
-# Enable clap derivations for our types
-clap = ["dep:clap"]
-packet_capture = ["dep:pcap-file", "dep:pnet_packet", "dep:lazy_static"]
-
-# Enable TLS for HTTP Client
-tls = ["ureq/tls"]
 
 [dependencies]
-byteorder = "1.5"
-bzip2-rs = "0.1"
-crc32fast = "1.4"
-base64 = "0.22.0"
+# Required Dependencies
+thiserror = "1.0.61"
+error-stack = { version = "0.4.1", features = ["spantrace"] }
+maybe-async = "0.2.10"
+byteorder = "1.5.0"
+derive_more = "0.99.18"
 
-encoding_rs = "0.8"
-ureq = { version = "2.9", default-features = false, features = ["gzip", "json"] }
-url = "2"
+# Optional Dependencies
+async-trait = { version = "0.1.51", optional = true }
+tokio = { version = "1.37.0", features = ["full"], optional = true }
+async-std = { version = "1.12.0", features = ["attributes"], optional = true }
 
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
+[features]
+default = ["client_std", "_TCP"]
 
-phf = { version = "0.11", optional = true, features = ["macros"] }
+# Internal Features
+## I/O
+_BUFFER = []
 
-clap = { version = "4.5.4", optional = true, features = ["derive"] }
+## Net
+_TCP = ["_BUFFER"]
+_UDP = ["_BUFFER"]
+_HTTP = []
+_TLS = ["_HTTP"]
+_RCON = ["_TCP"]
 
-pcap-file = { version = "2.0", optional = true }
-pnet_packet = { version = "0.35", optional = true }
-lazy_static = { version = "1.4", optional = true }
+# Client Types
+# Note: Only 1 client type can be enabled at a time
+client_std = ["maybe-async/is_sync"]
+client_tokio = ["dep:async-trait", "dep:tokio"]
+client_async_std = ["dep:async-trait", "dep:async-std"]
 
-[dev-dependencies]
-gamedig-id-tests = { path = "../id-tests", default-features = false }
+# Library Features
+## Attributes
+serde = []
 
-# Examples
-[[example]]
-name = "minecraft"
-required-features = ["games"]
+## Services
+valve_master_server = ["_UDP"]
 
-[[example]]
-name = "teamfortress2"
-required-features = ["games"]
+## Protocols
+valve = ["_UDP"]
+valve_gold_src = ["_UDP"]
 
-[[example]]
-name = "valve_master_server_query"
-required-features = ["services"]
+unreal_2 = ["_UDP"]
 
-[[example]]
-name = "test_eco"
-required-features = ["games"]
+gamespy_1 = ["_UDP"]
+gamespy_2 = ["_UDP"]
+gamespy_3 = ["_UDP"]
 
-[[example]]
-name = "generic"
-required-features = ["games", "game_defs"]
+quake_1 = ["_UDP"]
+quake_2 = ["_UDP"]
+quake_3 = ["_UDP"]
+
+epic = ["_TLS"]
+
+## Games
+### Proprietary
+
+### Extentions
+
+## Index
+all = ["all_attributes", "all_services", "all_protocols", "all_games"]
+all_attributes = ["serde"]
+all_services = ["valve_master_server"]
+all_protocols = [
+    "valve",
+    "epic",
+    "unreal_2",
+    "gamespy_1",
+    "gamespy_2",
+    "gamespy_3",
+    "quake_1",
+    "quake_2",
+    "quake_3",
+]
+all_games = []
