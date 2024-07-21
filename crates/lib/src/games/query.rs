@@ -2,6 +2,8 @@
 
 use std::net::{IpAddr, SocketAddr};
 
+#[cfg(all(feature = "services", feature = "tls", feature = "serde"))]
+use crate::games::minetest;
 use crate::games::types::Game;
 use crate::games::{eco, ffow, jc2m, mindustry, minecraft, savage2, theship};
 use crate::protocols;
@@ -124,6 +126,10 @@ pub fn query_with_timeout_and_extra_settings(
                         extra_settings.map(ExtraRequestSettings::into),
                     )
                     .map(Box::new)?
+                }
+                #[cfg(all(feature = "services", feature = "tls", feature = "serde"))]
+                ProprietaryProtocol::Minetest => {
+                    minetest::query_with_timeout(address, port, &timeout_settings).map(Box::new)?
                 }
             }
         }

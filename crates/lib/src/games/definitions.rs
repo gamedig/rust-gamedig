@@ -149,6 +149,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "zps" => game!("Zombie Panic: Source", 27015, Protocol::Valve(Engine::new(17_500))),
     "moe" => game!("Myth Of Empires", 12888, Protocol::Valve(Engine::new(1_371_580))),
     "mordhau" => game!("Mordhau", 27015, Protocol::Valve(Engine::new(629_760))),
+    // "minetest" => game!("Minetest", 30000, Protocol::PROPRIETARY(ProprietaryProtocol::Minetest)),
     "mindustry" => game!("Mindustry", crate::games::mindustry::DEFAULT_PORT, Protocol::PROPRIETARY(ProprietaryProtocol::Mindustry)),
     "nla" => game!("Nova-Life: Amboise", 27015, Protocol::Valve(Engine::new(885_570))),
 };
