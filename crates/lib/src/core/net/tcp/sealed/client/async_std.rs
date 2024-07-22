@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, time::Duration};
 
 use async_std::{
-    future::timeout as async_timeout,
+    future::timeout as timer,
     io::{ReadExt, WriteExt},
     net::TcpStream,
 };
@@ -24,7 +24,7 @@ impl super::Tcp for AsyncStdTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
         Ok(Self {
             addr: *addr,
-            stream: match async_timeout(timeout.connect, TcpStream::connect(addr)).await {
+            stream: match timer(timeout.connect, TcpStream::connect(addr)).await {
                 Ok(Ok(stream)) => stream,
                 Ok(Err(e)) => {
                     return Err(Report::from(e).change_context(
@@ -51,10 +51,16 @@ impl super::Tcp for AsyncStdTcpClient {
     }
 
     async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
-        let mut buf = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
+        let mut vec = Vec::with_capacity(size.unwrap_or(Self::MAX_TCP_PACKET_SIZE as usize));
 
-        match async_timeout(self.read_timeout, self.stream.read_to_end(&mut buf)).await {
-            Ok(Ok(_)) => Ok(buf),
+        match timer(self.read_timeout, self.stream.read_to_end(&mut vec)).await {
+            Ok(Ok(len)) => {
+                if vec.capacity() * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize) > (len << 7) {
+                    vec.shrink_to_fit();
+                }
+
+                Ok(vec)
+            }
             Ok(Err(e)) => {
                 Err(Report::from(e).change_context(
                     NetworkError::ReadError {
@@ -77,7 +83,7 @@ impl super::Tcp for AsyncStdTcpClient {
     }
 
     async fn write(&mut self, data: &[u8]) -> Result<()> {
-        match async_timeout(self.write_timeout, self.stream.write_all(data)).await {
+        match timer(self.write_timeout, self.stream.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
                 Err(Report::from(e).change_context(
