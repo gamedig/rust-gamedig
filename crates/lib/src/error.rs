@@ -1,6 +1,4 @@
 pub(crate) use error_stack::Report;
-#[cfg(feature = "client_std")]
-pub(crate) use error_stack::ResultExt;
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
 
 macro_rules! define_error {
