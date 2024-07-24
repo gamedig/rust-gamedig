@@ -22,36 +22,41 @@ pub(crate) struct AsyncStdTcpClient {
 #[maybe_async::async_impl]
 impl super::Tcp for AsyncStdTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
+        let stream = match timer(timeout.connect, TcpStream::connect(addr)).await {
+            Ok(Ok(stream)) => stream,
+            Ok(Err(e)) => {
+                return Err(Report::from(e).change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: *addr,
+                    }
+                    .into(),
+                ));
+            }
+            Err(e) => {
+                return Err(Report::from(e).change_context(
+                    NetworkError::TimeoutElapsedError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: *addr,
+                    }
+                    .into(),
+                ));
+            }
+        };
+
         Ok(Self {
             addr: *addr,
-            stream: match timer(timeout.connect, TcpStream::connect(addr)).await {
-                Ok(Ok(stream)) => stream,
-                Ok(Err(e)) => {
-                    return Err(Report::from(e).change_context(
-                        NetworkError::ConnectionError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: *addr,
-                        }
-                        .into(),
-                    ));
-                }
-                Err(e) => {
-                    return Err(Report::from(e).change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: *addr,
-                        }
-                        .into(),
-                    ));
-                }
-            },
+            stream,
             read_timeout: timeout.read,
             write_timeout: timeout.write,
         })
     }
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
-        let mut vec = Vec::with_capacity(size.unwrap_or(Self::MAX_TCP_PACKET_SIZE as usize));
+    async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
+        let mut vec = Vec::with_capacity(match size {
+            Some(size) => size.min(Self::MAX_TCP_PACKET_SIZE) as usize,
+            None => Self::MAX_TCP_PACKET_SIZE as usize,
+        });
 
         match timer(self.read_timeout, self.stream.read_to_end(&mut vec)).await {
             Ok(Ok(len)) => {

@@ -21,7 +21,7 @@ impl TcpClient {
     }
 
     #[allow(dead_code)]
-    pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
+    pub(crate) async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
         self.client.inner.read(size).await
     }
 

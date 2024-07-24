@@ -12,16 +12,15 @@ mod tokio;
 #[maybe_async::maybe_async]
 pub(crate) trait Tcp {
     // MAX_TCP_PACKET_SIZE = ETHERNET_MTU - (IP_HEADER_SIZE + TCP_HEADER_SIZE)
-    const MAX_TCP_PACKET_SIZE: u16 = 1500 - (20 + 20) as u16;
+    const MAX_TCP_PACKET_SIZE: u16 = 1460;
 
-    // 100% = 128
     // 120% = 128 * 1.2 = 153.6 = 153
-    const VEC_CAPACITY_SHRINK_MARGIN: u8 = (128.0 * 1.2) as u8;
+    const VEC_CAPACITY_SHRINK_MARGIN: u8 = 153;
 
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self>
     where Self: Sized;
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>>;
+    async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>>;
     async fn write(&mut self, data: &[u8]) -> Result<()>;
 }
 

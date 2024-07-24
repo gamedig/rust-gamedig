@@ -7,7 +7,7 @@ use tokio::{
         TcpStream,
     },
     sync::Mutex,
-    time::timeout as tokio_timeout,
+    time::timeout as timer,
 };
 
 use crate::{
@@ -27,7 +27,7 @@ pub(crate) struct AsyncTokioTcpClient {
 #[maybe_async::async_impl]
 impl super::Tcp for AsyncTokioTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
-        let (orh, owh) = match tokio_timeout(timeout.connect, TcpStream::connect(addr)).await {
+        let (orh, owh) = match timer(timeout.connect, TcpStream::connect(addr)).await {
             Ok(Ok(stream)) => stream.into_split(),
             Ok(Err(e)) => {
                 return Err(Report::from(e).change_context(
@@ -58,14 +58,23 @@ impl super::Tcp for AsyncTokioTcpClient {
         })
     }
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
+    async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
         let read_half = Arc::clone(&self.read_stream);
         let mut orh = read_half.lock().await;
 
-        let mut buf = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
+        let mut vec = Vec::with_capacity(match size {
+            Some(size) => size.min(Self::MAX_TCP_PACKET_SIZE) as usize,
+            None => Self::MAX_TCP_PACKET_SIZE as usize,
+        });
 
-        match tokio_timeout(self.read_timeout, orh.read_to_end(&mut buf)).await {
-            Ok(Ok(_)) => Ok(buf),
+        match timer(self.read_timeout, orh.read_to_end(&mut vec)).await {
+            Ok(Ok(len)) => {
+                if vec.capacity() * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize) > (len << 7) {
+                    vec.shrink_to_fit();
+                }
+
+                Ok(vec)
+            }
             Ok(Err(e)) => {
                 Err(Report::from(e).change_context(
                     NetworkError::ReadError {
@@ -91,7 +100,7 @@ impl super::Tcp for AsyncTokioTcpClient {
         let write_half = Arc::clone(&self.write_stream);
         let mut owh = write_half.lock().await;
 
-        match tokio_timeout(self.write_timeout, owh.write_all(data)).await {
+        match timer(self.write_timeout, owh.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
                 Err(Report::from(e).change_context(

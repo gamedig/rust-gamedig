@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    error::{NetworkError, Report, Result, ResultExt, _metadata::NetworkProtocol},
+    error::{NetworkError, Report, Result, _metadata::NetworkProtocol},
     settings::Timeout,
 };
 
@@ -17,75 +17,89 @@ pub(crate) struct SyncStdTcpClient {
 #[maybe_async::sync_impl]
 impl super::Tcp for SyncStdTcpClient {
     fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
-        let stream = TcpStream::connect_timeout(addr, timeout.connect)
-            .map_err(Report::from)
-            .change_context(
-                NetworkError::ConnectionError {
-                    _protocol: NetworkProtocol::Tcp,
-                    addr: *addr,
+        match TcpStream::connect_timeout(addr, timeout.connect) {
+            Ok(stream) => {
+                match stream.set_read_timeout(Some(timeout.read)) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        return Err(Report::from(e).change_context(
+                            NetworkError::SetTimeoutError {
+                                _protocol: NetworkProtocol::Tcp,
+                                addr: *addr,
+                            }
+                            .into(),
+                        ));
+                    }
                 }
-                .into(),
-            )?;
 
-        stream
-            .set_read_timeout(Some(timeout.read))
-            .map_err(Report::from)
-            .attach_printable("Failed to set read timeout")
-            .change_context(
-                NetworkError::SetTimeoutError {
-                    _protocol: NetworkProtocol::Tcp,
-                    addr: *addr,
+                match stream.set_write_timeout(Some(timeout.write)) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        return Err(Report::from(e).change_context(
+                            NetworkError::SetTimeoutError {
+                                _protocol: NetworkProtocol::Tcp,
+                                addr: *addr,
+                            }
+                            .into(),
+                        ));
+                    }
                 }
-                .into(),
-            )?;
 
-        stream
-            .set_write_timeout(Some(timeout.write))
-            .map_err(Report::from)
-            .attach_printable("Failed to set write timeout")
-            .change_context(
-                NetworkError::SetTimeoutError {
-                    _protocol: NetworkProtocol::Tcp,
+                Ok(Self {
                     addr: *addr,
-                }
-                .into(),
-            )?;
-
-        Ok(Self {
-            addr: *addr,
-            stream,
-        })
+                    stream,
+                })
+            }
+            Err(e) => {
+                Err(Report::from(e).change_context(
+                    NetworkError::ConnectionError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: *addr,
+                    }
+                    .into(),
+                ))
+            }
+        }
     }
 
-    fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
-        let mut vec = Vec::with_capacity(size.unwrap_or(Self::DEFAULT_PACKET_SIZE as usize));
+    fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
+        let mut vec = Vec::with_capacity(match size {
+            Some(size) => size.min(Self::MAX_TCP_PACKET_SIZE) as usize,
+            None => Self::MAX_TCP_PACKET_SIZE as usize,
+        });
 
-        self.stream
-            .read_to_end(&mut vec)
-            .map_err(Report::from)
-            .change_context(
-                NetworkError::ReadError {
-                    _protocol: NetworkProtocol::Tcp,
-                    addr: self.addr,
+        match self.stream.read_to_end(&mut vec) {
+            Ok(len) => {
+                if vec.capacity() * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize) > (len << 7) {
+                    vec.shrink_to_fit();
                 }
-                .into(),
-            )?;
 
-        Ok(vec)
+                Ok(vec)
+            }
+            Err(e) => {
+                Err(Report::from(e).change_context(
+                    NetworkError::ReadError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
+            }
+        }
     }
 
     fn write(&mut self, data: &[u8]) -> Result<()> {
-        self.stream
-            .write_all(data)
-            .map_err(Report::from)
-            .change_context(
-                NetworkError::WriteError {
-                    _protocol: NetworkProtocol::Tcp,
-                    addr: self.addr,
-                }
-                .into(),
-            )?;
-
-        Ok(())
+        match self.stream.write_all(data) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                Err(Report::from(e).change_context(
+                    NetworkError::WriteError {
+                        _protocol: NetworkProtocol::Tcp,
+                        addr: self.addr,
+                    }
+                    .into(),
+                ))
+            }
+        }
     }
 }
