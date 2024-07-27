@@ -15,8 +15,10 @@ use crate::{
     settings::Timeout,
 };
 
+use log::{debug, trace};
+
 #[derive(Debug)]
-pub(crate) struct AsyncTokioTcpClient {
+pub(crate) struct TokioTcpClient {
     addr: SocketAddr,
     read_timeout: Duration,
     write_timeout: Duration,
@@ -25,8 +27,10 @@ pub(crate) struct AsyncTokioTcpClient {
 }
 
 #[maybe_async::async_impl]
-impl super::Tcp for AsyncTokioTcpClient {
+impl super::Tcp for TokioTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
+        trace!("TCP::<Tokio>::New: Creating new TCP client for {addr} with timeout: {timeout:?}");
+
         let (orh, owh) = match timer(timeout.connect, TcpStream::connect(addr)).await {
             Ok(Ok(stream)) => stream.into_split(),
             Ok(Err(e)) => {
@@ -49,7 +53,7 @@ impl super::Tcp for AsyncTokioTcpClient {
             }
         };
 
-        Ok(AsyncTokioTcpClient {
+        Ok(TokioTcpClient {
             addr: *addr,
             read_timeout: timeout.read,
             write_timeout: timeout.write,
@@ -59,17 +63,40 @@ impl super::Tcp for AsyncTokioTcpClient {
     }
 
     async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
+        trace!(
+            "TCP::<Std>::Read: Reading data from {} with size: {:?}",
+            self.addr,
+            size
+        );
+
         let read_half = Arc::clone(&self.read_stream);
         let mut orh = read_half.lock().await;
 
-        let mut vec = Vec::with_capacity(match size {
+        let validated_size = match size {
             Some(size) => size.min(Self::MAX_TCP_PACKET_SIZE) as usize,
             None => Self::MAX_TCP_PACKET_SIZE as usize,
-        });
+        };
+
+        let mut vec = Vec::with_capacity(validated_size);
 
         match timer(self.read_timeout, orh.read_to_end(&mut vec)).await {
             Ok(Ok(len)) => {
-                if vec.capacity() * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize) > (len << 7) {
+                if validated_size < len {
+                    debug!(
+                        "TCP::<Std>::Read: More data than expected. Realloc was required. \
+                         Expected: {validated_size} bytes, Read: {len} bytes",
+                    );
+                }
+
+                let capacity = vec.capacity();
+                if capacity * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize)
+                    > (len * Self::VEC_CAPACITY_BASE_UNIT as usize)
+                {
+                    debug!(
+                        "TCP::<Std>::Read: Shrink threshold exceeded. Shrinking vec to fit. \
+                         Capacity: {capacity}, Read: {len} bytes",
+                    );
+
                     vec.shrink_to_fit();
                 }
 
@@ -97,6 +124,12 @@ impl super::Tcp for AsyncTokioTcpClient {
     }
 
     async fn write(&mut self, data: &[u8]) -> Result<()> {
+        trace!(
+            "TCP::<Async>::Write: Writing data to {} with size: {}",
+            self.addr,
+            data.len()
+        );
+
         let write_half = Arc::clone(&self.write_stream);
         let mut owh = write_half.lock().await;
 

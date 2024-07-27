@@ -11,8 +11,10 @@ use crate::{
     settings::Timeout,
 };
 
+use log::{debug, trace};
+
 #[derive(Debug)]
-pub(crate) struct AsyncStdTcpClient {
+pub(crate) struct AsyncTcpClient {
     addr: SocketAddr,
     stream: TcpStream,
     read_timeout: Duration,
@@ -20,8 +22,10 @@ pub(crate) struct AsyncStdTcpClient {
 }
 
 #[maybe_async::async_impl]
-impl super::Tcp for AsyncStdTcpClient {
+impl super::Tcp for AsyncTcpClient {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self> {
+        trace!("TCP::<Async>::New: Creating new TCP client for {addr} with timeout: {timeout:?}");
+
         let stream = match timer(timeout.connect, TcpStream::connect(addr)).await {
             Ok(Ok(stream)) => stream,
             Ok(Err(e)) => {
@@ -53,14 +57,37 @@ impl super::Tcp for AsyncStdTcpClient {
     }
 
     async fn read(&mut self, size: Option<u16>) -> Result<Vec<u8>> {
-        let mut vec = Vec::with_capacity(match size {
+        trace!(
+            "TCP::<Async>::Read: Reading data from {} with size: {:?}",
+            self.addr,
+            size
+        );
+
+        let validated_size = match size {
             Some(size) => size.min(Self::MAX_TCP_PACKET_SIZE) as usize,
             None => Self::MAX_TCP_PACKET_SIZE as usize,
-        });
+        };
+
+        let mut vec = Vec::with_capacity(validated_size);
 
         match timer(self.read_timeout, self.stream.read_to_end(&mut vec)).await {
             Ok(Ok(len)) => {
-                if vec.capacity() * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize) > (len << 7) {
+                if validated_size < len {
+                    debug!(
+                        "TCP::<Async>::Read: More data than expected. Realloc was required. \
+                         Expected: {validated_size} bytes, Read: {len} bytes",
+                    );
+                }
+
+                let capacity = vec.capacity();
+                if capacity * (Self::VEC_CAPACITY_SHRINK_MARGIN as usize)
+                    > (len * Self::VEC_CAPACITY_BASE_UNIT as usize)
+                {
+                    debug!(
+                        "TCP::<Async>::Read: Shrink threshold exceeded. Shrinking vec to fit. \
+                         Capacity: {capacity}, Read: {len} bytes",
+                    );
+
                     vec.shrink_to_fit();
                 }
 
@@ -88,6 +115,12 @@ impl super::Tcp for AsyncStdTcpClient {
     }
 
     async fn write(&mut self, data: &[u8]) -> Result<()> {
+        trace!(
+            "TCP::<Async>::Write: Writing data to {} with size: {}",
+            self.addr,
+            data.len()
+        );
+
         match timer(self.write_timeout, self.stream.write_all(data)).await {
             Ok(Ok(_)) => Ok(()),
             Ok(Err(e)) => {
