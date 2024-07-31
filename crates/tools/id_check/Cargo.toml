@@ -1,0 +1,4 @@
+[package]
+name = "gamedig_tools_id_check"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+license = "MIT"

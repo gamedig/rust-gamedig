@@ -1,5 +1,11 @@
 [workspace]
-members = ["crates/*"]
+members = [
+    "crates/cli",
+    "crates/gui",
+    "crates/lib",
+    "crates/tools/changelog",
+    "crates/tools/id_check",
+]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"

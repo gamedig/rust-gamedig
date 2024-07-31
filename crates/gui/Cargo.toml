@@ -1,0 +1,5 @@
+[package]
+name = "gamedig_gui"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+version = "0.0.0"
+license = "MIT"

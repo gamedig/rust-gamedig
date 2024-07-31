@@ -1,0 +1,5 @@
+[package]
+name = "gamedig_cli"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+version = "1.0.0-alpha"
+license = "MIT"
