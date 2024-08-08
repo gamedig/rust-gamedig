@@ -37,7 +37,7 @@
 //! `clap` - enable clap derivations for gamedig settings types. <br>
 //! `tls` - enable TLS support for the HTTP client.
 
-pub mod errors;
+pub mod error;
 #[cfg(feature = "games")]
 pub mod games;
 pub mod protocols;
