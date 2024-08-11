@@ -8,8 +8,13 @@ use tokio::io::{AsyncRead, BufReader};
 
 #[cfg(feature = "client_std")]
 pub(crate) trait MaybeAsyncRead: Read {}
+#[cfg(feature = "client_std")]
+impl<T: Read> MaybeAsyncRead for T {}
+
 #[cfg(feature = "client_tokio")]
 pub(crate) trait MaybeAsyncRead: AsyncRead + Send + Unpin {}
+#[cfg(feature = "client_tokio")]
+impl<T: AsyncRead + Send + Unpin> MaybeAsyncRead for T {}
 
 pub(crate) struct Buffer<R: MaybeAsyncRead> {
     reader: BufReader<R>,
