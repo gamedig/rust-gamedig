@@ -1,25 +1,15 @@
-pub(crate) mod numeric;
+pub(crate) mod num;
 pub(crate) mod string;
 
-#[cfg(feature = "client_std")]
-use std::io::{BufReader, Read};
-#[cfg(feature = "client_tokio")]
-use tokio::io::{AsyncRead, BufReader};
-
-#[cfg(feature = "client_std")]
-pub(crate) trait MaybeAsyncRead: Read {}
-#[cfg(feature = "client_std")]
-impl<T: Read> MaybeAsyncRead for T {}
-
-#[cfg(feature = "client_tokio")]
-pub(crate) trait MaybeAsyncRead: AsyncRead + Send + Unpin {}
-#[cfg(feature = "client_tokio")]
-impl<T: AsyncRead + Send + Unpin> MaybeAsyncRead for T {}
-
-pub(crate) struct Buffer<R: MaybeAsyncRead> {
-    reader: BufReader<R>,
+pub(crate) struct Buffer {
+    inner: Vec<u8>,
+    pos: usize,
 }
 
-impl<R: MaybeAsyncRead> From<BufReader<R>> for Buffer<R> {
-    fn from(reader: BufReader<R>) -> Self { Self { reader } }
+impl Buffer {
+    /// Creates a new Buffer.
+    pub(crate) const fn new(vec: Vec<u8>) -> Self { Self { inner: vec, pos: 0 } }
+
+    /// Consumes the Buffer and returns the inner Vec<u8>.
+    pub(crate) fn into_inner(self) -> Vec<u8> { self.inner }
 }
