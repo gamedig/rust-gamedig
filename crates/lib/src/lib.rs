@@ -6,7 +6,9 @@ pub mod error;
 pub mod prelude;
 pub mod settings;
 
-pub mod adapters;
 pub mod game;
 pub mod protocol;
 pub mod service;
+
+#[cfg(feature = "attribute_adapters")]
+pub mod adapters;
