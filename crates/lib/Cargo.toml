@@ -30,7 +30,6 @@ error-stack = { version = "0.4.1", features = ["spantrace"] }
 # Optional Dependencies
 async-trait = { version = "0.1.51", optional = true }
 tokio = { version = "1.37.0", features = ["full"], optional = true }
-async-std = { version = "1.12.0", features = ["attributes"], optional = true }
 
 
 [features]

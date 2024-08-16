@@ -84,6 +84,7 @@ macro_rules! define_error_kind {
         }
     };
 }
+
 define_error_kind! {
     /// IO Error
     ///
