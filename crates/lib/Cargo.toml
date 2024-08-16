@@ -21,21 +21,22 @@ categories = [
 
 [dependencies]
 # Required Dependencies
+log = "0.4.22"
 thiserror = "1.0.61"
-error-stack = { version = "0.4.1", features = ["spantrace"] }
 maybe-async = "0.2.10"
-byteorder = "1.5.0"
 derive_more = "0.99.18"
+error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
 async-trait = { version = "0.1.51", optional = true }
 tokio = { version = "1.37.0", features = ["full"], optional = true }
 async-std = { version = "1.12.0", features = ["attributes"], optional = true }
 
-[features]
-default = ["client_std", "_TCP"]
 
-# Internal Features
+[features]
+default = ["client_tokio", "all"]
+
+# Internal Features (Prefix: _<CAPS>)
 ## I/O
 _BUFFER = []
 
@@ -44,55 +45,83 @@ _TCP = ["_BUFFER"]
 _UDP = ["_BUFFER"]
 _HTTP = []
 _TLS = ["_HTTP"]
-_RCON = ["_TCP"]
 
-# Client Types
+# Client Features (Prefix: client_)
 # Note: Only 1 client type can be enabled at a time
 client_std = ["maybe-async/is_sync"]
 client_tokio = ["dep:async-trait", "dep:tokio"]
-client_async_std = ["dep:async-trait", "dep:async-std"]
 
 # Library Features
-## Attributes
-serde = []
+## Attributes (Prefix: attribute_)
+attribute_serde = []
+attribute_adapters = []
+attribute_extended_derive = []
 
-## Services
-valve_master_server = ["_UDP"]
+## Custom Games
 
 ## Protocols
-valve = ["_UDP"]
-valve_gold_src = ["_UDP"]
-
-unreal_2 = ["_UDP"]
-
+### Query
 gamespy_1 = ["_UDP"]
 gamespy_2 = ["_UDP"]
 gamespy_3 = ["_UDP"]
-
+mumble = ["_TCP"]
 quake_1 = ["_UDP"]
 quake_2 = ["_UDP"]
 quake_3 = ["_UDP"]
+teamspeak_2 = ["_TCP"]
+teamspeak_3 = ["_TCP"]
+unreal_2 = ["_UDP"]
+valve = ["_UDP"]
+valve_gold_src = ["_UDP"]
 
-epic = ["_TLS"]
+### RCON (Prefix: rcon_)
+rcon_battleye_2 = ["_TCP"]
+rcon_valve_source = ["_TCP"]
 
-## Games
-### Proprietary
-
-### Extentions
+## Services (Prefix: service_)
+service_alt_v_mp = ["_TLS"]
+service_beam_mp = ["_TLS"]
+service_discord = ["_TLS"]
+service_epic = ["_TLS"]
+service_minetest = ["_TLS"]
+service_rage_mp = ["_TLS"]
+service_valve_master = ["_UDP"]
 
 ## Index
-all = ["all_attributes", "all_services", "all_protocols", "all_games"]
-all_attributes = ["serde"]
-all_services = ["valve_master_server"]
-all_protocols = [
-    "valve",
-    "epic",
-    "unreal_2",
+all = [
+    "all_attributes",
+    "all_custom_games",
+    "all_query_protocols",
+    "all_rcon_protocols",
+    "all_services",
+]
+all_attributes = [
+    "attribute_serde",
+    "attribute_adapters",
+    "attribute_extended_derive",
+]
+all_custom_games = []
+all_query_protocols = [
     "gamespy_1",
     "gamespy_2",
     "gamespy_3",
+    "mumble",
     "quake_1",
     "quake_2",
     "quake_3",
+    "teamspeak_2",
+    "teamspeak_3",
+    "unreal_2",
+    "valve",
+    "valve_gold_src",
 ]
-all_games = []
+all_rcon_protocols = ["rcon_battleye_2", "rcon_valve_source"]
+all_services = [
+    "service_alt_v_mp",
+    "service_beam_mp",
+    "service_discord",
+    "service_epic",
+    "service_minetest",
+    "service_rage_mp",
+    "service_valve_master",
+]
