@@ -4,8 +4,6 @@ use crate::{error::Result, settings::Timeout};
 
 use log::trace;
 
-#[cfg(feature = "client_async_std")]
-mod r#async;
 #[cfg(feature = "client_std")]
 mod std;
 #[cfg(feature = "client_tokio")]
@@ -30,9 +28,6 @@ pub(crate) trait Tcp {
 
 #[derive(Debug)]
 pub(crate) struct Inner {
-    #[cfg(feature = "client_async_std")]
-    pub(crate) inner: r#async::AsyncTcpClient,
-
     #[cfg(feature = "client_std")]
     pub(crate) inner: std::StdTcpClient,
 
@@ -48,9 +43,6 @@ impl Inner {
         let timeout = timeout.unwrap_or(&Timeout::DEFAULT);
 
         Ok(Self {
-            #[cfg(feature = "client_async_std")]
-            inner: r#async::AsyncTcpClient::new(addr, timeout).await?,
-
             #[cfg(feature = "client_std")]
             inner: std::StdTcpClient::new(addr, timeout)?,
 

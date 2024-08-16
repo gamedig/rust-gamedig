@@ -2,8 +2,6 @@ use ::std::net::SocketAddr;
 
 use crate::{error::Result, settings::Timeout};
 
-#[cfg(feature = "client_async_std")]
-mod async_std;
 #[cfg(feature = "client_std")]
 mod std;
 #[cfg(feature = "client_tokio")]
@@ -12,7 +10,7 @@ mod tokio;
 #[allow(dead_code)]
 #[maybe_async::maybe_async]
 pub(crate) trait Udp {
-    //TODO: add correct values
+    // TODO: add correct values
     // Maximum Transmission Unit for Ethernet
     const ETHERNET_MTU: u16 = 65_535;
     // IP and UDP header sizes
