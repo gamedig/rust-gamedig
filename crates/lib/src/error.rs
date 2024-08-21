@@ -1,4 +1,4 @@
-pub(crate) use error_stack::{bail, Report};
+pub(crate) use error_stack::Report;
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
 
 macro_rules! define_error {
@@ -197,17 +197,42 @@ define_error_kind! {
 
 pub mod _metadata {
 
+    pub mod diagnostics {
+
+        #[derive(Debug, derive_more::Display)]
+        #[display(fmt = "Failure Reason: {}", self.0)]
+        pub struct FailureReason(&'static str);
+
+        #[derive(Debug, derive_more::Display)]
+        #[display(fmt = "Recommendation: {}", self.0)]
+        pub struct Recommendation(&'static str);
+
+        #[derive(Debug, derive_more::Display)]
+        #[display(
+            fmt = "Uh oh! Looks like you've encountered a possible bug in GameDig.\n\
+                   Please open an issue on GitHub with the error you've encountered and the steps to reproduce it.\n\
+                   https://github.com/gamedig/rust-gamedig/issues \n\
+                   Thank you for helping us improve GameDig!"
+        )]
+        pub struct OpenGitHubIssue();
+
+        #[derive(Debug)]
+        pub struct HexDump(pub Vec<u8>);
+
+        impl std::fmt::Display for HexDump {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                use pretty_hex::PrettyHex;
+
+                write!(f, "{:?}", self.0.hex_dump())
+            }
+        }
+    }
+
     #[derive(Debug, derive_more::Display)]
     pub enum NetworkProtocol {
         #[display(fmt = "TCP")]
         Tcp,
         #[display(fmt = "UDP")]
         Udp,
-        #[display(fmt = "RCON")]
-        Rcon,
-        #[display(fmt = "HTTP")]
-        Http,
-        #[display(fmt = "HTTPS")]
-        Https,
     }
 }
