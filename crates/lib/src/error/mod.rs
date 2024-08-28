@@ -1,5 +1,7 @@
-pub(crate) use error_stack::Report;
+pub(crate) use error_stack::{Report, ResultExt};
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
+
+pub(crate) mod diagnostic;
 
 macro_rules! define_error {
     (
@@ -95,18 +97,6 @@ define_error_kind! {
         /// This error occurs when there is an attempt to read beyond the available data in the buffer.
         #[cfg(feature = "_BUFFER")]
         UnderflowError {
-            /// The position in the buffer where the underflow occurred.
-            ///
-            /// This is only available in debug builds.
-            #[cfg(debug_assertions)]
-            _pos: usize,
-
-            /// A clone of the raw buffer.
-            ///
-            /// This is only available in debug builds.
-            #[cfg(debug_assertions)]
-            _raw: Vec<u8>,
-
             /// The number of bytes that were attempted to be read.
             attempted: usize,
 
@@ -127,7 +117,7 @@ define_error_kind! {
         /// This can be due to a variety of reasons, the OS should propagate the true cause.
         ConnectionError {
             /// The network protocol that was used to establish the connection.
-            _protocol: _metadata::NetworkProtocol,
+            _protocol: diagnostic::metadata::NetworkProtocol,
 
             /// The address of the remote server that the connection was attempted to.
             addr: std::net::SocketAddr
@@ -140,7 +130,7 @@ define_error_kind! {
         /// This error occurs when data cannot be read from a network stream.
         ReadError {
             /// The network protocol that was used.
-            _protocol: _metadata::NetworkProtocol,
+            _protocol: diagnostic::metadata::NetworkProtocol,
 
             /// The address of the remote server that the read operation was attempted to.
             addr: std::net::SocketAddr
@@ -153,7 +143,7 @@ define_error_kind! {
         /// This error occurs when data cannot be written to a network stream.
         WriteError {
             /// The network protocol that was used.
-            _protocol: _metadata::NetworkProtocol,
+            _protocol: diagnostic::metadata::NetworkProtocol,
 
             /// The address of the remote server that the write operation was attempted to.
             addr: std::net::SocketAddr
@@ -167,11 +157,10 @@ define_error_kind! {
         #[cfg(not(feature = "client_std"))]
         TimeoutElapsedError {
             /// The network protocol that was used.
-            _protocol: _metadata::NetworkProtocol,
+            _protocol: diagnostic::metadata::NetworkProtocol,
 
             /// The address of the remote server that the operation was attempted to.
             addr: std::net::SocketAddr
-
         }(
             "[GameDig]::[{_protocol}::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
         ),
@@ -185,54 +174,12 @@ define_error_kind! {
         #[cfg(feature = "client_std")]
         SetTimeoutError {
             /// The network protocol that was used.
-            _protocol: _metadata::NetworkProtocol,
+            _protocol: diagnostic::metadata::NetworkProtocol,
 
             /// The address of the remote server that the timeout was attempted to be set on.
             addr: std::net::SocketAddr
         }(
             "[GameDig]::[{_protocol}::SetTimeoutError]: Failed to set timeout"
         )
-    }
-}
-
-pub mod _metadata {
-
-    pub mod diagnostics {
-
-        #[derive(Debug, derive_more::Display)]
-        #[display(fmt = "Failure Reason: {}", self.0)]
-        pub struct FailureReason(&'static str);
-
-        #[derive(Debug, derive_more::Display)]
-        #[display(fmt = "Recommendation: {}", self.0)]
-        pub struct Recommendation(&'static str);
-
-        #[derive(Debug, derive_more::Display)]
-        #[display(
-            fmt = "Uh oh! Looks like you've encountered a possible bug in GameDig.\n\
-                   Please open an issue on GitHub with the error you've encountered and the steps to reproduce it.\n\
-                   https://github.com/gamedig/rust-gamedig/issues \n\
-                   Thank you for helping us improve GameDig!"
-        )]
-        pub struct OpenGitHubIssue();
-
-        #[derive(Debug)]
-        pub struct HexDump(pub Vec<u8>);
-
-        impl std::fmt::Display for HexDump {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                use pretty_hex::PrettyHex;
-
-                write!(f, "{:?}", self.0.hex_dump())
-            }
-        }
-    }
-
-    #[derive(Debug, derive_more::Display)]
-    pub enum NetworkProtocol {
-        #[display(fmt = "TCP")]
-        Tcp,
-        #[display(fmt = "UDP")]
-        Udp,
     }
 }
