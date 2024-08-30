@@ -1,2 +1,2 @@
 #[cfg(feature = "_BUFFER")]
-pub(crate) mod buffer;
+pub(crate) mod buf;

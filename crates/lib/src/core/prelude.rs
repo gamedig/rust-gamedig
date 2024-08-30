@@ -1,7 +1,6 @@
-
 #[allow(unused_imports)]
 #[cfg(feature = "_BUFFER")]
-pub(crate) use super::io::buffer::Buffer;
+pub(crate) use super::io::buf::Buffer;
 
 #[allow(unused_imports)]
 #[cfg(feature = "_TCP")]
