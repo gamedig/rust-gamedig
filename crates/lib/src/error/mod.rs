@@ -1,4 +1,4 @@
-pub(crate) use error_stack::{Report, ResultExt};
+pub(crate) use error_stack::Report;
 pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
 
 pub(crate) mod diagnostic;

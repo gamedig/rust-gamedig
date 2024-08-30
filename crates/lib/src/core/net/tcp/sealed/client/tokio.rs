@@ -6,7 +6,6 @@ use crate::{
         NetworkError,
         Report,
         Result,
-        ResultExt,
     },
     settings::Timeout,
 };
@@ -133,16 +132,17 @@ impl super::Tcp for TokioTcpClient {
 
             // Error during the read operation
             Ok(Err(e)) => {
-                return Err(Report::from(e).change_context(
-                    NetworkError::ReadError {
-                        _protocol: NetworkProtocol::Tcp,
-                        addr: self.addr,
-                    }
-                    .into(),
-                ))
-                .attach(FailureReason::new(
-                    "An underlying IO error occurred during socket read operation.",
-                ));
+                return Err(Report::from(e)
+                    .change_context(
+                        NetworkError::ReadError {
+                            _protocol: NetworkProtocol::Tcp,
+                            addr: self.addr,
+                        }
+                        .into(),
+                    )
+                    .attach_printable(FailureReason::new(
+                        "An underlying IO error occurred during socket read operation.",
+                    )));
             }
 
             // Read operation timed out
@@ -155,7 +155,7 @@ impl super::Tcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach(FailureReason::new(
+                    .attach_printable(FailureReason::new(
                         "The read operation had elapsed the timeout.",
                     ));
 
@@ -192,16 +192,17 @@ impl super::Tcp for TokioTcpClient {
 
             // Error during the write operation
             Ok(Err(e)) => {
-                Err(Report::from(e).change_context(
-                    NetworkError::WriteError {
-                        _protocol: NetworkProtocol::Tcp,
-                        addr: self.addr,
-                    }
-                    .into(),
-                ))
-                .attach_printable(FailureReason::new(
-                    "An underlying IO error occurred during socket write operation.",
-                ))
+                Err(Report::from(e)
+                    .change_context(
+                        NetworkError::WriteError {
+                            _protocol: NetworkProtocol::Tcp,
+                            addr: self.addr,
+                        }
+                        .into(),
+                    )
+                    .attach_printable(FailureReason::new(
+                        "An underlying IO error occurred during socket write operation.",
+                    )))
             }
 
             // Write operation timed out
@@ -214,13 +215,13 @@ impl super::Tcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach(FailureReason::new(
+                    .attach_printable(FailureReason::new(
                         "The write operation had elapsed the timeout.",
                     ));
 
                 // Needs to be chained as attaching moves the report
                 let report = if self.write_timeout < Timeout::DEFAULT_DURATION {
-                    report.attach(Recommendation::new(
+                    report.attach_printable(Recommendation::new(
                         "Possibly increase the write timeout duration as the current duration set \
                          is less than the default.",
                     ))
