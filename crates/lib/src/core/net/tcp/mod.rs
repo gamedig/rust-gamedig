@@ -3,7 +3,7 @@ mod sealed;
 use sealed::client::Tcp;
 use std::net::SocketAddr;
 
-use crate::{error::Result, settings::Timeout};
+use crate::{core::prelude::Buffer, error::Result, settings::Timeout};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -31,18 +31,18 @@ impl TcpClient {
         })
     }
 
-    /// Reads data from the TCP stream.
+    /// Reads data from the TCP stream into a buffer.
     ///
     /// # Arguments
     ///
     /// * `size` - An optional size parameter indicating the number of bytes to
     ///   read. If `None`, it will default to reading the maximum packet size.
     #[allow(dead_code)]
-    pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
+    pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Buffer> {
         #[cfg(feature = "attribute_log")]
         log::trace!("TCP::<Client>::Read: Reading data with size: {size:?}");
 
-        self.client.inner.read(size).await
+        Ok(Buffer::new(self.client.inner.read(size).await?))
     }
 
     /// Writes data to the TCP stream.
