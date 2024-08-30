@@ -37,12 +37,6 @@ impl TcpClient {
     ///
     /// * `size` - An optional size parameter indicating the number of bytes to
     ///   read. If `None`, it will default to reading the maximum packet size.
-    ///
-    /// # Notes
-    ///
-    /// If the capacity of the sealed vec exceeds 120% of the size of the data
-    /// received, the vec may be reallocated as it will be shrunk to fit
-    /// the data size. This behavior is intended to optimize memory usage.
     #[allow(dead_code)]
     pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
         #[cfg(feature = "attribute_log")]
