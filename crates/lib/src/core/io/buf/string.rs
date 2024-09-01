@@ -51,7 +51,10 @@ impl super::Buffer {
             .map_or(data.len(), |pos| pos * 2);
 
         let mut vec = Vec::with_capacity(end_pos / 2);
-        vec.extend((0 .. end_pos / 2).map(|_| read_u16_e(self).unwrap()));
+
+        for _ in 0 .. end_pos / 2 {
+            vec.push(read_u16_e(self).unwrap());
+        }
 
         let s = String::from_utf16(&vec).unwrap();
 
