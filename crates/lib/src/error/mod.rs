@@ -104,7 +104,16 @@ define_error_kind! {
             available: usize
         }(
             "[GameDig]::[IO::UnderflowError]: Attempted to read {attempted} bytes, but only {available} bytes available."
+        ),
+
+        /// String Conversion Error
+        ///
+        /// This error occurs when a string cannot be converted from a byte slice.
+        #[cfg(feature = "_BUFFER")]
+        StringConversionError {} (
+            "[GameDig]::[IO::StringConversionError]: Failed to convert string"
         )
+        
     }
 
     /// Network Error
