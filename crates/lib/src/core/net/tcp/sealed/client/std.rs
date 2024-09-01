@@ -87,7 +87,7 @@ impl super::Tcp for StdTcpClient {
         }
     }
 
-    fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
+    fn read(&mut self, size: Option<usize>) -> Result<(Vec<u8>, usize)> {
         #[cfg(feature = "attribute_log")]
         log::trace!(
             "TCP::<Std>::Read: Reading data from {} with size: {:?}",
@@ -116,7 +116,7 @@ impl super::Tcp for StdTcpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok(vec)
+                Ok((vec, len))
             }
             Err(e) => {
                 Err(Report::from(e)

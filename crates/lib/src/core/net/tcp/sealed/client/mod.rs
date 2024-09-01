@@ -17,7 +17,7 @@ pub(crate) trait Tcp {
     async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self>
     where Self: Sized;
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>>;
+    async fn read(&mut self, size: Option<usize>) -> Result<(Vec<u8>, usize)>;
     async fn write(&mut self, data: &[u8]) -> Result<()>;
 }
 

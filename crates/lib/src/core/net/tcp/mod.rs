@@ -42,7 +42,7 @@ impl TcpClient {
         #[cfg(feature = "attribute_log")]
         log::trace!("TCP::<Client>::Read: Reading data with size: {size:?}");
 
-        Ok(Buffer::new(self.client.inner.read(size).await?))
+        Ok(Buffer::from_socket(self.client.inner.read(size).await?))
     }
 
     /// Writes data to the TCP stream.

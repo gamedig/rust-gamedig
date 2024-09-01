@@ -92,7 +92,7 @@ impl super::Tcp for TokioTcpClient {
         })
     }
 
-    async fn read(&mut self, size: Option<usize>) -> Result<Vec<u8>> {
+    async fn read(&mut self, size: Option<usize>) -> Result<(Vec<u8>, usize)> {
         #[cfg(feature = "attribute_log")]
         log::trace!(
             "TCP::<Tokio>::Read: Reading data from {} with size: {size:?}",
@@ -127,7 +127,7 @@ impl super::Tcp for TokioTcpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok(vec)
+                Ok((vec, len))
             }
 
             // Error during the read operation
