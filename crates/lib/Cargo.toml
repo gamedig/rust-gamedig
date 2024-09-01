@@ -29,6 +29,7 @@ error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
 log = { version = "0.4.22", optional = true }
+encoding_rs = { version = "0.8.34", optional = true }
 async-trait = { version = "0.1.51", optional = true }
 tokio = { version = "1.37.0", features = ["full"], optional = true }
 
@@ -39,6 +40,7 @@ default = ["client_tokio", "all"]
 # Internal Features (Prefix: _<CAPS>)
 ## I/O
 _BUFFER = []
+_BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
 _TCP = ["_BUFFER"]
@@ -71,7 +73,7 @@ quake_2 = ["_UDP"]
 quake_3 = ["_UDP"]
 teamspeak_2 = ["_TCP"]
 teamspeak_3 = ["_TCP"]
-unreal_2 = ["_UDP"]
+unreal_2 = ["_UDP", "_BUFFER_READ_LATIN_1"]
 valve = ["_UDP"]
 valve_gold_src = ["_UDP"]
 
