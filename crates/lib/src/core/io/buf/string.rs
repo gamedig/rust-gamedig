@@ -1,6 +1,11 @@
-use crate::error::Result;
+use crate::error::{
+    diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
+    ErrorKind,
+    IoError,
+    Report,
+    Result,
+};
 
-// TODO: handle errors
 impl super::Buffer {
     /// Reads a UTF-8 string from the buffer until a delimiter is encountered.
     ///
@@ -17,23 +22,40 @@ impl super::Buffer {
     ///     replacing invalid UTF-8 sequences with `�`.
     pub(crate) fn read_string_utf8(
         &mut self,
-        delimiter: Option<u8>,
+        delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
-        let slice = &self.inner[self.pos ..];
-        let delimiter = delimiter.unwrap_or(0x00);
+        let delimiter = delimiter.unwrap_or([0x00]);
 
-        let end_pos = slice
+        // Using self.len to represent the length of valid data in the buffer
+        let end_pos = self.inner[self.pos .. self.len]
             .iter()
-            .position(|&b| b == delimiter)
-            .unwrap_or(slice.len());
+            .position(|&b| b == delimiter[0])
+            .unwrap_or(self.len - self.pos);
 
         let s = match strict {
-            true => String::from_utf8(slice[.. end_pos].to_vec()).unwrap(),
-            false => String::from_utf8_lossy(&slice[.. end_pos]).into_owned(),
+            false => {
+                String::from_utf8_lossy(&self.inner[self.pos .. self.pos + end_pos]).into_owned()
+            }
+            true => {
+                String::from_utf8(self.inner[self.pos .. self.pos + end_pos].to_vec()).map_err(
+                    |e| {
+                        Report::from(e)
+                            .change_context(IoError::StringConversionError {}.into())
+                            .attach_printable(FailureReason::new(
+                                "Invalid UTF-8 sequence found during string read.",
+                            ))
+                            .attach_printable(HexDump::new(
+                                format!("Current buffer state (pos: {})", self.pos),
+                                self.inner.clone(),
+                            ))
+                            .attach_printable(OpenGitHubIssue())
+                    },
+                )?
+            }
         };
 
-        self.pos += end_pos + (if end_pos < slice.len() { 1 } else { 0 });
+        self.pos += end_pos + (if self.pos + end_pos < self.len { 1 } else { 0 });
 
         Ok(s)
     }
@@ -54,9 +76,37 @@ impl super::Buffer {
 
         let end_pos = self.pos + len;
 
+        if end_pos > self.len {
+            return Err(Report::new(ErrorKind::from(IoError::UnderflowError {
+                attempted: len,
+                available: self.len - self.pos,
+            }))
+            .attach_printable(FailureReason::new(
+                "Attempted to read more bytes than available in the buffer.",
+            ))
+            .attach_printable(HexDump::new(
+                format!("Current buffer state (pos: {})", self.pos),
+                self.inner.clone(),
+            ))
+            .attach_printable(OpenGitHubIssue()));
+        }
+
         let s = match strict {
-            true => String::from_utf8(self.inner[self.pos .. end_pos].to_vec()).unwrap(),
             false => String::from_utf8_lossy(&self.inner[self.pos .. end_pos]).into_owned(),
+            true => {
+                String::from_utf8(self.inner[self.pos .. end_pos].to_vec()).map_err(|e| {
+                    Report::from(e)
+                        .change_context(IoError::StringConversionError {}.into())
+                        .attach_printable(FailureReason::new(
+                            "Invalid UTF-8 sequence found during string read.",
+                        ))
+                        .attach_printable(HexDump::new(
+                            format!("Current buffer state (pos: {})", self.pos),
+                            self.inner.clone(),
+                        ))
+                        .attach_printable(OpenGitHubIssue())
+                })?
+            }
         };
 
         self.pos = end_pos;
@@ -73,13 +123,12 @@ impl super::Buffer {
     where
         F: Fn(&mut Self) -> Result<u16>,
     {
-        let data = &self.inner[self.pos ..];
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
-        let end_pos = data
+        let end_pos = self.inner[self.pos .. self.len]
             .chunks_exact(2)
             .position(|chunk| chunk == delimiter)
-            .map_or(data.len(), |pos| pos * 2);
+            .map_or(self.len - self.pos, |pos| pos * 2);
 
         let mut vec = Vec::with_capacity(end_pos / 2);
         vec.extend(
@@ -89,8 +138,21 @@ impl super::Buffer {
         );
 
         let s = match strict {
-            true => String::from_utf16(&vec).unwrap(),
             false => String::from_utf16_lossy(&vec),
+            true => {
+                String::from_utf16(&vec).map_err(|e| {
+                    Report::from(e)
+                        .change_context(IoError::StringConversionError {}.into())
+                        .attach_printable(FailureReason::new(
+                            "Invalid UTF-16 sequence found during string read.",
+                        ))
+                        .attach_printable(HexDump::new(
+                            format!("Current buffer state (pos: {})", self.pos),
+                            self.inner.clone(),
+                        ))
+                        .attach_printable(OpenGitHubIssue())
+                })?
+            }
         };
 
         self.pos += end_pos + delimiter.len();
@@ -178,21 +240,31 @@ impl super::Buffer {
     ///   string. If `None` is provided, the default delimiter is `0x00`.
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
     pub(crate) fn read_string_latin1(&mut self, delimiter: Option<u8>) -> Result<String> {
-        let slice = &self.inner[self.pos ..];
         let delimiter = delimiter.unwrap_or(0x00);
 
-        let end_pos = slice
+        let end_pos = self.inner[self.pos .. self.len]
             .iter()
             .position(|&b| b == delimiter)
-            .unwrap_or(slice.len());
+            .unwrap_or(self.len - self.pos);
 
-        let (decoded_string, _, had_errors) = encoding_rs::WINDOWS_1252.decode(&slice[.. end_pos]);
+        let (decoded_string, _, had_errors) =
+            encoding_rs::WINDOWS_1252.decode(&self.inner[self.pos .. self.pos + end_pos]);
 
         if had_errors {
-            unimplemented!("Error handling");
+            return Err(
+                Report::new(ErrorKind::from(IoError::StringConversionError {}))
+                    .attach_printable(FailureReason::new(
+                        "Invalid Latin-1 sequence found during string read.",
+                    ))
+                    .attach_printable(HexDump::new(
+                        format!("Current buffer state (pos: {})", self.pos),
+                        self.inner.clone(),
+                    ))
+                    .attach_printable(OpenGitHubIssue()),
+            );
         }
 
-        self.pos += end_pos + (if end_pos < slice.len() { 1 } else { 0 });
+        self.pos += end_pos + (if self.pos + end_pos < self.len { 1 } else { 0 });
 
         Ok(decoded_string.into_owned())
     }
