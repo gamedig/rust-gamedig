@@ -64,7 +64,7 @@ attribute_extended_derive = []
 
 ## Protocols
 ### Query
-gamespy_1 = ["_UDP"]
+gamespy_1 = ["_UDP", "_BUFFER_READ_LATIN_1"]
 gamespy_2 = ["_UDP"]
 gamespy_3 = ["_UDP"]
 mumble = ["_TCP"]
