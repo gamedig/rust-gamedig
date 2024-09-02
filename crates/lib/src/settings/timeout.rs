@@ -5,7 +5,9 @@ use std::time::Duration;
 ///
 /// This struct provides customization options for connection, read, and write
 /// timeouts, as well as a retry count. Default values are also provided.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq)]
+#[cfg_attr(feature = "attribute_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "attribute_extended_derive", derive(Clone, Copy, Eq, PartialOrd, Ord, Hash))]
 pub struct Timeout {
     /// Duration to establish a connection.
     pub connect: Duration,
