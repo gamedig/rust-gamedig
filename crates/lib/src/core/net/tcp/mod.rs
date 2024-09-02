@@ -3,7 +3,7 @@ mod sealed;
 use sealed::client::Tcp;
 use std::net::SocketAddr;
 
-use crate::{core::prelude::Buffer, error::Result, settings::Timeout};
+use crate::{core::Buffer, error::Result, settings::Timeout};
 
 #[allow(dead_code)]
 #[derive(Debug)]
