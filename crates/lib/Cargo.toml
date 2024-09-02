@@ -18,7 +18,6 @@ categories = [
     "parser-implementations",
 ]
 
-
 [dependencies]
 # Required Dependencies
 thiserror = "1.0.61"
@@ -29,14 +28,20 @@ error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
 log = { version = "0.4.22", optional = true }
-ureq = { version = "2.10.1", optional = true }
-reqwest = { version = "0.12.7", optional = true }
 native-tls = { version = "0.2.12", optional = true }
 serde_json = { version = "1.0.127", optional = true }
 encoding_rs = { version = "0.8.34", optional = true }
 async-trait = { version = "0.1.51", optional = true }
 tokio = { version = "1.37.0", features = ["full"], optional = true }
-
+serde = { version = "1.0.209", features = ["derive"], optional = true }
+ureq = { version = "2.10.1", default-features = false, features = [
+    "json",
+    "socks-proxy",
+], optional = true }
+reqwest = { version = "0.12.7", default-features = false, features = [
+    "json",
+    "socks",
+], optional = true }
 
 [features]
 default = ["client_tokio", "http_tokio", "tls_tokio_default", "all"]
@@ -52,7 +57,7 @@ _UDP = ["_BUFFER"]
 _HTTP = ["dep:serde_json"]
 _TLS = ["_HTTP"]
 
-# Runtime Client Features (Prefix: client_)
+# Runtime Client Features (Prefix: client_<RUNTIME>)
 #
 # Required: Only 1 runtime client type can be enabled at a time
 #
@@ -60,7 +65,7 @@ _TLS = ["_HTTP"]
 client_std = ["maybe-async/is_sync"]
 client_tokio = ["dep:async-trait", "dep:tokio"]
 
-# HTTP Client Features (Prefix: http_)
+# HTTP Client Features (Prefix: http_<RUNTIME>)
 #
 # Required: Only 1 http client type can be enabled at a time
 #
@@ -78,17 +83,17 @@ client_tokio = ["dep:async-trait", "dep:tokio"]
 http_std = ["dep:ureq"]
 http_tokio = ["dep:reqwest"]
 
-# TLS Features (Prefix: tls_)
+# TLS Features (Prefix: tls_<RUNTIME>_<FEATURE>)
 #
 # Required: 1 must be enabled if a feature with _TLS is enabled
 #
 # Required: TLS feature must match the runtime and http client
 #
 # Note: These requirements are protected by compile time checks
+tls_std_default = ["ureq/tls"]
 tls_std_rustls = ["ureq/tls"]
 tls_std_native = ["ureq/native-tls", "dep:native-tls"]
 tls_std_rustls_native_certs = ["ureq/tls", "ureq/native-certs"]
-
 tls_tokio_default = ["reqwest/default-tls"]
 tls_tokio_rustls = ["reqwest/rustls-tls"]
 tls_tokio_native = ["reqwest/native-tls"]
@@ -97,7 +102,7 @@ tls_tokio_native_vendored = ["reqwest/native-tls-vendored"]
 # Library Features
 ## Attributes (Prefix: attribute_)
 attribute_log = ["dep:log"]
-attribute_serde = []
+attribute_serde = ["dep:serde"]
 attribute_adapters = []
 attribute_extended_derive = []
 

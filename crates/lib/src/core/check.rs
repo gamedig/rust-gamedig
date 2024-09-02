@@ -68,6 +68,7 @@ compile_error!(
 // (`client_std` or `client_tokio`).
 #[cfg(not(any(
     // Correct combinations when _TLS is enabled
+    all(feature = "_TLS", feature = "client_std", feature = "http_std", feature = "tls_std_default", not(any(feature = "tls_std_native", feature = "tls_std_rustls_native_certs", feature = "client_tokio", feature = "http_tokio"))),
     all(feature = "_TLS", feature = "client_std", feature = "http_std", feature = "tls_std_rustls", not(any(feature = "tls_std_native", feature = "tls_std_rustls_native_certs", feature = "client_tokio", feature = "http_tokio"))),
     all(feature = "_TLS", feature = "client_std", feature = "http_std", feature = "tls_std_native", not(any(feature = "tls_std_rustls", feature = "tls_std_rustls_native_certs", feature = "client_tokio", feature = "http_tokio"))),
     all(feature = "_TLS", feature = "client_std", feature = "http_std", feature = "tls_std_rustls_native_certs", not(any(feature = "tls_std_rustls", feature = "tls_std_native", feature = "client_tokio", feature = "http_tokio"))),
