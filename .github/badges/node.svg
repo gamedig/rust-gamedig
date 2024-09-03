@@ -1,5 +1,5 @@
-<svg width="181.6" height="20" viewBox="0 0 1816 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Node game coverage: 23.91%">
-  <title>Node game coverage: 23.91%</title>
+<svg width="181.6" height="20" viewBox="0 0 1816 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Node game coverage: 23.77%">
+  <title>Node game coverage: 23.77%</title>
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
     <stop offset="1" stop-opacity=".1"/>
@@ -13,8 +13,8 @@
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
     <text x="60" y="148" textLength="1176" fill="#000" opacity="0.25">Node game coverage</text>
     <text x="50" y="138" textLength="1176">Node game coverage</text>
-    <text x="1331" y="148" textLength="440" fill="#000" opacity="0.25">23.91%</text>
-    <text x="1321" y="138" textLength="440">23.91%</text>
+    <text x="1331" y="148" textLength="440" fill="#000" opacity="0.25">23.77%</text>
+    <text x="1321" y="138" textLength="440">23.77%</text>
   </g>
   
 </svg>
