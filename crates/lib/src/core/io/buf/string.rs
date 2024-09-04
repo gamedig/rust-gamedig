@@ -20,6 +20,7 @@ impl super::Buffer {
     ///
     ///   - `false`: Converts the string using `String::from_utf8_lossy`,
     ///     replacing invalid UTF-8 sequences with `�`.
+    #[allow(dead_code)]
     pub(crate) fn read_string_utf8(
         &mut self,
         delimiter: Option<[u8; 1]>,
@@ -70,6 +71,7 @@ impl super::Buffer {
     ///
     ///   - `false`: Converts the string using `String::from_utf8_lossy`,
     ///     replacing invalid UTF-8 sequences with `�`.
+    #[allow(dead_code)]
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
         let len = self.inner[self.pos] as usize;
         self.pos += 1;
@@ -174,6 +176,7 @@ impl super::Buffer {
     ///
     ///   - `false`: Converts the string using `String::from_utf16_lossy`,
     ///     replacing invalid UTF-16 sequences with `�`.
+    #[allow(dead_code)]
     pub(crate) fn read_string_utf16_be(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -196,6 +199,7 @@ impl super::Buffer {
     ///
     ///   - `false`: Converts the string using `String::from_utf16_lossy`,
     ///     replacing invalid UTF-16 sequences with `�`.
+    #[allow(dead_code)]
     pub(crate) fn read_string_utf16_le(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -222,6 +226,7 @@ impl super::Buffer {
     ///
     ///   - `false`: Converts the string using lossy UTF-16 decoding, replacing
     ///     invalid sequences with `�`.
+    #[allow(dead_code)]
     pub(crate) fn read_string_ucs2(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -238,6 +243,7 @@ impl super::Buffer {
     /// # Parameters
     /// - `delimiter`: An optional byte value that signifies the end of the
     ///   string. If `None` is provided, the default delimiter is `0x00`.
+    #[allow(dead_code)]
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
     pub(crate) fn read_string_latin1(&mut self, delimiter: Option<u8>) -> Result<String> {
         let delimiter = delimiter.unwrap_or(0x00);
