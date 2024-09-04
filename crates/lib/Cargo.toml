@@ -44,7 +44,7 @@ reqwest = { version = "0.12.7", default-features = false, features = [
 ], optional = true }
 
 [features]
-default = ["client_tokio", "http_tokio", "tls_tokio_default", "all"]
+default = ["default_client_tokio"]
 
 # Internal Features (Prefix: _<CAPS>)
 ## I/O
@@ -56,6 +56,20 @@ _TCP = ["_BUFFER"]
 _UDP = ["_BUFFER"]
 _HTTP = ["dep:serde_json"]
 _TLS = ["_HTTP"]
+
+# Default Features (Prefix: default_)
+#
+# Util features for users to enable all features with a runtime
+# without having to specify each feature individually
+#
+# Required: Only 1 can be enabled at a time as it enables rt features
+default_client_std = ["client_std", "http_std", "tls_std_default", "all"]
+default_client_tokio = [
+    "client_tokio",
+    "http_tokio",
+    "tls_tokio_default",
+    "all",
+]
 
 # Runtime Client Features (Prefix: client_<RUNTIME>)
 #
