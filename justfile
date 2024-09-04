@@ -8,6 +8,10 @@
 default:
     just -l
 
+# Lint the entire workspace with default features
+lint:
+    cargo clippy --workspace --all-targets -- -D warnings
+
 # Format the entire workspace
 format:
     cargo +nightly fmt --all
@@ -39,3 +43,10 @@ test:
 test_crate crate_name_from_toml:
     cargo test --package {{crate_name_from_toml}}
 
+# Lint library with the std default client feature
+lint_lib_std:
+    cargo clippy --package gamedig --lib --features default_client_std --no-default-features -- -D warnings
+
+# Lint library with the tokio default client feature
+lint_lib_tokio:
+    cargo clippy --package gamedig --lib --features default_client_tokio --no-default-features -- -D warnings
