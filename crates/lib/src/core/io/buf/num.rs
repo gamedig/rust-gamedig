@@ -9,7 +9,7 @@ use crate::error::{
 impl super::Buffer {
     fn _get_inner_slice<T, const N: usize, F>(&mut self, convert: F) -> Result<T>
     where F: FnOnce([u8; N]) -> T {
-        let available = self.inner.len().saturating_sub(self.pos);
+        let available = self.len.saturating_sub(self.pos);
 
         if N > available {
             // Need to use `from` instead of `into` as compiler can't infer the type
