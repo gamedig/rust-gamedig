@@ -149,7 +149,8 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
         if self.cursor > self.data_length() {
             return Err(PacketUnderflow.context(format!(
                 "Cursor position {} is out of bounds when reading string. Buffer length: {}",
-                self.cursor, self.data_length()
+                self.cursor,
+                self.data_length()
             )));
         }
 
