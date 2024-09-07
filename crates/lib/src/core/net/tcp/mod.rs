@@ -1,7 +1,8 @@
+use std::net::SocketAddr;
+
 mod sealed;
 
 use sealed::client::Tcp;
-use std::net::SocketAddr;
 
 use crate::{core::Buffer, error::Result, settings::Timeout};
 
@@ -42,7 +43,7 @@ impl TcpClient {
         #[cfg(feature = "attribute_log")]
         log::trace!("TCP::<Client>::Read: Reading data with size: {size:?}");
 
-        Ok(Buffer::from_socket(self.client.inner.read(size).await?))
+        Ok(Buffer::from(self.client.inner.read(size).await?))
     }
 
     /// Writes data to the TCP stream.

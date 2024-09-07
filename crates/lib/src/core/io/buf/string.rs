@@ -26,6 +26,8 @@ impl super::Buffer {
         delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
+        self.check_range(self.pos .. self.len)?;
+
         let delimiter = delimiter.unwrap_or([0x00]);
 
         // Using self.len to represent the length of valid data in the buffer
@@ -73,14 +75,10 @@ impl super::Buffer {
     ///     replacing invalid UTF-8 sequences with `�`.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
-        let len = self.inner[self.pos] as usize;
-        self.pos += 1;
-
-        let end_pos = self.pos + len;
-
-        if end_pos > self.len {
+        // Cant use check range here but needs to be checked
+        if self.pos > self.len {
             return Err(Report::new(ErrorKind::from(IoError::UnderflowError {
-                attempted: len,
+                attempted: 1,
                 available: self.len - self.pos,
             }))
             .attach_printable(FailureReason::new(
@@ -92,6 +90,13 @@ impl super::Buffer {
             ))
             .attach_printable(OpenGitHubIssue()));
         }
+
+        let len = self.inner[self.pos] as usize;
+        self.pos += 1;
+
+        let end_pos = self.pos + len;
+
+        self.check_range(self.pos .. end_pos)?;
 
         let s = match strict {
             false => String::from_utf8_lossy(&self.inner[self.pos .. end_pos]).into_owned(),
@@ -126,6 +131,8 @@ impl super::Buffer {
         F: Fn(&mut Self) -> Result<u16>,
     {
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
+
+        self.check_range(self.pos .. self.len)?;
 
         let end_pos = self.inner[self.pos .. self.len]
             .chunks_exact(2)
@@ -247,6 +254,8 @@ impl super::Buffer {
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
     pub(crate) fn read_string_latin1(&mut self, delimiter: Option<u8>) -> Result<String> {
         let delimiter = delimiter.unwrap_or(0x00);
+
+        self.check_range(self.pos .. self.len)?;
 
         let end_pos = self.inner[self.pos .. self.len]
             .iter()

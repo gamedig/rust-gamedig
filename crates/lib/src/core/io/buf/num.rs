@@ -1,31 +1,9 @@
-use crate::error::{
-    diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
-    ErrorKind,
-    IoError,
-    Report,
-    Result,
-};
+use crate::error::Result;
 
 impl super::Buffer {
     fn _get_inner_slice<T, const N: usize, F>(&mut self, convert: F) -> Result<T>
     where F: FnOnce([u8; N]) -> T {
-        let available = self.len.saturating_sub(self.pos);
-
-        if N > available {
-            // Need to use `from` instead of `into` as compiler can't infer the type
-            return Err(Report::new(ErrorKind::from(IoError::UnderflowError {
-                attempted: N,
-                available,
-            }))
-            .attach_printable(FailureReason::new(
-                "Attempted to read more bytes than available in the buffer.",
-            ))
-            .attach_printable(HexDump::new(
-                format!("Current buffer state (pos: {})", self.pos),
-                self.inner.clone(),
-            ))
-            .attach_printable(OpenGitHubIssue()));
-        }
+        self.check_range(self.pos .. self.pos + N)?;
 
         let mut x = [0u8; N];
         x.copy_from_slice(&self.inner[self.pos .. self.pos + N]);
