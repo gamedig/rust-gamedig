@@ -145,6 +145,15 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     ///
     /// Returns a `BufferError` if there is an error decoding the string.
     pub fn read_string<D: StringDecoder>(&mut self, until: Option<D::Delimiter>) -> GDResult<String> {
+        // Check if the cursor is out of bounds.
+        if self.cursor > self.data_length() {
+            return Err(PacketUnderflow.context(format!(
+                "Cursor position {} is out of bounds when reading string. Buffer length: {}",
+                self.cursor,
+                self.data_length()
+            )));
+        }
+
         // Slice the data array from the current cursor position to the end.
         let data_slice = &self.data[self.cursor ..];
 
