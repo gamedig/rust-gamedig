@@ -33,7 +33,7 @@ impl Buffer {
         let start = match range.start_bound() {
             Bound::Included(&start) => start,
             Bound::Excluded(&start) => start + 1,
-            Bound::Unbounded => 0,
+            Bound::Unbounded => self.pos,
         };
 
         let end = match range.end_bound() {

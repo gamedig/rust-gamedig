@@ -26,7 +26,7 @@ impl super::Buffer {
         delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
-        self.check_range(self.pos .. self.len)?;
+        self.check_range(..)?;
 
         let delimiter = delimiter.unwrap_or([0x00]);
 
@@ -58,7 +58,7 @@ impl super::Buffer {
             }
         };
 
-        self.pos += end_pos + (if self.pos + end_pos < self.len { 1 } else { 0 });
+        self.pos += end_pos + delimiter.len();
 
         Ok(s)
     }
@@ -96,7 +96,7 @@ impl super::Buffer {
 
         let end_pos = self.pos + len;
 
-        self.check_range(self.pos .. end_pos)?;
+        self.check_range(.. end_pos)?;
 
         let s = match strict {
             false => String::from_utf8_lossy(&self.inner[self.pos .. end_pos]).into_owned(),
@@ -132,7 +132,7 @@ impl super::Buffer {
     {
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
-        self.check_range(self.pos .. self.len)?;
+        self.check_range(..)?;
 
         let end_pos = self.inner[self.pos .. self.len]
             .chunks_exact(2)
@@ -140,6 +140,7 @@ impl super::Buffer {
             .map_or(self.len - self.pos, |pos| pos * 2);
 
         let mut vec = Vec::with_capacity(end_pos / 2);
+
         vec.extend(
             (0 .. end_pos / 2)
                 .map(|_| read_u16_e(self))
@@ -252,20 +253,24 @@ impl super::Buffer {
     ///   string. If `None` is provided, the default delimiter is `0x00`.
     #[allow(dead_code)]
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
-    pub(crate) fn read_string_latin1(&mut self, delimiter: Option<u8>) -> Result<String> {
-        let delimiter = delimiter.unwrap_or(0x00);
+    pub(crate) fn read_string_latin1(
+        &mut self,
+        delimiter: Option<[u8; 1]>,
+        strict: bool,
+    ) -> Result<String> {
+        let delimiter = delimiter.unwrap_or([0x00]);
 
-        self.check_range(self.pos .. self.len)?;
+        self.check_range(..)?;
 
         let end_pos = self.inner[self.pos .. self.len]
             .iter()
-            .position(|&b| b == delimiter)
+            .position(|&b| b == delimiter[0])
             .unwrap_or(self.len - self.pos);
 
         let (decoded_string, _, had_errors) =
             encoding_rs::WINDOWS_1252.decode(&self.inner[self.pos .. self.pos + end_pos]);
 
-        if had_errors {
+        if had_errors && strict {
             return Err(
                 Report::new(ErrorKind::from(IoError::StringConversionError {}))
                     .attach_printable(FailureReason::new(
@@ -279,7 +284,7 @@ impl super::Buffer {
             );
         }
 
-        self.pos += end_pos + (if self.pos + end_pos < self.len { 1 } else { 0 });
+        self.pos += end_pos + delimiter.len();
 
         Ok(decoded_string.into_owned())
     }
