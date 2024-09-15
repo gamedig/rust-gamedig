@@ -1,13 +1,10 @@
 [workspace]
-members = [
-    "crates/cli",
-    "crates/gui",
-    "crates/lib",
-]
+members = ["crates/lib", "crates/cli", "crates/tools/net_replay"]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"
 
+# Default Release Profile
 [profile.release]
 opt-level = 3
 debug = false
