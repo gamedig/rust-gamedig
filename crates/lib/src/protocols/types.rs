@@ -63,6 +63,8 @@ pub enum GenericResponse<'a> {
     Savage2(&'a crate::games::savage2::Response),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Response),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Response),
 }
 
 /// All player types
@@ -84,6 +86,8 @@ pub enum GenericPlayer<'a> {
     JCMP2(&'a crate::games::jc2m::Player),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Player),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Player),
 }
 
 pub trait CommonResponse {
@@ -109,25 +113,41 @@ pub trait CommonResponse {
     }
 
     /// The name of the server
-    fn name(&self) -> Option<&str> { None }
+    fn name(&self) -> Option<&str> {
+        None
+    }
     /// Description of the server
-    fn description(&self) -> Option<&str> { None }
+    fn description(&self) -> Option<&str> {
+        None
+    }
     /// Name of the current game or game mode
-    fn game_mode(&self) -> Option<&str> { None }
+    fn game_mode(&self) -> Option<&str> {
+        None
+    }
     /// Version of the game being run on the server
-    fn game_version(&self) -> Option<&str> { None }
+    fn game_version(&self) -> Option<&str> {
+        None
+    }
     /// The current map name
-    fn map(&self) -> Option<&str> { None }
+    fn map(&self) -> Option<&str> {
+        None
+    }
     /// Maximum number of players allowed to connect
     fn players_maximum(&self) -> u32;
     /// Number of players currently connected
     fn players_online(&self) -> u32;
     /// Number of bots currently connected
-    fn players_bots(&self) -> Option<u32> { None }
+    fn players_bots(&self) -> Option<u32> {
+        None
+    }
     /// Whether the server requires a password to join
-    fn has_password(&self) -> Option<bool> { None }
+    fn has_password(&self) -> Option<bool> {
+        None
+    }
     /// Currently connected players
-    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { None }
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        None
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -160,7 +180,9 @@ pub trait CommonPlayer {
     /// Player name
     fn name(&self) -> &str;
     /// Player score
-    fn score(&self) -> Option<i32> { None }
+    fn score(&self) -> Option<i32> {
+        None
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -234,16 +256,24 @@ impl TimeoutSettings {
     }
 
     /// Get the read timeout.
-    pub const fn get_read(&self) -> Option<Duration> { self.read }
+    pub const fn get_read(&self) -> Option<Duration> {
+        self.read
+    }
 
     /// Get the write timeout.
-    pub const fn get_write(&self) -> Option<Duration> { self.write }
+    pub const fn get_write(&self) -> Option<Duration> {
+        self.write
+    }
 
     /// Get the connect timeout.
-    pub const fn get_connect(&self) -> Option<Duration> { self.connect }
+    pub const fn get_connect(&self) -> Option<Duration> {
+        self.connect
+    }
 
     /// Get number of retries
-    pub const fn get_retries(&self) -> usize { self.retries }
+    pub const fn get_retries(&self) -> usize {
+        self.retries
+    }
 
     /// Get the number of retries if there are timeout settings else fall back
     /// to the default
@@ -290,7 +320,9 @@ impl TimeoutSettings {
 
 impl Default for TimeoutSettings {
     /// Default values are 4 seconds for both read and write, no retries.
-    fn default() -> Self { Self::const_default() }
+    fn default() -> Self {
+        Self::const_default()
+    }
 }
 
 /// Generic extra request settings
