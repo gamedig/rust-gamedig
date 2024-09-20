@@ -1,4 +1,4 @@
-use crate::eco::{EcoRequestSettings, Response, Root};
+use crate::fivem::{FiveMRequestSettings, Response, Root};
 use crate::http::HttpClient;
 use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
@@ -24,16 +24,16 @@ pub fn query_with_timeout_and_extra_settings(
     address: &IpAddr,
     port: Option<u16>,
     timeout_settings: &Option<TimeoutSettings>,
-    extra_settings: Option<EcoRequestSettings>,
+    extra_settings: Option<FiveMRequestSettings>,
 ) -> GDResult<Response> {
-    let address = &SocketAddr::new(*address, port.unwrap_or(3001));
+    let address = &SocketAddr::new(*address, port.unwrap_or(31020));
     let mut client = HttpClient::new(
         address,
         timeout_settings,
         extra_settings.unwrap_or_default().into(),
     )?;
 
-    let response = client.get_json::<Root>("/frontpage", None)?;
+    let info_response = client.get_json::<Root>("/info.json", None)?;
 
-    Ok(response.into())
+    Ok(info_response.into())
 }
