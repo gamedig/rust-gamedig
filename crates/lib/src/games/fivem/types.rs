@@ -5,14 +5,6 @@ use crate::ExtraRequestSettings;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Root {
-    #[serde(rename = "Info")]
-    pub info: Info,
-    pub players: Vec<Player>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Info {
     #[serde(rename = "enhancedHostSupport")]
     pub enhanced_host_support: bool,
@@ -51,6 +43,12 @@ pub struct Variables {
     pub tags: String,
     #[serde(rename = "txAdmin-version")]
     pub tx_admin_version: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Players {
+    pub players: Vec<Player>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

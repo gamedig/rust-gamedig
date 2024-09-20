@@ -1,4 +1,4 @@
-use crate::fivem::{FiveMRequestSettings, Response, Root};
+use crate::fivem::{FiveMRequestSettings, Info, Players, Response};
 use crate::http::HttpClient;
 use crate::{GDResult, TimeoutSettings};
 use std::net::{IpAddr, SocketAddr};
@@ -33,7 +33,8 @@ pub fn query_with_timeout_and_extra_settings(
         extra_settings.unwrap_or_default().into(),
     )?;
 
-    let info_response = client.get_json::<Root>("/info.json", None)?;
+    let info_response = client.get_json::<Info>("/info.json", None)?;
+    let player_response = client.get_json::<Players>("/players.json", None)?;
 
     Ok(info_response.into())
 }
