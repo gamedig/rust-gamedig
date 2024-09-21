@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::http::{HttpProtocol, HttpSettings};
+use crate::protocols::types::{CommonPlayer, CommonResponse};
 use crate::ExtraRequestSettings;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -72,12 +73,31 @@ impl Into<Response> for (Info, Vec<Player>) {
     }
 }
 
-impl Into<Response> for Info {
-    fn into(self) -> Response {
-        Response {
-            info: self,
-            players: Vec::new(),
-        }
+impl CommonPlayer for Player {
+    fn as_original(&self) -> crate::protocols::types::GenericPlayer {
+        crate::protocols::types::GenericPlayer::FiveM(self)
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl CommonResponse for Response {
+    fn as_original(&self) -> crate::protocols::GenericResponse {
+        crate::protocols::GenericResponse::FiveM(self)
+    }
+
+    fn players_online(&self) -> u32 {
+        self.players.len() as u32
+    }
+
+    fn players_maximum(&self) -> u32 {
+        self.info.vars.sv_max_clients.parse::<u32>().unwrap_or(0)
+    }
+
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
+        Some(self.players.iter().map(|p| p as _).collect())
     }
 }
 
