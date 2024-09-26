@@ -61,6 +61,7 @@ pub trait Socket {
     ///
     /// # Returns
     /// The local SocketAddr.
+    #[cfg(feature = "packet_capture")]
     fn local_addr(&self) -> std::io::Result<SocketAddr>;
 }
 
@@ -112,6 +113,8 @@ impl Socket for TcpSocketImpl {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+
+    #[cfg(feature = "packet_capture")]
     fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
@@ -164,6 +167,8 @@ impl Socket for UdpSocketImpl {
     }
 
     fn port(&self) -> u16 { self.address.port() }
+
+    #[cfg(feature = "packet_capture")]
     fn local_addr(&self) -> std::io::Result<SocketAddr> { self.socket.local_addr() }
 }
 
