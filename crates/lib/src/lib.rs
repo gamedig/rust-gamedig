@@ -31,12 +31,6 @@ pub mod error;
 /// multiple items manually.
 pub mod prelude;
 
-/// Common settings for the library.
-///
-/// This module manages the configuration and settings that govern
-/// the behavior of the library.
-pub mod settings;
-
 /// Implementations for specific games.
 ///
 /// The game module contains the logic and structures related to

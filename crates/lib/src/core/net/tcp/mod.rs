@@ -1,15 +1,19 @@
-use std::net::SocketAddr;
+use {
+    crate::{core::Buffer, error::Result},
+
+    sealed::client::AbstractTcp,
+
+    std::{net::SocketAddr, time::Duration},
+};
 
 mod sealed;
-
-use sealed::client::Tcp;
-
-use crate::{core::Buffer, error::Result, settings::Timeout};
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct TcpClient {
     client: sealed::client::Inner,
+    read_timeout: Option<Duration>,
+    write_timeout: Option<Duration>,
 }
 
 #[maybe_async::maybe_async]
@@ -21,14 +25,25 @@ impl TcpClient {
     /// * `addr` - A reference to the `SocketAddr` of the server to connect to.
     /// * `timeout` - An optional reference to the `Timeout` setting.
     #[allow(dead_code)]
-    pub(crate) async fn new(addr: &SocketAddr, timeout: Option<&Timeout>) -> Result<Self> {
+    pub(crate) async fn new(
+        addr: &SocketAddr,
+        connect_timeout: Option<&Duration>,
+        read_timeout: Option<&Duration>,
+        write_timeout: Option<&Duration>,
+    ) -> Result<Self> {
         #[cfg(feature = "attribute_log")]
-        log::trace!(
-            "TCP::<Client>::New: Creating new TCP client for {addr} with timeout: {timeout:?}"
-        );
+        log::trace!("TCP::<Client>::New: Creating new TCP client for {addr}");
 
         Ok(Self {
-            client: sealed::client::Inner::new(addr, timeout).await?,
+            client: sealed::client::Inner::new(addr, connect_timeout).await?,
+            read_timeout: match read_timeout {
+                Some(timeout) => Some(*timeout),
+                None => None,
+            },
+            write_timeout: match write_timeout {
+                Some(timeout) => Some(*timeout),
+                None => None,
+            },
         })
     }
 
@@ -41,9 +56,14 @@ impl TcpClient {
     #[allow(dead_code)]
     pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Buffer> {
         #[cfg(feature = "attribute_log")]
-        log::trace!("TCP::<Client>::Read: Reading data with size: {size:?}");
+        log::trace!("TCP::<Client>::Read: Reading data from the stream");
 
-        Ok(Buffer::from(self.client.inner.read(size).await?))
+        Ok(Buffer::from(
+            self.client
+                .inner
+                .read(size, self.read_timeout.as_ref())
+                .await?,
+        ))
     }
 
     /// Writes data to the TCP stream.
@@ -56,6 +76,9 @@ impl TcpClient {
         #[cfg(feature = "attribute_log")]
         log::trace!("TCP::<Client>::Write: Writing data to the stream");
 
-        self.client.inner.write(data).await
+        self.client
+            .inner
+            .write(data, self.write_timeout.as_ref())
+            .await
     }
 }
