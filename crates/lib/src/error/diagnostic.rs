@@ -158,23 +158,3 @@ impl fmt::Display for HexDump {
         )
     }
 }
-
-// TODO: Get rid when errors are specific to protocols
-pub(crate) mod metadata {
-    use std::fmt;
-
-    #[derive(Debug)]
-    pub enum NetworkProtocol {
-        Tcp,
-        Udp,
-    }
-
-    impl fmt::Display for NetworkProtocol {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
-                NetworkProtocol::Tcp => write!(f, "TCP"),
-                NetworkProtocol::Udp => write!(f, "UDP"),
-            }
-        }
-    }
-}

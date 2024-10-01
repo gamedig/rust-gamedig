@@ -1,11 +1,13 @@
-use std::ops::{Bound, RangeBounds};
+use {
+    crate::error::{
+        diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
+        ErrorKind,
+        IoError,
+        Report,
+        Result,
+    },
 
-use crate::error::{
-    diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
-    ErrorKind,
-    IoError,
-    Report,
-    Result,
+    std::ops::{Bound, RangeBounds},
 };
 
 mod num;
@@ -43,7 +45,7 @@ impl Buffer {
         };
 
         if start > self.len || end > self.len {
-            return Err(Report::new(ErrorKind::from(IoError::UnderflowError {
+            return Err(Report::new(ErrorKind::from(IoError::BufferUnderflowError {
                 attempted: end - start,
                 available: self.len - start,
             }))

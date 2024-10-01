@@ -1,6 +1,6 @@
 use {
     crate::error::{
-        diagnostic::{metadata::NetworkProtocol, FailureReason, Recommendation},
+        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
@@ -52,13 +52,7 @@ impl super::AbstractTcp for StdTcpClient {
             }
             Err(e) => {
                 Err(Report::from(e)
-                    .change_context(
-                        NetworkError::ConnectionError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: *addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(NetworkError::TcpConnectionError { peer_addr: *addr }.into())
                     .attach_printable(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying I/O error.",
                     ))
@@ -104,9 +98,8 @@ impl super::AbstractTcp for StdTcpClient {
                 Err(e) => {
                     return Err(Report::from(e)
                         .change_context(
-                            NetworkError::SetTimeoutError {
-                                _protocol: NetworkProtocol::Tcp,
-                                addr: self.peer_addr,
+                            NetworkError::TcpSetTimeoutError {
+                                peer_addr: self.peer_addr,
                             }
                             .into(),
                         )
@@ -148,9 +141,8 @@ impl super::AbstractTcp for StdTcpClient {
             Err(e) => {
                 Err(Report::from(e)
                     .change_context(
-                        NetworkError::ReadError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpReadError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )
@@ -193,9 +185,8 @@ impl super::AbstractTcp for StdTcpClient {
                 Err(e) => {
                     return Err(Report::from(e)
                         .change_context(
-                            NetworkError::SetTimeoutError {
-                                _protocol: NetworkProtocol::Tcp,
-                                addr: self.peer_addr,
+                            NetworkError::TcpSetTimeoutError {
+                                peer_addr: self.peer_addr,
                             }
                             .into(),
                         )
@@ -215,9 +206,8 @@ impl super::AbstractTcp for StdTcpClient {
             Err(e) => {
                 Err(Report::from(e)
                     .change_context(
-                        NetworkError::WriteError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpWriteError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )

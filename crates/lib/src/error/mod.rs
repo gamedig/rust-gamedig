@@ -104,100 +104,152 @@ define_error_kind! {
         ///
         /// This error occurs when there is an attempt to read beyond the available data in the buffer.
         #[cfg(feature = "_BUFFER")]
-        UnderflowError {
+        BufferUnderflowError {
             /// The number of bytes that were attempted to be read.
             attempted: usize,
 
             /// The number of bytes that were available to be read.
             available: usize
         }(
-            "[GameDig]::[IO::UnderflowError]: Attempted to read {attempted} bytes, but only {available} bytes available."
+            "[GameDig]::[IO::BufferUnderflowError]: Attempted to read {attempted} bytes, but only {available} bytes available."
         ),
 
         /// String Conversion Error
         ///
         /// This error occurs when a string cannot be converted from a byte slice.
         #[cfg(feature = "_BUFFER")]
-        StringConversionError {} (
-            "[GameDig]::[IO::StringConversionError]: Failed to convert string"
+        BufferStringConversionError {} (
+            "[GameDig]::[IO::BufferStringConversionError]: Failed to convert string"
         )
-        
+
     }
 
     /// Network Error
     ///
     /// This set of errors are related to network operations.
-    //TODO: Make errors specific to there protocols and feature gate them
     NetworkError, {
-        /// Network Connection Error
-        ///
-        /// This error occurs when a connection of some sort to a remote server cannot be established.
-        /// This can be due to a variety of reasons, the OS should propagate the true cause.
-        ConnectionError {
-            /// The network protocol that was used to establish the connection.
-            _protocol: diagnostic::metadata::NetworkProtocol,
+        //TODO: Add HTTP errors
 
+        /// TCP Connection Error
+        ///
+        /// This error occurs when a TCP connection cannot be established.
+        #[cfg(feature = "_TCP")]
+        TcpConnectionError {
             /// The address of the remote server that the connection was attempted to.
-            addr: std::net::SocketAddr
+            peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::ConnectionError]: Failed to establish a connection"
+            "[GameDig]::[TCP::ConnectionError]: Failed to establish a connection"
         ),
 
-        /// Network Read Error
+        /// TCP Read Error
         ///
-        /// This error occurs when data cannot be read from a network stream.
-        ReadError {
-            /// The network protocol that was used.
-            _protocol: diagnostic::metadata::NetworkProtocol,
-
+        /// This error occurs when data cannot be read from a TCP stream.
+        #[cfg(feature = "_TCP")]
+        TcpReadError {
             /// The address of the remote server that the read operation was attempted to.
-            addr: std::net::SocketAddr
+            peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::ReadError]: Failed to read data"
+            "[GameDig]::[TCP::ReadError]: Failed to read data"
         ),
 
-        /// Network Write Error
+        /// TCP Write Error
         ///
-        /// This error occurs when data cannot be written to a network stream.
-        WriteError {
-            /// The network protocol that was used.
-            _protocol: diagnostic::metadata::NetworkProtocol,
-
+        /// This error occurs when data cannot be written to a TCP stream.
+        #[cfg(feature = "_TCP")]
+        TcpWriteError {
             /// The address of the remote server that the write operation was attempted to.
-            addr: std::net::SocketAddr
+            peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::WriteError]: Failed to write data"
+            "[GameDig]::[TCP::WriteError]: Failed to write data"
         ),
 
-        /// Network Timeout Elapsed Error
+        /// TCP Timeout Elapsed Error
         ///
         /// This error occurs when a timeout elapses while waiting for an operation to complete.
-        #[cfg(not(feature = "client_std"))]
-        TimeoutElapsedError {
-            /// The network protocol that was used.
-            _protocol: diagnostic::metadata::NetworkProtocol,
-
+        // both _TCP && client_std
+        #[cfg(all(feature = "_TCP", feature = "client_tokio"))]
+        TcpTimeoutElapsedError {
             /// The address of the remote server that the operation was attempted to.
-            addr: std::net::SocketAddr
+            peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
+            "[GameDig]::[TCP::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
         ),
 
-        /// Network Set Timeout Error
+        /// TCP Set Timeout Error
         ///
-        /// This error occurs when a timeout cannot be set on a network stream.
+        /// This error occurs when a timeout cannot be set on a TCP stream.
         /// It's usually due to the duration being equal to zero somehow.
-        /// It is an edge case error due to timeout not being managed
-        /// within the library itself with the `client_std` feature.
-        #[cfg(feature = "client_std")]
-        SetTimeoutError {
-            /// The network protocol that was used.
-            _protocol: diagnostic::metadata::NetworkProtocol,
-
+        #[cfg(all(feature = "_TCP", feature = "client_std"))]
+        TcpSetTimeoutError {
             /// The address of the remote server that the timeout was attempted to be set on.
-            addr: std::net::SocketAddr
+            peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[{_protocol}::SetTimeoutError]: Failed to set timeout"
-        )
+            "[GameDig]::[TCP::SetTimeoutError]: Failed to set timeout"
+        ),
+
+        /// UDP Bind Error
+        ///
+        /// This error occurs when a UDP socket cannot be bound to an address.
+        /// This is usually a OS level error where no ports are available.
+        #[cfg(feature = "_UDP")]
+        UdpBindError {} (
+            "[GameDig]::[UDP::BindError]: Failed to bind to address"
+        ),
+
+        /// UDP Connection Error
+        ///
+        /// This error occurs when a UDP "connection" cannot be established.
+        #[cfg(feature = "_UDP")]
+        UdpConnectionError {
+            /// The address of the remote server that the connection was attempted to.
+            peer_addr: std::net::SocketAddr
+        }(
+            "[GameDig]::[UDP::ConnectionError]: Failed to establish a connection"
+        ),
+
+        /// UDP Read Error
+        ///
+        /// This error occurs when data cannot be read from a UDP socket.
+        #[cfg(feature = "_UDP")]
+        UdpReadError {
+            /// The address of the remote server that the read operation was attempted to.
+            peer_addr: std::net::SocketAddr
+        }(
+            "[GameDig]::[UDP::ReadError]: Failed to read data"
+        ),
+
+        /// UDP Write Error
+        ///
+        /// This error occurs when data cannot be written to a UDP socket.
+        #[cfg(feature = "_UDP")]
+        UdpWriteError {
+            /// The address of the remote server that the write operation was attempted to.
+            peer_addr: std::net::SocketAddr
+        }(
+            "[GameDig]::[UDP::WriteError]: Failed to write data"
+        ),
+
+        /// UDP Timeout Elapsed Error
+        ///
+        /// This error occurs when a timeout elapses while waiting for an operation to complete.
+        #[cfg(all(feature = "_UDP", feature = "client_tokio"))]
+        UdpTimeoutElapsedError {
+            /// The address of the remote server that the operation was attempted to.
+            peer_addr: std::net::SocketAddr
+        }(
+            "[GameDig]::[UDP::TimeoutElapsedError]: Timeout elapsed while waiting for operation"
+        ),
+
+        /// UDP Set Timeout Error
+        ///
+        /// This error occurs when a timeout cannot be set on a UDP socket.
+        /// It's usually due to the duration being equal to zero somehow.
+        #[cfg(all(feature = "_UDP", feature = "client_std"))]
+        UdpSetTimeoutError {
+            /// The address of the remote server that the timeout was attempted to be set on.
+            peer_addr: std::net::SocketAddr
+        }(
+            "[GameDig]::[UDP::SetTimeoutError]: Failed to set timeout"
+        ),
     }
 }

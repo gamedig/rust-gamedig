@@ -44,7 +44,7 @@ impl super::Buffer {
                 String::from_utf8(self.inner[self.pos .. self.pos + end_pos].to_vec()).map_err(
                     |e| {
                         Report::from(e)
-                            .change_context(IoError::StringConversionError {}.into())
+                            .change_context(IoError::BufferStringConversionError {}.into())
                             .attach_printable(FailureReason::new(
                                 "Invalid UTF-8 sequence found during string read.",
                             ))
@@ -77,7 +77,7 @@ impl super::Buffer {
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
         // Cant use check range here but needs to be checked
         if self.pos > self.len {
-            return Err(Report::new(ErrorKind::from(IoError::UnderflowError {
+            return Err(Report::new(ErrorKind::from(IoError::BufferUnderflowError {
                 attempted: 1,
                 available: self.len - self.pos,
             }))
@@ -103,7 +103,7 @@ impl super::Buffer {
             true => {
                 String::from_utf8(self.inner[self.pos .. end_pos].to_vec()).map_err(|e| {
                     Report::from(e)
-                        .change_context(IoError::StringConversionError {}.into())
+                        .change_context(IoError::BufferStringConversionError {}.into())
                         .attach_printable(FailureReason::new(
                             "Invalid UTF-8 sequence found during string read.",
                         ))
@@ -152,7 +152,7 @@ impl super::Buffer {
             true => {
                 String::from_utf16(&vec).map_err(|e| {
                     Report::from(e)
-                        .change_context(IoError::StringConversionError {}.into())
+                        .change_context(IoError::BufferStringConversionError {}.into())
                         .attach_printable(FailureReason::new(
                             "Invalid UTF-16 sequence found during string read.",
                         ))
@@ -272,7 +272,7 @@ impl super::Buffer {
 
         if had_errors && strict {
             return Err(
-                Report::new(ErrorKind::from(IoError::StringConversionError {}))
+                Report::new(ErrorKind::from(IoError::BufferStringConversionError {}))
                     .attach_printable(FailureReason::new(
                         "Invalid Latin-1 sequence found during string read.",
                     ))

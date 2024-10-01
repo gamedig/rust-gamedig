@@ -1,6 +1,6 @@
 use {
     crate::error::{
-        diagnostic::{metadata::NetworkProtocol, FailureReason, Recommendation},
+        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
@@ -53,13 +53,7 @@ impl super::AbstractTcp for TokioTcpClient {
             // Error during the connection attempt
             Ok(Err(e)) => {
                 return Err(Report::from(e)
-                    .change_context(
-                        NetworkError::ConnectionError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: *addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(NetworkError::TcpConnectionError { peer_addr: *addr }.into())
                     .attach_printable(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying I/O error.",
                     ))
@@ -74,11 +68,7 @@ impl super::AbstractTcp for TokioTcpClient {
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: *addr,
-                        }
-                        .into(),
+                        NetworkError::TcpTimeoutElapsedError { peer_addr: *addr }.into(),
                     )
                     .attach_printable(FailureReason::new(
                         "The connection attempt exceeded the specified timeout duration.",
@@ -152,9 +142,8 @@ impl super::AbstractTcp for TokioTcpClient {
             Ok(Err(e)) => {
                 return Err(Report::from(e)
                     .change_context(
-                        NetworkError::ReadError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpReadError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )
@@ -171,9 +160,8 @@ impl super::AbstractTcp for TokioTcpClient {
             Err(e) => {
                 let report = Report::from(e)
                     .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpTimeoutElapsedError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )
@@ -222,9 +210,8 @@ impl super::AbstractTcp for TokioTcpClient {
             Ok(Err(e)) => {
                 return Err(Report::from(e)
                     .change_context(
-                        NetworkError::WriteError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpWriteError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )
@@ -241,9 +228,8 @@ impl super::AbstractTcp for TokioTcpClient {
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(
-                        NetworkError::TimeoutElapsedError {
-                            _protocol: NetworkProtocol::Tcp,
-                            addr: self.peer_addr,
+                        NetworkError::TcpTimeoutElapsedError {
+                            peer_addr: self.peer_addr,
                         }
                         .into(),
                     )
