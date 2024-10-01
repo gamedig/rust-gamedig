@@ -8,7 +8,7 @@
     all(feature = "client_tokio", not(feature = "client_std")),
 )))]
 compile_error!(
-    "GameDig Core Compiler Error: Exactly 1 client feature must be enabled: \n`client_std` or \
+    "GameDig Feature Compiler Error: Exactly 1 client feature must be enabled: \n`client_std` or \
      `client_tokio`. \n\nEnsure that exactly 1 client feature is selected and the other is \
      disabled. \nBy default, the `client_std` feature is enabled.\n\nExample usage in \
      Cargo.toml:\n\nTo use the default `client_std`:\n[dependencies]\ngamedig = { version = \"X\" \
@@ -32,10 +32,10 @@ compile_error!(
     not(feature = "_HTTP")
 )))]
 compile_error!(
-    "GameDig Core Compiler Error: Exactly 1 HTTP client type must be enabled, and it must match \
-     the runtime client when a `_HTTP` feature is enabled. \n\nEnsure that only one HTTP client \
-     type is selected and that it corresponds to the correct runtime client when `_HTTP` is \
-     enabled. \n\nExample usage in Cargo.toml:\n\nTo use `http_std` with \
+    "GameDig Feature Compiler Error: Exactly 1 HTTP client type must be enabled, and it must \
+     match the runtime client when a `_HTTP` feature is enabled. \n\nEnsure that only one HTTP \
+     client type is selected and that it corresponds to the correct runtime client when `_HTTP` \
+     is enabled. \n\nExample usage in Cargo.toml:\n\nTo use `http_std` with \
      `client_std`:\n[dependencies]\ngamedig = { version = \"X\", features = [\"_HTTP\", \
      \"client_std\", \"http_std\"] }\n\nTo use `http_tokio` with \
      `client_tokio`:\n[dependencies]\ngamedig = { version = \"X\", default-features = false, \
@@ -52,7 +52,7 @@ compile_error!(
     all(not(feature = "_HTTP"), feature = "http_tokio")
 ))]
 compile_error!(
-    "GameDig Core Compiler Error: HTTP client features `http_std` or `http_tokio` can only be \
+    "GameDig Feature Compiler Error: HTTP client features `http_std` or `http_tokio` can only be \
      enabled if a feature with `_HTTP` is enabled. \n\nEnsure that an `_HTTP` feature is enabled \
      when enabling an HTTP client. \n\nExample usage in Cargo.toml:\n\nTo use `http_std` with an \
      `_HTTP` feature:\n[dependencies]\ngamedig = { version = \"X\", features = [\"_HTTP\", \
@@ -80,9 +80,9 @@ compile_error!(
     not(feature = "_TLS")
 )))]
 compile_error!(
-    "GameDig Core Compiler Error: Exactly 1 TLS type must be enabled when `_TLS` is enabled, and \
-     it must match the HTTP client. \n\nEnsure that only one TLS type is selected at a time when \
-     using TLS features, and that the TLS type corresponds to the correct HTTP client. \
+    "GameDig Feature Compiler Error: Exactly 1 TLS type must be enabled when `_TLS` is enabled, \
+     and it must match the HTTP client. \n\nEnsure that only one TLS type is selected at a time \
+     when using TLS features, and that the TLS type corresponds to the correct HTTP client. \
      \n\nExample usage in Cargo.toml:\n\nTo use `client_std` with `http_std` and \
      `tls_std_rustls`:\n[dependencies]\ngamedig = { version = \"X\", features = [\"_TLS\", \
      \"client_std\", \"http_std\", \"tls_std_rustls\"] }\n\nTo use `client_tokio` with \
