@@ -1,41 +1,14 @@
-use super::super::{Body, Header, Query};
+use {super::super::request::RequestBuilder, crate::error::Result, serde::de::DeserializeOwned};
 
-use crate::error::Result;
+#[cfg(feature = "http_tokio")]
+mod reqwest;
+#[cfg(feature = "http_std")]
+mod ureq;
 
-use serde_json::Value;
-
-#[allow(dead_code)]
 #[maybe_async::maybe_async]
-pub(crate) trait Http {
-    async fn get(
-        &self,
-        url_base: &str,
-        url_query: Option<&Query>,
-        header: Option<&Header>,
-        body: Option<&Body>,
-    ) -> Result<Value>;
-
-    async fn post(
-        &self,
-        url_base: &str,
-        url_query: Option<&Query>,
-        header: Option<&Header>,
-        body: Option<&Body>,
-    ) -> Result<Value>;
-
-    async fn put(
-        &self,
-        url_base: &str,
-        url_query: Option<&Query>,
-        header: Option<&Header>,
-        body: Option<&Body>,
-    ) -> Result<Value>;
-
-    async fn delete(
-        &self,
-        url_base: &str,
-        url_query: Option<&Query>,
-        header: Option<&Header>,
-        body: Option<&Body>,
-    ) -> Result<Value>;
+pub(crate) trait AbstractHttp {
+    async fn get<T: DeserializeOwned>(&self, request: &RequestBuilder) -> Result<T>;
+    async fn post<T: DeserializeOwned>(&self, request: &RequestBuilder) -> Result<T>;
+    async fn put<T: DeserializeOwned>(&self, request: &RequestBuilder) -> Result<T>;
+    async fn delete<T: DeserializeOwned>(&self, request: &RequestBuilder) -> Result<T>;
 }

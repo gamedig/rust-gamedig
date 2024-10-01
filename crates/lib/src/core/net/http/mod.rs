@@ -1,10 +1,8 @@
-use std::collections::HashMap;
+#[allow(unused_imports)]
+use sealed::client::AbstractHttp;
 
+pub(crate) mod request;
 mod sealed;
-
-pub(crate) type Header = HashMap<String, String>;
-pub(crate) type Query<'a> = HashMap<&'a str, &'a str>;
-pub(crate) type Body = serde_json::Value;
 
 #[allow(dead_code)]
 pub(crate) struct HttpClient {}
