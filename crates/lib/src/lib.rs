@@ -1,10 +1,21 @@
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// *                                                                 *
+// *               Copyright (c) 2022 - 2024                         *
+// *            GameDig Organization & Contributors                  *
+// *                                                                 *
+// *               Licensed under the MIT License                    *
+// *  See the LICENSE file in the project root for more information  *
+// *                                                                 *
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+// Adds the README file at the beginning of the documentation.
 #![doc = include_str!("../README.md")]
 
 /// Core functionalities essential for the library.
 ///
 /// This module contains the core logic and utilities that are foundational
-/// to the library's operation. It is not meant for direct interaction but
-/// serves as the backbone for other modules.
+/// to the library's operation. It is not meant for direct end user interaction
+/// but serves as the backbone for other public modules.
 pub(crate) mod core;
 
 /// Error handling utilities.
