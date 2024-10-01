@@ -106,7 +106,7 @@ impl super::AbstractTcp for StdTcpClient {
                         .change_context(
                             NetworkError::SetTimeoutError {
                                 _protocol: NetworkProtocol::Tcp,
-                                addr: &self.peer_addr,
+                                addr: self.peer_addr,
                             }
                             .into(),
                         )
@@ -150,7 +150,7 @@ impl super::AbstractTcp for StdTcpClient {
                     .change_context(
                         NetworkError::ReadError {
                             _protocol: NetworkProtocol::Tcp,
-                            addr: &self.peer_addr,
+                            addr: self.peer_addr,
                         }
                         .into(),
                     )
@@ -186,7 +186,7 @@ impl super::AbstractTcp for StdTcpClient {
                 None => Duration::from_secs(5),
             };
 
-            match self.stream.set_write_timeout(Some(*timeout)) {
+            match self.stream.set_write_timeout(Some(timeout)) {
                 Ok(_) => {
                     self.write_timeout_set = true;
                 }
@@ -195,7 +195,7 @@ impl super::AbstractTcp for StdTcpClient {
                         .change_context(
                             NetworkError::SetTimeoutError {
                                 _protocol: NetworkProtocol::Tcp,
-                                addr: &self.peer_addr,
+                                addr: self.peer_addr,
                             }
                             .into(),
                         )
@@ -217,7 +217,7 @@ impl super::AbstractTcp for StdTcpClient {
                     .change_context(
                         NetworkError::WriteError {
                             _protocol: NetworkProtocol::Tcp,
-                            addr: &self.peer_addr,
+                            addr: self.peer_addr,
                         }
                         .into(),
                     )
