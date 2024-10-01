@@ -23,7 +23,6 @@ categories = [
 thiserror = "1.0.61"
 pretty-hex = "0.4.1"
 maybe-async = "0.2.10"
-derive_more = "0.99.18"
 error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
@@ -93,7 +92,7 @@ client_tokio = ["dep:async-trait", "dep:tokio"]
 #           if the runtime client is async or sync within a feature.
 #           I think using both deps in _HTTP would be a bad idea.
 #           If users want to use _HTTP feature they will need to state 
-#           the http client to use aswell.
+#           the http client to use aswell or use default features.
 http_std = ["dep:ureq"]
 http_tokio = ["dep:reqwest"]
 

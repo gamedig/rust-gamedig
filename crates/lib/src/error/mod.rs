@@ -77,13 +77,21 @@ macro_rules! define_error_kind {
             }
         )+
 
-        #[derive(Debug, thiserror::Error, derive_more::From)]
+        #[derive(Debug, thiserror::Error)]
         pub enum ErrorKind {
             $(
                 #[error(transparent)]
                 $enum_name($enum_name),
             )+
         }
+
+        $(
+            impl From<$enum_name> for ErrorKind {
+                fn from(error: $enum_name) -> Self {
+                    ErrorKind::$enum_name(error)
+                }
+            }
+        )+
     };
 }
 
@@ -119,6 +127,7 @@ define_error_kind! {
     /// Network Error
     ///
     /// This set of errors are related to network operations.
+    //TODO: Make errors specific to there protocols and feature gate them
     NetworkError, {
         /// Network Connection Error
         ///

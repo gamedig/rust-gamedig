@@ -1,4 +1,4 @@
-use pretty_hex::PrettyHex;
+use {pretty_hex::PrettyHex, std::fmt};
 
 /// A struct representing a failure reason.
 ///
@@ -6,8 +6,7 @@ use pretty_hex::PrettyHex;
 /// as a printable component in an error stack, providing additional context for
 /// each error frame within the report.
 #[allow(dead_code)]
-#[derive(Debug, derive_more::Display)]
-#[display(fmt = "\x1B[1m\x1B[34mFailure Reason:\x1B[0m\x1B[1m {}\x1B[0m\n\n", _0)]
+#[derive(Debug)]
 pub(crate) struct FailureReason(String);
 
 impl FailureReason {
@@ -40,14 +39,23 @@ impl FailureReason {
     }
 }
 
+impl fmt::Display for FailureReason {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "\x1B[1m\x1B[34mFailure Reason:\x1B[0m\x1B[1m {}\x1B[0m\n\n",
+            self.0
+        )
+    }
+}
+
 /// A struct representing a recommendation.
 ///
 /// This struct is used to provide a recommendation or suggestion. It is used
 /// as a printable component in an error stack, guiding the user on how to
 /// address or mitigate the error.
 #[allow(dead_code)]
-#[derive(Debug, derive_more::Display)]
-#[display(fmt = "\x1B[1m\x1B[32mRecommendation:\x1B[0m\x1B[1m {}\x1B[0m\n\n", _0)]
+#[derive(Debug)]
 pub(crate) struct Recommendation(String);
 
 impl Recommendation {
@@ -80,20 +88,36 @@ impl Recommendation {
     }
 }
 
+impl fmt::Display for Recommendation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "\x1B[1m\x1B[32mRecommendation:\x1B[0m\x1B[1m {}\x1B[0m\n\n",
+            self.0
+        )
+    }
+}
+
 /// A struct representing a prompt to open a GitHub issue.
 ///
 /// This struct is used to notify the user of a possible bug and suggests
 /// opening an issue on GitHub. It is used as a printable component in an
 /// error stack when a bug is suspected.
 #[allow(dead_code)]
-#[derive(Debug, derive_more::Display)]
-#[display(
-    fmt = "\x1B[1m\x1B[91mBug:\x1B[0m\x1B[1m Uh oh! Looks like you've encountered a possible bug in GameDig.\n\
-                   \n\x1B[0mPlease open an issue on GitHub with the error you've encountered and the steps to reproduce it.\n\
-                   \n\x1B[94mhttps://github.com/gamedig/rust-gamedig/issues\x1B[0m\n\
-                   \nThank you for helping us improve GameDig!\n"
-)]
+#[derive(Debug)]
 pub(crate) struct OpenGitHubIssue();
+
+impl fmt::Display for OpenGitHubIssue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "\x1B[1m\x1B[91mBug:\x1B[0m\x1B[1m Uh oh! Looks like you've encountered a possible bug in GameDig.\n\
+            \n\x1B[0mPlease open an issue on GitHub with the error you've encountered and the steps to reproduce it.\n\
+            \n\x1B[94mhttps://github.com/gamedig/rust-gamedig/issues\x1B[0m\n\
+            \nThank you for helping us improve GameDig!\n"
+        )
+    }
+}
 
 /// A struct representing a hex dump of binary data.
 ///
@@ -102,12 +126,7 @@ pub(crate) struct OpenGitHubIssue();
 /// detailed information about the binary data being processed, aiding in
 /// troubleshooting.
 #[allow(dead_code)]
-#[derive(Debug, derive_more::Display)]
-#[display(
-    fmt = "\x1B[93mHex Dump:\x1B[0m\nName:   {}\n{:?}\n\n",
-    name,
-    "inner.hex_dump()"
-)]
+#[derive(Debug)]
 pub(crate) struct HexDump {
     name: String,
     inner: Vec<u8>,
@@ -129,12 +148,33 @@ impl HexDump {
     }
 }
 
+impl fmt::Display for HexDump {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "\x1B[93mHex Dump:\x1B[0m\nName:   {}\n{:?}\n\n",
+            self.name,
+            self.inner.hex_dump()
+        )
+    }
+}
+
+// TODO: Get rid when errors are specific to protocols
 pub(crate) mod metadata {
-    #[derive(Debug, derive_more::Display)]
+    use std::fmt;
+
+    #[derive(Debug)]
     pub enum NetworkProtocol {
-        #[display(fmt = "TCP")]
         Tcp,
-        #[display(fmt = "UDP")]
         Udp,
+    }
+
+    impl fmt::Display for NetworkProtocol {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                NetworkProtocol::Tcp => write!(f, "TCP"),
+                NetworkProtocol::Udp => write!(f, "UDP"),
+            }
+        }
     }
 }
