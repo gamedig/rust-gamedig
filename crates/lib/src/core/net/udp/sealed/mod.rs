@@ -1,1 +1,1 @@
-mod client;
+pub(super) mod client;

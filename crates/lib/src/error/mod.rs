@@ -207,26 +207,26 @@ define_error_kind! {
             "[GameDig]::[UDP::ConnectionError]: Failed to establish a connection"
         ),
 
-        /// UDP Read Error
+        /// UDP Send Error
         ///
-        /// This error occurs when data cannot be read from a UDP socket.
+        /// This error occurs when data cannot be sent over a UDP socket.
         #[cfg(feature = "_UDP")]
-        UdpReadError {
+        UdpSendError {
             /// The address of the remote server that the read operation was attempted to.
             peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[UDP::ReadError]: Failed to read data"
+            "[GameDig]::[UDP::SendError]: Failed to send data"
         ),
 
-        /// UDP Write Error
+        /// UDP Recv Error
         ///
-        /// This error occurs when data cannot be written to a UDP socket.
+        /// This error occurs when data cannot be read from a UDP socket.
         #[cfg(feature = "_UDP")]
-        UdpWriteError {
+        UdpRecvError {
             /// The address of the remote server that the write operation was attempted to.
             peer_addr: std::net::SocketAddr
         }(
-            "[GameDig]::[UDP::WriteError]: Failed to write data"
+            "[GameDig]::[UDP::RecvError]: Failed to read data"
         ),
 
         /// UDP Timeout Elapsed Error

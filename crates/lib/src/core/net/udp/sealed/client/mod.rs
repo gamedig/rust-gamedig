@@ -1,6 +1,10 @@
-use ::std::net::SocketAddr;
+use {
+    crate::error::Result,
 
-use crate::{error::Result, settings::Timeout};
+    // Keep `::` at the beginning of the
+    // path to avoid module resolution conflict
+    ::std::{net::SocketAddr, time::Duration},
+};
 
 #[cfg(feature = "client_std")]
 mod std;
@@ -9,20 +13,43 @@ mod tokio;
 
 #[allow(dead_code)]
 #[maybe_async::maybe_async]
-pub(crate) trait Udp {
-    // TODO: add correct values
-    // Maximum Transmission Unit for Ethernet
-    const ETHERNET_MTU: u16 = 65_535;
-    // IP and UDP header sizes
-    const IP_HEADER_SIZE: u16 = 20;
-    const UDP_HEADER_SIZE: u16 = 8;
-    // Maximum UDP payload size
-    const MAX_UDP_PACKET_SIZE: u16 =
-        Self::ETHERNET_MTU - Self::IP_HEADER_SIZE - Self::UDP_HEADER_SIZE;
+pub(crate) trait AbstractUdp {
+    // The margin to shrink the buffer by
+    const BUF_SHRINK_MARGIN: u8 = 32;
+    // Default capacity for the buffer
+    const DEFAULT_BUF_CAPACITY: u16 = 1024;
 
-    async fn new(addr: &SocketAddr, timeout: &Timeout) -> Result<Self>
+    async fn new(addr: &SocketAddr) -> Result<Self>
     where Self: Sized;
 
-    async fn send(&mut self, data: &[u8]) -> Result<()>;
-    async fn recv(&mut self, size: Option<usize>) -> Result<Vec<u8>>;
+    async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
+    async fn recv(
+        &mut self,
+        size: Option<usize>,
+        timeout: Option<&Duration>,
+    ) -> Result<(Vec<u8>, usize)>;
+}
+
+pub(crate) struct Inner {
+    #[cfg(feature = "client_std")]
+    pub(crate) inner: std::StdUdpClient,
+
+    #[cfg(feature = "client_tokio")]
+    pub(crate) inner: tokio::TokioUdpClient,
+}
+
+#[maybe_async::maybe_async]
+impl Inner {
+    pub(crate) async fn new(addr: &SocketAddr) -> Result<Self> {
+        #[cfg(feature = "attribute_log")]
+        log::trace!("UDP::<Inner>::New: Creating new UDP client for {addr}");
+
+        Ok(Self {
+            #[cfg(feature = "client_std")]
+            inner: std::StdUdpClient::new(addr).await?,
+
+            #[cfg(feature = "client_tokio")]
+            inner: tokio::TokioUdpClient::new(addr).await?,
+        })
+    }
 }
