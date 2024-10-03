@@ -1,9 +1,12 @@
-mod sealed;
+use {
+    crate::{core::Buffer, error::Result},
 
-use crate::core::Buffer;
-use crate::error::Result;
-use sealed::client::AbstractUdp;
-use std::time::Duration;
+    sealed::client::AbstractUdp,
+
+    std::time::Duration,
+};
+
+mod sealed;
 
 pub(crate) struct UdpClient {
     client: sealed::client::Inner,
