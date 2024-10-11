@@ -130,7 +130,11 @@ impl EpicProtocol {
                     || attributes
                         .get("ADDRESS_s")
                         .and_then(Value::as_str)
-                        .map_or(false, |v| v == address || v == format!("0.0.0.0:{}", port));
+                        .map_or(false, |v| v == address || v == format!("0.0.0.0:{}", port))
+                    || attributes
+                        .get("GAMESERVER_PORT_1")
+                        .and_then(Value::as_u64)
+                        .map_or(false, |v| v == port as u64);
 
                 if address_match {
                     return Ok(session);
