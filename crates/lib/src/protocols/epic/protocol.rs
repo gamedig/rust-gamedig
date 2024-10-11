@@ -118,6 +118,8 @@ impl EpicProtocol {
                 return Err(PacketBad.context("No servers provided."));
             }
 
+            let mut fallback_session: Option<Value> = None;
+
             for session in sessions.into_iter() {
                 let attributes = session
                     .get("attributes")
@@ -135,10 +137,20 @@ impl EpicProtocol {
                     .and_then(Value::as_u64)
                     .map_or(false, |v| v == port as u64);
 
-                // If either address or port matches, return the session
-                if address_match || port_match {
+                // Prioritize exact match of both address and port
+                if address_match && port_match {
                     return Ok(session);
                 }
+
+                // Store session that matches either the address or port
+                if address_match || port_match {
+                    fallback_session = Some(session);
+                }
+            }
+
+            // If no exact match, return the fallback session if available
+            if let Some(fallback) = fallback_session {
+                return Ok(fallback);
             }
 
             return Err(
