@@ -123,19 +123,12 @@ impl EpicProtocol {
                     .get("attributes")
                     .ok_or(PacketBad.context("Expected attributes field missing in sessions."))?;
 
-                let address_match = attributes
+                let full_address_match = attributes
                     .get("ADDRESSBOUND_s")
                     .and_then(Value::as_str)
-                    .map_or(false, |v| {
-                        v == format!("0.0.0.0:{}", port) || v == format!("{}:{}", address, port)
-                    });
+                    .map_or(false, |v| v == address || v == format!("0.0.0.0:{}", port));
 
-                let port_match = attributes
-                    .get("GAMESERVER_PORT_l")
-                    .and_then(Value::as_u64)
-                    .map_or(false, |v| v == port as u64);
-
-                if address_match && port_match {
+                if full_address_match {
                     return Ok(session);
                 }
             }
