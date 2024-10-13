@@ -115,6 +115,7 @@ tls_tokio_native_vendored = ["reqwest/native-tls-vendored"]
 # Library Features
 ## Attributes (Prefix: attribute_)
 attribute_log = ["dep:log"]
+attribute_dev_log = ["attribute_log"]
 attribute_serde = ["dep:serde"]
 attribute_adapters = []
 attribute_extended_derive = []
@@ -159,6 +160,7 @@ all = [
 ]
 all_attributes = [
     "attribute_log",
+    "attribute_dev_log",
     "attribute_serde",
     "attribute_adapters",
     "attribute_extended_derive",
