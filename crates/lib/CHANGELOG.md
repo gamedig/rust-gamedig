@@ -4,11 +4,22 @@ Who knows what the future holds...
 
 Games:
 
-- [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support.
+- [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support (by @CosminPerRam).
+
+Protocols:
+
+- Fixed Epic (EOS) protocol to match ports on query (by @cainthebest).
 
 Services:
 
-- MineTest Master Server support (available only on the `tls` and `serde` feature).
+- MineTest Master Server support (available only on the `tls` and `serde` feature) (by @CosminPerRam).
+
+Crate:
+
+- Performance improvements from clippy suggestions (by @CosminPerRam).
+- Feature gate some variables so that they are not unused (by @cainthebest).
+- Fixed a OOB panic that could occur when reading strings from the buffer (by @cainthebest).
+- Updated `pnet_packet` from `0.34.0` to `0.35.0`.
 
 # 0.5.1 - 12/05/2024
 
