@@ -122,22 +122,24 @@ impl EpicProtocol {
                 let attributes = session
                     .get("attributes")
                     .ok_or(PacketBad.context("Expected attributes field missing in sessions."))?;
-                if attributes
+
+                let address_match = attributes
                     .get("ADDRESSBOUND_s")
                     .and_then(Value::as_str)
-                    .map_or(false, |v| {
-                        v.contains(&address) || v.contains(&port.to_string())
-                    })
+                    .map_or(false, |v| v == address || v == format!("0.0.0.0:{}", port))
                     || attributes
-                        .get("ADDRESS_s")
-                        .and_then(Value::as_str)
-                        .map_or(false, |v| v.contains(&address))
-                {
+                        .get("GAMESERVER_PORT_1")
+                        .and_then(Value::as_u64)
+                        .map_or(false, |v| v == port as u64);
+
+                if address_match {
                     return Ok(session);
                 }
             }
 
-            return Err(PacketBad.context("Servers were provided but the specified one couldn't be find amonst them."));
+            return Err(
+                PacketBad.context("Servers were provided but the specified one couldn't be found amongst them.")
+            );
         }
 
         Err(PacketBad.context("Expected session field to be an array."))
