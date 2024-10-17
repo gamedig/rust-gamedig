@@ -50,3 +50,16 @@ lint_lib_std:
 # Lint library with the tokio default client feature
 lint_lib_tokio:
     cargo clippy --package gamedig --lib --features default_client_tokio --no-default-features -- -D warnings
+
+# List all workflow jobs
+list_workflows:
+    act -l
+
+# Run workflows
+run_workflows:
+    act --rm
+
+# Run a specific workflow job
+[positional-arguments]
+run_workflow_job job_name:
+    act -j {{job_name}} --rm
