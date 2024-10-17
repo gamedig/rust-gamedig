@@ -1,0 +1,9 @@
+{
+  "name": "GameDig",
+  "service": "workspace",
+  "dockerComposeFile": "compose.yaml",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/dhoeric/features/act:1": {}
+  }
+}
