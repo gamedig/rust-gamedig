@@ -4,6 +4,7 @@
   "dockerComposeFile": "compose.yaml",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
-    "ghcr.io/dhoeric/features/act:1": {}
+    "ghcr.io/itsmechlark/features/act:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   }
 }
