@@ -5,6 +5,6 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
     "ghcr.io/itsmechlark/features/act:1": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   }
 }
