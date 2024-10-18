@@ -1,5 +1,5 @@
 {
-  "name": "GameDig Docker Desktop Dev Container",
+  "name": "GameDig Docker Desktop (Dev Container)",
 
   "service": "workspace",
   "dockerComposeFile": "compose.yaml",

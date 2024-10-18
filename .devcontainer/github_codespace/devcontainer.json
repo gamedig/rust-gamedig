@@ -1,5 +1,5 @@
 {
-  "name": "GameDig GitHub Codespace Dev Container",
+  "name": "GameDig GitHub Codespace (Dev Container)",
   "build": { "dockerfile": "Dockerfile" },
 
   "features": {
