@@ -1,0 +1,5 @@
+# Configuration file for act (run github actions locally using docker)
+# https://github.com/nektos/act
+
+# Set the default image for the act container
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
