@@ -1,11 +1,29 @@
 {
   "name": "GameDig Docker Desktop Dev Container",
+
   "service": "workspace",
   "dockerComposeFile": "compose.yaml",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
   "features": {
     "ghcr.io/guiyomh/features/just:0": {},
     "ghcr.io/itsmechlark/features/act:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": { "rust-analyzer.rustfmt.extraArgs": ["+nightly"] },
+      "extensions": [
+        "mhutchie.git-graph",
+        "Gruntfuggly.todo-tree",
+        "rust-lang.rust-analyzer",
+        "nefrob.vscode-just-syntax",
+        "tamasfe.even-better-toml",
+        "ms-vsliveshare.vsliveshare",
+        "aaron-bond.better-comments",
+        "vscode-icons-team.vscode-icons"
+      ]
+    }
   }
 }
