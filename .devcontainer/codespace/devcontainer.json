@@ -1,0 +1,8 @@
+{
+  "name": "GameDig Codespace",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/guiyomh/features/just:0": {}
+  }
+}

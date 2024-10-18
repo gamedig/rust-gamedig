@@ -1,5 +1,5 @@
 {
-  "name": "GameDig",
+  "name": "GameDig Act",
   "service": "workspace",
   "dockerComposeFile": "compose.yaml",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
