@@ -1,5 +1,6 @@
 {
   "name": "GameDig GitHub Codespace (Dev Container)",
+
   "build": { "dockerfile": "Dockerfile" },
 
   "features": {
@@ -19,8 +20,7 @@
         "tamasfe.even-better-toml",
         "ms-vsliveshare.vsliveshare",
         "aaron-bond.better-comments",
-        "ms-azuretools.vscode-docker",
-        "vscode-icons-team.vscode-icons"
+        "ms-azuretools.vscode-docker"
       ]
     }
   }

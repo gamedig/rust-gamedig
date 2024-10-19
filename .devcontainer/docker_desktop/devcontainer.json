@@ -21,8 +21,7 @@
         "nefrob.vscode-just-syntax",
         "tamasfe.even-better-toml",
         "ms-vsliveshare.vsliveshare",
-        "aaron-bond.better-comments",
-        "vscode-icons-team.vscode-icons"
+        "aaron-bond.better-comments"
       ]
     }
   }
