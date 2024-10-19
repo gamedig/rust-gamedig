@@ -5,4 +5,4 @@ services:
       dockerfile: Dockerfile
     command: sleep infinity
     volumes:
-      - ../..:/workspaces:cached
+      - ../../..:/workspaces:cached
