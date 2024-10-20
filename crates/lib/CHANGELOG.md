@@ -2,6 +2,10 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 
+To be made...
+
+# 0.5.2 - 20/10/2024
+
 Games:
 
 - [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support (by @CosminPerRam).
