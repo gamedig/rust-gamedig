@@ -1,13 +1,6 @@
-use crate::minetest_master_server::Server;
+use crate::minetest_master_server::{Player, Server};
 use crate::protocols::types::{CommonPlayer, CommonResponse, GenericPlayer};
 use crate::protocols::GenericResponse;
-use serde::{Deserialize, Serialize};
-
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Player {
-    pub name: String,
-}
 
 impl CommonPlayer for Player {
     fn as_original(&self) -> GenericPlayer { GenericPlayer::Minetest(self) }
@@ -31,13 +24,11 @@ impl CommonResponse for Server {
     fn has_password(&self) -> Option<bool> { Some(self.password) }
 
     fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
-        None
-        // Some(
-        // self.clients_list
-        // .iter()
-        // .map(|p| Player { name: p.clone() })
-        // .map(|p| p as &dyn CommonPlayer)
-        // .collect(),
-        // )
+        Some(
+            self.clients_list
+                .iter()
+                .map(|p| p as &dyn CommonPlayer)
+                .collect(),
+        )
     }
 }

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Server {
     pub address: String,
     pub clients: u32,
-    pub clients_list: Vec<String>,
+    pub clients_list: Vec<Player>,
     pub clients_max: u32,
     pub creative: bool,
     pub damage: bool,
@@ -43,4 +43,10 @@ pub struct Response {
     pub total: ServersClients,
     pub total_max: ServersClients,
     pub list: Vec<Server>,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Player {
+    pub name: String,
 }
