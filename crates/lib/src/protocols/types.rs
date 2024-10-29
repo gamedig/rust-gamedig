@@ -71,7 +71,7 @@ pub enum GenericResponse<'a> {
         feature = "serde",
         feature = "games"
     ))]
-    Minetest(&'a crate::services::minetest_master_server::Server),
+    Minetest(&'a crate::games::minetest::Response),
 }
 
 /// All player types
@@ -99,7 +99,7 @@ pub enum GenericPlayer<'a> {
         feature = "serde",
         feature = "games"
     ))]
-    Minetest(&'a crate::services::minetest_master_server::Player),
+    Minetest(&'a crate::games::minetest::Player),
 }
 
 pub trait CommonResponse {
