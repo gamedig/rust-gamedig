@@ -69,4 +69,4 @@ use_small_heuristics = "Default"
 use_try_shorthand = true
 version = "Two"
 where_single_line = true
-wrap_comments = true
+wrap_comments = false
