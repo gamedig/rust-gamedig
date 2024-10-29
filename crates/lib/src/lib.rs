@@ -1,6 +1,13 @@
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-// *                                                                 *
-// *               Copyright (c) 2022 - 2024                         *
+// *           _____                      _____  _                   *
+// *          / ____|                    |  __ \(_)                  *
+// *         | |  __  __ _ _ __ ___   ___| |  | |_  __ _             *
+// *         | | |_ |/ _` | '_ ` _ \ / _ \ |  | | |/ _` |            *
+// *         | |__| | (_| | | | | | |  __/ |__| | | (_| |            *
+// *          \_____|\__,_|_| |_| |_|\___|_____/|_|\__, |            *
+// *                                                __/ |            *
+// *                                               |___/             *
+// *                 Copyright (c) 2022 - 2024                       *
 // *            GameDig Organization & Contributors                  *
 // *                                                                 *
 // *               Licensed under the MIT License                    *
@@ -55,3 +62,10 @@ pub mod service;
 /// conversion of custom structures into more widely-used formats.
 #[cfg(feature = "attribute_adapters")]
 pub mod adapters;
+
+/// Logging utilities.
+///
+/// This feature-gated module provides logging targets that can be used
+/// with the `log` crate for logging events within the library.
+#[cfg(feature = "attribute_log")]
+pub mod log;
