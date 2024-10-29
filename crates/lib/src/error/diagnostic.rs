@@ -1,4 +1,4 @@
-use {pretty_hex::PrettyHex, std::fmt};
+use std::fmt;
 
 /// A struct representing a failure reason.
 ///
@@ -127,34 +127,117 @@ impl fmt::Display for OpenGitHubIssue {
 /// troubleshooting.
 #[allow(dead_code)]
 #[derive(Debug)]
-pub(crate) struct HexDump {
+pub(crate) struct HexDump<'a> {
     name: String,
-    inner: Vec<u8>,
+    inner: &'a [u8],
+    position: Option<usize>,
 }
 
-impl HexDump {
+impl<'a> HexDump<'a> {
+    /// Number of bytes per line
+    const WIDTH: u8 = 16;
+
+    /// Number of bytes per group within a line
+    const GROUP_SIZE: u8 = 4;
+
+    /// Replacement character for non-ASCII bytes
+    const NON_ASCII: char = '.';
+
+    /// Total width of the hex part
+    const TOTAL_HEX_WIDTH: u8 = {
+        // Each byte is represented by two hex digits
+        let hex_digits = Self::WIDTH * 2;
+        // Spaces between bytes
+        let byte_spaces = Self::WIDTH - 1;
+        // Additional spaces between groups
+        let group_spaces = (Self::WIDTH / Self::GROUP_SIZE - 1) * 1;
+
+        hex_digits + byte_spaces + group_spaces
+    };
+
     /// Creates a new `HexDump`.
     ///
     /// # Arguments
     ///
     /// * `name` - A name or label for the data.
     /// * `inner` - The binary data to be displayed as a hex dump.
+    /// * `position` - The position of the data when within a buffer.
     #[allow(dead_code)]
-    pub(crate) fn new<T: Into<String>>(name: T, inner: Vec<u8>) -> Self {
-        HexDump {
+    pub(crate) fn new<T: Into<String>>(name: T, inner: &'a [u8], position: Option<usize>) -> Self {
+        Self {
             name: name.into(),
             inner,
+            position,
         }
     }
 }
 
-impl fmt::Display for HexDump {
+impl<'a> fmt::Display for HexDump<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
+        writeln!(f, "\x1B[93mHex Dump:\x1B[0m")?;
+        writeln!(f, "Name    :   {}", self.name)?;
+
+        let data = self.inner;
+        let len = data.len();
+        writeln!(f, "Length  :   {len} (0x{len:x}) bytes")?;
+        writeln!(
             f,
-            "\x1B[93mHex Dump:\x1B[0m\nName:   {}\n{:?}\n\n",
-            self.name,
-            self.inner.hex_dump()
-        )
+            "Position:   {}",
+            if self.position.is_some() {
+                self.position.unwrap().to_string()
+            } else {
+                "None".to_string()
+            }
+        )?;
+
+        writeln!(f)?;
+
+        if data.is_empty() {
+            return Ok(());
+        }
+
+        for (line_num, line) in data.chunks(Self::WIDTH as usize).enumerate() {
+            let address = line_num * Self::WIDTH as usize;
+            write!(f, "{address:08x}:   ")?;
+
+            let mut hex_len = 0;
+            for (i, &byte) in line.iter().enumerate() {
+                if i > 0 {
+                    if i % Self::GROUP_SIZE as usize == 0 {
+                        write!(f, "  ")?;
+
+                        hex_len += 2;
+                    } else {
+                        write!(f, " ")?;
+
+                        hex_len += 1;
+                    }
+                }
+
+                write!(f, "{byte:02x}")?;
+
+                hex_len += 2;
+            }
+
+            let padding_needed = Self::TOTAL_HEX_WIDTH - hex_len;
+            if padding_needed > 0 {
+                write!(f, "{:width$}", "", width = padding_needed as usize)?;
+            }
+
+            write!(f, "   ")?;
+            for &byte in line {
+                let ch = if byte.is_ascii_graphic() || byte == b' ' {
+                    byte as char
+                } else {
+                    Self::NON_ASCII
+                };
+
+                write!(f, "{ch}")?;
+            }
+
+            writeln!(f)?;
+        }
+
+        writeln!(f)
     }
 }
