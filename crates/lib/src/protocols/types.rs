@@ -99,7 +99,7 @@ pub enum GenericPlayer<'a> {
         feature = "serde",
         feature = "games"
     ))]
-    Minetest(&'a crate::games::minetest::Player),
+    Minetest(&'a crate::services::minetest_master_server::Player),
 }
 
 pub trait CommonResponse {
