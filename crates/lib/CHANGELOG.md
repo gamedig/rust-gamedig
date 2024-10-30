@@ -2,7 +2,10 @@ Who knows what the future holds...
 
 # 0.X.Y - DD/MM/YYYY
 
-To be made...
+Games:
+
+- [Minetest](https://www.minetest.net/) support (available on the `tls`, `serde` and `services` features) (#218 by
+  @CosminPerRam).
 
 # 0.5.2 - 20/10/2024
 

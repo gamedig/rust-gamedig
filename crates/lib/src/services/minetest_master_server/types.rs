@@ -1,19 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Server {
     pub address: String,
     pub clients: u32,
-    pub clients_list: Vec<String>,
+    pub clients_list: Option<Vec<String>>,
     pub clients_max: u32,
-    pub creative: bool,
+    pub creative: Option<bool>,
     pub damage: bool,
     pub description: String,
     pub game_time: u32,
     pub gameid: String,
     pub lag: Option<f32>,
     pub name: String,
-    pub password: bool,
+    pub password: Option<bool>,
     pub port: u16,
     pub proto_max: u16,
     pub proto_min: u16,
