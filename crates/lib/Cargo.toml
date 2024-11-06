@@ -22,11 +22,12 @@ categories = [
 # Required Dependencies
 thiserror = "1.0.61"
 maybe-async = "0.2.10"
+phf = { version = "0.11", features = ["macros"] }
 error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
 log = { version = "0.4.22", optional = true }
-native-tls = { version = "0.2.12", optional = true }
+bytes = { version = "1.8.0", optional = true }
 serde_json = { version = "1.0.127", optional = true }
 encoding_rs = { version = "0.8.34", optional = true }
 async-trait = { version = "0.1.51", optional = true }
@@ -34,11 +35,11 @@ tokio = { version = "1.37.0", features = ["full"], optional = true }
 serde = { version = "1.0.209", features = ["derive"], optional = true }
 ureq = { version = "2.10.1", default-features = false, features = [
     "json",
-    "socks-proxy",
+    "native-tls",
 ], optional = true }
 reqwest = { version = "0.12.7", default-features = false, features = [
     "json",
-    "socks",
+    "default-tls",
 ], optional = true }
 
 [features]
