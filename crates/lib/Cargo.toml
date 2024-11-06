@@ -51,76 +51,52 @@ _BUFFER = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
-_TCP = ["_BUFFER"]
-_UDP = ["_BUFFER"]
-_HTTP = ["dep:serde_json"]
-_TLS = ["_HTTP"]
+_HTTPS = ["dep:serde_json"]
+_TCP = ["_BUFFER", "dep:bytes"]
+_UDP = ["_BUFFER", "dep:bytes"]
+
+## Misc
+_DEV_LOG = ["attribute_log"]
 
 # Default Features (Prefix: default_)
 #
 # Util features for users to enable all features with a runtime
 # without having to specify each feature individually
 #
-# Required: Only 1 can be enabled at a time as it enables rt features
-default_client_std = ["client_std", "http_std", "tls_std_default", "all"]
-default_client_tokio = [
-    "client_tokio",
-    "http_tokio",
-    "tls_tokio_default",
-    "all",
-]
+# - Only 1 can be enabled at a time as it enables rt features
+default_client_std = ["socket_std", "https_std", "all"]
+default_client_tokio = ["socket_tokio", "https_tokio", "all"]
 
-# Runtime Client Features (Prefix: client_<RUNTIME>)
+# Socket Client (Prefix: socket_<RUNTIME>)
 #
-# Required: Only 1 runtime client type can be enabled at a time
+# A socket client is required to establish TCP/UDP connections
 #
-# Note: This requirement is protected by a compile time check
-client_std = ["maybe-async/is_sync"]
-client_tokio = ["dep:async-trait", "dep:tokio"]
+# - Only 1 socket client type can be enabled at a time
+socket_std = ["maybe-async/is_sync"]
+socket_tokio = ["dep:async-trait", "dep:tokio"]
 
-# HTTP Client Features (Prefix: http_<RUNTIME>)
+# HTTPS Client (Prefix: https_<RUNTIME>)
 #
-# Required: Only 1 http client type can be enabled at a time
+# Does what it says on the tin, enables HTTPS client support.
 #
-# Required: HTTP Client must match the runtime client
+# TLS is provided by native-tls, here are the platforms it supports:
+# - Windows: [SChannel] built-in
+# - macOS: [SecureTransport] built-in
+# - Linux: [OpenSSL] needs to be installed
 #
-# Required: Can only be enabled if a feature with _HTTP is enabled
-#
-# Note: These requirements are protected by compile time checks 
-#
-# Dev Note: Has to be stated on user side as there is no way to check
-#           if the runtime client is async or sync within a feature.
-#           I think using both deps in _HTTP would be a bad idea.
-#           If users want to use _HTTP feature they will need to state 
-#           the http client to use aswell or use default features.
-http_std = ["dep:ureq"]
-http_tokio = ["dep:reqwest"]
-
-# TLS Features (Prefix: tls_<RUNTIME>_<FEATURE>)
-#
-# Required: 1 must be enabled if a feature with _TLS is enabled
-#
-# Required: TLS feature must match the runtime and http client
-#
-# Note: These requirements are protected by compile time checks
-tls_std_default = ["ureq/tls"]
-tls_std_rustls = ["ureq/tls"]
-tls_std_native = ["ureq/native-tls", "dep:native-tls"]
-tls_std_rustls_native_certs = ["ureq/tls", "ureq/native-certs"]
-tls_tokio_default = ["reqwest/default-tls"]
-tls_tokio_rustls = ["reqwest/rustls-tls"]
-tls_tokio_native = ["reqwest/native-tls"]
-tls_tokio_native_vendored = ["reqwest/native-tls-vendored"]
+# - Only 1 HTTPS client type can be enabled at a time.
+# - If using socket client also insure to match the runtime.
+https_std = ["maybe-async/is_sync", "dep:ureq"]
+https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
 
 # Library Features
 ## Attributes (Prefix: attribute_)
 attribute_log = ["dep:log"]
-attribute_dev_log = ["attribute_log"]
 attribute_serde = ["dep:serde"]
 attribute_adapters = []
 attribute_extended_derive = []
 
-## Custom Games
+## Games
 
 ## Protocols
 ### Query
@@ -142,30 +118,32 @@ rcon_battleye_2 = ["_TCP"]
 rcon_valve_source = ["_TCP"]
 
 ## Services (Prefix: service_)
-service_alt_v_mp = ["_TLS"]
-service_beam_mp = ["_TLS"]
-service_discord = ["_TLS"]
-service_epic = ["_TLS"]
-service_minetest = ["_TLS"]
-service_rage_mp = ["_TLS"]
+service_alt_v_mp = ["_HTTPS"]
+service_beam_mp = ["_HTTPS"]
+service_discord = ["_HTTPS"]
+service_epic = ["_HTTPS"]
+service_minetest = ["_HTTPS"]
+service_rage_mp = ["_HTTPS"]
 service_valve_master = ["_UDP"]
 
 ## Index
 all = [
     "all_attributes",
-    "all_custom_games",
+    "all_games",
     "all_query_protocols",
     "all_rcon_protocols",
     "all_services",
 ]
+
 all_attributes = [
     "attribute_log",
-    "attribute_dev_log",
     "attribute_serde",
     "attribute_adapters",
     "attribute_extended_derive",
 ]
-all_custom_games = []
+
+all_games = []
+
 all_query_protocols = [
     "gamespy_1",
     "gamespy_2",
@@ -180,7 +158,9 @@ all_query_protocols = [
     "valve",
     "valve_gold_src",
 ]
+
 all_rcon_protocols = ["rcon_battleye_2", "rcon_valve_source"]
+
 all_services = [
     "service_alt_v_mp",
     "service_beam_mp",
