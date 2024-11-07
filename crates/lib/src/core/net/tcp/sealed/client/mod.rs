@@ -6,9 +6,9 @@ use {
     ::std::{net::SocketAddr, time::Duration},
 };
 
-#[cfg(feature = "client_std")]
+#[cfg(feature = "socket_std")]
 mod std;
-#[cfg(feature = "client_tokio")]
+#[cfg(feature = "socket_tokio")]
 mod tokio;
 
 /// Abstract layer for TCP operations
@@ -34,28 +34,41 @@ pub(crate) trait AbstractTcp {
     async fn write(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
 }
 
+/// An internal TCP client
+///
+/// This struct is used to wrap the actual TCP client implementation
+/// and provide a conditional interface for the client.
 #[derive(Debug)]
 pub(crate) struct Inner {
-    #[cfg(feature = "client_std")]
+    /// The standard library (blocking) TCP client
+    #[cfg(feature = "socket_std")]
     pub(crate) inner: std::StdTcpClient,
 
-    #[cfg(feature = "client_tokio")]
+    /// The Tokio (asynchronous) TCP client
+    #[cfg(feature = "socket_tokio")]
     pub(crate) inner: tokio::TokioTcpClient,
 }
 
 #[maybe_async::maybe_async]
 impl Inner {
+    /// Creates a new instance of `Inner`, which internally holds either a `std` or `tokio` TCP client,
+    /// depending on the enabled feature flag.
+    ///
+    /// # Arguments
+    /// * `addr` - The socket address of the server you want to connect to.
+    /// * `timeout` - An optional timeout value for establishing the connection.
     pub(crate) async fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Inner>::New: Creating new TCP client for {addr} with timeout: {timeout:?}"
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Inner>::New: Get new sealed TCP client for {addr}"
         );
 
         Ok(Self {
-            #[cfg(feature = "client_std")]
+            #[cfg(feature = "socket_std")]
             inner: std::StdTcpClient::new(addr, timeout)?,
 
-            #[cfg(feature = "client_tokio")]
+            #[cfg(feature = "socket_tokio")]
             inner: tokio::TokioTcpClient::new(addr, timeout).await?,
         })
     }
