@@ -31,8 +31,11 @@ impl TcpClient {
         read_timeout: Option<&Duration>,
         write_timeout: Option<&Duration>,
     ) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
-        log::trace!("TCP::<Client>::New: Creating new TCP client for {addr}");
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Client>::New: Creating new TCP client for {addr}"
+        );
 
         Ok(Self {
             client: sealed::client::Inner::new(addr, connect_timeout).await?,
@@ -55,8 +58,11 @@ impl TcpClient {
     ///   read. If `None`, it will default to reading the maximum packet size.
     #[allow(dead_code)]
     pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Buffer> {
-        #[cfg(feature = "attribute_log")]
-        log::trace!("TCP::<Client>::Read: Reading data from the stream");
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Client>::Read: Reading data from inner client"
+        );
 
         Ok(Buffer::from(
             self.client
@@ -73,8 +79,11 @@ impl TcpClient {
     /// * `data` - A slice of bytes to be written to the TCP stream.
     #[allow(dead_code)]
     pub(crate) async fn write(&mut self, data: &[u8]) -> Result<()> {
-        #[cfg(feature = "attribute_log")]
-        log::trace!("TCP::<Client>::Write: Writing data to the stream");
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Client>::Write: Writing data to inner client"
+        );
 
         self.client
             .inner
