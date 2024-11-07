@@ -25,12 +25,13 @@ pub(crate) struct StdTcpClient {
 #[maybe_async::sync_impl]
 impl super::AbstractTcp for StdTcpClient {
     fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Std>::New: Creating new TCP client for {addr} with timeout: {timeout:?}"
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Std>::New: Creating new TCP client for {addr}"
         );
 
-        let timeout = match timeout {
+        let valid_timeout = match timeout {
             Some(timeout) => {
                 match timeout.is_zero() {
                     true => Duration::from_secs(5),
@@ -41,8 +42,20 @@ impl super::AbstractTcp for StdTcpClient {
             None => Duration::from_secs(5),
         };
 
-        match TcpStream::connect_timeout(addr, timeout) {
+        #[cfg(feature = "_DEV_LOG")]
+        log::debug!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Std>::New: Attempting to connect to {addr:?} with a timeout of {valid_timeout:?}",
+        );
+
+        match TcpStream::connect_timeout(addr, valid_timeout) {
             Ok(stream) => {
+                #[cfg(feature = "_DEV_LOG")]
+                log::debug!(
+                    target: crate::log::EventTarget::GAMEDIG_DEV,
+                    "TCP::<Std>::New: Successfully connected to {addr:?}",
+                );
+
                 Ok(Self {
                     peer_addr: *addr,
                     stream,
@@ -51,7 +64,7 @@ impl super::AbstractTcp for StdTcpClient {
                 })
             }
             Err(e) => {
-                Err(Report::from(e)
+                return Err(Report::from(e)
                     .change_context(NetworkError::TcpConnectionError { peer_addr: *addr }.into())
                     .attach_printable(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying I/O error.",
@@ -60,7 +73,7 @@ impl super::AbstractTcp for StdTcpClient {
                         "Verify the server address ({addr:?}) is reachable, ensure the server is \
                          running, and that no firewall or network restrictions are blocking the \
                          connection."
-                    ))))
+                    ))));
             }
         }
     }
@@ -70,17 +83,15 @@ impl super::AbstractTcp for StdTcpClient {
         size: Option<usize>,
         timeout: Option<&Duration>,
     ) -> Result<(Vec<u8>, usize)> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Std>::Read: Reading data from {} with size: {:?}",
-            &self.peer_addr,
-            size
-        );
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Std>::Read: Reading data from {}", &self.peer_addr);
 
         // Set the read timeout if not already set
         if !self.read_timeout_set {
             // Validate the timeout duration
-            let timeout = match timeout {
+            let valid_timeout = match timeout {
                 Some(timeout) => {
                     match timeout.is_zero() {
                         true => Duration::from_secs(5),
@@ -91,10 +102,27 @@ impl super::AbstractTcp for StdTcpClient {
                 None => Duration::from_secs(5),
             };
 
-            match self.stream.set_read_timeout(Some(timeout)) {
+            #[cfg(feature = "_DEV_LOG")]
+            log::debug!(
+                target: crate::log::EventTarget::GAMEDIG_DEV,
+                "TCP::<Std>::Read: Setting read timeout for {} to {valid_timeout:?}",
+                &self.peer_addr
+
+
+            );
+
+            match self.stream.set_read_timeout(Some(valid_timeout)) {
                 Ok(_) => {
+                    #[cfg(feature = "_DEV_LOG")]
+                    log::debug!(
+                        target: crate::log::EventTarget::GAMEDIG_DEV,
+                        "TCP::<Std>::Read: Successfully set read timeout for {}",
+                        &self.peer_addr
+                    );
+
                     self.read_timeout_set = true;
                 }
+
                 Err(e) => {
                     return Err(Report::from(e)
                         .change_context(
@@ -121,9 +149,10 @@ impl super::AbstractTcp for StdTcpClient {
         match self.stream.read_to_end(&mut vec) {
             // Data read successfully
             Ok(len) => {
-                #[cfg(feature = "attribute_log")]
+                #[cfg(feature = "_DEV_LOG")]
                 if valid_size < len {
                     log::debug!(
+                        target: crate::log::EventTarget::GAMEDIG_DEV,
                         "TCP::<Std>::Read: More data than expected. Realloc was required. \
                          Expected: {valid_size} bytes, Read: {len} bytes",
                     );
@@ -158,16 +187,14 @@ impl super::AbstractTcp for StdTcpClient {
     }
 
     fn write(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Std>::Write: Writing data to {} with size: {}",
-            &self.peer_addr,
-            data.len()
-        );
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Std>::Write: Writing data to {}", &self.peer_addr);
 
         if !self.write_timeout_set {
             // Validate the timeout duration
-            let timeout = match timeout {
+            let valid_timeout = match timeout {
                 Some(timeout) => {
                     match timeout.is_zero() {
                         true => Duration::from_secs(5),
@@ -178,7 +205,14 @@ impl super::AbstractTcp for StdTcpClient {
                 None => Duration::from_secs(5),
             };
 
-            match self.stream.set_write_timeout(Some(timeout)) {
+            #[cfg(feature = "_DEV_LOG")]
+            log::debug!(
+                target: crate::log::EventTarget::GAMEDIG_DEV,
+                "TCP::<Std>::Write: Setting write timeout for {} to {valid_timeout:?}",
+                &self.peer_addr
+            );
+
+            match self.stream.set_write_timeout(Some(valid_timeout)) {
                 Ok(_) => {
                     self.write_timeout_set = true;
                 }
