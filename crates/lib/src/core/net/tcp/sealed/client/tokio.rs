@@ -29,13 +29,13 @@ pub(crate) struct TokioTcpClient {
 #[maybe_async::async_impl]
 impl super::AbstractTcp for TokioTcpClient {
     async fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Tokio>::New: Creating new TCP client for {addr} with timeout: {timeout:?}"
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Tokio>::New: Creating new TCP client for {addr}"
         );
 
-        // Validate the timeout duration
-        let timeout = match timeout {
+        let valid_timeout = match timeout {
             Some(timeout) => {
                 match timeout.is_zero() {
                     true => Duration::from_secs(5),
@@ -46,9 +46,23 @@ impl super::AbstractTcp for TokioTcpClient {
             None => Duration::from_secs(5),
         };
 
-        let (orh, owh) = match timer(timeout, TcpStream::connect(*addr)).await {
+        #[cfg(feature = "_DEV_LOG")]
+        log::debug!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Tokio>::New: Attempting to connect to {addr:?} with a timeout of {valid_timeout:?}",
+        );
+
+        let (orh, owh) = match timer(valid_timeout, TcpStream::connect(*addr)).await {
             // Connection established successfully
-            Ok(Ok(stream)) => stream.into_split(),
+            Ok(Ok(stream)) => {
+                #[cfg(feature = "_DEV_LOG")]
+                log::debug!(
+                    target: crate::log::EventTarget::GAMEDIG_DEV,
+                    "TCP::<Tokio>::New: Successfully connected to {addr:?}",
+                );
+
+                stream.into_split()
+            }
 
             // Error during the connection attempt
             Ok(Err(e)) => {
@@ -92,9 +106,10 @@ impl super::AbstractTcp for TokioTcpClient {
         size: Option<usize>,
         timeout: Option<&Duration>,
     ) -> Result<(Vec<u8>, usize)> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Tokio>::Read: Reading data from {} with size: {size:?}",
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Tokio>::Read: Reading data from {}",
             &self.peer_addr,
         );
 
@@ -121,12 +136,12 @@ impl super::AbstractTcp for TokioTcpClient {
         match timer(timeout, orh.read_to_end(&mut vec)).await {
             // Data read successfully
             Ok(Ok(len)) => {
-                #[cfg(feature = "attribute_log")]
+                #[cfg(feature = "_DEV_LOG")]
                 if valid_size < len {
                     log::debug!(
-                        "TCP::<Tokio>::Read: Realloc was required, Requested Size: {valid_size}, \
-                         Received: {len} from {}",
-                        &self.peer_addr,
+                        target: crate::log::EventTarget::GAMEDIG_DEV,
+                        "TCP::<Tokio>::Read: More data than expected. Realloc was required. \
+                         Expected: {valid_size} bytes, Read: {len} bytes",
                     );
                 }
 
@@ -179,11 +194,12 @@ impl super::AbstractTcp for TokioTcpClient {
     }
 
     async fn write(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            "TCP::<Tokio>::Write: Writing data to {} with size: {}",
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Tokio>::Write: Writing data to {}",
             &self.peer_addr,
-            data.len()
+
         );
 
         // Await the write stream lock
