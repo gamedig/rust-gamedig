@@ -96,6 +96,16 @@ macro_rules! define_error_kind {
 }
 
 define_error_kind! {
+    /// Packet Errors
+    PacketError, {
+        /// Packet Deserialize Error
+        ///
+        /// This error occurs when a packet cannot be deserialized.
+        PacketDeserializeError {} (
+            "[GameDig]::[Packet::PacketDeserializeError]: Failed to deserialize packet"
+        )
+    }
+
     /// IO Error
     ///
     /// This set of errors are related to IO operations.
@@ -167,7 +177,7 @@ define_error_kind! {
         ///
         /// This error occurs when a timeout elapses while waiting for an operation to complete.
         // both _TCP && client_std
-        #[cfg(all(feature = "_TCP", feature = "client_tokio"))]
+        #[cfg(all(feature = "_TCP", feature = "socket_tokio"))]
         TcpTimeoutElapsedError {
             /// The address of the remote server that the operation was attempted to.
             peer_addr: std::net::SocketAddr
@@ -179,7 +189,7 @@ define_error_kind! {
         ///
         /// This error occurs when a timeout cannot be set on a TCP stream.
         /// It's usually due to the duration being equal to zero somehow.
-        #[cfg(all(feature = "_TCP", feature = "client_std"))]
+        #[cfg(all(feature = "_TCP", feature = "socket_std"))]
         TcpSetTimeoutError {
             /// The address of the remote server that the timeout was attempted to be set on.
             peer_addr: std::net::SocketAddr
@@ -232,7 +242,7 @@ define_error_kind! {
         /// UDP Timeout Elapsed Error
         ///
         /// This error occurs when a timeout elapses while waiting for an operation to complete.
-        #[cfg(all(feature = "_UDP", feature = "client_tokio"))]
+        #[cfg(all(feature = "_UDP", feature = "socket_tokio"))]
         UdpTimeoutElapsedError {
             /// The address of the remote server that the operation was attempted to.
             peer_addr: std::net::SocketAddr
@@ -244,7 +254,7 @@ define_error_kind! {
         ///
         /// This error occurs when a timeout cannot be set on a UDP socket.
         /// It's usually due to the duration being equal to zero somehow.
-        #[cfg(all(feature = "_UDP", feature = "client_std"))]
+        #[cfg(all(feature = "_UDP", feature = "socket_std"))]
         UdpSetTimeoutError {
             /// The address of the remote server that the timeout was attempted to be set on.
             peer_addr: std::net::SocketAddr
