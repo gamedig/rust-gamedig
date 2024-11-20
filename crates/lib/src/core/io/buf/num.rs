@@ -3,7 +3,7 @@ use crate::error::Result;
 impl super::Buffer {
     fn _get_inner_slice<T, const N: usize, F>(&mut self, convert: F) -> Result<T>
     where F: FnOnce([u8; N]) -> T {
-        self.check_range(.. self.pos + N)?;
+        self.check_range(.. N)?;
 
         let mut x = [0u8; N];
         x.copy_from_slice(&self.inner[self.pos .. self.pos + N]);
