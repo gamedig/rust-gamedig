@@ -114,14 +114,14 @@ define_error_kind! {
         ///
         /// This error occurs when there is an attempt to read beyond the available data in the buffer.
         #[cfg(feature = "_BUFFER")]
-        BufferUnderflowError {
+        BufferOutOfBoundsError {
             /// The number of bytes that were attempted to be read.
             attempted: usize,
 
             /// The number of bytes that were available to be read.
             available: usize
         }(
-            "[GameDig]::[IO::BufferUnderflowError]: Attempted to read {attempted} bytes, but only {available} bytes available."
+            "[GameDig]::[IO::BufferOutOfBoundsError]: Attempted to read {attempted} bytes, but only {available} bytes available."
         ),
 
         /// String Conversion Error
