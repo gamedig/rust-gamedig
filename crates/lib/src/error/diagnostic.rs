@@ -127,13 +127,13 @@ impl fmt::Display for OpenGitHubIssue {
 /// troubleshooting.
 #[allow(dead_code)]
 #[derive(Debug)]
-pub(crate) struct HexDump<'a> {
+pub(crate) struct HexDump {
     name: String,
-    inner: &'a [u8],
+    inner: Vec<u8>,
     position: Option<usize>,
 }
 
-impl<'a> HexDump<'a> {
+impl HexDump {
     /// Number of bytes per line
     const WIDTH: u8 = 16;
 
@@ -163,7 +163,7 @@ impl<'a> HexDump<'a> {
     /// * `inner` - The binary data to be displayed as a hex dump.
     /// * `position` - The position of the data when within a buffer.
     #[allow(dead_code)]
-    pub(crate) fn new<T: Into<String>>(name: T, inner: &'a [u8], position: Option<usize>) -> Self {
+    pub(crate) fn new<T: Into<String>>(name: T, inner: Vec<u8>, position: Option<usize>) -> Self {
         Self {
             name: name.into(),
             inner,
@@ -172,12 +172,12 @@ impl<'a> HexDump<'a> {
     }
 }
 
-impl<'a> fmt::Display for HexDump<'a> {
+impl fmt::Display for HexDump {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\x1B[93mHex Dump:\x1B[0m")?;
         writeln!(f, "Name    :   {}", self.name)?;
 
-        let data = self.inner;
+        let data = &self.inner;
         let len = data.len();
         writeln!(f, "Length  :   {len} (0x{len:x}) bytes")?;
         writeln!(
