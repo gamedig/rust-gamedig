@@ -110,7 +110,7 @@ define_error_kind! {
     ///
     /// This set of errors are related to IO operations.
     IoError, {
-        /// Underflow Error
+        /// Out of Bounds Error
         ///
         /// This error occurs when there is an attempt to read beyond the available data in the buffer.
         #[cfg(feature = "_BUFFER")]
@@ -122,6 +122,20 @@ define_error_kind! {
             available: usize
         }(
             "[GameDig]::[IO::BufferOutOfBoundsError]: Attempted to read {attempted} bytes, but only {available} bytes available."
+        ),
+
+        /// Invalid Range Error
+        /// 
+        /// This error occurs when an invalid range is provided to a buffer read operation.
+        #[cfg(feature = "_BUFFER")]
+        BufferInvalidRangeError {
+            /// The start of the range that was attempted to be read.
+            start: usize,
+
+            /// The end of the range that was attempted to be read.
+            end: usize
+        }(
+            "[GameDig]::[IO::BufferInvalidRangeError]: Invalid range: [{start}..{end}]"
         ),
 
         /// String Conversion Error
