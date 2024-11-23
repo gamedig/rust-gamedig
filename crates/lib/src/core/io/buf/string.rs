@@ -26,11 +26,11 @@ impl super::Buffer {
         delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
+        // .. = [self.pos .. self.len]
         self.check_range(..)?;
 
         let delimiter = delimiter.unwrap_or([0x00]);
 
-        // Using self.len to represent the length of valid data in the buffer
         let end_pos = self.inner[self.pos .. self.len]
             .iter()
             .position(|&b| b == delimiter[0])
@@ -49,8 +49,9 @@ impl super::Buffer {
                                 "Invalid UTF-8 sequence found during string read.",
                             ))
                             .attach_printable(HexDump::new(
-                                format!("Current buffer state (pos: {})", self.pos),
+                                "Invalid UTF-8 sequence found",
                                 self.inner.clone(),
+                                Some(self.pos),
                             ))
                             .attach_printable(OpenGitHubIssue())
                     },
@@ -59,6 +60,46 @@ impl super::Buffer {
         };
 
         self.pos += end_pos + delimiter.len();
+
+        Ok(s)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn read_string_utf8_range(
+        &mut self,
+        range: std::ops::Range<usize>,
+        strict: bool,
+    ) -> Result<String> {
+        self.check_range(range.clone())?;
+
+        // Slice the buffer to extract the string based on the given range
+        let s = match strict {
+            false => {
+                String::from_utf8_lossy(&self.inner[self.pos + range.start .. self.pos + range.end])
+                    .into_owned()
+            }
+            true => {
+                String::from_utf8(
+                    self.inner[self.pos + range.start .. self.pos + range.end].to_vec(),
+                )
+                .map_err(|e| {
+                    Report::from(e)
+                        .change_context(IoError::BufferStringConversionError {}.into())
+                        .attach_printable(FailureReason::new(
+                            "Invalid UTF-8 sequence found during string read.",
+                        ))
+                        .attach_printable(HexDump::new(
+                            "Invalid UTF-8 sequence found",
+                            self.inner.clone(),
+                            Some(self.pos + range.start),
+                        ))
+                        .attach_printable(OpenGitHubIssue())
+                })?
+            }
+        };
+
+        // Update the current position after reading
+        self.pos += range.end;
 
         Ok(s)
     }
@@ -75,31 +116,13 @@ impl super::Buffer {
     ///     replacing invalid UTF-8 sequences with `�`.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
-        // Cant use check range here but needs to be checked
-        if self.pos > self.len {
-            return Err(Report::new(ErrorKind::from(IoError::BufferUnderflowError {
-                attempted: 1,
-                available: self.len - self.pos,
-            }))
-            .attach_printable(FailureReason::new(
-                "Attempted to read more bytes than available in the buffer.",
-            ))
-            .attach_printable(HexDump::new(
-                format!("Current buffer state (pos: {})", self.pos),
-                self.inner.clone(),
-            ))
-            .attach_printable(OpenGitHubIssue()));
-        }
-
+        self.check_range(.. 1)?;
         let len = self.inner[self.pos] as usize;
-        self.pos += 1;
-
         let end_pos = self.pos + len;
-
         self.check_range(.. end_pos)?;
 
         let s = match strict {
-            false => String::from_utf8_lossy(&self.inner[self.pos .. end_pos]).into_owned(),
+            false => String::from_utf8_lossy(&self.inner[self.pos + 1 .. end_pos]).into_owned(),
             true => {
                 String::from_utf8(self.inner[self.pos .. end_pos].to_vec()).map_err(|e| {
                     Report::from(e)
@@ -108,8 +131,9 @@ impl super::Buffer {
                             "Invalid UTF-8 sequence found during string read.",
                         ))
                         .attach_printable(HexDump::new(
-                            format!("Current buffer state (pos: {})", self.pos),
+                            "Invalid UTF-8 sequence found",
                             self.inner.clone(),
+                            Some(self.pos),
                         ))
                         .attach_printable(OpenGitHubIssue())
                 })?
@@ -157,8 +181,9 @@ impl super::Buffer {
                             "Invalid UTF-16 sequence found during string read.",
                         ))
                         .attach_printable(HexDump::new(
-                            format!("Current buffer state (pos: {})", self.pos),
+                            "Invalid UTF-16 sequence found",
                             self.inner.clone(),
+                            Some(self.pos),
                         ))
                         .attach_printable(OpenGitHubIssue())
                 })?
@@ -277,8 +302,9 @@ impl super::Buffer {
                         "Invalid Latin-1 sequence found during string read.",
                     ))
                     .attach_printable(HexDump::new(
-                        format!("Current buffer state (pos: {})", self.pos),
+                        "Invalid Latin-1 sequence found",
                         self.inner.clone(),
+                        Some(self.pos),
                     ))
                     .attach_printable(OpenGitHubIssue()),
             );

@@ -13,6 +13,11 @@ use {
 mod num;
 mod string;
 
+pub(crate) enum Direction {
+    Forward,
+    Backward,
+}
+
 pub(crate) struct Buffer {
     inner: Vec<u8>,
     len: usize,
@@ -36,25 +41,48 @@ impl Buffer {
         Ok(&self.inner[self.pos .. self.pos + bytes])
     }
 
-    pub(crate) fn move_pos(&mut self, pos: isize) -> Result<()> {
-        let new_pos = self.pos as isize + pos;
+    pub(crate) fn move_pos(&mut self, direction: Direction, bytes: usize) -> Result<()> {
+        let new_pos = match direction {
+            Direction::Forward => self.pos + bytes,
+            Direction::Backward => {
+                self.pos.checked_sub(bytes).ok_or_else(|| {
+                    Report::new(ErrorKind::from(IoError::BufferOutOfBoundsError {
+                        attempted: bytes,
+                        available: self.len - self.pos,
+                    }))
+                    .attach_printable(FailureReason::new(
+                        "Attempted to move the buffer position out of bounds. (Attempt is \
+                         backwards)",
+                    ))
+                    .attach_printable(HexDump::new(
+                        "Position moved OOB (new_pos < 0)",
+                        self.inner.clone(),
+                        Some(self.pos),
+                    ))
+                    .attach_printable(OpenGitHubIssue())
+                })?
+            }
+        };
 
-        if new_pos < 0 || new_pos as usize > self.len {
-            return Err(Report::new(ErrorKind::from(IoError::BufferUnderflowError {
-                attempted: pos as usize,
-                available: self.len - self.pos,
-            }))
-            .attach_printable(FailureReason::new(
-                "Attempted to move the buffer position out of bounds.",
-            ))
-            .attach_printable(HexDump::new(
-                format!("Current buffer state (pos: {})", self.pos),
-                self.inner.clone(),
-            ))
-            .attach_printable(OpenGitHubIssue()));
+        if new_pos > self.len {
+            return Err(
+                Report::new(ErrorKind::from(IoError::BufferOutOfBoundsError {
+                    attempted: new_pos,
+                    available: self.len - self.pos,
+                }))
+                .attach_printable(FailureReason::new(
+                    "Attempted to move the buffer position out of bounds.",
+                ))
+                .attach_printable(HexDump::new(
+                    "Position moved OOB",
+                    self.inner.clone(),
+                    Some(self.pos),
+                ))
+                .attach_printable(OpenGitHubIssue()),
+            );
         }
 
-        self.pos = new_pos as usize;
+        self.pos = new_pos;
 
         Ok(())
     }
@@ -73,19 +101,40 @@ impl Buffer {
             Bound::Unbounded => self.len,
         };
 
+        if start > end {
+            return Err(
+                Report::new(ErrorKind::from(IoError::BufferInvalidRangeError {
+                    start,
+                    end,
+                }))
+                .attach_printable(FailureReason::new(
+                    "Invalid range provided to buffer read operation.",
+                ))
+                .attach_printable(HexDump::new(
+                    format!("Invalid range: [{start}..{end}]"),
+                    self.inner.clone(),
+                    Some(self.pos),
+                ))
+                .attach_printable(OpenGitHubIssue()),
+            );
+        }
+
         if start > self.len || end > self.len {
-            return Err(Report::new(ErrorKind::from(IoError::BufferUnderflowError {
-                attempted: end - start,
-                available: self.len - start,
-            }))
-            .attach_printable(FailureReason::new(
-                "Attempted to access out-of-bounds range in the buffer.",
-            ))
-            .attach_printable(HexDump::new(
-                format!("Current buffer state (pos: {})", self.pos),
-                self.inner.clone(),
-            ))
-            .attach_printable(OpenGitHubIssue()));
+            return Err(
+                Report::new(ErrorKind::from(IoError::BufferOutOfBoundsError {
+                    attempted: end - start,
+                    available: self.len - start,
+                }))
+                .attach_printable(FailureReason::new(
+                    "Attempted to access out-of-bounds range in the buffer.",
+                ))
+                .attach_printable(HexDump::new(
+                    format!("Range is OOB: [{start}..{end}]"),
+                    self.inner.clone(),
+                    Some(self.pos),
+                ))
+                .attach_printable(OpenGitHubIssue()),
+            );
         }
 
         Ok(())
