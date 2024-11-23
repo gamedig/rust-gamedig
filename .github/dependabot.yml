@@ -19,13 +19,3 @@ updates:
     directory: "/crates/lib"
     schedule:
       interval: "daily"
-
-  - package-ecosystem: "cargo"
-    directory: "/crates/libc"
-    schedule:
-      interval: "daily"
-
-  - package-ecosystem: "cargo"
-    directory: "/crates/tools/net_replay"
-    schedule:
-      interval: "daily"

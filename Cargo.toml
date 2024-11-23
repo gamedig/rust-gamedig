@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/lib", "crates/cli", "crates/tools/net_replay"]
+members = ["crates/lib", "crates/cli"]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"
