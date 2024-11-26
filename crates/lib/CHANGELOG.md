@@ -1,11 +1,18 @@
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/YYYY
+# X.Y.Z - DD/MM/YYYY
+
+# 0.6.0 - 26/11/2024
+
+Breaking:
+
+- MSRV is now `1.67.0` (was `1.65.0`), this is due to deps we rely on requiring a higher version on linux builds (`1.65.0` is 2+ years old).
 
 Games:
 
 - [Minetest](https://www.minetest.net/) support (available on the `tls`, `serde` and `services` features) (#218 by
   @CosminPerRam).
+- Fixed the forest game failing when host has the client steam id (#232 by @paul-hansen).
 
 # 0.5.2 - 20/10/2024
 
