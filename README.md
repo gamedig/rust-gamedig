@@ -101,7 +101,8 @@ Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 
 ## Command Line Interface
 
-The library also has an official CLI: [GameDig-CLI](https://crates.io/crates/gamedig-cli).
+The library also has an [official CLI](https://crates.io/crates/gamedig_cli) that you can use but it has
+MSRV of `1.74.1`.
 
 ## Documentation
 
