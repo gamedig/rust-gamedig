@@ -1,6 +1,6 @@
 {
-    "act": true,
-    "repository": {
-        "default_branch": "main"
-    }
+  "act": true,
+  "repository": {
+    "default_branch": "main"
+  }
 }

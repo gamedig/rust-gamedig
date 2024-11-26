@@ -3,14 +3,14 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - "**.rs" # Any rust file
       - "**/Cargo.toml" # Any Cargo.toml
       - ".rustfmt.toml"
       - ".github/workflows/ci.yml" # This action
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - "**.rs" # Any rust file
       - "**/Cargo.toml" # Any Cargo.toml
@@ -51,7 +51,7 @@ jobs:
   # If we were able to build then test different feature combinations compile with the library
   build_lib:
     runs-on: ubuntu-latest
-    needs: [ "build_first" ]
+    needs: ["build_first"]
     # Only run if library files were modified
     if: ${{ needs.build_first.outputs.lib == 'true' }}
     strategy:
@@ -69,7 +69,7 @@ jobs:
           - build_type: "--no-default-features --features game_defs"
             build_name: "Just Game definitions"
           - build_type: "--no-default-features --features serde"
-            build_name: "Just serde" 
+            build_name: "Just serde"
     name: "Build library ${{ matrix.build_name }}"
     steps:
       - uses: actions/checkout@v4
@@ -84,7 +84,7 @@ jobs:
   # If we were able to build then test different feature combinations compile with the CLI
   build_cli:
     runs-on: ubuntu-latest
-    needs: [ "build_first" ]
+    needs: ["build_first"]
     # Only run if CLI files were modified
     if: ${{ needs.build_first.outputs.cli == 'true' }}
     strategy:
@@ -104,13 +104,13 @@ jobs:
           cache-targets: false
           save-if: false
       - name: Run Build
-        run: cargo check -p gamedig-cli --verbose --bins --examples --tests ${{ matrix.build_type }}
+        run: cargo check -p gamedig_cli --verbose --bins --examples --tests ${{ matrix.build_type }}
 
   # If we were able to build then test the MSRV compiles (for the libary as not enforced for CLI)
   build_msrv:
     name: "Build using MSRV (lib only)"
     runs-on: ubuntu-latest
-    needs: [ "build_first" ]
+    needs: ["build_first"]
     # Only run if library files were modified
     if: ${{ needs.build_first.outputs.lib == 'true' }}
     # Unfortunate hard-coding of rustup directory so that rust-cache caches it
@@ -161,7 +161,7 @@ jobs:
   clippy:
     name: "Run clippy tests"
     runs-on: ubuntu-latest
-    needs: [ "build_first" ]
+    needs: ["build_first"]
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
@@ -185,7 +185,7 @@ jobs:
   doc:
     name: "Check rustdoc"
     runs-on: ubuntu-latest
-    needs: [ "build_first" ]
+    needs: ["build_first"]
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
