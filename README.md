@@ -15,8 +15,8 @@
   <a href="https://github.com/gamedig/node-gamedig">
     <img src="https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg" alt="Node-GameDig Game Coverage">
   </a>
-  <a href="https://deps.rs/crate/gamedig/0.5.1">
-    <img src="https://deps.rs/crate/gamedig/0.5.1/status.svg" alt="Rust-GameDig Dependencies">
+  <a href="https://deps.rs/crate/gamedig">
+    <img src="https://deps.rs/crate/gamedig/latest/status.svg" alt="Rust-GameDig Dependencies">
   </a>
 </div>
 
