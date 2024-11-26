@@ -6,7 +6,7 @@ Who knows what the future holds...
 
 Breaking:
 
-- MSRV is now `1.67.0` (was `1.65.0`), this is due to deps we rely on requiring a higher version on linux builds (`1.65.0` is 2+ years old).
+- MSRV is now `1.71.1` (was `1.65.0`), this is due to deps we rely on requiring a higher version on linux builds (`1.65.0` is 2+ years old).
 
 Games:
 
