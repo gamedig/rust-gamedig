@@ -1,6 +1,6 @@
-# rust-GameDig CLI
+# Rust GameDig CLI
 
-The official [rust-GameDig](https://crates.io/crates/gamedig_cli) Command Line Interface.
+The official [rust-GameDig](https://crates.io/crates/gamedig) Command Line Interface.
 
 [![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](https://github.com/gamedig/rust-gamedig/blob/main/LICENSE.md) [![node coverage](https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
 

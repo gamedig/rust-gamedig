@@ -1,8 +1,16 @@
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/YYYY
+# X.Y.Z - DD/MM/YYYY
 
 Nothing... yet.
+
+# 0.2.0 - 26/11/2024
+
+### Breaking Changes:
+
+- Restructured the release flow to be more consistent (GitHub releases will no longer be available, use cargo instead).
+- Changed crate name from `gamedig-cli` to `gamedig_cli` to align with recommended naming conventions.
+- The CLI now requires a minimum Rust version of `1.74.1`.
 
 # 0.1.1 - 15/07/2024
 

@@ -15,8 +15,8 @@
   <a href="https://github.com/gamedig/node-gamedig">
     <img src="https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg" alt="Node-GameDig Game Coverage">
   </a>
-  <a href="https://deps.rs/crate/gamedig/0.5.1">
-    <img src="https://deps.rs/crate/gamedig/0.5.1/status.svg" alt="Rust-GameDig Dependencies">
+  <a href="https://deps.rs/crate/gamedig">
+    <img src="https://deps.rs/crate/gamedig/latest/status.svg" alt="Rust-GameDig Dependencies">
   </a>
 </div>
 
@@ -39,7 +39,7 @@ on Discord.
 
 ## Usage
 
-Minimum Supported Rust Version is `1.65.0` and the code is cross-platform.
+Minimum Supported Rust Version is `1.71.1"` and the code is cross-platform.
 
 Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files
 to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port
