@@ -19,7 +19,7 @@ pub enum Server {
 
 impl Server {
     pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
-        Ok(match value {
+        Ok(match value.to_ascii_lowercase() {
             100 => Self::Dedicated,    //'d'
             108 => Self::NonDedicated, //'l'
             112 => Self::TV,           //'p'
@@ -39,7 +39,7 @@ pub enum Environment {
 
 impl Environment {
     pub(crate) fn from_gldsrc(value: u8) -> GDResult<Self> {
-        Ok(match value {
+        Ok(match value.to_ascii_lowercase() {
             108 => Self::Linux,     //'l'
             119 => Self::Windows,   //'w'
             109 | 111 => Self::Mac, //'m' or 'o'

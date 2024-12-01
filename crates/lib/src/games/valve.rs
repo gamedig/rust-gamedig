@@ -154,6 +154,17 @@ game_query_mod!(sco, "Sven Co-op", Engine::new_gold_src(false), 27015);
 game_query_mod!(sdtd, "7 Days to Die", Engine::new(251_570), 26900);
 game_query_mod!(soulmask, "Soulmask", Engine::new(2_646_460), 27015);
 game_query_mod!(squad, "Squad", Engine::new(393_380), 27165);
+game_query_mod!(
+    starbound,
+    "Starbound",
+    Engine::new(211_820),
+    21025,
+    GatheringSettings {
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Enforce,
+        check_app_id: false,
+    }
+);
 game_query_mod!(teamfortress2, "Team Fortress 2", Engine::new(440), 27015);
 game_query_mod!(
     tfc,
