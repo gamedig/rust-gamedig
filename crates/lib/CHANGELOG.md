@@ -2,6 +2,16 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
+# 0.6.1 - 05/12/2024
+
+Games:
+
+- Added `Starbound` support (by @Novaenia).
+
+Protocols:
+
+- Fixed enum cast error on valve when parsing uppercase envrionment and server type fields (by @Novaenia).
+
 # 0.6.0 - 26/11/2024
 
 Breaking:
