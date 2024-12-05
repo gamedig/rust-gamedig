@@ -4,6 +4,11 @@ Who knows what the future holds...
 
 Nothing... yet.
 
+# 0.2.1 - 05/12/2024
+
+Dependencies:
+- `gamedig`: `v0.6.0 -> v0.6.1`
+
 # 0.2.0 - 26/11/2024
 
 ### Breaking Changes:

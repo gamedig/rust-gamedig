@@ -5,7 +5,7 @@ authors = [
 ]
 description = "A command line interface for gamedig"
 license = "MIT"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 default-run = "gamedig_cli"
 homepage = "https://gamedig.github.io/"
@@ -33,7 +33,7 @@ browser = ["dep:webbrowser"]
 # Core Dependencies
 thiserror = "2.0.0"
 clap = { version = "4.5.4", default-features = false, features = ["derive"] }
-gamedig = { version = "0.6", default-features = false, features = [
+gamedig = { version = "0.6.1", default-features = false, features = [
     "clap",
     "games",
     "game_defs",
