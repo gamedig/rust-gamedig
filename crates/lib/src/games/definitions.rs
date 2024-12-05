@@ -124,6 +124,11 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "soulmask" => game!("Soulmask", 27015, Protocol::Valve(Engine::new(2_646_460))),
     "serioussam" => game!("Serious Sam", 25601, Protocol::Gamespy(GameSpyVersion::One)),
     "squad" => game!("Squad", 27165, Protocol::Valve(Engine::new(393_380))),
+    "starbound" => game!("Starbound", 21025, Protocol::Valve(Engine::new(211_820)), GatheringSettings {
+        players: GatherToggle::Enforce,
+        rules: GatherToggle::Enforce,
+        check_app_id: false,
+    }.into_extra()),
     "theforest" => game!("The Forest", 27016, Protocol::Valve(Engine::new_with_dedicated(242_760, 556_450))),
     "thefront" => game!("The Front", 27015, Protocol::Valve(Engine::new(2_285_150))),
     "teamfortress2" => game!("Team Fortress 2", 27015, Protocol::Valve(Engine::new(440))),
