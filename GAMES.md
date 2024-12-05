@@ -95,6 +95,7 @@ requirements/information.
 | Nova-Life: Amboise                 | NLA                 | Valve                |                                                                                                                                                                           |
 | Abiotic Factor                     | ABIOTICFACTOR       | Valve                |                                                                                                                                                                           |
 | Soulmask                           | SOULMASK            | Valve                |                                                                                                                                                                           |
+| Starbound                          | STARBOUND           | Valve                |                                                                                                                                                                           |
 | Minetest                           | MINETEST            | Proprietary          | Available on the 'tls', 'serde' and 'services' feature                                                                                                                    |
 
 ## Planned to add support:
