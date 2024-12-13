@@ -17,6 +17,6 @@ impl EventTarget {
     ///
     /// This target is intended for development environments where verbose logging
     /// is needed to aid debugging and provide more insight into the application flow.
-    #[cfg(feature = "attribute_dev_log")]
+    #[cfg(feature = "_DEV_LOG")]
     pub const GAMEDIG_DEV: &'static str = "GAMEDIG::DEV";
 }

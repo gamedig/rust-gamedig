@@ -193,6 +193,7 @@ impl Buffer {
     /// buffer.move_pos(-1).unwrap();
     /// assert_eq!(buffer.pos(), 1);
     /// ```
+    #[allow(dead_code)]
     pub(crate) fn move_pos(&mut self, off: isize) -> Result<()> {
         // just in case someone tries to move 0
         if off == 0 {
@@ -223,7 +224,7 @@ impl Buffer {
     /// Peeks at the given number of bytes from the current position without advancing the cursor.
     ///
     /// This method checks that `cnt` bytes are available from the current position before returning
-    /// the requested slice. If insufficient data is available, it returns an error.
+    /// the requested slice.
     ///
     /// # Arguments
     ///
@@ -243,6 +244,7 @@ impl Buffer {
     /// // position remains unchanged
     /// assert_eq!(buffer.pos(), 0);
     /// ```
+    #[allow(dead_code)]
     pub(crate) fn peek(&self, cnt: usize) -> Result<&[u8]> {
         self.check_range(.. cnt, true)?;
 

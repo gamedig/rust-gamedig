@@ -6,9 +6,9 @@ use {
     ::std::{net::SocketAddr, time::Duration},
 };
 
-#[cfg(feature = "client_std")]
+#[cfg(feature = "socket_std")]
 mod std;
-#[cfg(feature = "client_tokio")]
+#[cfg(feature = "socket_tokio")]
 mod tokio;
 
 #[allow(dead_code)]
@@ -23,32 +23,28 @@ pub(crate) trait AbstractUdp {
     where Self: Sized;
 
     async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
-    async fn recv(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)>;
+    async fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>>;
 }
 
 pub(crate) struct Inner {
-    #[cfg(feature = "client_std")]
+    #[cfg(feature = "socket_std")]
     pub(crate) inner: std::StdUdpClient,
 
-    #[cfg(feature = "client_tokio")]
+    #[cfg(feature = "socket_tokio")]
     pub(crate) inner: tokio::TokioUdpClient,
 }
 
 #[maybe_async::maybe_async]
 impl Inner {
     pub(crate) async fn new(addr: &SocketAddr) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!("UDP::<Inner>::New: Creating new UDP client for {addr}");
 
         Ok(Self {
-            #[cfg(feature = "client_std")]
+            #[cfg(feature = "socket_std")]
             inner: std::StdUdpClient::new(addr).await?,
 
-            #[cfg(feature = "client_tokio")]
+            #[cfg(feature = "socket_tokio")]
             inner: tokio::TokioUdpClient::new(addr).await?,
         })
     }

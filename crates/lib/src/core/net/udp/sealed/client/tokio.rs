@@ -22,6 +22,12 @@ pub(crate) struct TokioUdpClient {
 #[maybe_async::async_impl]
 impl super::AbstractUdp for TokioUdpClient {
     async fn new(addr: &SocketAddr) -> Result<Self> {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "UDP::<Tokio>::New: Creating new UDP client for {addr}"
+        );
+
         match UdpSocket::bind(match addr {
             SocketAddr::V4(_) => SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0)),
             SocketAddr::V6(_) => SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0)),
@@ -29,8 +35,20 @@ impl super::AbstractUdp for TokioUdpClient {
         .await
         {
             Ok(socket) => {
+                #[cfg(feature = "_DEV_LOG")]
+                log::debug!(
+                    target: crate::log::EventTarget::GAMEDIG_DEV,
+                    "UDP::<Tokio>::New: Successfully bound to the local socket"
+                );
+
                 match socket.connect(addr).await {
                     Ok(_) => {
+                        #[cfg(feature = "_DEV_LOG")]
+                        log::debug!(
+                            target: crate::log::EventTarget::GAMEDIG_DEV,
+                            "UDP::<Tokio>::New: Successfully set the peer address and socket is ready"
+                        );
+
                         Ok(Self {
                             peer_addr: *addr,
                             socket,
@@ -65,8 +83,14 @@ impl super::AbstractUdp for TokioUdpClient {
     }
 
     async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()> {
-        // Validate the timeout duration
-        let timeout = match timeout {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "UDP::<Tokio>::Send: Sending data to {}",
+            &self.peer_addr
+        );
+
+        let valid_timeout = match timeout {
             Some(timeout) => {
                 match timeout.is_zero() {
                     true => Duration::from_secs(5),
@@ -77,7 +101,7 @@ impl super::AbstractUdp for TokioUdpClient {
             None => Duration::from_secs(5),
         };
 
-        match timer(timeout, self.socket.send(data)).await {
+        match timer(valid_timeout, self.socket.send(data)).await {
             Ok(Ok(_)) => Ok(()),
 
             // Error during the send operation
@@ -114,13 +138,15 @@ impl super::AbstractUdp for TokioUdpClient {
         }
     }
 
-    async fn recv(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)> {
-        // Validate the timeout duration
-        let timeout = match timeout {
+    async fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "UDP::<Tokio>::Recv: Receiving data from {}",
+            &self.peer_addr
+        );
+
+        let valid_timeout = match timeout {
             Some(timeout) => {
                 match timeout.is_zero() {
                     true => Duration::from_secs(5),
@@ -134,11 +160,18 @@ impl super::AbstractUdp for TokioUdpClient {
         let valid_size = size.unwrap_or(Self::DEFAULT_BUF_CAPACITY as usize);
         let mut vec = Vec::with_capacity(valid_size);
 
-        match timer(timeout, self.socket.recv(&mut vec)).await {
+        #[cfg(feature = "_DEV_LOG")]
+        log::debug!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "UDP::<Tokio>::Read: Reading data with a capacity of {valid_size} bytes and a timeout of {valid_timeout:?}"
+        );
+
+        match timer(valid_timeout, self.socket.recv(&mut vec)).await {
             Ok(Ok(len)) => {
-                #[cfg(feature = "attribute_log")]
+                #[cfg(feature = "_DEV_LOG")]
                 if valid_size < len {
                     log::debug!(
+                        target: crate::log::EventTarget::GAMEDIG_DEV,
                         "UDP::<Std>::Read: More data than expected. Realloc was required. \
                          Expected: {valid_size} bytes, Read: {len} bytes",
                     );
@@ -149,7 +182,7 @@ impl super::AbstractUdp for TokioUdpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok((vec, len))
+                Ok(vec)
             }
 
             // Error during the read operation

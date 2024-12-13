@@ -101,11 +101,7 @@ impl super::AbstractTcp for TokioTcpClient {
         })
     }
 
-    async fn read(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)> {
+    async fn read(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -150,7 +146,7 @@ impl super::AbstractTcp for TokioTcpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok((vec, len))
+                Ok(vec)
             }
 
             // Error during the read operation

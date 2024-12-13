@@ -78,11 +78,7 @@ impl super::AbstractTcp for StdTcpClient {
         }
     }
 
-    fn read(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)> {
+    fn read(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -163,7 +159,7 @@ impl super::AbstractTcp for StdTcpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok((vec, len))
+                Ok(vec)
             }
 
             // Error during the read operation

@@ -1,4 +1,3 @@
-mod check;
 pub(crate) mod io;
 pub(crate) mod net;
 

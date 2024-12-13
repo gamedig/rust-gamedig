@@ -25,11 +25,7 @@ pub(crate) trait AbstractTcp {
     async fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self>
     where Self: Sized;
 
-    async fn read(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)>;
+    async fn read(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>>;
 
     async fn write(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
 }

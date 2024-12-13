@@ -48,7 +48,7 @@ impl UdpClient {
         #[cfg(feature = "attribute_log")]
         log::trace!("UDP::<Client>::Recv: Receiving data from the server");
 
-        Ok(Buffer::from(
+        Ok(Buffer::new(
             self.client
                 .inner
                 .recv(size, self.read_timeout.as_ref())

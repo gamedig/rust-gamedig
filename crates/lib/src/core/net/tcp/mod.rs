@@ -64,7 +64,7 @@ impl TcpClient {
             "TCP::<Client>::Read: Reading data from inner client"
         );
 
-        Ok(Buffer::from(
+        Ok(Buffer::new(
             self.client
                 .inner
                 .read(size, self.read_timeout.as_ref())

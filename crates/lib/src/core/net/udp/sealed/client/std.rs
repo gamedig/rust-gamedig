@@ -15,6 +15,7 @@ use {
 pub(crate) struct StdUdpClient {
     peer_addr: SocketAddr,
     socket: UdpSocket,
+
     send_timeout_set: bool,
     recv_timeout_set: bool,
 }
@@ -77,7 +78,7 @@ impl super::AbstractUdp for StdUdpClient {
 
                 None => Duration::from_secs(5),
             };
-            
+
             match self.socket.set_write_timeout(Some(timeout)) {
                 Ok(_) => {
                     self.send_timeout_set = true;
@@ -115,11 +116,7 @@ impl super::AbstractUdp for StdUdpClient {
         }
     }
 
-    fn recv(
-        &mut self,
-        size: Option<usize>,
-        timeout: Option<&Duration>,
-    ) -> Result<(Vec<u8>, usize)> {
+    fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
         if !self.recv_timeout_set {
             // Validate the timeout duration
             let timeout = match timeout {
@@ -158,7 +155,7 @@ impl super::AbstractUdp for StdUdpClient {
 
         match self.socket.recv(&mut vec) {
             Ok(len) => {
-                #[cfg(feature = "attribute_log")]
+                #[cfg(feature = "_DEV_LOG")]
                 if valid_size < len {
                     log::debug!(
                         "UDP::<Std>::Read: More data than expected. Realloc was required. \
@@ -171,7 +168,7 @@ impl super::AbstractUdp for StdUdpClient {
                     vec.shrink_to_fit();
                 }
 
-                Ok((vec, len))
+                Ok(vec)
             }
 
             Err(e) => {

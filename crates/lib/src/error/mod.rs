@@ -125,10 +125,10 @@ define_error_kind! {
         ),
 
         /// Invalid Range Error
-        /// 
+        ///
         /// This error occurs when an invalid range is provided to a buffer read operation.
         #[cfg(feature = "_BUFFER")]
-        BufferInvalidRangeError {
+        BufferRangeInvalidError {
             /// The start of the range that was attempted to be read.
             start: usize,
 
@@ -136,6 +136,11 @@ define_error_kind! {
             end: usize
         }(
             "[GameDig]::[IO::BufferInvalidRangeError]: Invalid range: [{start}..{end}]"
+        ),
+
+        #[cfg(feature = "_BUFFER")]
+        BufferRangeOverflowError {}(
+            "[GameDig]::[IO::BufferRangeOverflowError]: Attempted to read a range that overflows usize"
         ),
 
         /// String Conversion Error
