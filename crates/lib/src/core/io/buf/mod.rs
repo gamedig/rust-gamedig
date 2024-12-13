@@ -13,10 +13,11 @@ use {
 mod num;
 mod string;
 
-/// `Buffer` is a lightweight, runtime agnostic abstraction over a `Vec<u8>`
-/// that provides safe indexing and cursor based read operations. It does not rely
-/// on any specific runtime, Instead it focuses on providing a safe, ergonomic API for
-/// in-memory data access.
+/// `Buffer` is a lightweight, runtime agnostic interface over a `Vec<u8>` that provides
+/// safe indexing and cursor-based read operations. It does not rely on any specific runtime
+/// (e.g., it can be used in synchronous, asynchronous, or single-threaded contexts without
+/// issue) and does not perform I/O operations directly. Instead, it focuses on providing a
+/// safe and ergonomic interface for in-memory data access.
 // TODO: It would be nice to have a IO pipeline from net but i think this is something for future
 // TODO: ^^ Need to figure out a way to cleanly implement this without making it too complex
 pub(crate) struct Buffer {
@@ -200,7 +201,7 @@ impl Buffer {
 
         match (self.pos() as isize).checked_add(off) {
             None => {
-                //TODO: Handle this error
+                // TODO: Handle this error
                 todo!(
                     "The addition was not successful (i.e., it resulted in an overflow or \
                      underflow of isize)"
@@ -208,7 +209,7 @@ impl Buffer {
             }
 
             Some(n) if n < 0 || n as usize > self.len() => {
-                //TODO: Handle this error
+                // TODO: Handle this error
                 todo!("The new cursor position is out of bounds")
             }
 
