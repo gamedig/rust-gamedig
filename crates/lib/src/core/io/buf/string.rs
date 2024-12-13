@@ -1,146 +1,105 @@
-use crate::error::{
-    diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
-    ErrorKind,
-    IoError,
-    Report,
-    Result,
-};
+use crate::error::{diagnostic::FailureReason, ErrorKind, IoError, Report, Result};
 
 impl super::Buffer {
-    /// Reads a UTF-8 string from the buffer until a delimiter is encountered.
+    /// Reads a `UTF 8` string from the buffer until a delimiter is encountered.
     ///
     /// # Parameters
-    /// - `delimiter`: An optional byte value that signifies the end of the
-    ///   string. If `None` is provided, the default delimiter is `0x00`.
     ///
-    /// - `strict`: A flag for if the conversion should be strict or lossy.
+    /// - `delimiter`: An optional byte value (`[u8; 1]`) signifying the end of the string.  
+    ///   If `None` is provided, the default delimiter is `0x00`.
     ///
-    ///   - `true`: Converts the string using `String::from_utf8`, returning an
-    ///     error if the sequence is not valid UTF-8.
+    /// - `strict`: Determines how invalid `UTF 8` sequences are handled.
     ///
-    ///   - `false`: Converts the string using `String::from_utf8_lossy`,
-    ///     replacing invalid UTF-8 sequences with `�`.
+    ///   - `true`: Uses `String::from_utf8`. If any invalid `UTF 8` sequence is found,
+    ///     an error is returned.
+    ///
+    ///   - `false`: Uses `String::from_utf8_lossy`, replacing invalid sequences with `�`.
+    ///
+    /// After reading up to (but not including) the delimiter, the cursor is advanced by the number
+    /// of bytes read plus the length of the delimiter (usually `1` byte).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range goes out of bounds.
+    /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf8(
         &mut self,
         delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
-        // .. = [self.pos .. self.len]
-        self.check_range(..)?;
+        self.check_range(.., true)?;
 
+        let pos = self.pos();
+        let len = self.len();
         let delimiter = delimiter.unwrap_or([0x00]);
 
-        let end_pos = self.inner[self.pos .. self.len]
+        let end_pos = self.inner[pos .. len]
             .iter()
             .position(|&b| b == delimiter[0])
-            .unwrap_or(self.len - self.pos);
+            .unwrap_or(len - pos);
 
-        let s = match strict {
-            false => {
-                String::from_utf8_lossy(&self.inner[self.pos .. self.pos + end_pos]).into_owned()
-            }
-            true => {
-                String::from_utf8(self.inner[self.pos .. self.pos + end_pos].to_vec()).map_err(
-                    |e| {
-                        Report::from(e)
-                            .change_context(IoError::BufferStringConversionError {}.into())
-                            .attach_printable(FailureReason::new(
-                                "Invalid UTF-8 sequence found during string read.",
-                            ))
-                            .attach_printable(HexDump::new(
-                                "Invalid UTF-8 sequence found",
-                                self.inner.clone(),
-                                Some(self.pos),
-                            ))
-                            .attach_printable(OpenGitHubIssue())
-                    },
-                )?
-            }
+        let s = if strict {
+            String::from_utf8(self.inner[pos .. pos + end_pos].to_vec()).map_err(|e| {
+                Report::from(e)
+                    .change_context(IoError::BufferStringConversionError {}.into())
+                    .attach_printable(FailureReason::new(
+                        "Invalid UTF 8 sequence found during string read.",
+                    ))
+            })?
+        } else {
+            String::from_utf8_lossy(&self.inner[pos .. pos + end_pos]).into_owned()
         };
 
-        self.pos += end_pos + delimiter.len();
+        self.cursor += end_pos + delimiter.len();
 
         Ok(s)
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn read_string_utf8_range(
-        &mut self,
-        range: std::ops::Range<usize>,
-        strict: bool,
-    ) -> Result<String> {
-        self.check_range(range.clone())?;
-
-        // Slice the buffer to extract the string based on the given range
-        let s = match strict {
-            false => {
-                String::from_utf8_lossy(&self.inner[self.pos + range.start .. self.pos + range.end])
-                    .into_owned()
-            }
-            true => {
-                String::from_utf8(
-                    self.inner[self.pos + range.start .. self.pos + range.end].to_vec(),
-                )
-                .map_err(|e| {
-                    Report::from(e)
-                        .change_context(IoError::BufferStringConversionError {}.into())
-                        .attach_printable(FailureReason::new(
-                            "Invalid UTF-8 sequence found during string read.",
-                        ))
-                        .attach_printable(HexDump::new(
-                            "Invalid UTF-8 sequence found",
-                            self.inner.clone(),
-                            Some(self.pos + range.start),
-                        ))
-                        .attach_printable(OpenGitHubIssue())
-                })?
-            }
-        };
-
-        // Update the current position after reading
-        self.pos += range.end;
-
-        Ok(s)
-    }
-
-    /// Reads a length-prefixed UTF-8 string from the buffer.
+    /// Reads a length prefixed `UTF 8` string from the buffer.
+    ///
+    /// The length prefix is a single `u8` that indicates how many bytes of `UTF 8` data follow.
+    /// The method first reads this `u8` length, then reads that many bytes as a `UTF 8` string.
     ///
     /// # Parameters
-    /// - `strict`: A flag for if the conversion should be strict or lossy.
     ///
-    ///   - `true`: Converts the string using `String::from_utf8`, returning an
-    ///     error if the sequence is not valid UTF-8.
+    /// - `strict`: Determines how invalid `UTF 8` sequences are handled.
     ///
-    ///   - `false`: Converts the string using `String::from_utf8_lossy`,
-    ///     replacing invalid UTF-8 sequences with `�`.
+    ///   - `true`: Uses `String::from_utf8`. Any invalid `UTF 8` sequence causes an error.
+    ///
+    ///   - `false`: Uses `String::from_utf8_lossy`, replacing invalid sequences with `�`.
+    ///
+    /// After reading the length byte and the string data, the cursor advances by `1` byte for the length
+    /// plus the number of bytes read for the string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range is out of bounds.
+    /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
-        self.check_range(.. 1)?;
-        let len = self.inner[self.pos] as usize;
-        let end_pos = self.pos + len;
-        self.check_range(.. end_pos)?;
+        self.check_range(.. 1, true)?;
 
-        let s = match strict {
-            false => String::from_utf8_lossy(&self.inner[self.pos + 1 .. end_pos]).into_owned(),
-            true => {
-                String::from_utf8(self.inner[self.pos .. end_pos].to_vec()).map_err(|e| {
-                    Report::from(e)
-                        .change_context(IoError::BufferStringConversionError {}.into())
-                        .attach_printable(FailureReason::new(
-                            "Invalid UTF-8 sequence found during string read.",
-                        ))
-                        .attach_printable(HexDump::new(
-                            "Invalid UTF-8 sequence found",
-                            self.inner.clone(),
-                            Some(self.pos),
-                        ))
-                        .attach_printable(OpenGitHubIssue())
-                })?
-            }
+        let pos = self.pos();
+        let s_len = self.inner[pos] as usize;
+        let end_pos = pos + s_len;
+        self.check_range(.. end_pos, true)?;
+
+        let s = if strict {
+            String::from_utf8(self.inner[pos + 1 .. end_pos].to_vec()).map_err(|e| {
+                Report::from(e)
+                    .change_context(IoError::BufferStringConversionError {}.into())
+                    .attach_printable(FailureReason::new(
+                        "Invalid UTF 8 sequence found during string read.",
+                    ))
+            })?
+        } else {
+            String::from_utf8_lossy(&self.inner[pos + 1 .. end_pos]).into_owned()
         };
 
-        self.pos = end_pos;
+        self.cursor = end_pos;
 
         Ok(s)
     }
@@ -156,59 +115,59 @@ impl super::Buffer {
     {
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
-        self.check_range(..)?;
+        self.check_range(.., true)?;
 
-        let end_pos = self.inner[self.pos .. self.len]
+        let pos = self.pos();
+        let len = self.len();
+        let end_pos = self.inner[pos .. len]
             .chunks_exact(2)
             .position(|chunk| chunk == delimiter)
-            .map_or(self.len - self.pos, |pos| pos * 2);
+            .map_or(len - pos, |p| p * 2);
 
         let mut vec = Vec::with_capacity(end_pos / 2);
-
         vec.extend(
             (0 .. end_pos / 2)
                 .map(|_| read_u16_e(self))
                 .collect::<Result<Vec<u16>>>()?,
         );
 
-        let s = match strict {
-            false => String::from_utf16_lossy(&vec),
-            true => {
-                String::from_utf16(&vec).map_err(|e| {
-                    Report::from(e)
-                        .change_context(IoError::BufferStringConversionError {}.into())
-                        .attach_printable(FailureReason::new(
-                            "Invalid UTF-16 sequence found during string read.",
-                        ))
-                        .attach_printable(HexDump::new(
-                            "Invalid UTF-16 sequence found",
-                            self.inner.clone(),
-                            Some(self.pos),
-                        ))
-                        .attach_printable(OpenGitHubIssue())
-                })?
-            }
+        let s = if strict {
+            String::from_utf16(&vec).map_err(|e| {
+                Report::from(e)
+                    .change_context(IoError::BufferStringConversionError {}.into())
+                    .attach_printable(FailureReason::new(
+                        "Invalid UTF 16 sequence found during string read.",
+                    ))
+            })?
+        } else {
+            String::from_utf16_lossy(&vec)
         };
 
-        self.pos += end_pos + delimiter.len();
+        self.cursor += end_pos + delimiter.len();
 
         Ok(s)
     }
 
-    /// Reads a BE UTF-16 string from the buffer.
+    /// Reads a `UTF 16` string in big endian (`BE`) order until a `2 byte` delimiter is encountered.
     ///
     /// # Parameters
-    /// - `delimiter`: An optional 2-byte value that signifies the end of the
-    ///   string. If `None` is provided, the default delimiter is `[0x00,
-    ///   0x00]`.
     ///
-    /// - `strict`: A flag for if the conversion should be strict or lossy.
+    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
+    ///   Default is `[0x00, 0x00]` if `None` is provided.
     ///
-    ///   - `true`: Converts the string using `String::from_utf16`, returning an
-    ///     error if the sequence is not valid UTF-16.
+    /// - `strict`: Determines how invalid `UTF 16` sequences are handled.
     ///
-    ///   - `false`: Converts the string using `String::from_utf16_lossy`,
-    ///     replacing invalid UTF-16 sequences with `�`.
+    ///   - `true`: Uses `String::from_utf16`. Any invalid `UTF 16` sequence causes an error.
+    ///
+    ///   - `false`: Uses `String::from_utf16_lossy`, replacing invalid sequences with `�`.
+    ///
+    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (2 bytes).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range goes out of bounds.
+    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf16_be(
         &mut self,
@@ -218,20 +177,26 @@ impl super::Buffer {
         self._read_string_utf16(delimiter, |b| b.read_u16_be(), strict)
     }
 
-    /// Reads a LE UTF-16 string from the buffer.
+    /// Reads a `UTF 16` string in little endian (`LE`) order until a `2 byte` delimiter is encountered.
     ///
     /// # Parameters
-    /// - `delimiter`: An optional 2-byte value that signifies the end of the
-    ///   string. If `None` is provided, the default delimiter is `[0x00,
-    ///   0x00]`.
     ///
-    /// - `strict`: A flag for if the conversion should be strict or lossy.
+    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
+    ///   Default is `[0x00, 0x00]` if `None` is provided.
     ///
-    ///   - `true`: Converts the string using `String::from_utf16`, returning an
-    ///     error if the sequence is not valid UTF-16.
+    /// - `strict`: Determines how invalid `UTF 16` sequences are handled.
     ///
-    ///   - `false`: Converts the string using `String::from_utf16_lossy`,
-    ///     replacing invalid UTF-16 sequences with `�`.
+    ///   - `true`: Uses `String::from_utf16`. Any invalid `UTF 16` sequence causes an error.
+    ///
+    ///   - `false`: Uses `String::from_utf16_lossy`, replacing invalid sequences with `�`.
+    ///
+    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (2 bytes).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range goes out of bounds.
+    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
     #[allow(dead_code)]
     pub(crate) fn read_string_utf16_le(
         &mut self,
@@ -241,24 +206,29 @@ impl super::Buffer {
         self._read_string_utf16(delimiter, |b| b.read_u16_le(), strict)
     }
 
-    /// Reads a UCS-2 encoded string from the buffer.
+    /// Reads a `UCS 2` encoded string from the buffer.
     ///
-    /// This function is essentially a wrapper around the `read_string_utf16_le`
-    /// function, as UCS-2 is a subset of UTF-16 that doesn't include
-    /// surrogate pairs.
+    /// `UCS 2` is essentially `UTF 16` without surrogate pairs. This method delegates to
+    /// `read_string_utf16_le` as `UCS 2` data is always handled as `UTF 16 LE`.
     ///
     /// # Parameters
-    /// - `delimiter`: An optional 2-byte value that signifies the end of the
-    ///   string. If `None` is provided, the default delimiter is `[0x00,
-    ///   0x00]`.
     ///
-    /// - `strict`: A flag for if the conversion should be strict or lossy.
+    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
+    ///   Default is `[0x00, 0x00]` if `None` is provided.
     ///
-    ///   - `true`: Converts the string using strict UTF-16 decoding, returning
-    ///     an error if the sequence is not valid UTF-16.
+    /// - `strict`: Determines how invalid sequences are handled.
     ///
-    ///   - `false`: Converts the string using lossy UTF-16 decoding, replacing
-    ///     invalid sequences with `�`.
+    ///   - `true`: Uses strict `UTF 16` decoding, erroring on invalid data.
+    ///
+    ///   - `false`: Uses lossy decoding, replacing invalid sequences with `�`.
+    ///
+    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (2 bytes).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range goes out of bounds.
+    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
     #[allow(dead_code)]
     pub(crate) fn read_string_ucs2(
         &mut self,
@@ -268,14 +238,28 @@ impl super::Buffer {
         self.read_string_utf16_le(delimiter, strict)
     }
 
-    /// Reads a Latin-1 encoded string from the buffer.
+    /// Reads a `Latin 1` (also known as `ISO 8859 1` or `Windows 1252`) encoded string from the buffer until a delimiter is reached.
     ///
-    /// This function uses the `encoding_rs` crate to decode the Latin-1
-    /// (or ISO-8859-1 / Windows-1252) encoded byte slice into a UTF-8 string.
+    /// This method uses the `encoding_rs` crate to decode the `Latin 1` bytes into a `UTF 8` string.
     ///
     /// # Parameters
-    /// - `delimiter`: An optional byte value that signifies the end of the
-    ///   string. If `None` is provided, the default delimiter is `0x00`.
+    ///
+    /// - `delimiter`: An optional byte (`[u8; 1]`) that marks the end of the string.  
+    ///   If `None` is provided, `0x00` is used as the delimiter.
+    ///
+    /// - `strict`: Determines how invalid sequences are handled.
+    ///
+    ///   - `true`: Returns an error if decoding encounters invalid sequences.
+    ///
+    ///   - `false`: Replaces invalid sequences with `�`.
+    ///
+    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (usually `1` byte).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The requested range goes out of bounds.
+    /// - `strict` is `true` and invalid `Latin 1` data is encountered.
     #[allow(dead_code)]
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
     pub(crate) fn read_string_latin1(
@@ -285,32 +269,28 @@ impl super::Buffer {
     ) -> Result<String> {
         let delimiter = delimiter.unwrap_or([0x00]);
 
-        self.check_range(..)?;
+        self.check_range(.., true)?;
 
-        let end_pos = self.inner[self.pos .. self.len]
+        let pos = self.pos();
+        let len = self.len();
+        let end_pos = self.inner[pos .. len]
             .iter()
             .position(|&b| b == delimiter[0])
-            .unwrap_or(self.len - self.pos);
+            .unwrap_or(len - pos);
 
         let (decoded_string, _, had_errors) =
-            encoding_rs::WINDOWS_1252.decode(&self.inner[self.pos .. self.pos + end_pos]);
+            encoding_rs::WINDOWS_1252.decode(&self.inner[pos .. pos + end_pos]);
 
         if had_errors && strict {
             return Err(
                 Report::new(ErrorKind::from(IoError::BufferStringConversionError {}))
                     .attach_printable(FailureReason::new(
-                        "Invalid Latin-1 sequence found during string read.",
-                    ))
-                    .attach_printable(HexDump::new(
-                        "Invalid Latin-1 sequence found",
-                        self.inner.clone(),
-                        Some(self.pos),
-                    ))
-                    .attach_printable(OpenGitHubIssue()),
+                        "Invalid Latin 1 sequence found during string read.",
+                    )),
             );
         }
 
-        self.pos += end_pos + delimiter.len();
+        self.cursor += end_pos + delimiter.len();
 
         Ok(decoded_string.into_owned())
     }
