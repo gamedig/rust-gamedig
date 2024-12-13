@@ -1,4 +1,11 @@
-use crate::{core::Buffer, error::Result};
+use {
+    crate::{
+        core::Buffer,
+        error::{diagnostic::FailureReason, PacketError, Report, Result},
+    },
+
+    error_stack::ResultExt,
+};
 
 // packet type is i32 but we know
 // it will always be 0, 2, or 3
@@ -50,41 +57,71 @@ impl Packet {
     pub fn serialize(&self) -> Vec<u8> {
         let mut buf = Vec::with_capacity((self.size + Self::FIELD_SIZE_LENGTH as i32) as usize);
 
-        buf.extend_from_slice(&self.size.to_le_bytes());
-        buf.extend_from_slice(&self.id.to_le_bytes());
-        buf.extend_from_slice(&(self.r#type as i32).to_le_bytes());
+        buf.extend(&self.size.to_le_bytes());
+        buf.extend(&self.id.to_le_bytes());
+        buf.extend(&(self.r#type as i32).to_le_bytes());
 
         if let Some(body) = &self.body {
-            buf.extend_from_slice(body.as_bytes());
+            buf.extend(body.as_bytes());
         }
 
-        buf.extend_from_slice(&Self::PADDING);
+        buf.extend(&Self::PADDING);
 
         buf
     }
 
     // buffer is a internal interface so the function cannot be pub
+    #[allow(dead_code)]
     pub(crate) fn deserialize(b: &mut Buffer) -> Result<Self> {
-        // TODO: add error context here
+        let size = b
+            .read_i32_le()
+            .map_err(|e| {
+                Report::from(e).change_context(PacketError::PacketDeserializeError {}.into())
+            })
+            .attach_printable(FailureReason::new(
+                "Failed to deserialize size field of packet.",
+            ))?;
+
+        let id = b
+            .read_i32_le()
+            .map_err(|e| {
+                Report::from(e).change_context(PacketError::PacketDeserializeError {}.into())
+            })
+            .attach_printable(FailureReason::new(
+                "Failed to deserialize id field of packet.",
+            ))?;
+
+        let r#type = b
+            .read_i32_le()
+            .map_err(|e| {
+                Report::from(e).change_context(PacketError::PacketDeserializeError {}.into())
+            })
+            .attach_printable(FailureReason::new(
+                "Failed to deserialize type field of packet.",
+            ))? as PacketType;
+
+        let body = match b.peek(1)?[0] {
+            Self::BODY_DELIMITER => {
+                b.move_pos(Self::PADDING_LENGTH as isize)?;
+
+                None
+            }
+
+            _ => {
+                let body = b.read_string_utf8(Some([Self::BODY_DELIMITER]), false)?;
+
+                // skip tail
+                b.move_pos(1)?;
+
+                Some(body)
+            }
+        };
+
         Ok(Self {
-            size: b.read_i32_le()?,
-            id: b.read_i32_le()?,
-            r#type: b.read_i32_le()? as PacketType,
-            body: match b.peek( 1)?[0] {
-                Self::BODY_DELIMITER => {
-                    b.move_pos(Self::PADDING_LENGTH as isize)?;
-
-                    None
-                }
-
-                _ => {
-                    let body = b.read_string_utf8(Some([Self::BODY_DELIMITER]), false)?;
-
-                    b.move_pos(Self::TAIL_TERMINATOR as isize)?;
-
-                    Some(body)
-                }
-            },
+            size,
+            id,
+            r#type,
+            body,
         })
     }
 }
