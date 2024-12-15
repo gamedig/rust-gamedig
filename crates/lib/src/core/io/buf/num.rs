@@ -320,3 +320,400 @@ impl super::Buffer {
         self._get_inner_slice::<f64, 8, _>(f64::from_le_bytes)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::core::Buffer;
+
+    #[test]
+    fn test_read_u8_ok() {
+        let mut buffer = Buffer::new(vec![0x12]);
+
+        assert_eq!(buffer.len(), 1);
+        assert_eq!(buffer.read_u8().unwrap(), 0x12);
+        assert_eq!(buffer.pos(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u8_err() {
+        let mut buffer = Buffer::new(vec![]);
+
+        buffer.read_u8().unwrap();
+    }
+
+    #[test]
+    fn test_read_i8_ok() {
+        let mut buffer = Buffer::new(vec![0xFE]);
+
+        assert_eq!(buffer.len(), 1);
+        assert_eq!(buffer.read_i8().unwrap(), -2);
+        assert_eq!(buffer.pos(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i8_err() {
+        let mut buffer = Buffer::new(vec![]);
+
+        buffer.read_i8().unwrap();
+    }
+
+    #[test]
+    fn test_read_u16_be_ok() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34]);
+
+        assert_eq!(buffer.len(), 2);
+        assert_eq!(buffer.read_u16_be().unwrap(), 0x1234);
+        assert_eq!(buffer.pos(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u16_be_err() {
+        let mut buffer = Buffer::new(vec![0x12]);
+
+        buffer.read_u16_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_u16_le_ok() {
+        let mut buffer = Buffer::new(vec![0x34, 0x12]);
+
+        assert_eq!(buffer.len(), 2);
+        assert_eq!(buffer.read_u16_le().unwrap(), 0x1234);
+        assert_eq!(buffer.pos(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u16_le_err() {
+        let mut buffer = Buffer::new(vec![0x34]);
+
+        buffer.read_u16_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_i16_be_ok() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFE]);
+
+        assert_eq!(buffer.len(), 2);
+        assert_eq!(buffer.read_i16_be().unwrap(), -2);
+        assert_eq!(buffer.pos(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i16_be_err() {
+        let mut buffer = Buffer::new(vec![0xFF]);
+
+        buffer.read_i16_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_i16_le_ok() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF]);
+
+        assert_eq!(buffer.len(), 2);
+        assert_eq!(buffer.read_i16_le().unwrap(), -2);
+        assert_eq!(buffer.pos(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i16_le_err() {
+        let mut buffer = Buffer::new(vec![0xFE]);
+
+        buffer.read_i16_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_u32_be_ok() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34, 0x56, 0x78]);
+
+        assert_eq!(buffer.len(), 4);
+        assert_eq!(buffer.read_u32_be().unwrap(), 0x12345678);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u32_be_err() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34]);
+
+        buffer.read_u32_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_u32_le_ok() {
+        let mut buffer = Buffer::new(vec![0x78, 0x56, 0x34, 0x12]);
+
+        assert_eq!(buffer.len(), 4);
+        assert_eq!(buffer.read_u32_le().unwrap(), 0x12345678);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u32_le_err() {
+        let mut buffer = Buffer::new(vec![0x78, 0x56]);
+
+        buffer.read_u32_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_i32_be_ok() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFF, 0xFF, 0xFE]);
+
+        assert_eq!(buffer.len(), 4);
+        assert_eq!(buffer.read_i32_be().unwrap(), -2);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i32_be_err() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFF]);
+
+        buffer.read_i32_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_i32_le_ok() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF, 0xFF, 0xFF]);
+
+        assert_eq!(buffer.len(), 4);
+        assert_eq!(buffer.read_i32_le().unwrap(), -2);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i32_le_err() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF]);
+
+        buffer.read_i32_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_u64_be_ok() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0]);
+
+        assert_eq!(buffer.len(), 8);
+        assert_eq!(buffer.read_u64_be().unwrap(), 0x123456789ABCDEF0);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u64_be_err() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34, 0x56]);
+
+        buffer.read_u64_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_u64_le_ok() {
+        let mut buffer = Buffer::new(vec![0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12]);
+
+        assert_eq!(buffer.len(), 8);
+        assert_eq!(buffer.read_u64_le().unwrap(), 0x123456789ABCDEF0);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u64_le_err() {
+        let mut buffer = Buffer::new(vec![0xF0, 0xDE, 0xBC]);
+
+        buffer.read_u64_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_i64_be_ok() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE]);
+
+        assert_eq!(buffer.len(), 8);
+        assert_eq!(buffer.read_i64_be().unwrap(), -2);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i64_be_err() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+
+        buffer.read_i64_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_i64_le_ok() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+
+        assert_eq!(buffer.len(), 8);
+        assert_eq!(buffer.read_i64_le().unwrap(), -2);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i64_le_err() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+
+        buffer.read_i64_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_u128_be_ok() {
+        let mut buffer = Buffer::new(vec![
+            0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+            0xDE, 0xF0,
+        ]);
+
+        assert_eq!(buffer.len(), 16);
+        assert_eq!(
+            buffer.read_u128_be().unwrap(),
+            0x123456789ABCDEF0123456789ABCDEF0
+        );
+        assert_eq!(buffer.pos(), 16);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u128_be_err() {
+        let mut buffer = Buffer::new(vec![0x12, 0x34, 0x56, 0x78]);
+
+        buffer.read_u128_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_u128_le_ok() {
+        let mut buffer = Buffer::new(vec![
+            0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12, 0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56,
+            0x34, 0x12,
+        ]);
+
+        assert_eq!(buffer.len(), 16);
+        assert_eq!(
+            buffer.read_u128_le().unwrap(),
+            0x123456789ABCDEF0123456789ABCDEF0
+        );
+        assert_eq!(buffer.pos(), 16);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_u128_le_err() {
+        let mut buffer = Buffer::new(vec![0xF0, 0xDE, 0xBC, 0x9A]);
+
+        buffer.read_u128_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_i128_be_ok() {
+        let mut buffer = Buffer::new(vec![
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFE,
+        ]);
+
+        assert_eq!(buffer.len(), 16);
+        assert_eq!(buffer.read_i128_be().unwrap(), -2);
+        assert_eq!(buffer.pos(), 16);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i128_be_err() {
+        let mut buffer = Buffer::new(vec![0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+
+        buffer.read_i128_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_i128_le_ok() {
+        let mut buffer = Buffer::new(vec![
+            0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF,
+        ]);
+
+        assert_eq!(buffer.len(), 16);
+        assert_eq!(buffer.read_i128_le().unwrap(), -2);
+        assert_eq!(buffer.pos(), 16);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_i128_le_err() {
+        let mut buffer = Buffer::new(vec![0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+
+        buffer.read_i128_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_f32_be_ok() {
+        let mut buffer = Buffer::new(vec![0x40, 0x49, 0x0F, 0xDB]);
+
+        assert_eq!(buffer.len(), 4);
+        assert!((buffer.read_f32_be().unwrap() - 3.1415927).abs() < f32::EPSILON);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_f32_be_err() {
+        let mut buffer = Buffer::new(vec![0x40, 0x49]);
+
+        buffer.read_f32_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_f32_le_ok() {
+        let mut buffer = Buffer::new(vec![0xDB, 0x0F, 0x49, 0x40]);
+
+        assert_eq!(buffer.len(), 4);
+        assert!((buffer.read_f32_le().unwrap() - 3.1415927).abs() < f32::EPSILON);
+        assert_eq!(buffer.pos(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_f32_le_err() {
+        let mut buffer = Buffer::new(vec![0xDB, 0x0F]);
+
+        buffer.read_f32_le().unwrap();
+    }
+
+    #[test]
+    fn test_read_f64_be_ok() {
+        let mut buffer = Buffer::new(vec![0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2D, 0x18]);
+
+        assert_eq!(buffer.len(), 8);
+        assert!((buffer.read_f64_be().unwrap() - 3.141592653589793).abs() < f64::EPSILON);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_f64_be_err() {
+        let mut buffer = Buffer::new(vec![0x40, 0x09, 0x21]);
+
+        buffer.read_f64_be().unwrap();
+    }
+
+    #[test]
+    fn test_read_f64_le_ok() {
+        let mut buffer = Buffer::new(vec![0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40]);
+
+        assert_eq!(buffer.len(), 8);
+        assert!((buffer.read_f64_le().unwrap() - 3.141592653589793).abs() < f64::EPSILON);
+        assert_eq!(buffer.pos(), 8);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_read_f64_le_err() {
+        let mut buffer = Buffer::new(vec![0x18, 0x2D, 0x44]);
+
+        buffer.read_f64_le().unwrap();
+    }
+}
