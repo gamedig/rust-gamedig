@@ -1,5 +1,7 @@
 use crate::error::{diagnostic::FailureReason, ErrorKind, IoError, Report, Result};
 
+//TODO: There are bugs in this, it needs to be tested and fixed.
+
 impl super::Buffer {
     /// Reads a `UTF 8` string from the buffer until a delimiter is encountered.
     ///
