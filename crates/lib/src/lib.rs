@@ -69,3 +69,5 @@ pub mod adapters;
 /// with the `log` crate for logging events within the library.
 #[cfg(feature = "attribute_log")]
 pub mod log;
+
+pub mod dict;
