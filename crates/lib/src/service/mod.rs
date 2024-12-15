@@ -5,5 +5,3 @@ pub mod epic;
 pub mod minetest;
 pub mod rage_mp;
 pub mod valve_master;
-
-pub mod dict;
