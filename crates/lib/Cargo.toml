@@ -34,11 +34,11 @@ tokio = { version = "1.37.0", features = ["full"], optional = true }
 serde = { version = "1.0.209", features = ["derive"], optional = true }
 ureq = { version = "2.10.1", default-features = false, features = [
     "json",
-    "native-tls",
+    "tls",
 ], optional = true }
 reqwest = { version = "0.12.7", default-features = false, features = [
     "json",
-    "default-tls",
+    "rustls-tls",
 ], optional = true }
 
 [features]
@@ -78,10 +78,7 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 #
 # Does what it says on the tin, enables HTTPS client support.
 #
-# TLS is provided by native-tls, here are the platforms it supports:
-# - Windows: [SChannel] built-in
-# - macOS: [SecureTransport] built-in
-# - Linux: [OpenSSL] needs to be installed
+# TLS is provided by rustls so that there is no need for OpenSSL.
 #
 # - Only 1 HTTPS client type can be enabled at a time.
 # - If using socket client also insure to match the runtime.
