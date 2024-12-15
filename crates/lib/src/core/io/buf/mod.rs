@@ -1,6 +1,6 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, OpenGitHubIssue},
+        diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
         ErrorKind,
         IoError,
         Report,
@@ -149,6 +149,7 @@ impl Buffer {
                 .attach_printable(FailureReason::new(
                     "Invalid range provided to buffer read operation.",
                 ))
+                .attach_printable(HexDump::new("Buffer", self.inner.clone(), Some(pos)))
                 .attach_printable(OpenGitHubIssue()),
             );
         }
@@ -160,8 +161,9 @@ impl Buffer {
                     available: len - start,
                 }))
                 .attach_printable(FailureReason::new(
-                    "Attempted to access out-of-bounds range in the buffer.",
+                    "Attempted to access out of bounds range in the buffer.",
                 ))
+                .attach_printable(HexDump::new("Buffer", self.inner.clone(), Some(pos)))
                 .attach_printable(OpenGitHubIssue()),
             );
         }
@@ -268,4 +270,97 @@ impl Into<Vec<u8>> for Buffer {
     /// assert_eq!(inner_vec, vec![4, 5, 6]);
     /// ```
     fn into(self) -> Vec<u8> { self.inner }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_buffer() {
+        let buffer = Buffer::new(vec![1, 2, 3, 4]);
+
+        assert_eq!(buffer.len(), 4);
+        assert_eq!(buffer.pos(), 0);
+    }
+
+    #[test]
+    fn test_remaining_bytes() {
+        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+
+        assert_eq!(buffer.remaining(), 4);
+
+        buffer.move_pos(2).unwrap();
+
+        assert_eq!(buffer.remaining(), 2);
+    }
+
+    #[test]
+    fn test_move_pos_forward() {
+        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+
+        buffer.move_pos(2).unwrap();
+
+        assert_eq!(buffer.pos(), 2);
+    }
+
+    #[test]
+    fn test_move_pos_backward() {
+        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+
+        buffer.move_pos(3).unwrap();
+        buffer.move_pos(-2).unwrap();
+
+        assert_eq!(buffer.pos(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_move_pos_out_of_bounds() {
+        let mut buffer = Buffer::new(vec![1, 2, 3]);
+
+        buffer.move_pos(5).unwrap();
+    }
+
+    #[test]
+    fn test_peek_valid_bytes() {
+        let buffer = Buffer::new(vec![0x01, 0x02, 0x03]);
+
+        let peeked = buffer.peek(2).unwrap();
+
+        assert_eq!(peeked, &[0x01, 0x02]);
+        assert_eq!(buffer.pos(), 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_peek_out_of_bounds() {
+        let buffer = Buffer::new(vec![1, 2]);
+
+        buffer.peek(3).unwrap();
+    }
+
+    #[test]
+    fn test_check_range_valid() {
+        let buffer = Buffer::new(vec![1, 2, 3, 4]);
+
+        assert!(buffer.check_range(1 .. 3, true).is_ok());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_check_range_invalid_range() {
+        let buffer = Buffer::new(vec![1, 2, 3]);
+
+        buffer.check_range(2 .. 1, true).unwrap();
+    }
+
+    #[test]
+    fn test_into_vec_conversion() {
+        let buffer = Buffer::new(vec![10, 20, 30]);
+
+        let inner_vec: Vec<u8> = buffer.into();
+
+        assert_eq!(inner_vec, vec![10, 20, 30]);
+    }
 }
