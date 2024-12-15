@@ -27,7 +27,6 @@ error-stack = { version = "0.4.1", features = ["spantrace"] }
 
 # Optional Dependencies
 log = { version = "0.4.22", optional = true }
-bytes = { version = "1.8.0", optional = true }
 serde_json = { version = "1.0.127", optional = true }
 encoding_rs = { version = "0.8.34", optional = true }
 async-trait = { version = "0.1.51", optional = true }
@@ -52,8 +51,8 @@ _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
 _HTTPS = ["dep:serde_json"]
-_TCP = ["_BUFFER", "dep:bytes"]
-_UDP = ["_BUFFER", "dep:bytes"]
+_TCP = ["_BUFFER"]
+_UDP = ["_BUFFER"]
 
 ## Misc
 _DEV_LOG = ["attribute_log"]
@@ -114,7 +113,6 @@ valve = ["_UDP"]
 valve_gold_src = ["_UDP"]
 
 ### RCON (Prefix: rcon_)
-rcon_battleye_2 = ["_TCP"]
 rcon_valve_source = ["_TCP"]
 
 ## Services (Prefix: service_)
@@ -159,7 +157,7 @@ all_query_protocols = [
     "valve_gold_src",
 ]
 
-all_rcon_protocols = ["rcon_battleye_2", "rcon_valve_source"]
+all_rcon_protocols = ["rcon_valve_source"]
 
 all_services = [
     "service_alt_v_mp",
