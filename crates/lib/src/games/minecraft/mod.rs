@@ -9,6 +9,8 @@ pub use protocol::*;
 pub use types::*;
 
 use crate::{GDErrorKind, GDResult};
+use pyo3::prelude::*;
+use pyo3::types::{PyDict, PyList};
 use std::net::{IpAddr, SocketAddr};
 
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
@@ -28,6 +30,49 @@ pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {
 
     Err(GDErrorKind::AutoQuery.into())
 }
+
+#[pyfunction]
+pub fn py_query(address: &str, port: u16) -> PyResult<Py<PyDict>> {
+    let response = query(&address.parse().unwrap(), Some(port));
+    // None is the default port (which is 27015), could also be Some(27015)
+
+    match response { // Result type, must check what it is...
+        Err(error) => {
+            println!("Couldn't query, error: {}", error);
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Couldn't query, error: {}", error)))
+        },
+        Ok(r) => {
+            Python::with_gil(|py| {
+                let dict = PyDict::new(py);
+
+                dict.set_item("game_version", r.game_version)?;
+                dict.set_item("protocol_version", r.protocol_version)?;
+                dict.set_item("players_maximum", r.players_maximum)?;
+                dict.set_item("players_online", r.players_online)?;
+                dict.set_item("description", r.description)?;
+                dict.set_item("favicon", r.favicon)?;
+                dict.set_item("previews_chat", r.previews_chat)?;
+                dict.set_item("enforces_secure_chat", r.enforces_secure_chat)?;
+                dict.set_item("server_type", format!("{:?}", r.server_type))?;
+
+                if let Some(players) = r.players {
+                    let players_list = PyList::new(py, players.iter().map(|p| {
+                        let player_dict = PyDict::new(py);
+                        player_dict.set_item("name", &p.name).unwrap();
+                        player_dict.set_item("id", &p.id).unwrap();
+                        player_dict
+                    }).collect::<Vec<_>>());
+                    dict.set_item("players", players_list)?;
+                } else {
+                    dict.set_item("players", py.None())?;
+                }
+
+                Ok(dict.into_py(py))
+            })
+        }
+    }
+}
+
 
 /// Query a Java Server.
 pub fn query_java(
