@@ -3,16 +3,14 @@
 // https://github.com/thisjaiden/golden_apple/blob/master/src/lib.rs
 
 use crate::{
-    buffer::Buffer,
-    protocols::{
+    buffer::Buffer, protocols::{
         types::{CommonPlayer, CommonResponse, ExtraRequestSettings, GenericPlayer},
         GenericResponse,
-    },
-    GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast},
-    GDResult,
+    }, utils::ToPyDict, GDErrorKind::{InvalidInput, PacketBad, UnknownEnumCast}, GDResult
 };
 
 use byteorder::ByteOrder;
+use pyo3::{types::{PyDict, PyList}, IntoPy, Py, PyResult, Python};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -89,6 +87,36 @@ pub struct JavaResponse {
     pub server_type: Server,
 }
 
+impl ToPyDict for JavaResponse {
+    fn to_pydict(&self, py: Python) -> PyResult<Py<PyDict>> {
+        let dict = PyDict::new(py);
+
+        dict.set_item("game_version", &self.game_version)?;
+        dict.set_item("protocol_version", self.protocol_version)?;
+        dict.set_item("players_maximum", self.players_maximum)?;
+        dict.set_item("players_online", self.players_online)?;
+        dict.set_item("description", &self.description)?;
+        dict.set_item("favicon", &self.favicon)?;
+        dict.set_item("previews_chat", self.previews_chat)?;
+        dict.set_item("enforces_secure_chat", self.enforces_secure_chat)?;
+        dict.set_item("server_type", format!("{:?}", self.server_type))?;
+
+        if let Some(players) = &self.players {
+            let players_list = PyList::new(py, players.iter().map(|p| {
+                let player_dict = PyDict::new(py);
+                player_dict.set_item("name", &p.name).unwrap();
+                player_dict.set_item("id", &p.id).unwrap();
+                player_dict
+            }).collect::<Vec<_>>());
+            dict.set_item("players", players_list)?;
+        } else {
+            dict.set_item("players", py.None())?;
+        }
+
+        Ok(dict.into_py(py))
+    }
+}
+
 /// Java-only additional request settings.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -102,7 +130,7 @@ pub struct RequestSettings {
 }
 
 impl Default for RequestSettings {
-    /// `hostname`: "gamedig"  
+    /// `hostname`: "gamedig"
     /// `protocol_version`: -1
     fn default() -> Self {
         Self {
@@ -172,6 +200,25 @@ pub struct BedrockResponse {
     pub game_mode: Option<GameMode>,
     /// Tells the server type.
     pub server_type: Server,
+}
+
+impl ToPyDict for BedrockResponse {
+    fn to_pydict(&self, py: Python) -> PyResult<Py<PyDict>> {
+        let dict = PyDict::new(py);
+
+        dict.set_item("edition", &self.edition)?;
+        dict.set_item("name", &self.name)?;
+        dict.set_item("game_version", &self.version_name)?;
+        dict.set_item("protocol_version", &self.protocol_version)?;
+        dict.set_item("players_maximum", self.players_maximum)?;
+        dict.set_item("players_online", self.players_online)?;
+        dict.set_item("id", &self.id)?;
+        dict.set_item("map", &self.map)?;
+        dict.set_item("game_mode", format!("{:?}", self.game_mode))?;
+        dict.set_item("server_type", format!("{:?}", self.server_type))?;
+
+        Ok(dict.into_py(py))
+    }
 }
 
 impl CommonResponse for BedrockResponse {

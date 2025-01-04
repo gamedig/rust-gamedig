@@ -1,6 +1,8 @@
 use crate::GDErrorKind::{PacketOverflow, PacketReceive, PacketSend, PacketUnderflow};
 use crate::GDResult;
 use std::cmp::Ordering;
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 pub fn error_by_expected_size(expected: usize, size: usize) -> GDResult<()> {
     match size.cmp(&expected) {
@@ -27,6 +29,14 @@ pub fn retry_on_timeout<T>(mut retry_count: usize, mut fetch: impl FnMut() -> GD
         retry_count -= 1;
     }
     Err(last_err)
+}
+
+pub trait ToPyDict {
+    fn to_pydict(&self, py: Python) -> PyResult<Py<PyDict>>;
+}
+
+pub fn convert_to_pydict<T: ToPyDict>(py: Python, value: &T) -> PyResult<Py<PyDict>> {
+    value.to_pydict(py)
 }
 
 /// Run gather_fn based on the value of gather_toggle.
