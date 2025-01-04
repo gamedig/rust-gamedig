@@ -13,6 +13,12 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use std::net::{IpAddr, SocketAddr};
 
+#[pymodule]
+pub fn minecraft(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(py_query, m)?)?;
+    Ok(())
+}
+
 /// Query with all the protocol variants one by one (Java -> Bedrock -> Legacy
 /// (1.6 -> 1.4 -> Beta 1.8)).
 pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<JavaResponse> {

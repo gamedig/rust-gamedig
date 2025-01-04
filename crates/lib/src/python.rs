@@ -4,6 +4,10 @@ use crate::games;
 
 #[pymodule]
 fn gamedig(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(games::minecraft::py_query, m)?)?;
+    // Add the game modules.
+    let module = PyModule::new(_py, "minecraft")?;
+    games::minecraft::minecraft(_py, module)?;
+    m.add_submodule(module)?;
+
     Ok(())
 }
