@@ -81,3 +81,7 @@ required-features = ["games"]
 [[example]]
 name = "generic"
 required-features = ["games", "game_defs"]
+
+[[example]]
+name = "fivem"
+required-features = ["games"]
