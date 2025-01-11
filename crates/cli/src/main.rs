@@ -479,7 +479,7 @@ fn main() -> Result<()> {
         Action::License => {
             // Bake the license into the binary
             // so we don't have to ship it separately
-            println!("{}", include_str!("../../../LICENSE.md"));
+            println!("{}", include_str!("../LICENSE.md"));
         }
     }
 

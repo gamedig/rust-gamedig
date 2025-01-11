@@ -1,20 +1,19 @@
 [package]
-name = "gamedig-cli"
+name = "gamedig_cli"
 authors = [
     "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
 ]
 description = "A command line interface for gamedig"
 license = "MIT"
-version = "0.1.1"
+version = "0.2.1"
 edition = "2021"
-default-run = "gamedig-cli"
+default-run = "gamedig_cli"
 homepage = "https://gamedig.github.io/"
-documentation = "https://docs.rs/gamedig-cli/latest/gamedig-cli/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.65.0"
-categories = ["parsing", "command-line-interface"]
+rust-version = "1.74.1"
+categories = ["command-line-interface"]
 
 [features]
 default = ["json", "bson", "xml", "browser"]
@@ -32,9 +31,9 @@ browser = ["dep:webbrowser"]
 
 [dependencies]
 # Core Dependencies
-thiserror = "1.0.43"
+thiserror = "2.0.0"
 clap = { version = "4.5.4", default-features = false, features = ["derive"] }
-gamedig = { version = "*", path = "../lib", default-features = false, features = [
+gamedig = { version = "0.6.1", default-features = false, features = [
     "clap",
     "games",
     "game_defs",
@@ -53,7 +52,7 @@ hex = { version = "0.4.3", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false }
 
 # XML
-quick-xml = { version = "0.36.0", optional = true, default-features = false }
+quick-xml = { version = "0.37.0", optional = true, default-features = false }
 
 # Browser
 webbrowser = { version = "1.0.0", optional = true, default-features = false }

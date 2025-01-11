@@ -3,13 +3,18 @@ name: Security audit
 on:
   push:
     paths:
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
 jobs:
   security_audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rustsec/audit-check@v1.4.1
+
+      - name: Generate Cargo.lock # https://github.com/rustsec/audit-check/issues/27
+        run: cargo generate-lockfile
+
+      - name: Audit Check
+        uses: rustsec/audit-check@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

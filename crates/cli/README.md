@@ -1,20 +1,26 @@
-# rust-GameDig CLI
+# Rust GameDig CLI
 
 The official [rust-GameDig](https://crates.io/crates/gamedig) Command Line Interface.
 
 [![CI](https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg)](https://github.com/gamedig/rust-gamedig/actions) [![License:MIT](https://img.shields.io/github/license/gamedig/rust-gamedig?color=blue)](https://github.com/gamedig/rust-gamedig/blob/main/LICENSE.md) [![node coverage](https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg)](https://github.com/gamedig/node-gamedig)
 
-## Community
+## Installation
 
-Checkout the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).  
-Note that it isn't be a replacement for GitHub issues, if you have found a problem
-within the library or want to request a feature, it's better to do so here rather than
-on Discord.
+You can install the CLI via `cargo`:
+
+```sh
+cargo install gamedig_cli
+```
+
+or
+
+```sh
+cargo install gamedig_cli --git https://github.com/gamedig/rust-gamedig.git
+```
 
 ## Usage
 
-Just by running `gamedig-cli` prints the usage.  
-**Note**: Passing `--help` (or `-h`) shows the usage.
+Running `gamedig_cli` without any arguments will display the usage information. You can also use the `--help` (or `-h`) flag to see detailed usage instructions.
 
 Here's also a quick rundown of a simple query with the `json-pretty` format:
 
@@ -26,8 +32,8 @@ can also be optional if the server is running the default ports) then query on i
 
 [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
 
-```
-gamedig-cli query -g teamfortress2 -i 127.0.0.1 -f json-pretty
+```sh
+gamedig_cli query -g teamfortress2 -i 127.0.0.1 -f json-pretty
 ```
 
 What we are doing here:

@@ -23,6 +23,8 @@ pub enum ProprietaryProtocol {
     Savage2,
     Eco,
     Mindustry,
+    #[cfg(all(feature = "services", feature = "tls", feature = "serde"))]
+    Minetest,
 }
 
 /// Enumeration of all valid protocol types
@@ -65,6 +67,13 @@ pub enum GenericResponse<'a> {
     Eco(&'a crate::games::eco::Response),
     #[cfg(feature = "games")]
     FiveM(&'a crate::games::fivem::Response),
+    #[cfg(all(
+        feature = "services",
+        feature = "tls",
+        feature = "serde",
+        feature = "games"
+    ))]
+    Minetest(&'a crate::games::minetest::Response),
 }
 
 /// All player types
@@ -88,6 +97,13 @@ pub enum GenericPlayer<'a> {
     Eco(&'a crate::games::eco::Player),
     #[cfg(feature = "games")]
     FiveM(&'a crate::games::fivem::Player),
+    #[cfg(all(
+        feature = "services",
+        feature = "tls",
+        feature = "serde",
+        feature = "games"
+    ))]
+    Minetest(&'a crate::games::minetest::Player),
 }
 
 pub trait CommonResponse {

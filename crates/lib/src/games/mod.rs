@@ -7,12 +7,18 @@ pub mod quake;
 pub mod unreal2;
 pub mod valve;
 
+#[cfg(all(feature = "tls", feature = "serde", feature = "services"))]
+pub mod minetest;
+
 #[cfg(feature = "tls")]
 pub use epic::*;
 pub use gamespy::*;
 pub use quake::*;
 pub use unreal2::*;
 pub use valve::*;
+
+#[cfg(all(feature = "tls", feature = "serde", feature = "services"))]
+pub use minetest::*;
 
 /// Battalion 1944
 pub mod battalion1944;

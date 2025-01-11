@@ -1,14 +1,49 @@
 Who knows what the future holds...
 
-# 0.X.Y - DD/MM/YYYY
+# X.Y.Z - DD/MM/YYYY
+
+# 0.6.1 - 05/12/2024
 
 Games:
 
-- [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support.
+- Added `Starbound` support (by @Novaenia).
+
+Protocols:
+
+- Fixed enum cast error on valve when parsing uppercase envrionment and server type fields (by @Novaenia).
+
+# 0.6.0 - 26/11/2024
+
+Breaking:
+
+- MSRV is now `1.71.1` (was `1.65.0`), this is due to deps we rely on requiring a higher version on linux builds (`1.65.0` is 2+ years old).
+
+Games:
+
+- [Minetest](https://www.minetest.net/) support (available on the `tls`, `serde` and `services` features) (#218 by
+  @CosminPerRam).
+- Fixed the forest game failing when host has the client steam id (#232 by @paul-hansen).
+
+# 0.5.2 - 20/10/2024
+
+Games:
+
+- [Soulmask](https://store.steampowered.com/app/2646460/Soulmask/) support (by @CosminPerRam).
+
+Protocols:
+
+- Fixed Epic (EOS) protocol to match ports on query (by @cainthebest).
 
 Services:
 
-- MineTest Master Server support (available only on the `tls` and `serde` feature).
+- MineTest Master Server support (available only on the `tls` and `serde` feature) (by @CosminPerRam).
+
+Crate:
+
+- Performance improvements from clippy suggestions (by @CosminPerRam).
+- Feature gate some variables so that they are not unused (by @cainthebest).
+- Fixed a OOB panic that could occur when reading strings from the buffer (by @cainthebest).
+- Updated `pnet_packet` from `0.34.0` to `0.35.0`.
 
 # 0.5.1 - 12/05/2024
 
