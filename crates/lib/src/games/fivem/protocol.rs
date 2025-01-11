@@ -5,9 +5,7 @@ use std::net::{IpAddr, SocketAddr};
 
 /// Query a FiveM server.
 #[inline]
-pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> {
-    query_with_timeout(address, port, &None)
-}
+pub fn query(address: &IpAddr, port: Option<u16>) -> GDResult<Response> { query_with_timeout(address, port, &None) }
 
 /// Query a FiveM server.
 #[inline]

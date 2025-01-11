@@ -78,27 +78,17 @@ impl CommonPlayer for Player {
         crate::protocols::types::GenericPlayer::FiveM(self)
     }
 
-    fn name(&self) -> &str {
-        &self.name
-    }
+    fn name(&self) -> &str { &self.name }
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> crate::protocols::GenericResponse {
-        crate::protocols::GenericResponse::FiveM(self)
-    }
+    fn as_original(&self) -> crate::protocols::GenericResponse { crate::protocols::GenericResponse::FiveM(self) }
 
-    fn players_online(&self) -> u32 {
-        self.players.len() as u32
-    }
+    fn players_online(&self) -> u32 { self.players.len() as u32 }
 
-    fn players_maximum(&self) -> u32 {
-        self.info.vars.sv_max_clients.parse::<u32>().unwrap_or(0)
-    }
+    fn players_maximum(&self) -> u32 { self.info.vars.sv_max_clients.parse::<u32>().unwrap_or(0) }
 
-    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> {
-        Some(self.players.iter().map(|p| p as _).collect())
-    }
+    fn players(&self) -> Option<Vec<&dyn CommonPlayer>> { Some(self.players.iter().map(|p| p as _).collect()) }
 }
 
 /// Extra request settings for FiveM queries.
