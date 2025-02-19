@@ -38,6 +38,6 @@ pub mod teamspeak_3;
 #[cfg(feature = "unreal_2")]
 pub mod unreal_2;
 
-/// Valve Source Engine query protocol.
+/// Valve Source Engine query protocol (Includes support for `GoldSrc`).
 #[cfg(feature = "valve")]
 pub mod valve;
