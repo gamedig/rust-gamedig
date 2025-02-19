@@ -1,8 +1,8 @@
 use {super::super::request::RequestBuilder, crate::error::Result, serde::de::DeserializeOwned};
 
-#[cfg(feature = "http_tokio")]
+#[cfg(feature = "https_tokio")]
 mod reqwest;
-#[cfg(feature = "http_std")]
+#[cfg(feature = "https_std")]
 mod ureq;
 
 #[maybe_async::maybe_async]
