@@ -8,7 +8,7 @@
 
 /// Module for Server Information (`A2S_INFO`).
 pub mod info;
-/// Module for handling the Player (`A2S_PLAYER`).
+/// Module for Player Information (`A2S_PLAYER`).
 pub mod player;
 /// Module for Server Rules (`A2S_RULES`).
 pub mod rules;

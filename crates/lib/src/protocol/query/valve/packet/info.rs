@@ -11,7 +11,7 @@ pub const INFO_REQUEST_PAYLOAD: [u8; 25] = [
     0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
 ];
 
-/// Represents the type of server.
+/// Describes the type of server as returned in the server information response.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServerType {
     /// A dedicated server.
@@ -32,6 +32,8 @@ impl ServerType {
     /// - `b'd'` or `b'D'` &rarr; [`ServerType::Dedicated`]
     /// - `b'l'` or `b'L'` &rarr; [`ServerType::NonDedicated`]
     /// - `b'p'` or `b'P'` &rarr; [`ServerType::SourceTV`]
+    ///
+    /// Returns `None` if the value does not match any known server type.
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             b'd' | b'D' => Some(Self::Dedicated),
@@ -42,7 +44,7 @@ impl ServerType {
     }
 }
 
-/// Represents the operating environment of the server.
+/// Specifies the operating system environment on which the server is running.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServerEnvironment {
     /// Server running on Linux.
@@ -63,6 +65,8 @@ impl ServerEnvironment {
     /// - `b'l'` or `b'L'` &rarr; [`ServerEnvironment::Linux`]
     /// - `b'w'` or `b'W'` &rarr; [`ServerEnvironment::Windows`]
     /// - `b'm'`, `b'M'`, `b'o'`, or `b'O'` &rarr; [`ServerEnvironment::Mac`]
+    ///
+    /// Returns `None` if the byte does not correspond to any supported environment.
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             b'l' | b'L' => Some(Self::Linux),
@@ -73,21 +77,111 @@ impl ServerEnvironment {
     }
 }
 
-/// Game modes specific to `The Ship`.
+/// Flags indicating which optional extra fields are included in the server response.
 ///
-/// Some servers running the game `The Ship` include extra data about the game mode.
+/// Each flag corresponds to an optional field in the [`ExtraData`] struct.
+pub enum ExtraDataFlags {
+    /// The server's 64-bit GameID.
+    ///
+    /// If set, the [`ExtraData::game_id`] field is present.
+    GameID = 0x01,
+
+    /// The server's SteamID.
+    ///
+    /// If set, the [`ExtraData::steam_id`] field is present.
+    SteamID = 0x10,
+
+    /// Keywords or tags describing the game.
+    ///
+    /// If set, the [`ExtraData::keywords`] field is present.
+    Keywords = 0x20,
+
+    /// Information about the server’s SourceTV configuration.
+    ///
+    /// If set, the [`ExtraData::source_tv`] field is present.
+    SourceTV = 0x40,
+
+    /// The server’s game port number.
+    ///
+    /// If set, the [`ExtraData::port`] field is present.
+    Port = 0x80,
+}
+
+/// A wrapper for a byte representing a combination of extra data flags.
+///
+/// This structure provides a [`ExtraDataFlag::contains`] method to check if a specific flag is present.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ExtraDataFlag(pub u8);
+
+impl ExtraDataFlag {
+    /// Checks whether the provided `flag` is present in the [`ExtraDataFlag`].
+    pub const fn contains(&self, flag: ExtraDataFlags) -> bool { self.0 & flag as u8 != 0 }
+}
+
+/// Information about SourceTV, used for live game spectating.
+///
+/// This struct holds the configuration of the SourceTV service if available.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SourceTV {
+    /// The port number used for SourceTV spectating.
+    pub port: u16,
+
+    /// The name of the SourceTV server.
+    pub name: String,
+}
+
+/// Contains optional extra information provided by the server response.
+///
+/// The presence of each field is determined by the bits set in the
+/// [`Response::edf`] (Extra Data Flag).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtraData {
+    /// The server's 64-bit GameID. This value is more precise than the low 24-bit AppID.
+    ///
+    /// Present if [`ExtraDataFlags::GameID`] is set.
+    pub game_id: Option<u64>,
+
+    /// The server's SteamID.
+    ///
+    /// Present if [`ExtraDataFlags::SteamID`] is set.
+    pub steam_id: Option<u64>,
+
+    /// Keywords or tags that describe the game.
+    ///
+    /// Present if [`ExtraDataFlags::Keywords`] is set.
+    pub keywords: Option<String>,
+
+    /// SourceTV configuration information.
+    ///
+    /// Present if [`ExtraDataFlags::SourceTV`] is set.
+    pub source_tv: Option<SourceTV>,
+
+    /// The server’s game port number.
+    ///
+    /// Present if [`ExtraDataFlags::Port`] is set.
+    pub port: Option<u16>,
+}
+
+/// Enumerates the game modes available in the game `The Ship`.
+///
+/// Some servers running `The Ship` provide additional information about the game mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TheShipMode {
     /// Hunt mode.
     Hunt = 0,
+
     /// Elimination mode.
     Elimination = 1,
+
     /// Duel mode.
     Duel = 2,
+
     /// Deathmatch mode.
     Deathmatch = 3,
+
     /// VIP Team mode.
     VIPTeam = 4,
+
     /// Team Elimination mode.
     TeamElimination = 5,
 }
@@ -103,6 +197,8 @@ impl TheShipMode {
     /// - `3` &rarr; [`TheShipMode::Deathmatch`]
     /// - `4` &rarr; [`TheShipMode::VIPTeam`]
     /// - `5` &rarr; [`TheShipMode::TeamElimination`]
+    ///
+    /// Returns `None` if the value does not correspond to any defined mode.
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(Self::Hunt),
@@ -116,7 +212,7 @@ impl TheShipMode {
     }
 }
 
-/// Additional game mode information for servers running `The Ship`.
+/// Additional game mode information specific to servers running `The Ship`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TheShip {
     /// The game mode used by the server.
@@ -129,83 +225,9 @@ pub struct TheShip {
     pub duration: u8,
 }
 
-/// Flags that indicate which optional fields are present in the server response.
-pub enum ExtraDataFlags {
-    /// The server's game port number.
-    ///
-    /// Provided in [`Extended::port`].
-    Port = 0x80,
-
-    /// The server's SteamID.
-    ///
-    /// Provided in [`Extended::steam_id`].
-    SteamID = 0x10,
-
-    /// Information about SourceTV.
-    ///
-    /// Provided in [`Response::source_tv`].
-    SourceTV = 0x40,
-
-    /// Tags that describe the game.
-    ///
-    /// Provided in [`Extended::keywords`].
-    Keywords = 0x20,
-
-    /// The server's 64 bit GameID.
-    ///
-    /// Provided in [`Extended::game_id`].
-    GameID = 0x01,
-}
-
-/// Extra data flag that indicates which optional fields are present in the server response.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ExtraDataFlag(pub u8);
-
-impl ExtraDataFlag {
-    pub const fn contains(&self, flag: ExtraDataFlags) -> bool { self.0 & flag as u8 != 0 }
-}
-
-/// Extended server information available when certain flags are set.
-///
-/// The [`Response::edf`] (Extra Data Flag) in the server response determines which fields are available.
+/// Information about a mod running on a GoldSrc engine server.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Extended {
-    /// The server's game port number.
-    ///
-    /// Available if `edf & 0x80 != 0`.
-    pub port: Option<u16>,
-
-    /// The server's SteamID.
-    ///
-    /// Available if `edf & 0x10 != 0`.
-    pub steam_id: Option<u64>,
-
-    /// Tags that describe the game.
-    ///
-    /// Available if `edf & 0x20 != 0`.
-    pub keywords: Option<String>,
-
-    /// The server's 64 bit GameID. When present, it indicates a more accurate AppID then the low 24 bits.
-    ///
-    /// Available if `edf & 0x01 != 0`.
-    pub game_id: Option<u64>,
-}
-
-/// Information specific to SourceTV.
-///
-/// SourceTV is a system that allows users to spectate live games.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SourceTV {
-    /// Spectator port number for SourceTV.
-    pub port: u16,
-
-    /// Name of the SourceTV server.
-    pub name: String,
-}
-
-/// Information about a mod running on the server (`GoldSrc` engines).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Mod {
+pub struct GoldSrcMod {
     /// URL to mod website.
     pub link: String,
 
@@ -262,28 +284,23 @@ pub struct Response {
     pub server_environment: ServerEnvironment,
 
     /// Indicates if the server requires a password to join.
-    pub password_protected: bool,
+    pub password: bool,
 
-    /// `true` if the server uses VAC (Valve Anti Cheat).
+    /// If the server uses VAC (Valve Anti Cheat).
     pub vac: bool,
-
-    /// Additional data for servers running `The Ship`.
-    pub the_ship: Option<TheShip>,
 
     /// Version of the game installed on the server.
     pub version: String,
 
-    /// Extra Data Flag that indicates which optional fields are present.
+    /// Extra Data Flag that indicates which optional fields are present in [`Response::extra_data`].
     pub edf: ExtraDataFlag,
 
-    /// Extended server information based on the `edf` flag.
-    pub extended_info: Option<Extended>,
+    /// Extra server information based on the flags set in [`Response::edf`].
+    pub extra_data: Option<ExtraData>,
 
-    /// Information about SourceTV (if available).
-    ///
-    /// Present if `edf & 0x40 != 0`.
-    pub source_tv: Option<SourceTV>,
+    /// Additional data for servers running `The Ship`.
+    pub the_ship: Option<TheShip>,
 
-    /// Mod information (for `GoldSrc` servers running a mod).
-    pub r#mod: Option<Mod>,
+    /// Mod information for `GoldSrc` servers running a mod.
+    pub gold_src_mod: Option<GoldSrcMod>,
 }
