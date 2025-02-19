@@ -107,7 +107,6 @@ teamspeak_2 = ["_TCP"]
 teamspeak_3 = ["_TCP"]
 unreal_2 = ["_UDP", "_BUFFER_READ_LATIN_1"]
 valve = ["_UDP"]
-valve_gold_src = ["_UDP"]
 
 ### RCON (Prefix: rcon_)
 rcon_valve_source = ["_TCP"]
@@ -151,7 +150,6 @@ all_query_protocols = [
     "teamspeak_3",
     "unreal_2",
     "valve",
-    "valve_gold_src",
 ]
 
 all_rcon_protocols = ["rcon_valve_source"]

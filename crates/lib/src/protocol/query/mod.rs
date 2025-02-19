@@ -41,7 +41,3 @@ pub mod unreal_2;
 /// Valve Source Engine query protocol.
 #[cfg(feature = "valve")]
 pub mod valve;
-
-/// Valve GoldSrc Engine query protocol.
-#[cfg(feature = "valve_gold_src")]
-pub mod valve_gold_src;
