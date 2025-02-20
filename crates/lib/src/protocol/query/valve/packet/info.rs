@@ -34,6 +34,7 @@ impl ServerType {
     /// - `b'p'` or `b'P'` &rarr; [`ServerType::SourceTV`]
     ///
     /// Returns `None` if the value does not match any known server type.
+    #[inline]
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             b'd' | b'D' => Some(Self::Dedicated),
@@ -67,6 +68,7 @@ impl ServerEnvironment {
     /// - `b'm'`, `b'M'`, `b'o'`, or `b'O'` &rarr; [`ServerEnvironment::Mac`]
     ///
     /// Returns `None` if the byte does not correspond to any supported environment.
+    #[inline]
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             b'l' | b'L' => Some(Self::Linux),
@@ -115,6 +117,7 @@ pub struct ExtraDataFlag(pub u8);
 
 impl ExtraDataFlag {
     /// Checks whether the provided `flag` is present in the [`ExtraDataFlag`].
+    #[inline]
     pub const fn contains(&self, flag: ExtraDataFlags) -> bool { self.0 & flag as u8 != 0 }
 }
 
@@ -199,6 +202,7 @@ impl TheShipMode {
     /// - `5` &rarr; [`TheShipMode::TeamElimination`]
     ///
     /// Returns `None` if the value does not correspond to any defined mode.
+    #[inline]
     pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(Self::Hunt),
