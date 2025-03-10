@@ -39,11 +39,4 @@ pub struct Player {
     pub the_ship: Option<TheShipPlayer>,
 }
 
-/// The complete response from a player query.
-///
-/// Contains a list of all players currently connected to the server.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Response {
-    /// A vector of players retrieved from the server.
-    pub players: Vec<Player>,
-}
+
