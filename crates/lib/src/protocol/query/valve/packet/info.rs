@@ -253,7 +253,7 @@ pub struct GoldSrcMod {
 
 /// The complete response from a server information query.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Response {
+pub struct ServerInfo {
     /// Protocol version used by the server.
     pub protocol: u8,
 
