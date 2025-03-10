@@ -214,3 +214,87 @@ impl<B: Bufferable> Buffer<B> {
         Ok(&self.inner.as_ref()[pos .. pos + cnt])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_and_properties_heap() {
+        let data = vec![1, 2, 3, 4, 5];
+
+        let buf = Buffer::new(data.clone());
+
+        assert_eq!(buf.pos(), 0);
+        assert_eq!(buf.len(), data.len());
+        assert_eq!(buf.remaining(), data.len());
+    }
+
+    #[test]
+    fn test_new_and_properties_stack() {
+        let data = [10, 20, 30, 40];
+
+        let buf = Buffer::new(data);
+
+        assert_eq!(buf.pos(), 0);
+        assert_eq!(buf.len(), 4);
+        assert_eq!(buf.remaining(), 4);
+    }
+
+    #[test]
+    fn test_move_pos_valid() {
+        let data = vec![1, 2, 3, 4, 5];
+
+        let mut buf = Buffer::new(data);
+
+        assert_eq!(buf.pos(), 0);
+
+        buf.move_pos(2).unwrap();
+        assert_eq!(buf.pos(), 2);
+
+        buf.move_pos(-1).unwrap();
+        assert_eq!(buf.pos(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_move_pos_out_of_bounds() {
+        let data = vec![1, 2, 3];
+
+        let mut buf = Buffer::new(data);
+
+        // Beyond the buffer length.
+        let _ = buf.move_pos(10).unwrap();
+    }
+
+    #[test]
+    fn test_peek_valid() {
+        let data = vec![100, 101, 102];
+
+        let buf = Buffer::new(data);
+
+        let slice = buf.peek(2).unwrap();
+        assert_eq!(slice, &[100, 101]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_peek_out_of_bounds() {
+        let data = vec![1, 2];
+
+        let buf = Buffer::new(data);
+
+        // Beyond the buffer length.
+        let _ = buf.peek(3).unwrap();
+    }
+
+    #[test]
+    fn test_unpack() {
+        let data = vec![42, 43];
+
+        let buf = Buffer::new(data.clone());
+
+        let unpacked = buf.unpack();
+        assert_eq!(unpacked, data);
+    }
+}

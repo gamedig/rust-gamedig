@@ -1,7 +1,5 @@
 use crate::error::{ErrorKind, IoError, Report, Result, diagnostic::FailureReason};
 
-// TODO: There are bugs in this, it needs to be tested and fixed.
-
 impl<B: super::Bufferable> super::Buffer<B> {
     /// Reads a `UTF 8` string from the buffer until a delimiter is encountered.
     ///
@@ -295,5 +293,98 @@ impl<B: super::Bufferable> super::Buffer<B> {
         self.cursor += end_pos + delimiter.len();
 
         Ok(decoded_string.into_owned())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::Buffer;
+
+    #[test]
+    fn test_read_string_utf8_strict_heap() {
+        let data = b"Hello\x00World";
+
+        let mut buf = Buffer::new(data.to_vec());
+
+        let s = buf.read_string_utf8(None, true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf8_strict_stack() {
+        let data = *b"Hello\x00World";
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8(None, true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf8_non_strict_invalid() {
+        let data = vec![0xFF, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8(None, false).unwrap();
+        assert_eq!(s, "\u{FFFD}");
+    }
+
+    #[test]
+    fn test_read_string_utf8_len_prefixed_strict() {
+        let data = vec![6, b'H', b'e', b'l', b'l', b'o'];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8_len_prefixed(true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf16_be_strict() {
+        let data = vec![0x00, 0x48, 0x00, 0x69, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf16_be(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf16_le_strict() {
+        let data = vec![0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf16_le(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_ucs2_strict() {
+        let data = vec![0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_ucs2(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[cfg(feature = "_BUFFER_READ_LATIN_1")]
+    #[test]
+    fn test_read_string_latin1_strict() {
+        let data = vec![b'H', 0xEB, b'l', b'l', b'o', 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_latin1(None, true).unwrap();
+        assert_eq!(s, "Hëllo");
+        assert_eq!(buf.pos(), 6);
     }
 }
