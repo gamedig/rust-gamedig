@@ -1,8 +1,6 @@
-use crate::error::{diagnostic::FailureReason, ErrorKind, IoError, Report, Result};
+use crate::error::{ErrorKind, IoError, Report, Result, diagnostic::FailureReason};
 
-//TODO: There are bugs in this, it needs to be tested and fixed.
-
-impl super::Buffer {
+impl<B: super::Bufferable> super::Buffer<B> {
     /// Reads a `UTF 8` string from the buffer until a delimiter is encountered.
     ///
     /// # Parameters
@@ -37,13 +35,13 @@ impl super::Buffer {
         let len = self.len();
         let delimiter = delimiter.unwrap_or([0x00]);
 
-        let end_pos = self.inner[pos .. len]
+        let end_pos = self.inner.as_ref()[pos .. len]
             .iter()
             .position(|&b| b == delimiter[0])
             .unwrap_or(len - pos);
 
         let s = if strict {
-            String::from_utf8(self.inner[pos .. pos + end_pos].to_vec()).map_err(|e| {
+            String::from_utf8(self.inner.as_ref()[pos .. pos + end_pos].to_vec()).map_err(|e| {
                 Report::from(e)
                     .change_context(IoError::BufferStringConversionError {}.into())
                     .attach_printable(FailureReason::new(
@@ -51,7 +49,7 @@ impl super::Buffer {
                     ))
             })?
         } else {
-            String::from_utf8_lossy(&self.inner[pos .. pos + end_pos]).into_owned()
+            String::from_utf8_lossy(&self.inner.as_ref()[pos .. pos + end_pos]).into_owned()
         };
 
         self.cursor += end_pos + delimiter.len();
@@ -85,12 +83,12 @@ impl super::Buffer {
         self.check_range(.. 1, true)?;
 
         let pos = self.pos();
-        let s_len = self.inner[pos] as usize;
+        let s_len = self.inner.as_ref()[pos] as usize;
         let end_pos = pos + s_len;
         self.check_range(.. end_pos, true)?;
 
         let s = if strict {
-            String::from_utf8(self.inner[pos + 1 .. end_pos].to_vec()).map_err(|e| {
+            String::from_utf8(self.inner.as_ref()[pos + 1 .. end_pos].to_vec()).map_err(|e| {
                 Report::from(e)
                     .change_context(IoError::BufferStringConversionError {}.into())
                     .attach_printable(FailureReason::new(
@@ -98,7 +96,7 @@ impl super::Buffer {
                     ))
             })?
         } else {
-            String::from_utf8_lossy(&self.inner[pos + 1 .. end_pos]).into_owned()
+            String::from_utf8_lossy(&self.inner.as_ref()[pos + 1 .. end_pos]).into_owned()
         };
 
         self.cursor = end_pos;
@@ -121,7 +119,7 @@ impl super::Buffer {
 
         let pos = self.pos();
         let len = self.len();
-        let end_pos = self.inner[pos .. len]
+        let end_pos = self.inner.as_ref()[pos .. len]
             .chunks_exact(2)
             .position(|chunk| chunk == delimiter)
             .map_or(len - pos, |p| p * 2);
@@ -145,7 +143,7 @@ impl super::Buffer {
             String::from_utf16_lossy(&vec)
         };
 
-        self.cursor += end_pos + delimiter.len();
+        self.cursor += delimiter.len();
 
         Ok(s)
     }
@@ -275,13 +273,13 @@ impl super::Buffer {
 
         let pos = self.pos();
         let len = self.len();
-        let end_pos = self.inner[pos .. len]
+        let end_pos = self.inner.as_ref()[pos .. len]
             .iter()
             .position(|&b| b == delimiter[0])
             .unwrap_or(len - pos);
 
         let (decoded_string, _, had_errors) =
-            encoding_rs::WINDOWS_1252.decode(&self.inner[pos .. pos + end_pos]);
+            encoding_rs::WINDOWS_1252.decode(&self.inner.as_ref()[pos .. pos + end_pos]);
 
         if had_errors && strict {
             return Err(
@@ -295,5 +293,98 @@ impl super::Buffer {
         self.cursor += end_pos + delimiter.len();
 
         Ok(decoded_string.into_owned())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::Buffer;
+
+    #[test]
+    fn test_read_string_utf8_strict_heap() {
+        let data = b"Hello\x00World";
+
+        let mut buf = Buffer::new(data.to_vec());
+
+        let s = buf.read_string_utf8(None, true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf8_strict_stack() {
+        let data = *b"Hello\x00World";
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8(None, true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf8_non_strict_invalid() {
+        let data = vec![0xFF, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8(None, false).unwrap();
+        assert_eq!(s, "\u{FFFD}");
+    }
+
+    #[test]
+    fn test_read_string_utf8_len_prefixed_strict() {
+        let data = vec![6, b'H', b'e', b'l', b'l', b'o'];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf8_len_prefixed(true).unwrap();
+        assert_eq!(s, "Hello");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf16_be_strict() {
+        let data = vec![0x00, 0x48, 0x00, 0x69, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf16_be(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_utf16_le_strict() {
+        let data = vec![0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_utf16_le(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[test]
+    fn test_read_string_ucs2_strict() {
+        let data = vec![0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_ucs2(None, true).unwrap();
+        assert_eq!(s, "Hi");
+        assert_eq!(buf.pos(), 6);
+    }
+
+    #[cfg(feature = "_BUFFER_READ_LATIN_1")]
+    #[test]
+    fn test_read_string_latin1_strict() {
+        let data = vec![b'H', 0xEB, b'l', b'l', b'o', 0x00];
+
+        let mut buf = Buffer::new(data);
+
+        let s = buf.read_string_latin1(None, true).unwrap();
+        assert_eq!(s, "Hëllo");
+        assert_eq!(buf.pos(), 6);
     }
 }

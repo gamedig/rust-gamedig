@@ -56,7 +56,6 @@ _UDP = ["_BUFFER"]
 
 ## Misc
 _DEV_LOG = ["attribute_log"]
-_DEV_BUF_EXPERIMENTAL = []
 
 # Default Features (Prefix: default_)
 #

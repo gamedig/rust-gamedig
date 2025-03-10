@@ -1,6 +1,6 @@
 use crate::error::Result;
 
-impl super::Buffer {
+impl<B: super::Bufferable> super::Buffer<B> {
     /// A helper method to read a fixed size slice of bytes from the current position,
     /// convert it into a specific type `T`, and advance the cursor by `N` bytes.
     ///
@@ -29,7 +29,7 @@ impl super::Buffer {
 
         let mut x = [0u8; N];
         let pos = self.pos();
-        x.copy_from_slice(&self.inner[pos .. pos + N]);
+        x.copy_from_slice(&self.inner.as_ref()[pos .. pos + N]);
 
         self.cursor += N;
 

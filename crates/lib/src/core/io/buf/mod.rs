@@ -1,10 +1,10 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
         ErrorKind,
         IoError,
         Report,
         Result,
+        diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
     },
 
     std::ops::{Bound, RangeBounds},
@@ -13,163 +13,67 @@ use {
 mod num;
 mod string;
 
-/// `Buffer` is a lightweight, runtime agnostic interface over a `Vec<u8>` that provides
-/// safe indexing and cursor-based read operations. It does not rely on any specific runtime
-/// (e.g., it can be used in synchronous, asynchronous, or single-threaded contexts without
-/// issue) and does not perform I/O operations directly. Instead, it focuses on providing a
-/// safe and ergonomic interface for in-memory data access.
-// TODO: It would be nice to have a IO pipeline from net but i think this is something for future
-// TODO: ^^ Need to figure out a way to cleanly implement this without making it too complex
-pub(crate) struct Buffer {
+/// The `Bufferable` trait abstracts types that represent byte storage and provides
+/// a method to retrieve the length of the underlying storage.
+pub(crate) trait Bufferable: Clone + AsRef<[u8]> + Into<Vec<u8>> {
+    /// Returns the number of elements in the underlying byte storage.
+    fn len(&self) -> usize;
+}
+
+impl Bufferable for Vec<u8> {
+    fn len(&self) -> usize { self.len() }
+}
+
+impl<const N: usize> Bufferable for [u8; N] {
+    fn len(&self) -> usize { N }
+}
+
+/// The `Buffer` struct provides a lightweight, runtime agnostic abstraction for byte storage,
+/// whether allocated on the stack or the heap. It ensures safe indexing and supports cursor based
+/// read operations, enabling efficient in-memory data access without depending on a specific runtime I/O.
+pub(crate) struct Buffer<B: Bufferable> {
     /// The underlying byte storage.
-    inner: Vec<u8>,
+    inner: B,
     /// The current position in the buffer.
     cursor: usize,
 }
 
-impl Buffer {
-    /// Creates a new `Buffer` from a provided `Vec<u8>`.
+impl<B: Bufferable> Buffer<B> {
+    /// Creates a new `Buffer` from a provided byte storage.
     ///
     /// # Arguments
     ///
-    /// * `vec` - A vector of bytes that will back the `Buffer`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let data = vec![0x10, 0x20, 0x30];
-    /// let buffer = Buffer::new(data);
-    ///
-    /// assert_eq!(buffer.len(), 3);
-    /// assert_eq!(buffer.pos(), 0);
-    /// ```
+    /// * `inner` - The underlying byte storage.
     #[allow(dead_code)]
     #[inline]
-    pub(crate) const fn new(vec: Vec<u8>) -> Self {
-        Self {
-            inner: vec,
-            cursor: 0,
-        }
-    }
-    /// This position is zero-based and increments as you read or move through the buffer.
+    pub(crate) const fn new(inner: B) -> Self { Self { inner, cursor: 0 } }
+
+    /// Returns the current position in the buffer
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// let buffer = Buffer::new(vec![1, 2, 3, 4]);
-    /// assert_eq!(buffer.pos(), 0);
-    /// ```
+    /// The position is zero based and increments as you read or move through the buffer.
     #[allow(dead_code)]
     #[inline]
     pub(crate) const fn pos(&self) -> usize { self.cursor }
 
-    /// Returns the total number of bytes stored in the buffer.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let buffer = Buffer::new(vec![1, 2, 3]);
-    /// assert_eq!(buffer.len(), 3);
-    /// ```
+    /// Returns the number of elements in the underlying byte storage.
     #[allow(dead_code)]
     #[inline]
     pub(crate) fn len(&self) -> usize { self.inner.len() }
 
-    /// Returns the number of bytes remaining from the current position to the end of the buffer.
+    /// Returns the number of elements remaining from the current position to the end of the byte storage.
     ///
-    /// This gives you how many more bytes can be read without going out-of-bounds.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut buffer = Buffer::new(vec![1, 2, 3]);
-    /// // Initially, all 3 bytes remain.
-    /// assert_eq!(buffer.remaining(), 3);
-    ///
-    /// // After moving the position forward by 1,
-    /// // there should be 2 bytes remaining.
-    /// buffer.move_pos(1).unwrap();
-    /// assert_eq!(buffer.remaining(), 2);
-    /// ```
+    /// This gives you how many more bytes can be read without going out of bounds.
     #[allow(dead_code)]
     #[inline]
     pub(crate) fn remaining(&self) -> usize { self.len() - self.pos() }
 
-    /// Checks if a given range is valid within the buffer, optionally relative to the current position.
+    /// Consumes the `Buffer` and returns the underlying byte storage.
     ///
-    /// This internal helper function ensures that range bounds are correctly within the buffer’s size,
-    /// and that no overflow occurs when calculating start/end positions. It is used to prevent out-of-bounds
-    /// reads and to provide descriptive error messages if the requested range is invalid.
-    ///
-    /// # Arguments
-    ///
-    /// * `range` - The `RangeBounds` object specifying the range to check. Supports `..`, `..end`,
-    ///   `start..`, and `start..end` forms, with `Included` and `Excluded` variants.
-    /// * `pos_ctx` - If `true`, the range is interpreted relative to the current buffer position.
-    ///   If `false`, it is interpreted as absolute indices into the buffer.
-    ///
-    /// # Errors
-    ///
-    /// Returns an `Err` if:
-    /// * The range results in arithmetic overflow or underflow.
-    /// * The range is invalid (e.g., start > end).
-    /// * The range extends beyond the length of the buffer.
-    fn check_range(&self, range: impl RangeBounds<usize>, pos_ctx: bool) -> Result<()> {
-        let len = self.len();
-        let pos = if pos_ctx { self.pos() } else { 0 };
-
-        let check_overflow = |res: Option<usize>| {
-            res.ok_or_else(|| {
-                return Report::new(ErrorKind::from(IoError::BufferRangeOverflowError {}))
-                    .attach_printable(FailureReason::new(
-                        "Attempted to read a range that overflows usize.",
-                    ))
-                    .attach_printable(OpenGitHubIssue());
-            })
-        };
-
-        let start = check_overflow(match range.start_bound() {
-            Bound::Included(&n) => pos.checked_add(n),
-            Bound::Excluded(&n) => pos.checked_add(n + 1),
-            Bound::Unbounded => Some(pos),
-        })?;
-
-        let end = check_overflow(match range.end_bound() {
-            Bound::Included(&n) => pos.checked_add(n + 1),
-            Bound::Excluded(&n) => pos.checked_add(n),
-            Bound::Unbounded => Some(len),
-        })?;
-
-        if start > end {
-            return Err(
-                Report::new(ErrorKind::from(IoError::BufferRangeInvalidError {
-                    start,
-                    end,
-                }))
-                .attach_printable(FailureReason::new(
-                    "Invalid range provided to buffer read operation.",
-                ))
-                .attach_printable(HexDump::new("Buffer", self.inner.clone(), Some(pos)))
-                .attach_printable(OpenGitHubIssue()),
-            );
-        }
-
-        if start > len || end > len {
-            return Err(
-                Report::new(ErrorKind::from(IoError::BufferOutOfBoundsError {
-                    attempted: end - start,
-                    available: len - start,
-                }))
-                .attach_printable(FailureReason::new(
-                    "Attempted to access out of bounds range in the buffer.",
-                ))
-                .attach_printable(HexDump::new("Buffer", self.inner.clone(), Some(pos)))
-                .attach_printable(OpenGitHubIssue()),
-            );
-        }
-
-        Ok(())
-    }
+    /// This conversion moves the underlying byte storage out of the `Buffer`,
+    /// effectively discarding the `Buffer` wrapper.
+    #[allow(dead_code)]
+    #[inline]
+    pub(crate) fn unpack(self) -> B { self.inner }
 
     /// Moves the buffer’s current position by the specified amount.
     ///
@@ -183,18 +87,8 @@ impl Buffer {
     /// # Errors
     ///
     /// Returns an `Err` if:
-    /// * The resulting position would be out-of-bounds.
-    /// * Addition overflows or underflows `isize`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut buffer = Buffer::new(vec![10, 20, 30, 40]);
-    /// buffer.move_pos(2).unwrap();
-    /// assert_eq!(buffer.pos(), 2);
-    /// buffer.move_pos(-1).unwrap();
-    /// assert_eq!(buffer.pos(), 1);
-    /// ```
+    /// * The resulting position would be out of bounds.
+    /// * Addition overflows or underflows `isize` (Note: We should not encounter isize::MAX under normal circumstances).
     #[allow(dead_code)]
     pub(crate) fn move_pos(&mut self, off: isize) -> Result<()> {
         // just in case someone tries to move 0
@@ -223,6 +117,82 @@ impl Buffer {
         }
     }
 
+    /// Checks if a given range is valid within the buffer, optionally relative to the current position.
+    ///
+    /// This internal helper function ensures that range bounds are correctly within the buffer’s size,
+    /// and that no overflow occurs when calculating start/end positions. It is used to prevent out-of-bounds
+    /// reads and to provide descriptive error messages if the requested range is invalid.
+    ///
+    /// # Arguments
+    ///
+    /// * `range` - The `RangeBounds` object specifying the range to check. Supports `..`, `..end`,
+    ///   `start..`, and `start..end` forms, with `Included` and `Excluded` variants.
+    /// * `pos_ctx` - If `true`, the range is interpreted relative to the current buffer position.
+    ///   If `false`, it is interpreted as absolute indices into the buffer.
+    ///
+    /// # Errors
+    ///
+    /// Returns an `Err` if:
+    /// * The range results in arithmetic overflow or underflow.
+    /// * The range is invalid (e.g., start > end).
+    /// * The range extends beyond the length of the buffer.
+    fn check_range(&self, range: impl RangeBounds<usize>, pos_ctx: bool) -> Result<()> {
+        let len = self.len();
+        let pos = if pos_ctx { self.pos() } else { 0 };
+
+        let check_overflow = |res: Option<usize>| {
+            res.ok_or_else(|| {
+                Report::new(ErrorKind::from(IoError::BufferRangeOverflowError {}))
+                    .attach_printable(FailureReason::new(
+                        "Attempted to read a range that overflows usize.",
+                    ))
+                    .attach_printable(OpenGitHubIssue())
+            })
+        };
+
+        let start = check_overflow(match range.start_bound() {
+            Bound::Included(&n) => pos.checked_add(n),
+            Bound::Excluded(&n) => pos.checked_add(n + 1),
+            Bound::Unbounded => Some(pos),
+        })?;
+
+        let end = check_overflow(match range.end_bound() {
+            Bound::Included(&n) => pos.checked_add(n + 1),
+            Bound::Excluded(&n) => pos.checked_add(n),
+            Bound::Unbounded => Some(len),
+        })?;
+
+        if start > end {
+            return Err(
+                Report::new(ErrorKind::from(IoError::BufferRangeInvalidError {
+                    start,
+                    end,
+                }))
+                .attach_printable(FailureReason::new(
+                    "Invalid range provided to buffer read operation.",
+                ))
+                .attach_printable(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
+                .attach_printable(OpenGitHubIssue()),
+            );
+        }
+
+        if start > len || end > len {
+            return Err(
+                Report::new(ErrorKind::from(IoError::BufferOutOfBoundsError {
+                    attempted: end - start,
+                    available: len - start,
+                }))
+                .attach_printable(FailureReason::new(
+                    "Attempted to access out of bounds range in the buffer.",
+                ))
+                .attach_printable(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
+                .attach_printable(OpenGitHubIssue()),
+            );
+        }
+
+        Ok(())
+    }
+
     /// Peeks at the given number of bytes from the current position without advancing the cursor.
     ///
     /// This method checks that `cnt` bytes are available from the current position before returning
@@ -235,41 +205,14 @@ impl Buffer {
     /// # Errors
     ///
     /// Returns an `Err` if the requested number of bytes (`cnt`) is not available from the current position.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let buffer = Buffer::new(vec![0x01, 0x02, 0x03]);
-    /// let slice = buffer.peek(2).unwrap();
-    /// assert_eq!(slice, &[0x01, 0x02]);
-    ///
-    /// // position remains unchanged
-    /// assert_eq!(buffer.pos(), 0);
-    /// ```
     #[allow(dead_code)]
     pub(crate) fn peek(&self, cnt: usize) -> Result<&[u8]> {
         self.check_range(.. cnt, true)?;
 
         let pos = self.pos();
 
-        Ok(&self.inner[pos .. pos + cnt])
+        Ok(&self.inner.as_ref()[pos .. pos + cnt])
     }
-}
-
-impl Into<Vec<u8>> for Buffer {
-    /// Consumes the `Buffer` and returns the inner `Vec<u8>`.
-    ///
-    /// This conversion moves the underlying vector out of the `Buffer`,
-    /// effectively discarding the `Buffer` wrapper.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let buffer = Buffer::new(vec![4, 5, 6]);
-    /// let inner_vec: Vec<u8> = buffer.into();
-    /// assert_eq!(inner_vec, vec![4, 5, 6]);
-    /// ```
-    fn into(self) -> Vec<u8> { self.inner }
 }
 
 #[cfg(test)]
@@ -277,90 +220,81 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_new_buffer() {
-        let buffer = Buffer::new(vec![1, 2, 3, 4]);
+    fn test_new_and_properties_heap() {
+        let data = vec![1, 2, 3, 4, 5];
 
-        assert_eq!(buffer.len(), 4);
-        assert_eq!(buffer.pos(), 0);
+        let buf = Buffer::new(data.clone());
+
+        assert_eq!(buf.pos(), 0);
+        assert_eq!(buf.len(), data.len());
+        assert_eq!(buf.remaining(), data.len());
     }
 
     #[test]
-    fn test_remaining_bytes() {
-        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+    fn test_new_and_properties_stack() {
+        let data = [10, 20, 30, 40];
 
-        assert_eq!(buffer.remaining(), 4);
+        let buf = Buffer::new(data);
 
-        buffer.move_pos(2).unwrap();
-
-        assert_eq!(buffer.remaining(), 2);
+        assert_eq!(buf.pos(), 0);
+        assert_eq!(buf.len(), 4);
+        assert_eq!(buf.remaining(), 4);
     }
 
     #[test]
-    fn test_move_pos_forward() {
-        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+    fn test_move_pos_valid() {
+        let data = vec![1, 2, 3, 4, 5];
 
-        buffer.move_pos(2).unwrap();
+        let mut buf = Buffer::new(data);
 
-        assert_eq!(buffer.pos(), 2);
-    }
+        assert_eq!(buf.pos(), 0);
 
-    #[test]
-    fn test_move_pos_backward() {
-        let mut buffer = Buffer::new(vec![1, 2, 3, 4]);
+        buf.move_pos(2).unwrap();
+        assert_eq!(buf.pos(), 2);
 
-        buffer.move_pos(3).unwrap();
-        buffer.move_pos(-2).unwrap();
-
-        assert_eq!(buffer.pos(), 1);
+        buf.move_pos(-1).unwrap();
+        assert_eq!(buf.pos(), 1);
     }
 
     #[test]
     #[should_panic]
     fn test_move_pos_out_of_bounds() {
-        let mut buffer = Buffer::new(vec![1, 2, 3]);
+        let data = vec![1, 2, 3];
 
-        buffer.move_pos(5).unwrap();
+        let mut buf = Buffer::new(data);
+
+        // Beyond the buffer length.
+        let _ = buf.move_pos(10).unwrap();
     }
 
     #[test]
-    fn test_peek_valid_bytes() {
-        let buffer = Buffer::new(vec![0x01, 0x02, 0x03]);
+    fn test_peek_valid() {
+        let data = vec![100, 101, 102];
 
-        let peeked = buffer.peek(2).unwrap();
+        let buf = Buffer::new(data);
 
-        assert_eq!(peeked, &[0x01, 0x02]);
-        assert_eq!(buffer.pos(), 0);
+        let slice = buf.peek(2).unwrap();
+        assert_eq!(slice, &[100, 101]);
     }
 
     #[test]
     #[should_panic]
     fn test_peek_out_of_bounds() {
-        let buffer = Buffer::new(vec![1, 2]);
+        let data = vec![1, 2];
 
-        buffer.peek(3).unwrap();
+        let buf = Buffer::new(data);
+
+        // Beyond the buffer length.
+        let _ = buf.peek(3).unwrap();
     }
 
     #[test]
-    fn test_check_range_valid() {
-        let buffer = Buffer::new(vec![1, 2, 3, 4]);
+    fn test_unpack() {
+        let data = vec![42, 43];
 
-        assert!(buffer.check_range(1 .. 3, true).is_ok());
-    }
+        let buf = Buffer::new(data.clone());
 
-    #[test]
-    #[should_panic]
-    fn test_check_range_invalid_range() {
-        let buffer = Buffer::new(vec![1, 2, 3]);
-
-        buffer.check_range(2 .. 1, true).unwrap();
-    }
-
-    #[test]
-    fn test_into_vec_conversion() {
-        let buffer = Buffer::new(vec![10, 20, 30]);
-
-        let inner_vec: Vec<u8> = buffer.into();
-
-        assert_eq!(inner_vec, vec![10, 20, 30]);
+        let unpacked = buf.unpack();
+        assert_eq!(unpacked, data);
     }
 }
