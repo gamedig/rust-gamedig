@@ -1,11 +1,10 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
+        diagnostic::{FailureReason, Recommendation},
     },
-
     std::{
         io::{Read, Write},
         net::{SocketAddr, TcpStream},

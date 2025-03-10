@@ -38,5 +38,3 @@ pub struct Player {
     /// Optional additional information for players on `The Ship`.
     pub the_ship: Option<TheShipPlayer>,
 }
-
-

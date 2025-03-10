@@ -6,7 +6,6 @@ use {
         Result,
         diagnostic::{FailureReason, HexDump, OpenGitHubIssue},
     },
-
     std::ops::{Bound, RangeBounds},
 };
 

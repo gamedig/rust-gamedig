@@ -1,8 +1,6 @@
 use {
     crate::{core::Buffer, error::Result},
-
     sealed::client::AbstractTcp,
-
     std::{net::SocketAddr, time::Duration},
 };
 

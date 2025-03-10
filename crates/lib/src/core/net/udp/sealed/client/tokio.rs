@@ -1,16 +1,14 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
+        diagnostic::{FailureReason, Recommendation},
     },
-
     std::{
         net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
         time::Duration,
     },
-
     tokio::{net::UdpSocket, time::timeout as timer},
 };
 

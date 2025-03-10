@@ -1,18 +1,16 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
+        diagnostic::{FailureReason, Recommendation},
     },
-
     std::{net::SocketAddr, time::Duration},
-
     tokio::{
         io::{AsyncReadExt, AsyncWriteExt},
         net::{
-            tcp::{OwnedReadHalf, OwnedWriteHalf},
             TcpStream,
+            tcp::{OwnedReadHalf, OwnedWriteHalf},
         },
         sync::Mutex,
         time::timeout as timer,

@@ -1,11 +1,10 @@
 use {
     crate::error::{
-        diagnostic::{FailureReason, Recommendation},
         NetworkError,
         Report,
         Result,
+        diagnostic::{FailureReason, Recommendation},
     },
-
     std::{
         net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6, UdpSocket},
         time::Duration,

@@ -1,8 +1,6 @@
 use {
     crate::{core::Buffer, error::Result},
-
     sealed::client::AbstractUdp,
-
     std::time::Duration,
 };
 
