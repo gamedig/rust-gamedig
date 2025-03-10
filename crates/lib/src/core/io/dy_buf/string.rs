@@ -145,7 +145,7 @@ impl<B: super::Bufferable> super::Buffer<B> {
             String::from_utf16_lossy(&vec)
         };
 
-        self.cursor += end_pos + delimiter.len();
+        self.cursor += delimiter.len();
 
         Ok(s)
     }
