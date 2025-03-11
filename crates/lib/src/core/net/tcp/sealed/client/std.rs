@@ -77,7 +77,7 @@ impl super::AbstractTcp for StdTcpClient {
         }
     }
 
-    fn read(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
+    fn read_exact(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -137,29 +137,93 @@ impl super::AbstractTcp for StdTcpClient {
             }
         }
 
-        // Validate size and set vector capacity
-        let valid_size = size.unwrap_or(Self::DEFAULT_BUF_CAPACITY as usize);
-        let mut vec = Vec::with_capacity(valid_size);
-
-        match self.stream.read_to_end(&mut vec) {
+        match self.stream.read_exact(buf) {
             // Data read successfully
-            Ok(len) => {
-                #[cfg(feature = "_DEV_LOG")]
-                if valid_size < len {
+            Ok(_) => Ok(()),
+
+            // Error during the read operation
+            Err(e) => {
+                Err(Report::from(e)
+                    .change_context(
+                        NetworkError::TcpReadError {
+                            peer_addr: self.peer_addr,
+                        }
+                        .into(),
+                    )
+                    .attach_printable(FailureReason::new(
+                        "An underlying I/O error occurred during the socket read operation.",
+                    ))
+                    .attach_printable(Recommendation::new(
+                        "Ensure the socket connection is stable and there are no issues with the \
+                         network or server.",
+                    )))
+            }
+        }
+    }
+
+    fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Option<&Duration>) -> Result<()> {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Std>::Read: Reading data from {}", &self.peer_addr);
+
+        // Set the read timeout if not already set
+        if !self.read_timeout_set {
+            // Validate the timeout duration
+            let valid_timeout = match timeout {
+                Some(timeout) => {
+                    match timeout.is_zero() {
+                        true => Duration::from_secs(5),
+                        false => *timeout,
+                    }
+                }
+
+                None => Duration::from_secs(5),
+            };
+
+            #[cfg(feature = "_DEV_LOG")]
+            log::debug!(
+                target: crate::log::EventTarget::GAMEDIG_DEV,
+                "TCP::<Std>::Read: Setting read timeout for {} to {valid_timeout:?}",
+                &self.peer_addr
+
+
+            );
+
+            match self.stream.set_read_timeout(Some(valid_timeout)) {
+                Ok(_) => {
+                    #[cfg(feature = "_DEV_LOG")]
                     log::debug!(
                         target: crate::log::EventTarget::GAMEDIG_DEV,
-                        "TCP::<Std>::Read: More data than expected. Realloc was required. \
-                         Expected: {valid_size} bytes, Read: {len} bytes",
+                        "TCP::<Std>::Read: Successfully set read timeout for {}",
+                        &self.peer_addr
                     );
+
+                    self.read_timeout_set = true;
                 }
 
-                // Shrink the vector to fit the data if there's excess capacity
-                if vec.capacity() > (len + Self::BUF_SHRINK_MARGIN as usize) {
-                    vec.shrink_to_fit();
+                Err(e) => {
+                    return Err(Report::from(e)
+                        .change_context(
+                            NetworkError::TcpSetTimeoutError {
+                                peer_addr: self.peer_addr,
+                            }
+                            .into(),
+                        )
+                        .attach_printable(FailureReason::new(
+                            "Failed to set the read timeout for the TCP stream.",
+                        ))
+                        .attach_printable(Recommendation::new(
+                            "Ensure the timeout value is valid and that the stream is not in a \
+                             disconnected or invalid state.",
+                        )));
                 }
-
-                Ok(vec)
             }
+        }
+
+        match self.stream.read_to_end(buf) {
+            // Data read successfully
+            Ok(_) => Ok(()),
 
             // Error during the read operation
             Err(e) => {

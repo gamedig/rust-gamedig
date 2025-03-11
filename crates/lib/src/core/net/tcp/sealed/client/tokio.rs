@@ -99,7 +99,7 @@ impl super::AbstractTcp for TokioTcpClient {
         })
     }
 
-    async fn read(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
+    async fn read_exact(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -123,29 +123,77 @@ impl super::AbstractTcp for TokioTcpClient {
             None => Duration::from_secs(5),
         };
 
-        // Validate size and set vector capacity
-        let valid_size = size.unwrap_or(Self::DEFAULT_BUF_CAPACITY as usize);
-        let mut vec = Vec::with_capacity(valid_size);
-
-        match timer(timeout, orh.read_to_end(&mut vec)).await {
+        match timer(timeout, orh.read_exact(buf)).await {
             // Data read successfully
-            Ok(Ok(len)) => {
-                #[cfg(feature = "_DEV_LOG")]
-                if valid_size < len {
-                    log::debug!(
-                        target: crate::log::EventTarget::GAMEDIG_DEV,
-                        "TCP::<Tokio>::Read: More data than expected. Realloc was required. \
-                         Expected: {valid_size} bytes, Read: {len} bytes",
-                    );
-                }
+            Ok(Ok(_)) => Ok(()),
 
-                // Shrink the vector to fit the data if there's excess capacity
-                if vec.capacity() > (len + Self::BUF_SHRINK_MARGIN as usize) {
-                    vec.shrink_to_fit();
-                }
-
-                Ok(vec)
+            // Error during the read operation
+            Ok(Err(e)) => {
+                return Err(Report::from(e)
+                    .change_context(
+                        NetworkError::TcpReadError {
+                            peer_addr: self.peer_addr,
+                        }
+                        .into(),
+                    )
+                    .attach_printable(FailureReason::new(
+                        "An underlying IO error occurred during socket read operation.",
+                    ))
+                    .attach_printable(Recommendation::new(
+                        "Ensure the socket connection is stable and there are no issues with the \
+                         network or server.",
+                    )));
             }
+
+            // Read operation timed out
+            Err(e) => {
+                let report = Report::from(e)
+                    .change_context(
+                        NetworkError::TcpTimeoutElapsedError {
+                            peer_addr: self.peer_addr,
+                        }
+                        .into(),
+                    )
+                    .attach_printable(FailureReason::new(
+                        "The read operation exceeded the specified timeout duration.",
+                    ))
+                    .attach_printable(Recommendation::new(
+                        "Check for network latency issues and consider increasing the timeout \
+                         duration if the server response is expected to be slow.",
+                    ));
+
+                return Err(report);
+            }
+        }
+    }
+
+    async fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Option<&Duration>) -> Result<()> {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Tokio>::Read: Reading data from {}",
+            &self.peer_addr,
+        );
+
+        // Await the read stream lock
+        let mut orh_mg = self.read_stream.lock().await;
+        let orh = &mut *orh_mg;
+
+        // Validate the timeout duration
+        let timeout = match timeout {
+            Some(timeout) => {
+                match timeout.is_zero() {
+                    true => Duration::from_secs(5),
+                    false => *timeout,
+                }
+            }
+
+            None => Duration::from_secs(5),
+        };
+
+        match timer(timeout, orh.read_to_end(buf)).await {
+            // Data read successfully
+            Ok(Ok(_)) => Ok(()),
 
             // Error during the read operation
             Ok(Err(e)) => {

@@ -1,5 +1,5 @@
 use {
-    crate::{core::Buffer, error::Result},
+    crate::error::Result,
     sealed::client::AbstractTcp,
     std::{net::SocketAddr, time::Duration},
 };
@@ -55,19 +55,31 @@ impl TcpClient {
     /// * `size` - An optional size parameter indicating the number of bytes to
     ///   read. If `None`, it will default to reading the maximum packet size.
     #[allow(dead_code)]
-    pub(crate) async fn read(&mut self, size: Option<usize>) -> Result<Buffer> {
+    pub(crate) async fn read_exact(&mut self, buf: &mut [u8]) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             "TCP::<Client>::Read: Reading data from inner client"
         );
 
-        Ok(Buffer::new(
-            self.client
-                .inner
-                .read(size, self.read_timeout.as_ref())
-                .await?,
-        ))
+        self.client
+            .inner
+            .read_exact(buf, self.read_timeout.as_ref())
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub(crate) async fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<()> {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            "TCP::<Client>::Read: Reading data from inner client"
+        );
+
+        self.client
+            .inner
+            .read_to_end(buf, self.read_timeout.as_ref())
+            .await
     }
 
     /// Writes data to the TCP stream.
