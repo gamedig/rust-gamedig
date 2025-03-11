@@ -1,8 +1,4 @@
-use {
-    crate::{core::Buffer, error::Result},
-    sealed::client::AbstractUdp,
-    std::time::Duration,
-};
+use {crate::error::Result, sealed::client::AbstractUdp, std::time::Duration};
 
 mod sealed;
 
@@ -25,8 +21,8 @@ impl UdpClient {
 
         Ok(Self {
             client: sealed::client::Inner::new(addr).await?,
-            read_timeout: read_timeout,
-            write_timeout: write_timeout,
+            read_timeout,
+            write_timeout,
         })
     }
 
@@ -42,15 +38,13 @@ impl UdpClient {
     }
 
     #[allow(dead_code)]
-    async fn recv(&mut self, size: Option<usize>) -> Result<Buffer> {
+    async fn recv(&mut self, buf: &mut [u8]) -> Result<()> {
         #[cfg(feature = "attribute_log")]
         log::trace!("UDP::<Client>::Recv: Receiving data from the server");
 
-        Ok(Buffer::new(
-            self.client
-                .inner
-                .recv(size, self.read_timeout.as_ref())
-                .await?,
-        ))
+        self.client
+            .inner
+            .recv(buf, self.read_timeout.as_ref())
+            .await
     }
 }

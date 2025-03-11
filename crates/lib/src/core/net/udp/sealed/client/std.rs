@@ -115,7 +115,7 @@ impl super::AbstractUdp for StdUdpClient {
         }
     }
 
-    fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
+    fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
         if !self.recv_timeout_set {
             // Validate the timeout duration
             let timeout = match timeout {
@@ -149,26 +149,8 @@ impl super::AbstractUdp for StdUdpClient {
             }
         }
 
-        let valid_size = size.unwrap_or(Self::DEFAULT_BUF_CAPACITY as usize);
-        let mut vec = Vec::with_capacity(valid_size);
-
-        match self.socket.recv(&mut vec) {
-            Ok(len) => {
-                #[cfg(feature = "_DEV_LOG")]
-                if valid_size < len {
-                    log::debug!(
-                        "UDP::<Std>::Read: More data than expected. Realloc was required. \
-                         Expected: {valid_size} bytes, Read: {len} bytes",
-                    );
-                }
-
-                // Shrink the vector to fit the data if there's excess capacity
-                if vec.capacity() > (len + Self::BUF_SHRINK_MARGIN as usize) {
-                    vec.shrink_to_fit();
-                }
-
-                Ok(vec)
-            }
+        match self.socket.recv(buf) {
+            Ok(_) => Ok(()),
 
             Err(e) => {
                 return Err(Report::from(e)

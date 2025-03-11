@@ -14,16 +14,12 @@ mod tokio;
 #[allow(dead_code)]
 #[maybe_async::maybe_async]
 pub(crate) trait AbstractUdp {
-    // The margin to shrink the buffer by
-    const BUF_SHRINK_MARGIN: u8 = 32;
-    // Default capacity for the buffer
-    const DEFAULT_BUF_CAPACITY: u16 = 1024;
-
     async fn new(addr: &SocketAddr) -> Result<Self>
     where Self: Sized;
 
     async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
-    async fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>>;
+
+    async fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()>;
 }
 
 pub(crate) struct Inner {

@@ -136,7 +136,7 @@ impl super::AbstractUdp for TokioUdpClient {
         }
     }
 
-    async fn recv(&mut self, size: Option<usize>, timeout: Option<&Duration>) -> Result<Vec<u8>> {
+    async fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -155,33 +155,8 @@ impl super::AbstractUdp for TokioUdpClient {
             None => Duration::from_secs(5),
         };
 
-        let valid_size = size.unwrap_or(Self::DEFAULT_BUF_CAPACITY as usize);
-        let mut vec = Vec::with_capacity(valid_size);
-
-        #[cfg(feature = "_DEV_LOG")]
-        log::debug!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "UDP::<Tokio>::Read: Reading data with a capacity of {valid_size} bytes and a timeout of {valid_timeout:?}"
-        );
-
-        match timer(valid_timeout, self.socket.recv(&mut vec)).await {
-            Ok(Ok(len)) => {
-                #[cfg(feature = "_DEV_LOG")]
-                if valid_size < len {
-                    log::debug!(
-                        target: crate::log::EventTarget::GAMEDIG_DEV,
-                        "UDP::<Std>::Read: More data than expected. Realloc was required. \
-                         Expected: {valid_size} bytes, Read: {len} bytes",
-                    );
-                }
-
-                // Shrink the vector to fit the data if there's excess capacity
-                if vec.capacity() > (len + Self::BUF_SHRINK_MARGIN as usize) {
-                    vec.shrink_to_fit();
-                }
-
-                Ok(vec)
-            }
+        match timer(valid_timeout, self.socket.recv(buf)).await {
+            Ok(Ok(_)) => Ok(()),
 
             // Error during the read operation
             Ok(Err(e)) => {
