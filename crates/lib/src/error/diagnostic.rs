@@ -150,7 +150,7 @@ impl HexDump {
         // Spaces between bytes
         let byte_spaces = Self::WIDTH - 1;
         // Additional spaces between groups
-        let group_spaces = (Self::WIDTH / Self::GROUP_SIZE - 1) * 1;
+        let group_spaces = Self::WIDTH / Self::GROUP_SIZE - 1;
 
         hex_digits + byte_spaces + group_spaces
     };
