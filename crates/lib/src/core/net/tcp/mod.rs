@@ -37,14 +37,8 @@ impl TcpClient {
 
         Ok(Self {
             client: sealed::client::Inner::new(addr, connect_timeout).await?,
-            read_timeout: match read_timeout {
-                Some(timeout) => Some(*timeout),
-                None => None,
-            },
-            write_timeout: match write_timeout {
-                Some(timeout) => Some(*timeout),
-                None => None,
-            },
+            read_timeout: read_timeout.copied(),
+            write_timeout: write_timeout.copied(),
         })
     }
 
