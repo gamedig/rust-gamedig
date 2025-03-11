@@ -13,16 +13,16 @@ impl UdpClient {
     #[allow(dead_code)]
     async fn new(
         addr: &std::net::SocketAddr,
-        read_timeout: Option<Duration>,
-        write_timeout: Option<Duration>,
+        read_timeout: Option<&Duration>,
+        write_timeout: Option<&Duration>,
     ) -> Result<Self> {
         #[cfg(feature = "attribute_log")]
         log::trace!("UDP::<Client>::New: Creating new UDP client for {addr}");
 
         Ok(Self {
             client: sealed::client::Inner::new(addr).await?,
-            read_timeout,
-            write_timeout,
+            read_timeout: read_timeout.copied(),
+            write_timeout: write_timeout.copied(),
         })
     }
 
