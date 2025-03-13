@@ -58,16 +58,21 @@ pub mod service;
 
 /// Adapters for converting structures to common formats.
 ///
-/// This feature-gated module includes adapters that facilitate the
+/// This feature gated module includes adapters that facilitate the
 /// conversion of custom structures into more widely-used formats.
 #[cfg(feature = "attribute_adapters")]
 pub mod adapters;
 
 /// Logging utilities.
 ///
-/// This feature-gated module provides logging targets that can be used
+/// This feature gated module provides logging targets that can be used
 /// with the `log` crate for logging events within the library.
 #[cfg(feature = "attribute_log")]
 pub mod log;
 
+/// Dictionary.
+/// 
+/// This feature gated module provides a dictionary that can be used to get
+/// a generic client from a value.
+#[cfg(feature = "attribute_dict")]
 pub mod dict;
