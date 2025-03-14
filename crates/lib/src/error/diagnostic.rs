@@ -241,3 +241,203 @@ impl fmt::Display for HexDump {
         writeln!(f)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_failure_reason_new_and_display() {
+        let fr = FailureReason::new("This is a short failure reason.");
+
+        let output = fr.to_string();
+
+        println!("FailureReason output:\n\n{}", output);
+
+        assert!(
+            output.contains("Failure Reason:"),
+            "Missing header in FailureReason output"
+        );
+
+        assert!(
+            output.contains("This is a short failure reason."),
+            "Missing message in FailureReason output"
+        );
+    }
+
+    #[test]
+    fn test_failure_reason_wrapping() {
+        let fr = FailureReason::new(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor \
+             incididunt ut labore et dolore magna aliqua.",
+        );
+
+        let output = fr.to_string();
+
+        println!("FailureReason (wrapped) output:\n\n{}", output);
+
+        assert!(
+            output.contains('\n'),
+            "Expected wrapped output but found no newline"
+        );
+    }
+
+    #[test]
+    fn test_recommendation_new_and_display() {
+        let rec =
+            Recommendation::new("Try restarting the application to resolve transient issues.");
+
+        let output = rec.to_string();
+
+        println!("Recommendation output:\n\n{}", output);
+
+        assert!(
+            output.contains("Recommendation:"),
+            "Missing header in Recommendation output"
+        );
+
+        assert!(
+            output.contains("Try restarting the application"),
+            "Missing message in Recommendation output"
+        );
+    }
+
+    #[test]
+    fn test_recommendation_wrapping() {
+        let rec = Recommendation::new(
+            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu \
+             fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
+        );
+
+        let output = rec.to_string();
+
+        println!("Recommendation (wrapped) output:\n\n{}", output);
+
+        assert!(
+            output.contains('\n'),
+            "Expected wrapping in long Recommendation message"
+        );
+    }
+
+    #[test]
+    fn test_open_github_issue_display() {
+        let open_issue = OpenGitHubIssue();
+
+        let output = open_issue.to_string();
+
+        println!("OpenGitHubIssue output:\n\n{}", output);
+
+        assert!(
+            output.contains("Bug:"),
+            "Missing 'Bug:' marker in OpenGitHubIssue output"
+        );
+
+        assert!(
+            output.contains("https://github.com/gamedig/rust-gamedig/issues"),
+            "Missing GitHub URL in OpenGitHubIssue output"
+        );
+    }
+
+    #[test]
+    fn test_hex_dump_empty() {
+        let hd = HexDump::new("Empty", Vec::new(), None);
+
+        let output = hd.to_string();
+
+        println!("HexDump (empty) output:\n\n{}", output);
+
+        assert!(output.contains("Hex Dump:"), "Missing 'Hex Dump:' header");
+
+        assert!(
+            output.contains("Name    :   Empty"),
+            "Missing or incorrect name"
+        );
+
+        assert!(
+            !output.contains("00000000:"),
+            "Empty hex dump should not show address lines"
+        );
+    }
+
+    #[test]
+    fn test_hex_dump_full_line() {
+        let data: Vec<u8> = (0 .. 16).collect();
+
+        let hd = HexDump::new("FullLine", data.clone(), Some(0));
+
+        let output = hd.to_string();
+
+        println!("HexDump (full line) output:\n\n{}", output);
+
+        assert!(
+            output.contains("00000000:"),
+            "Missing address line for full-line hex dump"
+        );
+
+        for byte in data {
+            assert!(
+                output.contains(&format!("{:02x}", byte)),
+                "Missing hex for byte {:02x}",
+                byte
+            );
+        }
+    }
+
+    #[test]
+    fn test_hex_dump_partial_line() {
+        // ASCII "ABCDE"
+        let data: Vec<u8> = vec![0x41, 0x42, 0x43, 0x44, 0x45];
+
+        let hd = HexDump::new("PartialLine", data.clone(), Some(4));
+        let output = hd.to_string();
+
+        println!("HexDump (partial line) output:\n\n{}", output);
+
+        assert!(
+            output.contains("00000000:"),
+            "Missing address line for partial hex dump"
+        );
+
+        assert!(
+            output.contains("ABCDE"),
+            "ASCII representation is missing or incorrect"
+        );
+    }
+
+    #[test]
+    fn test_hex_dump_non_ascii() {
+        // non-graphic bytes replaced with '.'.
+        let data: Vec<u8> = vec![0x00, 0x1F, 0x7F, 0x80, 0xFF];
+
+        let hd = HexDump::new("NonAscii", data.clone(), None);
+
+        let output = hd.to_string();
+
+        println!("HexDump (non-ascii) output:\n\n{}", output);
+
+        assert!(
+            output.contains("."),
+            "Expected non-ASCII bytes to be represented as '.'"
+        );
+    }
+
+    #[test]
+    fn test_hex_dump_multiple_lines() {
+        let data: Vec<u8> = (0 .. 40).collect();
+
+        let hd = HexDump::new("MultiLine", data.clone(), Some(5));
+
+        let output = hd.to_string();
+
+        println!("HexDump (multiple lines) output:\n\n{}", output);
+
+        // 40 bytes / 16 ≈ 2 full lines + 1 partial
+        let addr_count = output.matches("000000").count();
+
+        assert!(
+            addr_count >= 3,
+            "Expected at least 3 address lines, found {}",
+            addr_count
+        );
+    }
+}
