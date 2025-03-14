@@ -282,3 +282,102 @@ define_error_kind! {
         ),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+    const MOCK_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8080);
+
+    fn assert_non_empty_display<T: std::fmt::Display>(error: T) {
+        let msg = error.to_string();
+
+        assert!(
+            !msg.is_empty(),
+            "Expected non-empty error message, got empty string"
+        );
+    }
+
+    #[test]
+    fn test_errors() {
+        let packet_err = PacketError::PacketDeserializeError {};
+        assert_non_empty_display(&packet_err);
+
+        let kind: ErrorKind = packet_err.into();
+        assert_non_empty_display(&kind);
+
+        #[cfg(feature = "_BUFFER")]
+        {
+            let io_err1 = IoError::BufferOutOfBoundsError {
+                attempted: 10,
+                available: 5,
+            };
+            assert_non_empty_display(&io_err1);
+
+            let io_err2 = IoError::BufferRangeInvalidError { start: 15, end: 5 };
+            assert_non_empty_display(&io_err2);
+
+            let io_err3 = IoError::BufferRangeOverflowError {};
+            assert_non_empty_display(&io_err3);
+
+            let io_err4 = IoError::BufferStringConversionError {};
+            assert_non_empty_display(&io_err4);
+        }
+
+        #[cfg(all(feature = "_TCP", feature = "socket_tokio"))]
+        {
+            let tcp_tokio_err = NetworkError::TcpTimeoutElapsedError {
+                peer_addr: MOCK_ADDR,
+            };
+
+            assert_non_empty_display(&tcp_tokio_err);
+        }
+
+        #[cfg(all(feature = "_TCP", feature = "socket_std"))]
+        {
+            let tcp_std_err = NetworkError::TcpSetTimeoutError {
+                peer_addr: MOCK_ADDR,
+            };
+
+            assert_non_empty_display(&tcp_std_err);
+        }
+
+        #[cfg(feature = "_UDP")]
+        {
+            let udp_bind_err = NetworkError::UdpBindError {};
+            assert_non_empty_display(&udp_bind_err);
+
+            let udp_conn_err = NetworkError::UdpConnectionError {
+                peer_addr: MOCK_ADDR,
+            };
+            assert_non_empty_display(&udp_conn_err);
+
+            let udp_send_err = NetworkError::UdpSendError {
+                peer_addr: MOCK_ADDR,
+            };
+            assert_non_empty_display(&udp_send_err);
+
+            let udp_recv_err = NetworkError::UdpRecvError {
+                peer_addr: MOCK_ADDR,
+            };
+            assert_non_empty_display(&udp_recv_err);
+
+            #[cfg(feature = "socket_tokio")]
+            {
+                let udp_tokio_err = NetworkError::UdpTimeoutElapsedError {
+                    peer_addr: MOCK_ADDR,
+                };
+                assert_non_empty_display(&udp_tokio_err);
+            }
+
+            #[cfg(feature = "socket_std")]
+            {
+                let udp_std_err = NetworkError::UdpSetTimeoutError {
+                    peer_addr: MOCK_ADDR,
+                };
+                assert_non_empty_display(&udp_std_err);
+            }
+        }
+    }
+}
