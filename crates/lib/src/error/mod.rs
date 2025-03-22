@@ -110,6 +110,33 @@ define_error_kind! {
     ///
     /// This set of errors are related to IO operations.
     IoError, {
+        /// Buffer Position Arithmetic Error
+        ///
+        /// This error occurs when there is an overflow or underflow in position arithmetic checks.
+        #[cfg(feature = "_BUFFER")]
+        BufferPositionArithmeticError {
+        }(
+            "[GameDig]::[IO::BufferPositionArithmeticError]: Overflow or underflow in position arithmetic checks"
+        ),
+
+        /// Buffer Moved Out of Bounds Error
+        ///
+        /// This error occurs when there is an attempt to move the cursor in the buffer
+        /// beyond or before the available data.
+        #[cfg(feature = "_BUFFER")]
+        BufferMovedOutOfBoundsError {
+            /// The the number of bytes that were attempted to be moved.
+            attempted: isize,
+
+            /// The current position in the buffer.
+            position: usize,
+
+            /// The total size of the buffer.
+            available: usize
+        }(
+            "[GameDig]::[IO::BufferMovedOutOfBoundsError]: Attempted to move position by {attempted} bytes from position {position}, but only [0..{available}] is valid."
+        ),
+
         /// Out of Bounds Error
         ///
         /// This error occurs when there is an attempt to read beyond the available data in the buffer.
@@ -195,7 +222,6 @@ define_error_kind! {
         /// TCP Timeout Elapsed Error
         ///
         /// This error occurs when a timeout elapses while waiting for an operation to complete.
-        // both _TCP && client_std
         #[cfg(all(feature = "_TCP", feature = "socket_tokio"))]
         TcpTimeoutElapsedError {
             /// The address of the remote server that the operation was attempted to.

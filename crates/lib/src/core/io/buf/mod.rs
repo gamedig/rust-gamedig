@@ -97,20 +97,32 @@ impl<B: Bufferable> Buffer<B> {
 
         match (self.pos() as isize).checked_add(off) {
             None => {
-                // TODO: Handle this error
-                todo!(
-                    "The addition was not successful (i.e., it resulted in an overflow or \
-                     underflow of isize)"
-                )
+                return Err(Report::new(ErrorKind::from(
+                    IoError::BufferPositionArithmeticError {},
+                ))
+                .attach_printable(FailureReason::new(
+                    "Movement of the buffer position resulted in an arithmetic error.",
+                ))
+                .attach_printable(OpenGitHubIssue()));
             }
 
             Some(n) if n < 0 || n as usize > self.len() => {
-                // TODO: Handle this error
-                todo!("The new cursor position is out of bounds")
+                return Err(
+                    Report::new(ErrorKind::from(IoError::BufferMovedOutOfBoundsError {
+                        attempted: off,
+                        position: self.pos(),
+                        available: self.len(),
+                    }))
+                    .attach_printable(FailureReason::new(
+                        "Attempted to move the buffer position out of bounds.",
+                    ))
+                    .attach_printable(OpenGitHubIssue()),
+                );
             }
 
             Some(n) => {
                 self.cursor = n as usize;
+
                 Ok(())
             }
         }
