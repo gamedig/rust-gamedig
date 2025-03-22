@@ -43,7 +43,7 @@ impl fmt::Display for FailureReason {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "\x1B[1m\x1B[34mFailure Reason:\x1B[0m\x1B[1m {}\x1B[0m\n\n",
+            "\x1B[1m\x1B[33mFailure Reason:\x1B[0m\x1B[1m {}\x1B[0m\n\n",
             self.0
         )
     }
