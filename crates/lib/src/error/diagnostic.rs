@@ -242,6 +242,46 @@ impl fmt::Display for HexDump {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub(crate) struct SystemInfo {
+    debug_build: bool,
+    pkg_version: &'static str,
+
+    os: &'static str,
+    family: &'static str,
+    architecture: &'static str,
+}
+
+impl SystemInfo {
+    #[allow(dead_code)]
+    pub(crate) fn new() -> Self {
+        Self {
+            debug_build: cfg!(debug_assertions),
+            pkg_version: env!("CARGO_PKG_VERSION"),
+
+            os: std::env::consts::OS,
+            family: std::env::consts::FAMILY,
+            architecture: std::env::consts::ARCH,
+        }
+    }
+}
+
+impl fmt::Display for SystemInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "\x1B[1m\x1B[35mSystem Infomation:\x1B[0m")?;
+        writeln!(
+            f,
+            "\x1B[1mDebug Build      : \x1B[0m{}",
+            if self.debug_build { "Yes" } else { "No" }
+        )?;
+        writeln!(f, "\x1B[1mCrate Version    : \x1B[0m{}\n", self.pkg_version)?;
+        writeln!(f, "\x1B[1mOS               : \x1B[0m{}", self.os)?;
+        writeln!(f, "\x1B[1mFamily           : \x1B[0m{}", self.family)?;
+        writeln!(f, "\x1B[1mArchitecture     : \x1B[0m{}", self.architecture)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -438,6 +478,42 @@ mod tests {
             addr_count >= 3,
             "Expected at least 3 address lines, found {}",
             addr_count
+        );
+    }
+
+    #[test]
+    fn test_system_info_new_and_display() {
+        let sys_info = SystemInfo::new();
+
+        let output = sys_info.to_string();
+
+        println!("SystemInfo output:\n\n{}", output);
+
+        assert!(
+            output.contains("System Infomation:"),
+            "Missing header in SystemInfo output"
+        );
+
+        assert!(
+            output.contains("Debug Build"),
+            "Missing debug build in SystemInfo output"
+        );
+
+        assert!(
+            output.contains("Crate Version"),
+            "Missing crate version in SystemInfo output"
+        );
+
+        assert!(output.contains("OS"), "Missing OS in SystemInfo output");
+
+        assert!(
+            output.contains("Family"),
+            "Missing family in SystemInfo output"
+        );
+
+        assert!(
+            output.contains("Architecture"),
+            "Missing architecture in SystemInfo output"
         );
     }
 }
