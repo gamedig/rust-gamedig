@@ -11,7 +11,7 @@ pub(crate) struct UdpClient {
 #[maybe_async::maybe_async]
 impl UdpClient {
     #[allow(dead_code)]
-    async fn new(
+    pub(crate) async fn new(
         addr: &std::net::SocketAddr,
         read_timeout: Option<&Duration>,
         write_timeout: Option<&Duration>,
@@ -27,7 +27,7 @@ impl UdpClient {
     }
 
     #[allow(dead_code)]
-    async fn send(&mut self, data: &[u8]) -> Result<()> {
+    pub(crate) async fn send(&mut self, data: &[u8]) -> Result<()> {
         #[cfg(feature = "attribute_log")]
         log::trace!("UDP::<Client>::Send: Sending data to the server");
 
@@ -38,7 +38,7 @@ impl UdpClient {
     }
 
     #[allow(dead_code)]
-    async fn recv(&mut self, buf: &mut [u8]) -> Result<()> {
+    pub(crate) async fn recv(&mut self, buf: &mut [u8]) -> Result<()> {
         #[cfg(feature = "attribute_log")]
         log::trace!("UDP::<Client>::Recv: Receiving data from the server");
 
