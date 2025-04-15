@@ -249,6 +249,22 @@ impl fmt::Display for HexDump {
 pub(crate) struct CrateInfo {
     version: &'static str,
     debug_build: bool,
+
+    https_used: bool,
+    https_std_client: bool,
+    https_tokio_client: bool,
+
+    tcp_used: bool,
+    udp_used: bool,
+    socket_std_client: bool,
+    socket_tokio_client: bool,
+
+    log: bool,
+    dev_log: bool,
+    dict: bool,
+    serde: bool,
+    adapters: bool,
+    extended_derive: bool,
 }
 
 impl CrateInfo {
@@ -257,14 +273,51 @@ impl CrateInfo {
         Self {
             version: env!("CARGO_PKG_VERSION"),
             debug_build: cfg!(debug_assertions),
+
+            https_used: cfg!(feature = "_HTTPS"),
+            https_tokio_client: cfg!(feature = "https_tokio"),
+            https_std_client: cfg!(feature = "https_std"),
+
+            tcp_used: cfg!(feature = "_TCP"),
+            udp_used: cfg!(feature = "_UDP"),
+            socket_std_client: cfg!(feature = "socket_std"),
+            socket_tokio_client: cfg!(feature = "socket_tokio"),
+
+            log: cfg!(feature = "attribute_log"),
+            dev_log: cfg!(feature = "_DEV_LOG"),
+            dict: cfg!(feature = "attribute_dict"),
+            serde: cfg!(feature = "attribute_serde"),
+            adapters: cfg!(feature = "attribute_adapters"),
+            extended_derive: cfg!(feature = "attribute_extended_derive"),
         }
     }
 }
+
 impl fmt::Display for CrateInfo {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\x1B[1m\x1B[34mCrate Infomation:\x1B[0m")?;
         writeln!(f, "\x1B[1mVersion         : \x1B[0m{}", self.version)?;
-        writeln!(f, "\x1B[1mDebug Build     : \x1B[0m{}", self.debug_build)
+        writeln!(f, "\x1B[1mDebug Build     : \x1B[0m{}", self.debug_build)?;
+        writeln!(f, "\x1B[1mFeatures        : \x1B[0m")?;
+        writeln!(f, "\x1B[1m  HTTPS         : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Enabled     : \x1B[0m{}", self.https_used)?;
+        writeln!(f, "\x1B[1m  HTTPS RT      : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.https_std_client)?;
+        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.https_tokio_client)?;
+        writeln!(f, "\x1B[1m  Socket        : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    TCP Enabled : \x1B[0m{}", self.tcp_used)?;
+        writeln!(f, "\x1B[1m    UDP Enabled : \x1B[0m{}", self.udp_used)?;
+        writeln!(f, "\x1B[1m  Socket RT     : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.socket_std_client)?;
+        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.socket_tokio_client)?;
+        writeln!(f, "\x1B[1m  Library       : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Log         : \x1B[0m{}", self.log)?;
+        writeln!(f, "\x1B[1m    Dev Log     : \x1B[0m{}", self.dev_log)?;
+        writeln!(f, "\x1B[1m    Dict        : \x1B[0m{}", self.dict)?;
+        writeln!(f, "\x1B[1m    Serde       : \x1B[0m{}", self.serde)?;
+        writeln!(f, "\x1B[1m    Adapters    : \x1B[0m{}", self.adapters)?;
+        writeln!(f, "\x1B[1m    Ext Derive  : \x1B[0m{}", self.extended_derive)
     }
 }
 
@@ -499,25 +552,103 @@ mod tests {
 
     #[test]
     fn test_crate_info_new_and_display() {
+        // Bad unit test but it will do for now
+
         let crate_info = CrateInfo::new();
-
         let output = crate_info.to_string();
-
         println!("CrateInfo output:\n\n{}", output);
 
         assert!(
             output.contains("Crate Infomation:"),
             "Missing header in CrateInfo output"
         );
-
         assert!(
             output.contains("Version"),
-            "Missing version in CrateInfo output"
+            "Missing version information in CrateInfo output"
         );
-        
         assert!(
             output.contains("Debug Build"),
             "Missing debug build info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("HTTPS"),
+            "Missing HTTPS section header in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Enabled"),
+            "Missing HTTPS Enabled info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("HTTPS RT"),
+            "Missing HTTPS RT section in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Std"),
+            "Missing HTTPS Std client info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Tokio"),
+            "Missing HTTPS Tokio client info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Socket"),
+            "Missing Socket section header in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("TCP Enabled"),
+            "Missing TCP Enabled info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("UDP Enabled"),
+            "Missing UDP Enabled info in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Socket RT"),
+            "Missing Socket RT section in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Library"),
+            "Missing Library section header in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Log"),
+            "Missing Log info in Library section of CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Dev Log"),
+            "Missing Dev Log info in Library section of CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Dict"),
+            "Missing Dict info in Library section of CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Serde"),
+            "Missing Serde info in Library section of CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Adapters"),
+            "Missing Adapters info in Library section of CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Ext Derive"),
+            "Missing Ext Derive info in Library section of CrateInfo output"
         );
     }
 
