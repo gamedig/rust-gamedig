@@ -1,4 +1,7 @@
-use std::fmt;
+use std::{
+    env::consts::{ARCH, FAMILY, OS},
+    fmt,
+};
 
 /// A struct representing a failure reason.
 ///
@@ -243,11 +246,31 @@ impl fmt::Display for HexDump {
 }
 
 #[allow(dead_code)]
+pub(crate) struct CrateInfo {
+    version: &'static str,
+    debug_build: bool,
+}
+
+impl CrateInfo {
+    #[allow(dead_code)]
+    pub(crate) const fn new() -> Self {
+        Self {
+            version: env!("CARGO_PKG_VERSION"),
+            debug_build: cfg!(debug_assertions),
+        }
+    }
+}
+impl fmt::Display for CrateInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "\x1B[1m\x1B[34mCrate Infomation:\x1B[0m")?;
+        writeln!(f, "\x1B[1mVersion         : \x1B[0m{}", self.version)?;
+        writeln!(f, "\x1B[1mDebug Build     : \x1B[0m{}", self.debug_build)
+    }
+}
+
+#[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct SystemInfo {
-    debug_build: bool,
-    pkg_version: &'static str,
-
     os: &'static str,
     family: &'static str,
     architecture: &'static str,
@@ -255,14 +278,13 @@ pub(crate) struct SystemInfo {
 
 impl SystemInfo {
     #[allow(dead_code)]
-    pub(crate) fn new() -> Self {
-        Self {
-            debug_build: cfg!(debug_assertions),
-            pkg_version: env!("CARGO_PKG_VERSION"),
+    pub(crate) const fn new() -> Self {
+        const UNKNOWN: &str = "Unknown";
 
-            os: std::env::consts::OS,
-            family: std::env::consts::FAMILY,
-            architecture: std::env::consts::ARCH,
+        Self {
+            os: if OS.is_empty() { UNKNOWN } else { OS },
+            family: if FAMILY.is_empty() { UNKNOWN } else { FAMILY },
+            architecture: if ARCH.is_empty() { UNKNOWN } else { ARCH },
         }
     }
 }
@@ -270,12 +292,6 @@ impl SystemInfo {
 impl fmt::Display for SystemInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\x1B[1m\x1B[35mSystem Infomation:\x1B[0m")?;
-        writeln!(
-            f,
-            "\x1B[1mDebug Build      : \x1B[0m{}",
-            if self.debug_build { "Yes" } else { "No" }
-        )?;
-        writeln!(f, "\x1B[1mCrate Version    : \x1B[0m{}\n", self.pkg_version)?;
         writeln!(f, "\x1B[1mOS               : \x1B[0m{}", self.os)?;
         writeln!(f, "\x1B[1mFamily           : \x1B[0m{}", self.family)?;
         writeln!(f, "\x1B[1mArchitecture     : \x1B[0m{}", self.architecture)
@@ -482,6 +498,30 @@ mod tests {
     }
 
     #[test]
+    fn test_crate_info_new_and_display() {
+        let crate_info = CrateInfo::new();
+
+        let output = crate_info.to_string();
+
+        println!("CrateInfo output:\n\n{}", output);
+
+        assert!(
+            output.contains("Crate Infomation:"),
+            "Missing header in CrateInfo output"
+        );
+
+        assert!(
+            output.contains("Version"),
+            "Missing version in CrateInfo output"
+        );
+        
+        assert!(
+            output.contains("Debug Build"),
+            "Missing debug build info in CrateInfo output"
+        );
+    }
+
+    #[test]
     fn test_system_info_new_and_display() {
         let sys_info = SystemInfo::new();
 
@@ -492,16 +532,6 @@ mod tests {
         assert!(
             output.contains("System Infomation:"),
             "Missing header in SystemInfo output"
-        );
-
-        assert!(
-            output.contains("Debug Build"),
-            "Missing debug build in SystemInfo output"
-        );
-
-        assert!(
-            output.contains("Crate Version"),
-            "Missing crate version in SystemInfo output"
         );
 
         assert!(output.contains("OS"), "Missing OS in SystemInfo output");
