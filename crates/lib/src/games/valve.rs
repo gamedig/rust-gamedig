@@ -9,6 +9,12 @@ game_query_mod!(
     Engine::new(33930),
     2304
 );
+game_query_mod!(
+    arma3,
+    "ARMA 3",
+    Engine::new(33930),
+    2303
+);
 game_query_mod!(basedefense, "Base Defense", Engine::new(632_730), 27015);
 game_query_mod!(alienswarm, "Alien Swarm", Engine::new(630), 27015);
 game_query_mod!(aoc, "Age of Chivalry", Engine::new(17510), 27015);

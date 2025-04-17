@@ -48,6 +48,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "alienswarm" => game!("Alien Swarm", 27015, Protocol::Valve(Engine::new(630))),
     "aoc" => game!("Age of Chivalry", 27015, Protocol::Valve(Engine::new(17510))),
     "a2oa" => game!("ARMA 2: Operation Arrowhead", 2304, Protocol::Valve(Engine::new(33930))),
+    "arma3" => game!("ARMA 3", 2303, Protocol::Valve(Engine::new(107_410))),
     "ase" => game!("ARK: Survival Evolved", 27015, Protocol::Valve(Engine::new(346_110))),
     "asrd" => game!("Alien Swarm: Reactive Drop", 2304, Protocol::Valve(Engine::new(563_560))),
     "armareforger" => game!("Arma Reforger", 17777, Protocol::Valve(Engine::new(1_874_880)), GatheringSettings {
