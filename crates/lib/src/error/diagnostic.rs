@@ -245,43 +245,65 @@ impl fmt::Display for HexDump {
     }
 }
 
+/// A struct representing crate information.
+///
+/// This struct is used to provide printable information about the crate.
 #[allow(dead_code)]
 pub(crate) struct CrateInfo {
+    /// The version of the crate.
     version: &'static str,
+    /// Indicates if the crate is built in debug mode.
     debug_build: bool,
 
-    https_used: bool,
-    https_std_client: bool,
-    https_tokio_client: bool,
+    /// Indicates if HTTPS is included in the build.
+    https_enabled: bool,
+    /// Indicates if the HTTPS Std client is included in the build.
+    https_std: bool,
+    /// Indicates if the HTTPS Tokio client is included in the build.
+    https_tokio: bool,
 
-    tcp_used: bool,
-    udp_used: bool,
-    socket_std_client: bool,
-    socket_tokio_client: bool,
+    /// Indicates if TCP is included in the build.
+    socket_tcp_enabled: bool,
+    /// Indicates if UDP is included in the build.
+    socket_udp_enabled: bool,
+    /// Indicates if the socket Std client is included in the build.
+    socket_std: bool,
+    /// Indicates if the socket Tokio client is included in the build.
+    socket_tokio: bool,
 
+    /// Indicates if logging is included in the build.
     log: bool,
+    /// Indicates if development logging is included in the build.
     dev_log: bool,
+    /// Indicates if dictionary support is included in the build.
     dict: bool,
+    /// Indicates if Serde support is included in the build.
     serde: bool,
+    /// Indicates if adapters are included in the build.
     adapters: bool,
+    /// Indicates if extended derive support is included in the build.
     extended_derive: bool,
 }
 
 impl CrateInfo {
+    /// Creates a new `CrateInfo`.
+    ///
+    /// This function initializes the `CrateInfo` struct with the current crate's
+    /// version, build type, and enabled features.
     #[allow(dead_code)]
     pub(crate) const fn new() -> Self {
         Self {
             version: env!("CARGO_PKG_VERSION"),
             debug_build: cfg!(debug_assertions),
 
-            https_used: cfg!(feature = "_HTTPS"),
-            https_tokio_client: cfg!(feature = "https_tokio"),
-            https_std_client: cfg!(feature = "https_std"),
+            https_enabled: cfg!(feature = "_HTTPS"),
+            https_std: cfg!(feature = "https_std"),
+            https_tokio: cfg!(feature = "https_tokio"),
 
-            tcp_used: cfg!(feature = "_TCP"),
-            udp_used: cfg!(feature = "_UDP"),
-            socket_std_client: cfg!(feature = "socket_std"),
-            socket_tokio_client: cfg!(feature = "socket_tokio"),
+            socket_tcp_enabled: cfg!(feature = "_TCP"),
+            socket_udp_enabled: cfg!(feature = "_UDP"),
+            socket_std: cfg!(feature = "socket_std"),
+            socket_tokio: cfg!(feature = "socket_tokio"),
 
             log: cfg!(feature = "attribute_log"),
             dev_log: cfg!(feature = "_DEV_LOG"),
@@ -301,16 +323,16 @@ impl fmt::Display for CrateInfo {
         writeln!(f, "\x1B[1mDebug Build     : \x1B[0m{}", self.debug_build)?;
         writeln!(f, "\x1B[1mFeatures        : \x1B[0m")?;
         writeln!(f, "\x1B[1m  HTTPS         : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    Enabled     : \x1B[0m{}", self.https_used)?;
+        writeln!(f, "\x1B[1m    Enabled     : \x1B[0m{}", self.https_enabled)?;
         writeln!(f, "\x1B[1m  HTTPS RT      : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.https_std_client)?;
-        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.https_tokio_client)?;
+        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.https_std)?;
+        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.https_tokio)?;
         writeln!(f, "\x1B[1m  Socket        : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    TCP Enabled : \x1B[0m{}", self.tcp_used)?;
-        writeln!(f, "\x1B[1m    UDP Enabled : \x1B[0m{}", self.udp_used)?;
+        writeln!(f, "\x1B[1m    TCP Enabled : \x1B[0m{}", self.socket_tcp_enabled)?;
+        writeln!(f, "\x1B[1m    UDP Enabled : \x1B[0m{}", self.socket_udp_enabled)?;
         writeln!(f, "\x1B[1m  Socket RT     : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.socket_std_client)?;
-        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.socket_tokio_client)?;
+        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.socket_std)?;
+        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.socket_tokio)?;
         writeln!(f, "\x1B[1m  Library       : \x1B[0m")?;
         writeln!(f, "\x1B[1m    Log         : \x1B[0m{}", self.log)?;
         writeln!(f, "\x1B[1m    Dev Log     : \x1B[0m{}", self.dev_log)?;
@@ -321,15 +343,26 @@ impl fmt::Display for CrateInfo {
     }
 }
 
+/// A struct representing system information.
+///
+/// This struct is used to provide information about the system on which the
+/// crate is running. It is used as a printable component in an error stack.
 #[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct SystemInfo {
+    /// The operating system name.
     os: &'static str,
+    /// The family of the operating system.
     family: &'static str,
+    /// The CPU architecture of the system.
     architecture: &'static str,
 }
 
 impl SystemInfo {
+    /// Creates a new `SystemInfo`.
+    /// 
+    /// This function initializes the `SystemInfo` struct with the current
+    /// operating system, family, and architecture.
     #[allow(dead_code)]
     pub(crate) const fn new() -> Self {
         const UNKNOWN: &str = "Unknown";
