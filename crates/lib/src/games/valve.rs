@@ -12,7 +12,7 @@ game_query_mod!(
 game_query_mod!(
     arma3,
     "ARMA 3",
-    Engine::new(33930),
+    Engine::new(107_410),
     2303
 );
 game_query_mod!(basedefense, "Base Defense", Engine::new(632_730), 27015);
