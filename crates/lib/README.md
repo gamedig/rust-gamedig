@@ -36,7 +36,7 @@ on Discord.
 
 ## Usage
 
-Minimum Supported Rust Version is `1.71.1` and the code is cross-platform.
+Minimum Supported Rust Version is `1.81.0` and the code is cross-platform.
 
 Pick a game/service/protocol (check
 the [GAMES](https://github.com/gamedig/rust-gamedig/blob/main/GAMES.md), [SERVICES](https://github.com/gamedig/rust-gamedig/blob/main/SERVICES.md)

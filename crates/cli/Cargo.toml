@@ -12,7 +12,7 @@ homepage = "https://gamedig.github.io/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.74.1"
+rust-version = "1.81.0"
 categories = ["command-line-interface"]
 
 [features]
