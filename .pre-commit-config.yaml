@@ -8,7 +8,7 @@ repos:
         language: system
         files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
-        entry: rustup run --install nightly-2023-07-09 cargo-clippy -- --workspace --all-features -- -D warnings
+        entry: rustup run --install nightly-2025-04-19 cargo-clippy -- --workspace --all-features -- -D warnings
 
       - id: build-no-features
         name: Check crate build with no features
@@ -36,7 +36,7 @@ repos:
         language: system
         files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
-        entry: rustup run --install nightly-2023-07-09 cargo-fmt --check
+        entry: rustup run --install nightly-2025-04-19 cargo-fmt --check
 
       - id: msrv
         name: Check MSRV compiles (lib only)

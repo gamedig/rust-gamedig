@@ -22,7 +22,7 @@ Places to update:
 
 The toolchain version used to run rustfmt in CI
 
-Current: `nightly-2023-07-09`
+Current: `nightly-2025-04-19`
 
 Places to update:
 
