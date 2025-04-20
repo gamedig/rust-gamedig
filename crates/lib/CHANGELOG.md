@@ -2,11 +2,19 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
-# 0.6.2 - DD/MM/YYYY
+# 0.7.0 - 20/04/2025
+
+Breaking:
+
+- MSRV is now `1.81.0` (was `1.71.1`), this is due to deps we rely on requiring a higher version
 
 Games:
 
 - Added `Arma 3` support (by @Perondas).
+
+Crate:
+
+- Some minor clippy fixes
 
 # 0.6.1 - 05/12/2024
 
