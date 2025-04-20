@@ -4,6 +4,8 @@ Who knows what the future holds...
 
 # 0.6.2 - DD/MM/YYYY
 
+Games:
+
 - Added `Arma 3` support (by @Perondas).
 
 # 0.6.1 - 05/12/2024
