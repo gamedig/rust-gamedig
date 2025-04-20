@@ -11,7 +11,7 @@ Places to update:
 
 # rustfmt version
 
-Current: `1.6.0`
+Current: `1.8.0`
 
 Places to update:
 
