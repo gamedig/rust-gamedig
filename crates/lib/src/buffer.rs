@@ -137,9 +137,8 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Arguments
     ///
     /// * `until` - An optional delimiter. If provided, the method will read
-    ///   until this
-    ///   delimiter is encountered. If not provided, the method will read until
-    ///   the default delimiter of the decoder.
+    ///   until this delimiter is encountered. If not provided, the method will
+    ///   read until the default delimiter of the decoder.
     ///
     /// # Errors
     ///

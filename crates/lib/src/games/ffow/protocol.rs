@@ -40,7 +40,7 @@ pub fn query_with_timeout(
     let environment_type = Environment::from_gldsrc(buffer.read::<u8>()?)?;
     let has_password = buffer.read::<u8>()? == 1;
     let vac_secured = buffer.read::<u8>()? == 1;
-    buffer.move_cursor(1)?; //average fps
+    buffer.move_cursor(1)?; // average fps
     let round = buffer.read::<u8>()?;
     let rounds_maximum = buffer.read::<u8>()?;
     let time_left = buffer.read::<u16>()?;

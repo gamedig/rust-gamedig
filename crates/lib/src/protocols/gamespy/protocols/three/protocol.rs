@@ -165,7 +165,7 @@ impl GameSpy3 {
             let id = buf.read::<u8>()?;
             let is_last = (id & 0x80) > 0;
             let packet_id = (id & 0x7f) as usize;
-            buf.move_cursor(1)?; //unknown byte regarding packet no.
+            buf.move_cursor(1)?; // unknown byte regarding packet no.
 
             if is_last && packet_id + 1 != values.len() {
                 reached_expected_packets_size = true;
