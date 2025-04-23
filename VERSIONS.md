@@ -1,6 +1,6 @@
 # MSRV (Minimum Supported Rust Version)
 
-Current: `1.71.1`
+Current: `1.81.0`
 
 Places to update:
 
@@ -11,7 +11,7 @@ Places to update:
 
 # rustfmt version
 
-Current: `1.6.0`
+Current: `1.8.0`
 
 Places to update:
 
@@ -22,7 +22,7 @@ Places to update:
 
 The toolchain version used to run rustfmt in CI
 
-Current: `nightly-2023-07-09`
+Current: `nightly-2025-04-19`
 
 Places to update:
 

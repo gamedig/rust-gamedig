@@ -30,7 +30,7 @@ fn construct_payload(region: Region, filters: &Option<SearchFilters>, last_ip: &
         // The last fetched ip as a string
         last_ip.as_bytes(),
         // Followed by an ':'
-        &[b':'],
+        b":",
         // And the port, as a string
         last_port.to_string().as_bytes(),
         // Which needs to end with a NULL byte

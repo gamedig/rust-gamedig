@@ -132,14 +132,13 @@ impl<'a, B: ByteOrder> Buffer<'a, B> {
     /// # Type Parameters
     ///
     /// * `D` - The type of string decoder to use. This type must implement the
-    /// `StringDecoder` trait with the same byte order as the buffer.
+    ///   `StringDecoder` trait with the same byte order as the buffer.
     ///
     /// # Arguments
     ///
     /// * `until` - An optional delimiter. If provided, the method will read
-    ///   until this
-    /// delimiter is encountered. If not provided, the method will read until
-    /// the default delimiter of the decoder.
+    ///   until this delimiter is encountered. If not provided, the method will
+    ///   read until the default delimiter of the decoder.
     ///
     /// # Errors
     ///

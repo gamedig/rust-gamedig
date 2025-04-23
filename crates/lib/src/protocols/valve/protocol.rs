@@ -33,7 +33,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 
 #[derive(Debug)]
-#[allow(dead_code)] //remove this later on
+#[allow(dead_code)] // remove this later on
 struct SplitPacket {
     pub header: u32,
     pub id: u32,
@@ -48,7 +48,7 @@ struct SplitPacket {
 
 impl SplitPacket {
     fn new(engine: &Engine, protocol: u8, buffer: &mut Buffer<LittleEndian>) -> GDResult<Self> {
-        let header = buffer.read()?; //buffer.get_u32()?;
+        let header = buffer.read()?; // buffer.get_u32()?;
         let id = buffer.read()?;
         let (total, number, size, decompressed) = match engine {
             Engine::GoldSrc(_) => {
@@ -218,8 +218,8 @@ impl ValveProtocol {
     }
 
     fn get_goldsrc_server_info(buffer: &mut Buffer<LittleEndian>) -> GDResult<ServerInfo> {
-        let _header: u8 = buffer.read()?; //get the header (useless info)
-        let _address: String = buffer.read_string::<Utf8Decoder>(None)?; //get the server address (useless info)
+        let _header: u8 = buffer.read()?; // get the header (useless info)
+        let _address: String = buffer.read_string::<Utf8Decoder>(None)?; // get the server address (useless info)
         let name = buffer.read_string::<Utf8Decoder>(None)?;
         let map = buffer.read_string::<Utf8Decoder>(None)?;
         let folder = buffer.read_string::<Utf8Decoder>(None)?;
@@ -381,7 +381,7 @@ impl ValveProtocol {
         let mut players: Vec<ServerPlayer> = Vec::with_capacity(count);
 
         for _ in 0 .. count {
-            buffer.move_cursor(1)?; //skip the index byte
+            buffer.move_cursor(1)?; // skip the index byte
 
             players.push(ServerPlayer {
                 name: buffer.read_string::<Utf8Decoder>(None)?,

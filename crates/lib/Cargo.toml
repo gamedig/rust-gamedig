@@ -1,6 +1,6 @@
 [package]
 name = "gamedig"
-version = "0.6.1"
+version = "0.7.0"
 edition = "2021"
 authors = [
     "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
@@ -13,7 +13,7 @@ documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.71.1"
+rust-version = "1.81.0"
 categories = ["parser-implementations", "parsing", "network-programming", "encoding"]
 
 [features]
