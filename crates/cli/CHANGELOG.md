@@ -4,6 +4,16 @@ Who knows what the future holds...
 
 Nothing... yet.
 
+# 0.3.0 - 23/04/2025
+
+### Changes:
+
+- CLI now uses `gamedig` v0.X.X (latest version) to cut down on patch releases. (To update, run `cargo install gamedig_cli`).
+
+### Breaking Changes:
+
+- MSRV has been updated to `1.81.0` to match the latest `gamedig` version.
+
 # 0.2.1 - 05/12/2024
 
 Dependencies:
