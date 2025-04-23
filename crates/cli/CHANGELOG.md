@@ -8,7 +8,7 @@ Nothing... yet.
 
 ### Changes:
 
-- CLI now uses `gamedig` v0.X.X (latest version) to cut down on patch releases. (To update, run `cargo install gamedig_cli`).
+- CLI now uses `gamedig` v0.7.0 (To update, run `cargo install gamedig_cli`).
 
 ### Breaking Changes:
 
