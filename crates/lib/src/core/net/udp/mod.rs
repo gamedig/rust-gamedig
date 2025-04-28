@@ -16,7 +16,7 @@ impl UdpClient {
         read_timeout: Option<&Duration>,
         write_timeout: Option<&Duration>,
     ) -> Result<Self> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!("UDP::<Client>::New: Creating new UDP client for {addr}");
 
         Ok(Self {
@@ -28,7 +28,7 @@ impl UdpClient {
 
     #[allow(dead_code)]
     pub(crate) async fn send(&mut self, data: &[u8]) -> Result<()> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!("UDP::<Client>::Send: Sending data to the server");
 
         self.client
@@ -39,7 +39,7 @@ impl UdpClient {
 
     #[allow(dead_code)]
     pub(crate) async fn recv(&mut self, buf: &mut [u8]) -> Result<()> {
-        #[cfg(feature = "attribute_log")]
+        #[cfg(feature = "_DEV_LOG")]
         log::trace!("UDP::<Client>::Recv: Receiving data from the server");
 
         self.client
