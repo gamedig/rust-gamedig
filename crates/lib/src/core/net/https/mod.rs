@@ -1,6 +1,3 @@
-#[allow(unused_imports)]
-use sealed::client::AbstractHttp;
-
 pub(crate) mod request;
 mod sealed;
 
