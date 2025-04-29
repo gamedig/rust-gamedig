@@ -96,30 +96,14 @@ attribute_extended_derive = []
 ## Games
 
 ## Protocols
-### Query
-gamespy_1 = ["_UDP", "_BUFFER_READ_LATIN_1"]
-gamespy_2 = ["_UDP"]
-gamespy_3 = ["_UDP"]
-mumble = ["_TCP"]
-quake_1 = ["_UDP"]
-quake_2 = ["_UDP"]
-quake_3 = ["_UDP"]
-teamspeak_2 = ["_TCP"]
-teamspeak_3 = ["_TCP"]
-unreal_2 = ["_UDP", "_BUFFER_READ_LATIN_1"]
-valve = ["_UDP"]
+### Query (Prefix: query_)
+query_valve = ["_UDP"]
 
 ### RCON (Prefix: rcon_)
-rcon_valve_source = ["_TCP"]
+
 
 ## Services (Prefix: service_)
-service_alt_v_mp = ["_HTTPS"]
-service_beam_mp = ["_HTTPS"]
-service_discord = ["_HTTPS"]
-service_epic = ["_HTTPS"]
-service_minetest = ["_HTTPS"]
-service_rage_mp = ["_HTTPS"]
-service_valve_master = ["_UDP"]
+
 
 ## Index
 all = [
@@ -140,28 +124,8 @@ all_attributes = [
 
 all_games = []
 
-all_query_protocols = [
-    "gamespy_1",
-    "gamespy_2",
-    "gamespy_3",
-    "mumble",
-    "quake_1",
-    "quake_2",
-    "quake_3",
-    "teamspeak_2",
-    "teamspeak_3",
-    "unreal_2",
-    "valve",
-]
+all_query_protocols = ["query_valve"]
 
-all_rcon_protocols = ["rcon_valve_source"]
+all_rcon_protocols = []
 
-all_services = [
-    "service_alt_v_mp",
-    "service_beam_mp",
-    "service_discord",
-    "service_epic",
-    "service_minetest",
-    "service_rage_mp",
-    "service_valve_master",
-]
+all_services = []
