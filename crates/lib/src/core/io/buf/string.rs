@@ -1,4 +1,4 @@
-use crate::error::{ErrorKind, IoError, Report, Result, diagnostic::FailureReason};
+use crate::error::{IoError, Report, Result, diagnostic::FailureReason};
 
 impl<B: super::Bufferable> super::Buffer<B> {
     /// Reads a `UTF 8` string from the buffer until a delimiter is encountered.
