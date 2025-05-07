@@ -75,10 +75,10 @@ pub mod log;
 // is not enabled, we still need to expose to the crate
 #[macro_use]
 #[cfg(not(feature = "attribute_log"))]
-pub (crate) mod log;
+pub(crate) mod log;
 
 /// Dictionary.
-/// 
+///
 /// This feature gated module provides a dictionary that can be used to get
 /// a generic client from a value.
 #[cfg(feature = "attribute_dict")]
