@@ -18,6 +18,20 @@
 // Adds the README file at the beginning of the documentation.
 #![doc = include_str!("../README.md")]
 
+// We use macros from log module so if the feature
+// is not enabled, we still need to expose to the crate
+#[macro_use]
+#[cfg(not(feature = "attribute_log"))]
+pub(crate) mod log;
+
+/// Logging utilities.
+///
+/// This feature gated module provides logging targets that can be used
+/// with the `log` crate for logging events within the library.
+#[macro_use]
+#[cfg(feature = "attribute_log")]
+pub mod log;
+
 /// Core functionalities essential for the library.
 ///
 /// This module contains the core logic and utilities that are foundational
@@ -62,20 +76,6 @@ pub mod service;
 /// conversion of custom structures into more widely-used formats.
 #[cfg(feature = "attribute_adapters")]
 pub mod adapters;
-
-/// Logging utilities.
-///
-/// This feature gated module provides logging targets that can be used
-/// with the `log` crate for logging events within the library.
-#[macro_use]
-#[cfg(feature = "attribute_log")]
-pub mod log;
-
-// We use macros from log module so if the feature
-// is not enabled, we still need to expose to the crate
-#[macro_use]
-#[cfg(not(feature = "attribute_log"))]
-pub(crate) mod log;
 
 /// Dictionary.
 ///
