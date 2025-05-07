@@ -13,7 +13,6 @@ impl EventTarget {
     /// This target is intended for production environments where minimal logging
     /// is preferred. Use this target to log critical or essential information that
     /// should be recorded in production systems.
-    #[cfg(feature = "attribute_log")]
     pub const GAMEDIG_PROD: &'static str = "GAMEDIG::PROD";
 
     /// Logging target for development.
