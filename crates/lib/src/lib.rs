@@ -67,8 +67,15 @@ pub mod adapters;
 ///
 /// This feature gated module provides logging targets that can be used
 /// with the `log` crate for logging events within the library.
+#[macro_use]
 #[cfg(feature = "attribute_log")]
 pub mod log;
+
+// We use macros from log module so if the feature
+// is not enabled, we still need to expose to the crate
+#[macro_use]
+#[cfg(not(feature = "attribute_log"))]
+pub (crate) mod log;
 
 /// Dictionary.
 /// 
