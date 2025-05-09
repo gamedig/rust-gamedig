@@ -249,6 +249,7 @@ impl fmt::Display for HexDump {
 ///
 /// This struct is used to provide printable information about the crate.
 #[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) struct CrateInfo {
     /// The version of the crate.
     version: &'static str,
@@ -360,7 +361,7 @@ pub(crate) struct SystemInfo {
 
 impl SystemInfo {
     /// Creates a new `SystemInfo`.
-    /// 
+    ///
     /// This function initializes the `SystemInfo` struct with the current
     /// operating system, family, and architecture.
     #[allow(dead_code)]
