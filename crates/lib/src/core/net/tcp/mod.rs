@@ -10,70 +10,80 @@ mod sealed;
 #[derive(Debug)]
 pub(crate) struct TcpClient {
     client: sealed::client::Inner,
-    read_timeout: Option<Duration>,
-    write_timeout: Option<Duration>,
+    read_timeout: Duration,
+    write_timeout: Duration,
 }
 
 #[maybe_async::maybe_async]
 impl TcpClient {
+    /// Default timeout for TCP operations.
+    /// This is used when no specific or a invalid timeout is provided.
+    const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
+
     /// Creates a new TCP client instance.
     ///
     /// # Arguments
     ///
-    /// * `addr` - A reference to the `SocketAddr` of the server to connect to.
-    /// * `timeout` - An optional reference to the `Timeout` setting.
+    /// * `addr` - The `SocketAddr` of the server to connect to.
+    /// * `connect_timeout` - Optional timeout for establishing the connection.
+    /// * `read_timeout` - Optional timeout for reading from the stream.
+    /// * `write_timeout` - Optional timeout for writing to the stream.
     #[allow(dead_code)]
     pub(crate) async fn new(
-        addr: &SocketAddr,
-        connect_timeout: Option<&Duration>,
-        read_timeout: Option<&Duration>,
-        write_timeout: Option<&Duration>,
+        addr: SocketAddr,
+        connect_timeout: Option<Duration>,
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
     ) -> Result<Self> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "TCP::<Client>::New: Creating new TCP client for {addr}"
+        dev_trace!(
+            "GAMEDIG::CORE::NET::TCP::CLIENT::<NEW>: [addr: {:?}, connect_timeout: {:?}, \
+             read_timeout: {:?}, write_timeout: {:?}]",
         );
 
+        let [
+            valid_connect_timeout,
+            valid_read_timeout,
+            valid_write_timeout,
+        ] = [connect_timeout, read_timeout, write_timeout].map(|opt| {
+            opt.filter(|d| !d.is_zero())
+                .unwrap_or(Self::DEFAULT_TIMEOUT)
+        });
+
         Ok(Self {
-            client: sealed::client::Inner::new(addr, connect_timeout).await?,
-            read_timeout: read_timeout.copied(),
-            write_timeout: write_timeout.copied(),
+            client: sealed::client::Inner::new(addr, valid_connect_timeout).await?,
+            read_timeout: valid_read_timeout,
+            write_timeout: valid_write_timeout,
         })
     }
 
-    /// Reads data from the TCP stream into a buffer.
+    /// Reads a exact number of bytes from the TCP stream.
     ///
     /// # Arguments
     ///
-    /// * `size` - An optional size parameter indicating the number of bytes to
-    ///   read. If `None`, it will default to reading the maximum packet size.
+    /// * `buf` - A mutable slice of bytes to be filled with data read from the TCP stream.
     #[allow(dead_code)]
     pub(crate) async fn read_exact(&mut self, buf: &mut [u8]) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "TCP::<Client>::Read: Reading data from inner client"
+        dev_trace!(
+            "GAMEDIG::CORE::NET::TCP::CLIENT::<READ_EXACT>: [buf: len({:?})]",
+            buf.len()
         );
 
-        self.client
-            .inner
-            .read_exact(buf, self.read_timeout.as_ref())
-            .await
+        self.client.inner.read_exact(buf, self.read_timeout).await
     }
 
+    /// Reads data from the TCP stream until EOF.
+    ///
+    /// # Arguments
+    ///
+    /// * `buf` - A mutable vector of bytes to be filled with data read from the TCP stream.
     #[allow(dead_code)]
     pub(crate) async fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "TCP::<Client>::Read: Reading data from inner client"
+        dev_trace!(
+            "GAMEDIG::CORE::NET::TCP::CLIENT::<READ_TO_END>: [buf: cap({:?})]",
+            buf.capacity()
         );
 
-        self.client
-            .inner
-            .read_to_end(buf, self.read_timeout.as_ref())
-            .await
+        self.client.inner.read_to_end(buf, self.read_timeout).await
     }
 
     /// Writes data to the TCP stream.
@@ -83,15 +93,11 @@ impl TcpClient {
     /// * `data` - A slice of bytes to be written to the TCP stream.
     #[allow(dead_code)]
     pub(crate) async fn write(&mut self, data: &[u8]) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "TCP::<Client>::Write: Writing data to inner client"
+        dev_trace!(
+            "GAMEDIG::CORE::NET::TCP::CLIENT::<WRITE>: [data: len({:?})]",
+            data.len()
         );
 
-        self.client
-            .inner
-            .write(data, self.write_timeout.as_ref())
-            .await
+        self.client.inner.write(data, self.write_timeout).await
     }
 }

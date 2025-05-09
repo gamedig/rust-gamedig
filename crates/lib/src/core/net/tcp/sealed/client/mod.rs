@@ -17,14 +17,14 @@ mod tokio;
 /// which can be implemented across different runtime implementations.
 #[maybe_async::maybe_async]
 pub(crate) trait AbstractTcp {
-    async fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self>
+    async fn new(addr: SocketAddr, timeout: Duration) -> Result<Self>
     where Self: Sized;
 
-    async fn read_exact(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()>;
+    async fn read_exact(&mut self, buf: &mut [u8], timeout: Duration) -> Result<()>;
 
-    async fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Option<&Duration>) -> Result<()>;
+    async fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Duration) -> Result<()>;
 
-    async fn write(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
+    async fn write(&mut self, data: &[u8], timeout: Duration) -> Result<()>;
 }
 
 /// An internal TCP client
@@ -50,11 +50,10 @@ impl Inner {
     /// # Arguments
     /// * `addr` - The socket address of the server you want to connect to.
     /// * `timeout` - An optional timeout value for establishing the connection.
-    pub(crate) async fn new(addr: &SocketAddr, timeout: Option<&Duration>) -> Result<Self> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "TCP::<Inner>::New: Get new sealed TCP client for {addr}"
+    pub(crate) async fn new(addr: SocketAddr, timeout: Duration) -> Result<Self> {
+        dev_trace!(
+            "GAMEDIG::CORE::NET::TCP::SEALED::CLIENT::INNER::<NEW>: [addr: {addr:?}, timeout: \
+             {timeout:?}]",
         );
 
         Ok(Self {
