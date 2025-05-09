@@ -42,9 +42,8 @@ pub(crate) mod macros {
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_PROD,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit a `debug` level event to the `production` logging target.
     ///
@@ -61,9 +60,8 @@ pub(crate) mod macros {
         log::debug!(
             target: crate::log::EventTarget::GAMEDIG_PROD,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit an `info` level event to the `production` logging target.
     ///
@@ -80,22 +78,26 @@ pub(crate) mod macros {
         log::info!(
             target: crate::log::EventTarget::GAMEDIG_PROD,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit a `warn` level event to the `production` logging target.
     ///
     /// Only compiled if the `attribute_log` feature is enabled.
+    ///
+    /// # Example
+    /// ```rust
+    /// prod_warn!("This is a warning message");
+    /// prod_warn!("This is {} example number {}", "warning", 2);
+    /// ```
     macro_rules! prod_warn {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::warn!(
             target: crate::log::EventTarget::GAMEDIG_PROD,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit an `error` level event to the `production` logging target.
     ///
@@ -112,9 +114,8 @@ pub(crate) mod macros {
         log::error!(
             target: crate::log::EventTarget::GAMEDIG_PROD,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit a `trace` level event to the `development` logging target.
     ///
@@ -131,9 +132,8 @@ pub(crate) mod macros {
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit a `debug` level event to the `development` logging target.
     ///
@@ -150,9 +150,8 @@ pub(crate) mod macros {
         log::debug!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit an `info` level event to the `development` logging target.
     ///
@@ -169,9 +168,8 @@ pub(crate) mod macros {
         log::info!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit a `warn` level event to the `development` logging target.
     ///
@@ -188,9 +186,8 @@ pub(crate) mod macros {
         log::warn!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 
     /// Emit an `error` level event to the `development` logging target.
     ///
@@ -206,7 +203,6 @@ pub(crate) mod macros {
         log::error!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
             $($arg)+
-        );
-    };
-}
+        )};
+    }
 }
