@@ -315,3 +315,12 @@ impl super::AbstractTcp for TokioTcpClient {
         }
     }
 }
+
+impl Drop for TokioTcpClient {
+    fn drop(&mut self) {
+        dev_debug!(
+            "GAMEDIG::CORE::NET::TCP::SEALED::CLIENT::TOKIO::<DROP>: Dropping connection to {:?}",
+            &self.peer_addr,
+        );
+    }
+}
