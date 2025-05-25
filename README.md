@@ -31,11 +31,11 @@ These are internal crates used for testing and development purposes. They are no
 
 ### Target Support
 
-| Symbol | Meaning                                                                                      |
-| ------ | -------------------------------------------------------------------------------------------- |
-| ✅     | **Supported** — Actively tested in CI and maintained.                                        |
-| 🟡     | **May work** — Not tested or maintained. May require additional setup. Use at your own risk. |
-| ⛔     | **Unsupported** — Not expected to work due to missing features or platform limitations.      |
+| Symbol | Type            | Meaning                                                                       |
+| ------ | --------------- | ----------------------------------------------------------------------------- |
+| ✅     | **Supported**   | Actively tested in CI and maintained.                                         |
+| 🟡     | **May work**    | Not tested or maintained. May require additional setup. Use at your own risk. |
+| ⛔     | **Unsupported** | Not expected to work due to missing features or platform limitations.         |
 
 | Platform        | Tier | Notes                                                                                  |
 | --------------- | ---- | -------------------------------------------------------------------------------------- |
