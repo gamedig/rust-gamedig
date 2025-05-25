@@ -13,8 +13,6 @@ A Rust library and CLI tool for querying the status and details of multiplayer g
 
 &nbsp;
 
-&nbsp;
-
 
 > TODO: add more detail to the short description and some badges
 
