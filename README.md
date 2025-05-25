@@ -1,11 +1,22 @@
-> [!IMPORTANT]
-> WIP. This is a experimental branch of the GameDig library, it is not ready for any use.
+> [!WARNING]  
+> WIP. This is a experimental branch of the GameDig library, it is not ready for any use
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/24272adf-75c0-416c-ac43-c24b7cad4fcd" alt="image" />
-</p>
+<h1 align="center">Rust GameDig</h1>
 
-> TODO: add a short description of the project with some badges
+
+<img align="right" src="https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53" alt="image" />
+
+
+A Rust library and CLI tool for querying the status and details of multiplayer game servers. 
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+
+> TODO: add more detail to the short description and some badges
 
 ## Crates
 
