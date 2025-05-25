@@ -1,7 +1,9 @@
 > [!IMPORTANT]
 > WIP. This is a experimental branch of the GameDig library, it is not ready for any use.
 
-<h1 align="center">Rust GameDig</h1>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/24272adf-75c0-416c-ac43-c24b7cad4fcd" alt="image" />
+</p>
 
 > TODO: add a short description of the project with some badges
 
