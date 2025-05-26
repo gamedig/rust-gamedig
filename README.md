@@ -1,18 +1,15 @@
 > [!WARNING]  
-> WIP. This is a experimental branch of the GameDig library, it is not ready for any use
+> WIP. This is a experimental branch of Rust GameDig, it is not ready for any use
 
 <h1 align="center">Rust GameDig</h1>
 
-
 <img align="right" src="https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53" alt="image" />
 
-
-A Rust library and CLI tool for querying the status and details of multiplayer game servers. 
-
-&nbsp;
+A Rust library and CLI tool for querying the status and details of multiplayer game servers.
 
 &nbsp;
 
+&nbsp;
 
 > TODO: add more detail to the short description and some badges
 
@@ -22,13 +19,11 @@ A Rust library and CLI tool for querying the status and details of multiplayer g
 
 These are the main crates that users will interact with. They provide the functionality for querying game servers.
 
-| Crate         | Path         | Description                                                      | Crates.io       | CI Status       | Coverage        |
-| ------------- | ------------ | ---------------------------------------------------------------- | --------------- | --------------- | --------------- |
-| `gamedig`     | `crates/lib` | The main crate with all game querying logic.                     | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| `gamedig_cli` | `crates/cli` | A command line interface for querying game servers.              | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| `gamedig_ffi` | `crates/ffi` | FFI bindings & UDL schemas for integrating with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
-
-> TODO: add links on crate names to their respective readmes
+| Crate                                   | Path         | Description                                                      | Crates.io       | CI Status       | Coverage        |
+| --------------------------------------- | ------------ | ---------------------------------------------------------------- | --------------- | --------------- | --------------- |
+| [`gamedig`](./crates/lib/README.md)     | `crates/lib` | The main crate with all game querying logic.                     | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_cli`](./crates/cli/README.md) | `crates/cli` | A command line interface for querying game servers.              | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_ffi`](./crates/ffi/README.md) | `crates/ffi` | FFI bindings & UDL schemas for integrating with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
 
 ### Internal Crates
 
