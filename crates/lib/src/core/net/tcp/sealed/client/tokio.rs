@@ -57,7 +57,7 @@ impl super::AbstractTcp for TokioTcpClient {
                          error.",
                     ))
                     .attach_printable(Recommendation::new(format!(
-                        "Verify the server address ({addr:?}) is reachable, ensure the server is \
+                        "Verify the server address ({addr}) is reachable, ensure the server is \
                          running, and that no firewall or network restrictions are blocking the \
                          connection."
                     )))
@@ -70,7 +70,7 @@ impl super::AbstractTcp for TokioTcpClient {
                 return Err(Report::from(e)
                     .change_context(NetworkError::TcpTimeoutElapsedError { peer_addr: addr }.into())
                     .attach_printable(FailureReason::new(format!(
-                        "The connection attempt exceeded the specified timeout duration of \
+                        "The TCP connection attempt exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
                     .attach_printable(Recommendation::new(
@@ -96,7 +96,7 @@ impl super::AbstractTcp for TokioTcpClient {
 
         dev_debug!(
             "GAMEDIG::CORE::NET::TCP::SEALED::CLIENT::TOKIO::<READ_EXACT>: Attempting to acquire \
-             read lock for TCP stream to read from {}",
+             read lock for TCP stream to read from {:?}",
             &self.peer_addr,
         );
 
@@ -106,7 +106,7 @@ impl super::AbstractTcp for TokioTcpClient {
 
         dev_debug!(
             "GAMEDIG::CORE::NET::TCP::SEALED::CLIENT::TOKIO::<READ_EXACT>: Acquired read lock for \
-             TCP stream and attempting to read from {} with a timeout of {timeout:?}",
+             TCP stream and attempting to read from {:?} with a timeout of {timeout:?}",
             &self.peer_addr,
         );
 
@@ -115,7 +115,7 @@ impl super::AbstractTcp for TokioTcpClient {
             Ok(Ok(_)) => {
                 dev_debug!(
                     "GAMEDIG::CORE::NET::TCP::SEALED::CLIENT::TOKIO::<READ_EXACT>: Successfully \
-                     read data from {}",
+                     read data from {:?}",
                     &self.peer_addr,
                 );
 
@@ -132,11 +132,11 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during socket read operation.",
+                        "An underlying RT or OS I/O error occurred during TCP read operation.",
                     ))
                     .attach_printable(Recommendation::new(
-                        "Ensure the socket connection is stable and there are no issues with the \
-                         network or server.",
+                        "Ensure the connection is stable and there are no issues with the network \
+                         or server.",
                     ))
                     .attach_printable(SystemInfo::new())
                     .attach_printable(CrateInfo::new()));
@@ -152,7 +152,7 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(format!(
-                        "The read operation exceeded the specified timeout duration of \
+                        "The TCP read operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
                     .attach_printable(Recommendation::new(
@@ -209,7 +209,7 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during socket read operation.",
+                        "An underlying RT or OS I/O error occurred during TCP read operation.",
                     ))
                     .attach_printable(Recommendation::new(
                         "Ensure the socket connection is stable and there are no issues with the \
@@ -229,7 +229,7 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(format!(
-                        "The read operation exceeded the specified timeout duration of \
+                        "The TCP read operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
                     .attach_printable(Recommendation::new(
@@ -285,7 +285,7 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during socket write operation.",
+                        "An underlying RT or OS I/O error occurred during TCP write operation.",
                     ))
                     .attach_printable(Recommendation::new(
                         "Check if the server is accepting data correctly and there are no issues \
@@ -305,7 +305,7 @@ impl super::AbstractTcp for TokioTcpClient {
                         .into(),
                     )
                     .attach_printable(FailureReason::new(format!(
-                        "The write operation exceeded the specified timeout duration of \
+                        "The TCP write operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
                     .attach_printable(Recommendation::new(
