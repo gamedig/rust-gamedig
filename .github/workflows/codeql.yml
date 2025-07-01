@@ -23,20 +23,20 @@ jobs:
       matrix:
         include:
           - language: rust
-            build-mode: manual
+            build-mode: none
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Build
+        run: cargo build --release --locked
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-
-      - name: Build
-        run: cargo build --release --locked
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
