@@ -29,11 +29,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Rust
-        uses: actions/setup-rust@v1
-        with:
-          rust-version: stable
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
