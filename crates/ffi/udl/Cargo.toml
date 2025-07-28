@@ -1,5 +1,5 @@
 [package]
-name = "gamedig_ffi"
+name = "gamedig_ffi_udl"
 authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
 version = "1.0.0-alpha"
 edition = "2024"
