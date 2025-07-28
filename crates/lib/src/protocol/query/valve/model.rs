@@ -45,12 +45,12 @@ pub enum ServerResponseType {
 
 impl ServerResponseType {
     /// Converts an `i32` value into a [`ServerResponseType`].
-    /// 
+    ///
     /// The conversion uses the following mappings:
     ///
     /// - `-1` &rarr; [`ServerResponseType::Single`]
     /// - `-2` &rarr; [`ServerResponseType::Multi`]
-    /// 
+    ///
     /// Returns `None` if the value does not match any known response type.
     #[inline]
     pub const fn from_i32(value: i32) -> Option<Self> {
@@ -411,12 +411,12 @@ pub struct Response {
     pub protocol_info_response_type: ServerResponseType,
 
     /// The response type of the rules query (single or multi packet).
-    /// 
+    ///
     /// Only present when rules information is requested.
     pub protocol_rules_response_type: Option<ServerResponseType>,
 
     /// The response type of the players query (single or multi packet).
-    /// 
+    ///
     /// Only present when player information is requested.
     pub protocol_players_response_type: Option<ServerResponseType>,
 
@@ -441,7 +441,7 @@ pub struct Response {
     // -
     /// Additional data for servers running `The Ship`.
     pub the_ship: Option<TheShip>,
-    
+
     /// Mod information for `GoldSrc` servers running a mod.
     pub gold_src_mod: Option<GoldSrcMod>,
 }
