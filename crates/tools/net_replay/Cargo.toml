@@ -1,0 +1,9 @@
+[package]
+name = "gamedig_net_replay"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[dependencies]
