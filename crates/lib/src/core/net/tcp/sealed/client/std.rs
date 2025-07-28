@@ -50,7 +50,7 @@ impl super::AbstractTcp for StdTcpClient {
             }
 
             Err(e) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(NetworkError::TcpConnectionError { peer_addr: addr }.into())
                     .attach_printable(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying OS I/O error.",
@@ -62,7 +62,7 @@ impl super::AbstractTcp for StdTcpClient {
                          for distant or busy servers."
                     )))
                     .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()));
+                    .attach_printable(CrateInfo::new()))
             }
         }
     }
