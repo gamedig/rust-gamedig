@@ -25,6 +25,7 @@ impl EventTarget {
 
 /// This module contains macros for logging events at different levels and targets.
 #[macro_use]
+#[allow(unused_macros)]
 pub(crate) mod macros {
 
     /// Emit a `trace` level event to the `production` logging target.
@@ -40,7 +41,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_PROD,
+            target: super::EventTarget::GAMEDIG_PROD,
             $($arg)+
         )};
     }
@@ -58,7 +59,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::debug!(
-            target: crate::log::EventTarget::GAMEDIG_PROD,
+            target: super::EventTarget::GAMEDIG_PROD,
             $($arg)+
         )};
     }
@@ -76,7 +77,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::info!(
-            target: crate::log::EventTarget::GAMEDIG_PROD,
+            target: super::EventTarget::GAMEDIG_PROD,
             $($arg)+
         )};
     }
@@ -94,7 +95,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::warn!(
-            target: crate::log::EventTarget::GAMEDIG_PROD,
+            target: super::EventTarget::GAMEDIG_PROD,
             $($arg)+
         )};
     }
@@ -112,7 +113,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "attribute_log")]
         log::error!(
-            target: crate::log::EventTarget::GAMEDIG_PROD,
+            target: super::EventTarget::GAMEDIG_PROD,
             $($arg)+
         )};
     }
@@ -130,7 +131,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
+            target: super::EventTarget::GAMEDIG_DEV,
             $($arg)+
         )};
     }
@@ -148,7 +149,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "_DEV_LOG")]
         log::debug!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
+            target: super::EventTarget::GAMEDIG_DEV,
             $($arg)+
         )};
     }
@@ -166,7 +167,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "_DEV_LOG")]
         log::info!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
+            target: super::EventTarget::GAMEDIG_DEV,
             $($arg)+
         )};
     }
@@ -184,7 +185,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "_DEV_LOG")]
         log::warn!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
+            target: super::EventTarget::GAMEDIG_DEV,
             $($arg)+
         )};
     }
@@ -201,7 +202,7 @@ pub(crate) mod macros {
     ($($arg:tt)+) => {
         #[cfg(feature = "_DEV_LOG")]
         log::error!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
+            target: super::EventTarget::GAMEDIG_DEV,
             $($arg)+
         )};
     }
