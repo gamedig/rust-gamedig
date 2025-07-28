@@ -25,7 +25,7 @@ maybe-async = "0.2.10"
 error-stack = { version = "0.5.0", features = ["spantrace"] }
 
 # Optional Dependencies
-log = { version = "0.4.26", optional = true }
+log = { version = "0.4.27", optional = true }
 hashify = { version = "0.2.6", optional = true }
 serde_json = { version = "1.0.141", optional = true }
 encoding_rs = { version = "0.8.35", optional = true }
