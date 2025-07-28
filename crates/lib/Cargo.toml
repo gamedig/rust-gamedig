@@ -36,7 +36,7 @@ ureq = { version = "3.0.9", default-features = false, features = [
     "json",
     "rustls",
 ], optional = true }
-reqwest = { version = "0.12.14", default-features = false, features = [
+reqwest = { version = "0.12.22", default-features = false, features = [
     "json",
     "rustls-tls",
 ], optional = true }
