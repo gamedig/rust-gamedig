@@ -19,7 +19,13 @@
 #![doc = include_str!("../README.md")]
 
 // We use macros from log module so if the feature
-// is not enabled, we still need to expose to the crate
+// is not enabled, we still need to expose to the crate so
+// that the macros are no ops.
+//
+// Another note with log macros is that we need to keep the log
+// module above consuming modules, otherwise modules that are above log
+// will not be able to use the macros as they must be in scope before used.
+// https://rustc-dev-guide.rust-lang.org/macro-expansion.html#name-resolution
 #[macro_use]
 #[cfg(not(feature = "attribute_log"))]
 pub(crate) mod log;
@@ -37,6 +43,7 @@ pub mod log;
 /// This module contains the core logic and utilities that are foundational
 /// to the library's operation. It is not meant for direct end user interaction
 /// but serves as the backbone for other public modules.
+#[allow(dead_code)]
 pub(crate) mod core;
 
 /// Error handling utilities.
@@ -55,7 +62,7 @@ pub mod prelude;
 /// Implementations for specific games.
 ///
 /// The game module contains the logic and structures related to
-/// game-specific functionalities.
+/// game specific functionalities.
 pub mod game;
 
 /// Protocol implementations.
@@ -73,13 +80,13 @@ pub mod service;
 /// Adapters for converting structures to common formats.
 ///
 /// This feature gated module includes adapters that facilitate the
-/// conversion of custom structures into more widely-used formats.
+/// conversion of custom structures into more widely used formats.
 #[cfg(feature = "attribute_adapters")]
 pub mod adapters;
 
 /// Dictionary.
 ///
 /// This feature gated module provides a dictionary that can be used to get
-/// a generic client from a value.
+/// a generic client from a identifier.
 #[cfg(feature = "attribute_dict")]
 pub mod dict;
