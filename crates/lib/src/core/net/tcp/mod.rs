@@ -6,7 +6,6 @@ use {
 
 mod sealed;
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct TcpClient {
     client: sealed::client::Inner,
@@ -16,10 +15,6 @@ pub(crate) struct TcpClient {
 
 #[maybe_async::maybe_async]
 impl TcpClient {
-    /// Default timeout for TCP operations.
-    /// This is used when no specific or a invalid timeout is provided.
-    const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
-
     /// Creates a new TCP client instance.
     ///
     /// # Arguments
@@ -28,7 +23,8 @@ impl TcpClient {
     /// * `connect_timeout` - Optional timeout for establishing the connection.
     /// * `read_timeout` - Optional timeout for reading from the stream.
     /// * `write_timeout` - Optional timeout for writing to the stream.
-    #[allow(dead_code)]
+    ///
+    /// **Note:** If a provided timeout is less than 1 second, it will be replaced with the default timeout of 5 seconds.
     pub(crate) async fn new(
         addr: SocketAddr,
         connect_timeout: Option<Duration>,
@@ -45,8 +41,8 @@ impl TcpClient {
             valid_read_timeout,
             valid_write_timeout,
         ] = [connect_timeout, read_timeout, write_timeout].map(|opt| {
-            opt.filter(|d| !d.is_zero())
-                .unwrap_or(Self::DEFAULT_TIMEOUT)
+            opt.filter(|d| d.as_secs() != 0)
+                .unwrap_or(Duration::from_secs(5))
         });
 
         Ok(Self {
@@ -61,7 +57,6 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `buf` - A mutable slice of bytes to be filled with data read from the TCP stream.
-    #[allow(dead_code)]
     pub(crate) async fn read_exact(&mut self, buf: &mut [u8]) -> Result<()> {
         dev_trace!(
             "GAMEDIG::CORE::NET::TCP::CLIENT::<READ_EXACT>: [buf: len({:?})]",
@@ -76,7 +71,6 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `buf` - A mutable vector of bytes to be filled with data read from the TCP stream.
-    #[allow(dead_code)]
     pub(crate) async fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<()> {
         dev_trace!(
             "GAMEDIG::CORE::NET::TCP::CLIENT::<READ_TO_END>: [buf: cap({:?})]",
@@ -91,7 +85,6 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `data` - A slice of bytes to be written to the TCP stream.
-    #[allow(dead_code)]
     pub(crate) async fn write(&mut self, data: &[u8]) -> Result<()> {
         dev_trace!(
             "GAMEDIG::CORE::NET::TCP::CLIENT::<WRITE>: [data: len({:?})]",
