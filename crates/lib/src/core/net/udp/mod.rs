@@ -1,50 +1,77 @@
-use {crate::error::Result, sealed::client::AbstractUdp, std::time::Duration};
+use {
+    crate::error::Result,
+    sealed::client::AbstractUdp,
+    std::{net::SocketAddr, time::Duration},
+};
 
 mod sealed;
 
 pub(crate) struct UdpClient {
     client: sealed::client::Inner,
-    read_timeout: Option<Duration>,
-    write_timeout: Option<Duration>,
+    read_timeout: Duration,
+    write_timeout: Duration,
 }
 
 #[maybe_async::maybe_async]
 impl UdpClient {
-    #[allow(dead_code)]
+    /// Creates a new UDP client instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `addr` - The `SocketAddr` of the server to connect to.
+    /// * `read_timeout` - Optional timeout for reading from the socket.
+    /// * `write_timeout` - Optional timeout for writing to the socket.
     pub(crate) async fn new(
-        addr: &std::net::SocketAddr,
-        read_timeout: Option<&Duration>,
-        write_timeout: Option<&Duration>,
+        addr: SocketAddr,
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
     ) -> Result<Self> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!("UDP::<Client>::New: Creating new UDP client for {addr}");
+        dev_trace!(
+            "GAMEDIG::CORE::NET::UDP::CLIENT::<NEW>: [addr: {addr:?}, read_timeout: \
+             {read_timeout:?}, write_timeout: {write_timeout:?}]",
+        );
+
+        let [valid_read_timeout, valid_write_timeout] = [read_timeout, write_timeout].map(|opt| {
+            opt.filter(|d| !d.is_zero())
+                .unwrap_or(Duration::from_secs(5))
+        });
 
         Ok(Self {
             client: sealed::client::Inner::new(addr).await?,
-            read_timeout: read_timeout.copied(),
-            write_timeout: write_timeout.copied(),
+            read_timeout: valid_read_timeout,
+            write_timeout: valid_write_timeout,
         })
     }
 
-    #[allow(dead_code)]
+    /// Sends data on the socket to the remote address.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - A slice of bytes to be written to the UDP socket.
     pub(crate) async fn send(&mut self, data: &[u8]) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!("UDP::<Client>::Send: Sending data to the server");
+        dev_trace!(
+            "GAMEDIG::CORE::NET::UDP::CLIENT::<SEND>: [data: len({:?})]",
+            data.len()
+        );
 
-        self.client
-            .inner
-            .send(data, self.write_timeout.as_ref())
-            .await
+        self.client.inner.send(data, self.write_timeout).await
     }
 
-    #[allow(dead_code)]
+    /// Receives a single datagram message on the socket.
+    ///
+    /// # Arguments
+    ///
+    /// * `buf` - A mutable slice of bytes to be filled with the received data.
+    ///
+    /// **Note**: If a message is too long to fit in the supplied buffer, excess bytes may be discarded.
     pub(crate) async fn recv(&mut self, buf: &mut [u8]) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!("UDP::<Client>::Recv: Receiving data from the server");
+        // If the caller passed a Vec, the slice (buf) length will be 0.
+        // The original type is erased at this point, so the capacity meta is unknown here.
+        dev_trace!(
+            "GAMEDIG::CORE::NET::UDP::CLIENT::<RECV>: [buf: len({:?})]",
+            buf.len()
+        );
 
-        self.client
-            .inner
-            .recv(buf, self.read_timeout.as_ref())
-            .await
+        self.client.inner.recv(buf, self.read_timeout).await
     }
 }
