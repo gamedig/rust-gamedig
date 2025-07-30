@@ -21,7 +21,7 @@ pub(crate) struct StdUdpClient {
 
 #[maybe_async::sync_impl]
 impl super::AbstractUdp for StdUdpClient {
-    fn new(addr: &SocketAddr) -> Result<Self> {
+    fn new(addr: SocketAddr) -> Result<Self> {
         match UdpSocket::bind(match addr {
             SocketAddr::V4(_) => SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0)),
             SocketAddr::V6(_) => SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0)),
@@ -30,7 +30,7 @@ impl super::AbstractUdp for StdUdpClient {
                 match socket.connect(addr) {
                     Ok(_) => {
                         Ok(Self {
-                            peer_addr: *addr,
+                            peer_addr: addr,
                             socket,
                             send_timeout_set: false,
                             recv_timeout_set: false,
@@ -41,7 +41,7 @@ impl super::AbstractUdp for StdUdpClient {
                     Err(e) => {
                         return Err(Report::from(e)
                             .change_context(
-                                NetworkError::UdpConnectionError { peer_addr: *addr }.into(),
+                                NetworkError::UdpConnectionError { peer_addr: addr }.into(),
                             )
                             .attach_printable(FailureReason::new(
                                 "Failed to establish a UDP connection due to an underlying I/O \
@@ -64,20 +64,8 @@ impl super::AbstractUdp for StdUdpClient {
         }
     }
 
-    fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()> {
+    fn send(&mut self, data: &[u8], timeout: Duration) -> Result<()> {
         if !self.send_timeout_set {
-            // Validate the timeout duration
-            let timeout = match timeout {
-                Some(timeout) => {
-                    match timeout.is_zero() {
-                        true => Duration::from_secs(5),
-                        false => *timeout,
-                    }
-                }
-
-                None => Duration::from_secs(5),
-            };
-
             match self.socket.set_write_timeout(Some(timeout)) {
                 Ok(_) => {
                     self.send_timeout_set = true;
@@ -115,20 +103,8 @@ impl super::AbstractUdp for StdUdpClient {
         }
     }
 
-    fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
+    fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<()> {
         if !self.recv_timeout_set {
-            // Validate the timeout duration
-            let timeout = match timeout {
-                Some(timeout) => {
-                    match timeout.is_zero() {
-                        true => Duration::from_secs(5),
-                        false => *timeout,
-                    }
-                }
-
-                None => Duration::from_secs(5),
-            };
-
             match self.socket.set_read_timeout(Some(timeout)) {
                 Ok(_) => {
                     self.recv_timeout_set = true;
