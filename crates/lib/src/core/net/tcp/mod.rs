@@ -30,8 +30,9 @@ impl TcpClient {
         write_timeout: Option<Duration>,
     ) -> Result<Self> {
         dev_trace!(
-            "GAMEDIG::CORE::NET::TCP::CLIENT::<NEW>: [addr: {:?}, connect_timeout: {:?}, \
-             read_timeout: {:?}, write_timeout: {:?}]",
+            "GAMEDIG::CORE::NET::TCP::CLIENT::<NEW>: [addr: {addr:?}, connect_timeout: \
+             {connect_timeout:?}, read_timeout: {read_timeout:?}, write_timeout: \
+             {write_timeout:?}]",
         );
 
         let [
