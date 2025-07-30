@@ -11,7 +11,6 @@ mod std;
 #[cfg(feature = "socket_tokio")]
 mod tokio;
 
-#[allow(dead_code)]
 #[maybe_async::maybe_async]
 pub(crate) trait AbstractUdp {
     async fn new(addr: SocketAddr) -> Result<Self>
