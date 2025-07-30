@@ -31,12 +31,12 @@ pub struct ValveQueryClient {
 #[maybe_async::maybe_async]
 impl ValveQueryClient {
     pub async fn new(
-        address: &SocketAddr,
-        read_timeout: Option<&Duration>,
-        write_timeout: Option<&Duration>,
+        address: SocketAddr,
+        read_timeout: Option<Duration>,
+        write_timeout: Option<Duration>,
     ) -> Result<Self> {
         Ok(Self {
-            net: UdpClient::new(&address, read_timeout, write_timeout).await?,
+            net: UdpClient::new(address, read_timeout, write_timeout).await?,
             config: ValveQueryConfig::default(),
         })
     }
