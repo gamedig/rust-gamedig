@@ -23,8 +23,6 @@ impl TcpClient {
     /// * `connect_timeout` - Optional timeout for establishing the connection.
     /// * `read_timeout` - Optional timeout for reading from the stream.
     /// * `write_timeout` - Optional timeout for writing to the stream.
-    ///
-    /// **Note:** If a provided timeout is less than 1 second, it will be replaced with the default timeout of 5 seconds.
     pub(crate) async fn new(
         addr: SocketAddr,
         connect_timeout: Option<Duration>,
@@ -41,7 +39,7 @@ impl TcpClient {
             valid_read_timeout,
             valid_write_timeout,
         ] = [connect_timeout, read_timeout, write_timeout].map(|opt| {
-            opt.filter(|d| d.as_secs() != 0)
+            opt.filter(|d| !d.is_zero())
                 .unwrap_or(Duration::from_secs(5))
         });
 
