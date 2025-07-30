@@ -14,12 +14,12 @@ mod tokio;
 #[allow(dead_code)]
 #[maybe_async::maybe_async]
 pub(crate) trait AbstractUdp {
-    async fn new(addr: &SocketAddr) -> Result<Self>
+    async fn new(addr: SocketAddr) -> Result<Self>
     where Self: Sized;
 
-    async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()>;
+    async fn send(&mut self, data: &[u8], timeout: Duration) -> Result<()>;
 
-    async fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()>;
+    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<()>;
 }
 
 pub(crate) struct Inner {
@@ -32,9 +32,8 @@ pub(crate) struct Inner {
 
 #[maybe_async::maybe_async]
 impl Inner {
-    pub(crate) async fn new(addr: &SocketAddr) -> Result<Self> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!("UDP::<Inner>::New: Creating new UDP client for {addr}");
+    pub(crate) async fn new(addr: SocketAddr) -> Result<Self> {
+        dev_trace!("GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::INNER::<NEW>: [addr: {addr:?}]",);
 
         Ok(Self {
             #[cfg(feature = "socket_std")]
