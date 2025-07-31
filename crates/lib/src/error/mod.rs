@@ -184,8 +184,6 @@ define_error_kind! {
     ///
     /// This set of errors are related to network operations.
     NetworkError, {
-        //TODO: Add HTTP errors
-
         /// TCP Connection Error
         ///
         /// This error occurs when a TCP connection cannot be established.

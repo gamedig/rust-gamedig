@@ -27,19 +27,19 @@ error-stack = { version = "0.5.0", features = ["spantrace"] }
 # Optional Dependencies
 log = { version = "0.4.27", optional = true }
 hashify = { version = "0.2.6", optional = true }
-serde_json = { version = "1.0.141", optional = true }
+#serde_json = { version = "1.0.141", optional = true }
 encoding_rs = { version = "0.8.35", optional = true }
 async-trait = { version = "0.1.88", optional = true }
 tokio = { version = "1.47.0", features = ["full"], optional = true }
 serde = { version = "1.0.219", features = ["derive"], optional = true }
-ureq = { version = "3.0.12", default-features = false, features = [
-    "json",
-    "rustls",
-], optional = true }
-reqwest = { version = "0.12.22", default-features = false, features = [
-    "json",
-    "rustls-tls",
-], optional = true }
+#ureq = { version = "3.0.12", default-features = false, features = [
+#    "json",
+#    "rustls",
+#], optional = true }
+#reqwest = { version = "0.12.22", default-features = false, features = [
+#    "json",
+#    "rustls-tls",
+#], optional = true }
 
 [features]
 default = ["default_client_tokio"]
@@ -50,7 +50,7 @@ _BUFFER = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
-_HTTPS = ["dep:serde_json"]
+#_HTTPS = ["dep:serde_json"]
 _TCP = ["_BUFFER"]
 _UDP = ["_BUFFER"]
 
@@ -63,8 +63,8 @@ _DEV_LOG = ["attribute_log"]
 # without having to specify each feature individually
 #
 # - Only 1 can be enabled at a time as it enables rt features
-default_client_std = ["socket_std", "https_std", "all"]
-default_client_tokio = ["socket_tokio", "https_tokio", "all"]
+default_client_std = ["socket_std", "all"]
+default_client_tokio = ["socket_tokio", "all"]
 
 # Socket Client (Prefix: socket_<RUNTIME>)
 #
@@ -82,8 +82,8 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 #
 # - Only 1 HTTPS client type can be enabled at a time.
 # - If using socket client also insure to match the runtime.
-https_std = ["maybe-async/is_sync", "dep:ureq"]
-https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
+#https_std = ["maybe-async/is_sync", "dep:ureq"]
+#https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
 
 # Library Features
 ## Attributes (Prefix: attribute_)

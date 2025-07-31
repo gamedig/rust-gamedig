@@ -256,13 +256,6 @@ pub(crate) struct CrateInfo {
     /// Indicates if the crate is built in debug mode.
     debug_build: bool,
 
-    /// Indicates if HTTPS is included in the build.
-    https_enabled: bool,
-    /// Indicates if the HTTPS Std client is included in the build.
-    https_std: bool,
-    /// Indicates if the HTTPS Tokio client is included in the build.
-    https_tokio: bool,
-
     /// Indicates if TCP is included in the build.
     socket_tcp_enabled: bool,
     /// Indicates if UDP is included in the build.
@@ -297,10 +290,6 @@ impl CrateInfo {
             version: env!("CARGO_PKG_VERSION"),
             debug_build: cfg!(debug_assertions),
 
-            https_enabled: cfg!(feature = "_HTTPS"),
-            https_std: cfg!(feature = "https_std"),
-            https_tokio: cfg!(feature = "https_tokio"),
-
             socket_tcp_enabled: cfg!(feature = "_TCP"),
             socket_udp_enabled: cfg!(feature = "_UDP"),
             socket_std: cfg!(feature = "socket_std"),
@@ -323,11 +312,6 @@ impl fmt::Display for CrateInfo {
         writeln!(f, "\x1B[1mVersion         : \x1B[0m{}", self.version)?;
         writeln!(f, "\x1B[1mDebug Build     : \x1B[0m{}", self.debug_build)?;
         writeln!(f, "\x1B[1mFeatures        : \x1B[0m")?;
-        writeln!(f, "\x1B[1m  HTTPS         : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    Enabled     : \x1B[0m{}", self.https_enabled)?;
-        writeln!(f, "\x1B[1m  HTTPS RT      : \x1B[0m")?;
-        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.https_std)?;
-        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.https_tokio)?;
         writeln!(f, "\x1B[1m  Socket        : \x1B[0m")?;
         writeln!(f, "\x1B[1m    TCP Enabled : \x1B[0m{}", self.socket_tcp_enabled)?;
         writeln!(f, "\x1B[1m    UDP Enabled : \x1B[0m{}", self.socket_udp_enabled)?;
