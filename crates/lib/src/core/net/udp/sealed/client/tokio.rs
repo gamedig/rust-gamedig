@@ -19,7 +19,7 @@ pub(crate) struct TokioUdpClient {
 
 #[maybe_async::async_impl]
 impl super::AbstractUdp for TokioUdpClient {
-    async fn new(addr: &SocketAddr) -> Result<Self> {
+    async fn new(addr: SocketAddr) -> Result<Self> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -48,7 +48,7 @@ impl super::AbstractUdp for TokioUdpClient {
                         );
 
                         Ok(Self {
-                            peer_addr: *addr,
+                            peer_addr: addr,
                             socket,
                         })
                     }
@@ -57,7 +57,7 @@ impl super::AbstractUdp for TokioUdpClient {
                     Err(e) => {
                         return Err(Report::from(e)
                             .change_context(
-                                NetworkError::UdpConnectionError { peer_addr: *addr }.into(),
+                                NetworkError::UdpConnectionError { peer_addr: addr }.into(),
                             )
                             .attach_printable(FailureReason::new(
                                 "Failed to establish a UDP connection due to an underlying I/O \
@@ -80,7 +80,7 @@ impl super::AbstractUdp for TokioUdpClient {
         }
     }
 
-    async fn send(&mut self, data: &[u8], timeout: Option<&Duration>) -> Result<()> {
+    async fn send(&mut self, data: &[u8], timeout: Duration) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -88,18 +88,7 @@ impl super::AbstractUdp for TokioUdpClient {
             &self.peer_addr
         );
 
-        let valid_timeout = match timeout {
-            Some(timeout) => {
-                match timeout.is_zero() {
-                    true => Duration::from_secs(5),
-                    false => *timeout,
-                }
-            }
-
-            None => Duration::from_secs(5),
-        };
-
-        match timer(valid_timeout, self.socket.send(data)).await {
+        match timer(timeout, self.socket.send(data)).await {
             Ok(Ok(_)) => Ok(()),
 
             // Error during the send operation
@@ -136,7 +125,7 @@ impl super::AbstractUdp for TokioUdpClient {
         }
     }
 
-    async fn recv(&mut self, buf: &mut [u8], timeout: Option<&Duration>) -> Result<()> {
+    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<()> {
         #[cfg(feature = "_DEV_LOG")]
         log::trace!(
             target: crate::log::EventTarget::GAMEDIG_DEV,
@@ -144,18 +133,7 @@ impl super::AbstractUdp for TokioUdpClient {
             &self.peer_addr
         );
 
-        let valid_timeout = match timeout {
-            Some(timeout) => {
-                match timeout.is_zero() {
-                    true => Duration::from_secs(5),
-                    false => *timeout,
-                }
-            }
-
-            None => Duration::from_secs(5),
-        };
-
-        match timer(valid_timeout, self.socket.recv(buf)).await {
+        match timer(timeout, self.socket.recv(buf)).await {
             Ok(Ok(_)) => Ok(()),
 
             // Error during the read operation
