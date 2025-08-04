@@ -20,31 +20,40 @@ pub(crate) struct TokioUdpClient {
 #[maybe_async::async_impl]
 impl super::AbstractUdp for TokioUdpClient {
     async fn new(addr: SocketAddr) -> Result<Self> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "UDP::<Tokio>::New: Creating new UDP client for {addr}"
-        );
+        dev_trace!("GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: [addr: {addr:?}]");
 
         match UdpSocket::bind(match addr {
-            SocketAddr::V4(_) => SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0)),
-            SocketAddr::V6(_) => SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0)),
+            SocketAddr::V4(_) => {
+                dev_debug!(
+                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Attempting to bind to \
+                     IPV4 ephemeral port"
+                );
+
+                SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0))
+            }
+
+            SocketAddr::V6(_) => {
+                dev_debug!(
+                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Attempting to bind to \
+                     IPV6 ephemeral port"
+                );
+
+                SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0))
+            }
         })
         .await
         {
             Ok(socket) => {
-                #[cfg(feature = "_DEV_LOG")]
-                log::debug!(
-                    target: crate::log::EventTarget::GAMEDIG_DEV,
-                    "UDP::<Tokio>::New: Successfully bound to the local socket"
+                dev_debug!(
+                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Successfully bound to \
+                     the ephemeral port, Attempting to set the peer address"
                 );
 
                 match socket.connect(addr).await {
                     Ok(_) => {
-                        #[cfg(feature = "_DEV_LOG")]
-                        log::debug!(
-                            target: crate::log::EventTarget::GAMEDIG_DEV,
-                            "UDP::<Tokio>::New: Successfully set the peer address and socket is ready"
+                        dev_debug!(
+                            "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Successfully \
+                             set peer address, socket is ready"
                         );
 
                         Ok(Self {
