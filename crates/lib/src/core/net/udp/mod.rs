@@ -43,7 +43,7 @@ impl UdpClient {
         })
     }
 
-    /// Sends data on the socket to the remote address.
+    /// Sends data to the remote address.
     ///
     /// # Arguments
     ///
@@ -57,7 +57,7 @@ impl UdpClient {
         self.client.inner.send(data, self.write_timeout).await
     }
 
-    /// Receives a single datagram message on the socket.
+    /// Receives a single datagram message.
     ///
     /// # Arguments
     ///
