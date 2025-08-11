@@ -23,36 +23,43 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
-    #[allow(dead_code)]
     pub(crate) fn read_string_utf8(
         &mut self,
-        delimiter: Option<[u8; 1]>,
+        delimiter: Option<u8>,
         strict: bool,
     ) -> Result<String> {
         self.check_range(.., true)?;
 
-        let pos = self.pos();
-        let len = self.len();
-        let delimiter = delimiter.unwrap_or([0x00]);
+        let start = self.pos();
+        let end = self.len();
+        let buf = &self.inner.as_ref()[start .. end];
+        let delim = delimiter.unwrap_or(0x00);
 
-        let end_pos = self.inner.as_ref()[pos .. len]
-            .iter()
-            .position(|&b| b == delimiter[0])
-            .unwrap_or(len - pos);
-
-        let s = if strict {
-            String::from_utf8(self.inner.as_ref()[pos .. pos + end_pos].to_vec()).map_err(|e| {
-                Report::from(e)
-                    .change_context(IoError::BufferStringConversionError {}.into())
-                    .attach_printable(FailureReason::new(
-                        "Invalid UTF 8 sequence found during string read.",
-                    ))
-            })?
-        } else {
-            String::from_utf8_lossy(&self.inner.as_ref()[pos .. pos + end_pos]).into_owned()
+        // Find delimiter once
+        let (end_pos, found) = match buf.iter().position(|&b| b == delim) {
+            Some(i) => (i, true),
+            None => (buf.len(), false),
         };
 
-        self.cursor += end_pos + delimiter.len();
+        let slice = &buf[.. end_pos];
+
+        let s = if strict {
+            match str::from_utf8(slice) {
+                Ok(st) => st.to_owned(),
+                Err(e) => {
+                    return Err(Report::from(e)
+                        .change_context(IoError::BufferStringConversionError {}.into())
+                        .attach_printable(FailureReason::new(
+                            "Invalid UTF-8 sequence found during string read.",
+                        )));
+                }
+            }
+        } else {
+            String::from_utf8_lossy(slice).into_owned()
+        };
+
+        // Advance past the delimiter only if we actually saw it.
+        self.cursor += end_pos + found as usize;
 
         Ok(s)
     }
@@ -78,7 +85,6 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range is out of bounds.
     /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
-    #[allow(dead_code)]
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
         self.check_range(.. 1, true)?;
 
@@ -168,7 +174,7 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    #[allow(dead_code)]
+
     pub(crate) fn read_string_utf16_be(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -197,7 +203,6 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    #[allow(dead_code)]
     pub(crate) fn read_string_utf16_le(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -229,7 +234,6 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    #[allow(dead_code)]
     pub(crate) fn read_string_ucs2(
         &mut self,
         delimiter: Option<[u8; 2]>,
@@ -260,7 +264,6 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and invalid `Latin 1` data is encountered.
-    #[allow(dead_code)]
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
     pub(crate) fn read_string_latin1(
         &mut self,

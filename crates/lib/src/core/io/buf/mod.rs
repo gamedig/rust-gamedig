@@ -43,26 +43,22 @@ impl<B: Bufferable> Buffer<B> {
     /// # Arguments
     ///
     /// * `inner` - The underlying byte storage.
-    #[allow(dead_code)]
     #[inline]
     pub(crate) const fn new(inner: B) -> Self { Self { inner, cursor: 0 } }
 
     /// Returns the current position in the buffer
     ///
     /// The position is zero based and increments as you read or move through the buffer.
-    #[allow(dead_code)]
     #[inline]
     pub(crate) const fn pos(&self) -> usize { self.cursor }
 
     /// Returns the number of elements in the underlying byte storage.
-    #[allow(dead_code)]
     #[inline]
     pub(crate) fn len(&self) -> usize { self.inner.len() }
 
     /// Returns the number of elements remaining from the current position to the end of the byte storage.
     ///
     /// This gives you how many more bytes can be read without going out of bounds.
-    #[allow(dead_code)]
     #[inline]
     pub(crate) fn remaining(&self) -> usize { self.len() - self.pos() }
 
@@ -70,7 +66,6 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// This conversion moves the underlying byte storage out of the `Buffer`,
     /// effectively discarding the `Buffer` wrapper.
-    #[allow(dead_code)]
     #[inline]
     pub(crate) fn unpack(self) -> B { self.inner }
 
@@ -88,7 +83,6 @@ impl<B: Bufferable> Buffer<B> {
     /// Returns an `Err` if:
     /// * The resulting position would be out of bounds.
     /// * Addition overflows or underflows `isize` (Note: We should not encounter isize::MAX under normal circumstances).
-    #[allow(dead_code)]
     pub(crate) fn move_pos(&mut self, off: isize) -> Result<()> {
         // just in case someone tries to move 0
         if off == 0 {
@@ -216,7 +210,6 @@ impl<B: Bufferable> Buffer<B> {
     /// # Errors
     ///
     /// Returns an `Err` if the requested number of bytes (`cnt`) is not available from the current position.
-    #[allow(dead_code)]
     pub(crate) fn peek(&self, cnt: usize) -> Result<&[u8]> {
         self.check_range(.. cnt, true)?;
 
