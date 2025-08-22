@@ -1,5 +1,9 @@
 use std::{collections::HashMap, time::Duration};
 
+/// Represents a generic value that can be associated with a player.
+///
+/// This enum covers a wide range of primitive types, strings, and durations,
+/// allowing flexible storage of different types of player related data.
 #[derive(Debug, Clone)]
 pub enum GenericPlayerDataValue {
     U8(u8),
@@ -26,12 +30,14 @@ pub enum GenericPlayerDataValue {
     Duration(Duration),
 }
 
+/// Represents a generic player with a name and associated arbitrary data.
 #[derive(Debug, Clone)]
 pub struct GenericPlayer {
     pub name: String,
     pub data: Option<HashMap<String, GenericPlayerDataValue>>,
 }
 
+/// A trait for converting player structs into a [`GenericPlayer`].
 pub trait IntoGenericPlayer: Sized {
     fn into_generic_player(&self) -> GenericPlayer;
 }
