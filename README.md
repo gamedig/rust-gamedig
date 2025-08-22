@@ -19,19 +19,20 @@ A Rust library and CLI tool for querying the status and details of multiplayer g
 
 These are the main crates that users will interact with. They provide the functionality for querying game servers.
 
-| Crate                                   | Path         | Description                                                      | Crates.io       | CI Status       | Coverage        |
-| --------------------------------------- | ------------ | ---------------------------------------------------------------- | --------------- | --------------- | --------------- |
-| [`gamedig`](./crates/lib/README.md)     | `crates/lib` | The main crate with all game querying logic.                     | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| [`gamedig_cli`](./crates/cli/README.md) | `crates/cli` | A command line interface for querying game servers.              | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| [`gamedig_ffi`](./crates/ffi/README.md) | `crates/ffi` | FFI bindings & UDL schemas for integrating with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
+| Crate                                           | Path             | Description                                                                | Crates.io       | CI Status       | Coverage        |
+| ----------------------------------------------- | ---------------- | -------------------------------------------------------------------------- | --------------- | --------------- | --------------- |
+| [`gamedig`](./crates/lib/README.md)             | `crates/lib`     | The main crate with all game querying logic.                               | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_cli`](./crates/cli/README.md)         | `crates/cli`     | A command line interface for querying game servers.                        | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_ffi_udl`](./crates/ffi/udl/README.md) | `crates/ffi/udl` | UDL schemas for generating FFI bindings to integrate with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
 
 ### Internal Crates
 
 These are internal crates used for testing and development purposes. They are not intended for public use.
 
-| Crate | Path              | Description     |
-| ----- | ----------------- | --------------- |
-| TODO  | `crates/tools/..` | For future use. |
+| Crate                                                       | Path                      | Description                                                 |
+| ----------------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
+| [`gamedig_id_gen`](./crates/tools/id_gen/README.md)         | `crates/tools/id_gen`     | A CLI tool to generate deterministic identifiers for games. |
+| [`gamedig_net_replay`](./crates/tools/net_replay/README.md) | `crates/tools/net_replay` | A CLI tool for replaying network traffic from game servers. |
 
 ### Target Support
 
