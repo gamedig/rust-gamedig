@@ -1,3 +1,5 @@
+pub mod data;
+
 /// Adapter for converting player data.
 ///
 /// The `player` module provides functionality for converting raw player data
