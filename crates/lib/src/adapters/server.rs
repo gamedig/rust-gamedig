@@ -39,5 +39,5 @@ pub struct GenericServer {
 }
 
 pub trait IntoGenericServer: Sized {
-    fn into_generic_server(self) -> GenericServer;
+    fn into_generic_server(&self) -> GenericServer;
 }

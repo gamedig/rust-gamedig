@@ -33,5 +33,5 @@ pub struct GenericPlayer {
 }
 
 pub trait IntoGenericPlayer: Sized {
-    fn into_generic_player(self) -> GenericPlayer;
+    fn into_generic_player(&self) -> GenericPlayer;
 }
