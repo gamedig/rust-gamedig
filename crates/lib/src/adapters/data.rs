@@ -32,4 +32,4 @@ pub enum GenericDataValue {
     SocketAddr(SocketAddr),
 }
 
-pub type GenericDataHashMap = HashMap<String, GenericDataValue>;
+pub type GenericDataHashMap = HashMap<String, Option<GenericDataValue>>;
