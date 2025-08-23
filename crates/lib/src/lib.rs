@@ -90,3 +90,7 @@ pub mod adapters;
 /// a generic client from a identifier.
 #[cfg(feature = "attribute_dict")]
 pub mod dict;
+
+// Will only be included in documentation
+//#[cfg(doc)]
+pub mod changelog;
