@@ -167,7 +167,7 @@ fn resolve_ip_or_domain<T: AsRef<str>>(host: T, extra_options: &mut Option<Extra
 fn resolve_domain(domain: &str) -> Result<IpAddr> {
     // Append a dummy port to perform socket address resolution and then extract the
     // IP
-    Ok(format!("{}:0", domain)
+    Ok(format!("{domain}:0")
         .to_socket_addrs()
         .map_err(|_| Error::InvalidHostname(domain.to_string()))?
         .next()
@@ -248,7 +248,7 @@ fn output_result<T: CommonResponse + ?Sized>(output_mode: OutputMode, format: Ou
 /// # Arguments
 /// * `result` - A result that can be output using the debug formatter.
 fn output_result_debug<R: std::fmt::Debug>(result: R) {
-    println!("{:#?}", result);
+    println!("{result:#?}");
 }
 
 /// Output the result as a JSON object.
@@ -374,7 +374,7 @@ fn output_result_xml<T: serde::Serialize>(result: T) -> Result<()> {
     let xml_bytes = writer.into_inner();
     let xml_string = String::from_utf8(xml_bytes).expect("Failed to convert XML bytes to UTF-8 string");
 
-    println!("{}", xml_string);
+    println!("{xml_string}");
 
     Ok(())
 }
@@ -446,7 +446,7 @@ fn main() -> Result<()> {
             output_result(output_mode, format, result.as_ref());
         }
         Action::Source => {
-            println!("{}", GAMEDIG_HEADER);
+            println!("{GAMEDIG_HEADER}");
 
             #[cfg(feature = "browser")]
             {

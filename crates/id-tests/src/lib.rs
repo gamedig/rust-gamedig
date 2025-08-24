@@ -144,7 +144,7 @@ pub fn test_game_name_rule(
             .collect()
     };
 
-    let mut expected_id = format!("{}{}", main, suffix).to_lowercase();
+    let mut expected_id = format!("{main}{suffix}").to_lowercase();
 
     if let Some(other_game_name_words) = seen_ids.get(&expected_id) {
         let mut game_names_same = other_game_name_words.len() == game.words.len();
@@ -166,7 +166,7 @@ pub fn test_game_name_rule(
                 //    and 2017 would be swbf22017).
 
                 rule_stack.push(IDRule::IfIDDuplicateSameGameAppendYearToNewer);
-                expected_id = format!("{}{}", expected_id, year).to_lowercase();
+                expected_id = format!("{expected_id}{year}").to_lowercase();
             } else if let Some(protocol) = game.optional_parts.first() {
                 // 7. If a game supports multiple protocols, multiple entries will be done for
                 //    said game where the edition/protocol name (first disposable in this order)
@@ -199,7 +199,7 @@ pub fn test_game_name_rule(
             .collect::<Vec<_>>()
             .join("");
 
-        expected_id = format!("{}{}", main, suffix).to_lowercase();
+        expected_id = format!("{main}{suffix}").to_lowercase();
     }
 
     // 8. If its actually about a mod that adds the ability for queries to be
@@ -368,7 +368,7 @@ pub fn test_game_name_rules<'a, I: Iterator<Item = (&'a str, &'a str)>>(games: I
 
     if !wrong_ids.is_empty() {
         for fail in &wrong_ids {
-            println!("{:#?}", fail);
+            println!("{fail:#?}");
         }
         let percentage = (wrong_ids.len() * 100) / game_count;
         println!(
