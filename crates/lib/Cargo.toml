@@ -90,7 +90,7 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 attribute_log = ["dep:log"]
 attribute_dict = ["dep:hashify"]
 attribute_serde = ["dep:serde"]
-attribute_adapters = []
+attribute_converters = []
 attribute_extended_derive = []
 
 ## Games
@@ -118,7 +118,7 @@ all_attributes = [
     "attribute_log",
     "attribute_dict",
     "attribute_serde",
-    "attribute_adapters",
+    "attribute_converters",
     "attribute_extended_derive",
 ]
 

@@ -77,12 +77,12 @@ pub mod protocol;
 /// external services and APIs.
 pub mod service;
 
-/// Adapters for converting structures to common formats.
+/// Convertors for transforming structures into common formats.
 ///
-/// This feature gated module includes adapters that facilitate the
-/// conversion of custom structures into more widely used formats.
-#[cfg(feature = "attribute_adapters")]
-pub mod adapters;
+/// This feature gated module defines generic traits that facilitate
+/// conversion of custom structures into widely used formats.
+#[cfg(feature = "attribute_converters")]
+pub mod converters;
 
 /// Dictionary.
 ///

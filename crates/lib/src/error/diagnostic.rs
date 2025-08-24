@@ -273,8 +273,8 @@ pub(crate) struct CrateInfo {
     dict: bool,
     /// Indicates if Serde support is included in the build.
     serde: bool,
-    /// Indicates if adapters are included in the build.
-    adapters: bool,
+    /// Indicates if converters are included in the build.
+    converters: bool,
     /// Indicates if extended derive support is included in the build.
     extended_derive: bool,
 }
@@ -299,7 +299,7 @@ impl CrateInfo {
             dev_log: cfg!(feature = "_DEV_LOG"),
             dict: cfg!(feature = "attribute_dict"),
             serde: cfg!(feature = "attribute_serde"),
-            adapters: cfg!(feature = "attribute_adapters"),
+            converters: cfg!(feature = "attribute_converters"),
             extended_derive: cfg!(feature = "attribute_extended_derive"),
         }
     }
@@ -323,7 +323,7 @@ impl fmt::Display for CrateInfo {
         writeln!(f, "\x1B[1m    Dev Log     : \x1B[0m{}", self.dev_log)?;
         writeln!(f, "\x1B[1m    Dict        : \x1B[0m{}", self.dict)?;
         writeln!(f, "\x1B[1m    Serde       : \x1B[0m{}", self.serde)?;
-        writeln!(f, "\x1B[1m    Adapters    : \x1B[0m{}", self.adapters)?;
+        writeln!(f, "\x1B[1m    Converters  : \x1B[0m{}", self.converters)?;
         writeln!(f, "\x1B[1m    Ext Derive  : \x1B[0m{}", self.extended_derive)
     }
 }
