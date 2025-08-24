@@ -15,8 +15,18 @@
 // *                                                                 *
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+// Forbid unsafe code within the library.
+#![forbid(unsafe_code)]
 // Adds the README file at the beginning of the documentation.
 #![doc = include_str!("../README.md")]
+// Adds the logo to the documentation.
+#![doc(
+    html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53",
+)]
+
+// Only included in documentation builds
+#[cfg(doc)]
+pub mod changelog;
 
 // We use macros from log module so if the feature
 // is not enabled, we still need to expose to the crate so
@@ -90,7 +100,3 @@ pub mod converters;
 /// a generic client from a identifier.
 #[cfg(feature = "attribute_dict")]
 pub mod dict;
-
-// Will only be included in documentation
-//#[cfg(doc)]
-pub mod changelog;
