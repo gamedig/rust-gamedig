@@ -1,83 +1,131 @@
 [package]
 name = "gamedig"
-version = "0.7.0"
-edition = "2021"
-authors = [
-    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
-    "node-GameDig contributors [https://github.com/gamedig/node-gamedig/contributors]",
-]
+version = "1.0.0-alpha"
+edition = "2024"
 license = "MIT"
-description = "Query game servers and not only."
-homepage = "https://gamedig.github.io/"
-documentation = "https://docs.rs/gamedig/latest/gamedig/"
-repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
-keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.81.0"
-categories = ["parser-implementations", "parsing", "network-programming", "encoding"]
-
-[features]
-default = ["games", "services", "game_defs"]
-
-# Enable query functions for specific games
-games = []
-# Enable game definitions for use with the generic query functions
-game_defs = ["dep:phf", "games"]
-
-# Enable service querying
-services = []
-
-# Enable serde derivations for our types
-serde = []
-
-# Enable clap derivations for our types
-clap = ["dep:clap"]
-packet_capture = ["dep:pcap-file", "dep:pnet_packet", "dep:lazy_static"]
-
-# Enable TLS for HTTP Client
-tls = ["ureq/tls"]
+homepage = "https://gamedig.github.io/"
+repository = "https://github.com/gamedig/rust-gamedig"
+documentation = "https://docs.rs/gamedig/latest/gamedig"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+keywords = ["status", "query", "game", "protocol", "service"]
+description = "Query game servers and not only."
+categories = [
+    "parsing",
+    "encoding",
+    "asynchronous",
+    "network-programming",
+    "parser-implementations",
+]
 
 [dependencies]
-byteorder = "1.5"
-bzip2-rs = "0.1"
-crc32fast = "1.4"
-base64 = "0.22.0"
+# Required Dependencies
+thiserror = "2.0.12"
+maybe-async = "0.2.10"
+error-stack = { version = "0.5.0", features = ["spantrace"] }
 
-encoding_rs = "0.8"
-ureq = { version = "2.9", default-features = false, features = ["gzip", "json"] }
-url = "2"
+# Optional Dependencies
+log = { version = "0.4.27", optional = true }
+hashify = { version = "0.2.6", optional = true }
+#serde_json = { version = "1.0.141", optional = true }
+encoding_rs = { version = "0.8.35", optional = true }
+async-trait = { version = "0.1.88", optional = true }
+tokio = { version = "1.47.0", features = ["full"], optional = true }
+serde = { version = "1.0.219", features = ["derive"], optional = true }
+#ureq = { version = "3.0.12", default-features = false, features = [
+#    "json",
+#    "rustls",
+#], optional = true }
+#reqwest = { version = "0.12.22", default-features = false, features = [
+#    "json",
+#    "rustls-tls",
+#], optional = true }
 
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
+[features]
+default = ["default_client_tokio"]
 
-phf = { version = "0.11", optional = true, features = ["macros"] }
+# Internal Features (Prefix: _<CAPS>)
+## I/O
+_BUFFER = []
+_BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
-clap = { version = "4.5.4", optional = true, features = ["derive"] }
+## Net
+#_HTTPS = ["dep:serde_json"]
+_TCP = ["_BUFFER"]
+_UDP = ["_BUFFER"]
 
-pcap-file = { version = "2.0", optional = true }
-pnet_packet = { version = "0.35", optional = true }
-lazy_static = { version = "1.4", optional = true }
+## Misc
+_DEV_LOG = ["attribute_log"]
 
-[dev-dependencies]
-gamedig-id-tests = { path = "../id-tests", default-features = false }
+# Default Features (Prefix: default_)
+#
+# Util features for users to enable all features with a runtime
+# without having to specify each feature individually
+#
+# - Only 1 can be enabled at a time as it enables rt features
+default_client_std = ["socket_std", "all"]
+default_client_tokio = ["socket_tokio", "all"]
 
-# Examples
-[[example]]
-name = "minecraft"
-required-features = ["games"]
+# Socket Client (Prefix: socket_<RUNTIME>)
+#
+# A socket client is required to establish TCP/UDP connections
+#
+# - Only 1 socket client type can be enabled at a time
+socket_std = ["maybe-async/is_sync"]
+socket_tokio = ["dep:async-trait", "dep:tokio"]
 
-[[example]]
-name = "teamfortress2"
-required-features = ["games"]
+# HTTPS Client (Prefix: https_<RUNTIME>)
+#
+# Does what it says on the tin, enables HTTPS client support.
+#
+# TLS is provided by rustls so that there is no need for OpenSSL.
+#
+# - Only 1 HTTPS client type can be enabled at a time.
+# - If using socket client also insure to match the runtime.
+#https_std = ["maybe-async/is_sync", "dep:ureq"]
+#https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
 
-[[example]]
-name = "valve_master_server_query"
-required-features = ["services"]
+# Library Features
+## Attributes (Prefix: attribute_)
+attribute_log = ["dep:log"]
+attribute_dict = ["dep:hashify"]
+attribute_serde = ["dep:serde"]
+attribute_converters = []
+attribute_extended_derive = []
 
-[[example]]
-name = "test_eco"
-required-features = ["games"]
+## Games
 
-[[example]]
-name = "generic"
-required-features = ["games", "game_defs"]
+## Protocols
+### Query (Prefix: query_)
+query_valve = ["_UDP"]
+
+### RCON (Prefix: rcon_)
+
+
+## Services (Prefix: service_)
+
+
+## Index
+all = [
+    "all_attributes",
+    "all_games",
+    "all_query_protocols",
+    "all_rcon_protocols",
+    "all_services",
+]
+
+all_attributes = [
+    "attribute_log",
+    "attribute_dict",
+    "attribute_serde",
+    "attribute_converters",
+    "attribute_extended_derive",
+]
+
+all_games = []
+
+all_query_protocols = ["query_valve"]
+
+all_rcon_protocols = []
+
+all_services = []

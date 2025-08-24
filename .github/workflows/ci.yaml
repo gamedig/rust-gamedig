@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check
+
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ runner.os }}
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose
+
+      - name: Lint
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets -- -D warnings
+
+      - name: Format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check

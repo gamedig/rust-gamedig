@@ -1,118 +1,71 @@
-<h1 align="center">rust-GameDig</h1>
+> [!WARNING]  
+> WIP. This is a experimental branch of Rust GameDig, it is not ready for any use
 
-<h5 align="center">The fast library for querying game servers/services.</h5>
+<h1 align="center">Rust GameDig</h1>
 
-<div align="center">
-  <a href="https://github.com/gamedig/rust-gamedig/actions">
-    <img src="https://github.com/gamedig/rust-gamedig/actions/workflows/ci.yml/badge.svg" alt="CI">
-  </a>
-  <a href="https://crates.io/crates/gamedig">
-    <img src="https://img.shields.io/crates/v/gamedig.svg?color=orange" alt="Latest Version">
-  </a>
-  <a href="https://crates.io/crates/gamedig">
-    <img src="https://img.shields.io/crates/d/gamedig?color=purple" alt="Crates.io">
-  </a>
-  <a href="https://github.com/gamedig/node-gamedig">
-    <img src="https://raw.githubusercontent.com/gamedig/rust-gamedig/main/.github/badges/node.svg" alt="Node-GameDig Game Coverage">
-  </a>
-  <a href="https://deps.rs/crate/gamedig">
-    <img src="https://deps.rs/crate/gamedig/latest/status.svg" alt="Rust-GameDig Dependencies">
-  </a>
-</div>
+<img align="right" src="https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53" alt="image" />
 
-<h5 align="center">
-  This library brings what
-  <a href="https://github.com/gamedig/node-gamedig">
-    node-GameDig
-  </a>
-  does (and not only), to pure Rust!
-</h5>
+A Rust library and CLI tool for querying the status and details of multiplayer game servers.
 
-**Warning**: This project goes through frequent API breaking changes and hasn't been thoroughly tested.
+&nbsp;
 
-## Community
+&nbsp;
 
-Checkout the GameDig Community Discord Server [here](https://discord.gg/NVCMn3tnxH).  
-Note that it isn't be a replacement for GitHub issues, if you have found a problem
-within the library or want to request a feature, it's better to do so here rather than
-on Discord.
+> TODO: add more detail to the short description and some badges
 
-## Usage
+## Crates
 
-Minimum Supported Rust Version is `1.81.0` and the code is cross-platform.
+### User Crates
 
-Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files
-to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port
-for the info queries, the port can also be optional if the server is running the default ports) then query on it.
+These are the main crates that users will interact with. They provide the functionality for querying game servers.
 
-[Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/) query example:
+| Crate                                 | Path             | Description                                                                | Crates.io       | CI Status       | Coverage        |
+| ------------------------------------- | ---------------- | -------------------------------------------------------------------------- | --------------- | --------------- | --------------- |
+| [`gamedig`](./crates/lib)             | `crates/lib`     | The main crate with all game querying logic.                               | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_cli`](./crates/cli)         | `crates/cli`     | A command line interface for querying game servers.                        | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_ffi_udl`](./crates/ffi/udl) | `crates/ffi/udl` | UDL schemas for generating FFI bindings to integrate with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
 
-```rust
-use gamedig::games::teamfortress2;
+### Internal Crates
 
-fn main() {
-    let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None);
-    // None is the default port (which is 27015), could also be Some(27015)
+These are internal crates used for testing and development purposes. They are not intended for public use.
 
-    match response { // Result type, must check what it is...
-        Err(error) => println!("Couldn't query, error: {}", error),
-        Ok(r) => println!("{:#?}", r)
-    }
-}
-```
+| Crate                                             | Path                      | Description                                                 |
+| ------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
+| [`gamedig_id_gen`](./crates/tools/id_gen)         | `crates/tools/id_gen`     | A CLI tool to generate deterministic identifiers for games. |
+| [`gamedig_net_replay`](./crates/tools/net_replay) | `crates/tools/net_replay` | A CLI tool for replaying network traffic from game servers. |
 
-Response (note that some games have a different structure):
+### Target Support
 
-```json5
-{
-  protocol: 17,
-  name: "Team Fortress 2 Dedicated Server.",
-  map: "ctf_turbine",
-  game: "tf2",
-  appid: 440,
-  players_online: 0,
-  players_details: [],
-  players_maximum: 69,
-  players_bots: 0,
-  server_type: Dedicated,
-  has_password: false,
-  vac_secured: true,
-  version: "7638371",
-  port: Some(27015),
-  steam_id: Some(69753253289735296),
-  tv_port: None,
-  tv_name: None,
-  keywords: Some(
-  "alltalk,nocrits"
-  ),
-  rules: [
-    "mp_autoteambalance"
-    :
-    "1",
-    "mp_maxrounds"
-    :
-    "5",
-    //....
-  ]
-}
-```
+| Symbol | Type            | Meaning                                                                       |
+| ------ | --------------- | ----------------------------------------------------------------------------- |
+| ✅     | **Supported**   | Actively tested in CI and maintained.                                         |
+| 🟡     | **May work**    | Not tested or maintained. May require additional setup. Use at your own risk. |
+| ⛔     | **Unsupported** | Not expected to work due to missing features or platform limitations.         |
 
-Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
-
-## Command Line Interface
-
-The library also has an [official CLI](https://crates.io/crates/gamedig_cli) that you can use, it has
-MSRV of `1.81.0`.
-
-## Documentation
-
-The documentation is available at [docs.rs](https://docs.rs/gamedig/latest/gamedig/).  
-Curious about the history and what changed between versions?  
-Everything is in the changelogs file: [lib](crates/lib/CHANGELOG.md) and [cli](crates/lib/CHANGELOG.md).
+| Platform        | Tier | Notes                                                                                  |
+| --------------- | ---- | -------------------------------------------------------------------------------------- |
+| Windows         | ✅   | TODO: add notes on tested env                                                          |
+| Linux           | ✅   | TODO: add notes on tested env                                                          |
+| macOS           | ✅   | TODO: add notes on tested env                                                          |
+| Android, iOS    | 🟡   | Requires additional setup like SDKs/NDKs and proper linker setup.                      |
+| Embedded        | 🟡   | Targets with `std` may work, but may require additional setup. `no_std` will not work. |
+| WebAssembly     | ⛔   | Will not work due to socket constraints.                                               |
+| UEFI, SGX, etc. | ⛔   | Not designed for those environments.                                                   |
 
 ## Contributing
 
-If you want to see your favorite game/service being supported here, open an issue, and I'll prioritize it (or do a pull
-request if you want to implement it yourself)!
+Contributions are welcome! Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to contribute to this project.
 
-Before contributing please read [CONTRIBUTING](CONTRIBUTING.md).
+> TODO: redo the contributing guidelines
+
+## Security
+
+If you discover a security vulnerability within this project, please follow the [security policy](./SECURITY.md) to report it responsibly.
+
+> TODO: add security policy
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE.md). See the [LICENSE](./LICENSE.md) file for details.
+
+> TODO: finish the README.md

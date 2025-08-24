@@ -1,65 +1,102 @@
-//! Game Server Query Library.
-//!
-//! # Usage example:
-//!
-//! ## For a specific game
-//! ```
-//! use gamedig::games::teamfortress2;
-//!
-//! let response = teamfortress2::query(&"127.0.0.1".parse().unwrap(), None); // None is the default port (which is 27015), could also be Some(27015)
-//! match response { // Result type, must check what it is...
-//!     Err(error) => println!("Couldn't query, error: {}", error),
-//!     Ok(r) => println!("{:#?}", r)
-//! }
-//! ```
-//!
-//! ## Using a game definition
-//! ```
-//! use gamedig::{GAMES, query};
-//!
-//! let game = GAMES.get("teamfortress2").unwrap(); // Get a game definition, the full list can be found in src/games/mod.rs
-//! let response = query(game, &"127.0.0.1".parse().unwrap(), None); // None will use the default port
-//! match response {
-//!     Err(error) => println!("Couldn't query, error: {}", error),
-//!     Ok(r) => println!("{:#?}", r.as_json()),
-//! }
-//! ```
-//!
-//! # Crate features:
-//! Enabled by default: `games`, `game_defs`, `services`
-//!
-//! `serde` - enables serde serialization/deserialization for many gamedig types
-//! using serde derive. <br>
-//! `games` - include games support. <br>
-//! `services` - include services support. <br>
-//! `game_defs` - include game definitions for programmatic access (enabled by
-//! default). <br>
-//! `clap` - enable clap derivations for gamedig settings types. <br>
-//! `tls` - enable TLS support for the HTTP client.
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// *           _____                      _____  _                   *
+// *          / ____|                    |  __ \(_)                  *
+// *         | |  __  __ _ _ __ ___   ___| |  | |_  __ _             *
+// *         | | |_ |/ _` | '_ ` _ \ / _ \ |  | | |/ _` |            *
+// *         | |__| | (_| | | | | | |  __/ |__| | | (_| |            *
+// *          \_____|\__,_|_| |_| |_|\___|_____/|_|\__, |            *
+// *                                                __/ |            *
+// *                                               |___/             *
+// *                 Copyright (c) 2022 - 2025                       *
+// *            GameDig Organization & Contributors                  *
+// *                                                                 *
+// *               Licensed under the MIT License                    *
+// *  See the LICENSE file in the project root for more information  *
+// *                                                                 *
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-pub mod errors;
-#[cfg(feature = "games")]
-pub mod games;
-pub mod protocols;
-#[cfg(feature = "services")]
-pub mod services;
+// Forbid unsafe code within the library.
+#![forbid(unsafe_code)]
+// Adds the README file at the beginning of the documentation.
+#![doc = include_str!("../README.md")]
+// Adds the logo to the documentation.
+#![doc(
+    html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53",
+)]
 
-mod buffer;
-mod http;
-mod socket;
-mod utils;
+// Only included in documentation builds
+#[cfg(doc)]
+pub mod changelog;
 
-#[cfg(feature = "packet_capture")]
-pub mod capture;
+// We use macros from log module so if the feature
+// is not enabled, we still need to expose to the crate so
+// that the macros are no ops.
+//
+// Another note with log macros is that we need to keep the log
+// module above consuming modules, otherwise modules that are above log
+// will not be able to use the macros as they must be in scope before used.
+// https://rustc-dev-guide.rust-lang.org/macro-expansion.html#name-resolution
+#[macro_use]
+#[cfg(not(feature = "attribute_log"))]
+pub(crate) mod log;
 
-pub use errors::*;
-#[cfg(feature = "games")]
-pub use games::*;
-#[allow(unused_imports)]
-#[cfg(feature = "games")]
-pub use query::*;
-#[cfg(feature = "services")]
-pub use services::*;
+/// Logging utilities.
+///
+/// This feature gated module provides logging targets that can be used
+/// with the `log` crate for logging events within the library.
+#[macro_use]
+#[cfg(feature = "attribute_log")]
+pub mod log;
 
-// Re-export types needed to call games::query::query in the root
-pub use protocols::types::{ExtraRequestSettings, TimeoutSettings};
+/// Core functionalities essential for the library.
+///
+/// This module contains the core logic and utilities that are foundational
+/// to the library's operation. It is not meant for direct end user interaction
+/// but serves as the backbone for other public modules.
+#[allow(dead_code)]
+pub(crate) mod core;
+
+/// Error handling utilities.
+///
+/// This module provides a comprehensive set of enums for managing and handling
+/// errors that may occur during the library's operation.
+pub mod error;
+
+/// Common imports for easier usage of the library.
+///
+/// The prelude module is designed to include frequently used types and
+/// functions, making it easier to use the library without importing
+/// multiple items manually.
+pub mod prelude;
+
+/// Implementations for specific games.
+///
+/// The game module contains the logic and structures related to
+/// game specific functionalities.
+pub mod game;
+
+/// Protocol implementations.
+///
+/// This module provides the implementations for various communication
+/// protocols used within the library.
+pub mod protocol;
+
+/// Service implementations.
+///
+/// The service module handles the logic and structures related to
+/// external services and APIs.
+pub mod service;
+
+/// Convertors for transforming structures into common formats.
+///
+/// This feature gated module defines generic traits that facilitate
+/// conversion of custom structures into widely used formats.
+#[cfg(feature = "attribute_converters")]
+pub mod converters;
+
+/// Dictionary.
+///
+/// This feature gated module provides a dictionary that can be used to get
+/// a generic client from a identifier.
+#[cfg(feature = "attribute_dict")]
+pub mod dict;

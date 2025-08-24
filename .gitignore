@@ -14,4 +14,3 @@ Cargo.lock
 .venv/
 .vscode/
 
-test_everything.py

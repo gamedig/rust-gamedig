@@ -1,9 +1,16 @@
 [workspace]
-members = ["crates/cli", "crates/lib", "crates/id-tests"]
+members = [
+    "crates/cli",
+    "crates/ffi/udl",
+    "crates/lib",
+    "crates/tools/id_gen",
+    "crates/tools/net_replay",
+]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"
 
+# Default Release Profile
 [profile.release]
 opt-level = 3
 debug = false
@@ -13,10 +20,3 @@ codegen-units = 1
 
 [profile.release.package."*"]
 opt-level = 3
-
-# When building locally, use the local version of the library
-# Comment this out when you want to resolve the library from crates.io
-# This is only for crates that use gamedig as a dependency
-# https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
-[patch.crates-io]
-gamedig = { path = "./crates/lib" }
