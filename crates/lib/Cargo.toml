@@ -40,7 +40,7 @@ tls = ["ureq/tls"]
 [dependencies]
 byteorder = "1.5"
 bzip2-rs = "0.1"
-crc32fast = "1.4"
+crc32fast = "1.5"
 base64 = "0.22.0"
 
 encoding_rs = "0.8"
