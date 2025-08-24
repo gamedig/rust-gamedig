@@ -31,7 +31,7 @@ browser = ["dep:webbrowser"]
 
 [dependencies]
 # Core Dependencies
-thiserror = "2.0.0"
+thiserror = "2.0.16"
 clap = { version = "4.5.4", default-features = false, features = ["derive"] }
 gamedig = { version = "0.7.0", default-features = false, features = [
     "clap",
