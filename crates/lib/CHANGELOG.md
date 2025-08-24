@@ -2,6 +2,13 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
+# 0.7.1 24/08/2025
+
+Crate:
+
+- Some minor clippy fixes
+- Updated dependencies
+
 # 0.7.0 - 23/04/2025
 
 Breaking:
