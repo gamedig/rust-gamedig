@@ -4,6 +4,11 @@ Who knows what the future holds...
 
 Nothing... yet.
 
+# 0.3.1 - 24/08/2025
+
+- Some minor clippy fixes
+- Updated dependencies
+
 # 0.3.0 - 23/04/2025
 
 ### Changes:
