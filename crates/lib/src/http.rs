@@ -211,7 +211,7 @@ impl HttpClient {
             Host::Ipv4(ip) => SocketAddr::V4(SocketAddrV4::new(ip, port)),
             Host::Ipv6(ip) => SocketAddr::V6(SocketAddrV6::new(ip, port, 0, 0)),
             Host::Domain(domain) => {
-                format!("{}:{}", domain, port)
+                format!("{domain}:{port}")
                     .to_socket_addrs()
                     .map_err(|e| HostLookup.context(e))?
                     .next()

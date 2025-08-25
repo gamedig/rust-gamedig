@@ -76,8 +76,7 @@ impl Unreal2Protocol {
 
         if packet_type != expected_packet_type {
             Err(PacketBad.context(format!(
-                "Packet response ({:?}) didn't match request ({:?}) packet type",
-                packet_type, expected_packet_type
+                "Packet response ({packet_type:?}) didn't match request ({expected_packet_type:?}) packet type",
             )))
         } else {
             Ok(())
@@ -115,7 +114,7 @@ impl Unreal2Protocol {
 
             let r = Self::consume_response_headers(&mut buffer, PacketKind::MutatorsAndRules);
             if r.is_err() {
-                println!("{:?}", r);
+                println!("{r:?}");
                 break;
             }
 

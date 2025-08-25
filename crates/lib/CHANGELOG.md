@@ -2,6 +2,17 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
+# 0.8.0 24/08/2025
+
+Breaking:
+
+- MSRV is now `1.82.0` (was `1.81.0`), this is due to deps we rely on requiring a higher version
+
+Crate:
+
+- Some minor clippy fixes
+- Updated dependencies
+
 # 0.7.0 - 23/04/2025
 
 Breaking:

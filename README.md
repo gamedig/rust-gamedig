@@ -39,7 +39,7 @@ on Discord.
 
 ## Usage
 
-Minimum Supported Rust Version is `1.81.0` and the code is cross-platform.
+Minimum Supported Rust Version is `1.82.0` and the code is cross-platform.
 
 Pick a game/service/protocol (check the [GAMES](GAMES.md), [SERVICES](SERVICES.md) and [PROTOCOLS](PROTOCOLS.md) files
 to see the currently supported ones), provide the ip and the port (be aware that some game servers use a separate port
@@ -102,7 +102,7 @@ Want to see more examples? Checkout the [examples](crates/lib/examples) folder.
 ## Command Line Interface
 
 The library also has an [official CLI](https://crates.io/crates/gamedig_cli) that you can use, it has
-MSRV of `1.81.0`.
+MSRV of `1.82.0`.
 
 ## Documentation
 

@@ -1,6 +1,6 @@
 [package]
 name = "gamedig"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 authors = [
     "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
@@ -13,7 +13,7 @@ documentation = "https://docs.rs/gamedig/latest/gamedig/"
 repository = "https://github.com/gamedig/rust-gamedig"
 readme = "README.md"
 keywords = ["server", "query", "game", "check", "status"]
-rust-version = "1.81.0"
+rust-version = "1.82.0"
 categories = ["parser-implementations", "parsing", "network-programming", "encoding"]
 
 [features]
@@ -40,23 +40,23 @@ tls = ["ureq/tls"]
 [dependencies]
 byteorder = "1.5"
 bzip2-rs = "0.1"
-crc32fast = "1.4"
+crc32fast = "1.5"
 base64 = "0.22.0"
 
 encoding_rs = "0.8"
-ureq = { version = "2.9", default-features = false, features = ["gzip", "json"] }
+ureq = { version = "2.12", default-features = false, features = ["gzip", "json"] }
 url = "2"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 
-phf = { version = "0.11", optional = true, features = ["macros"] }
+phf = { version = "0.13", optional = true, features = ["macros"] }
 
-clap = { version = "4.5.4", optional = true, features = ["derive"] }
+clap = { version = "4.5", optional = true, features = ["derive"] }
 
 pcap-file = { version = "2.0", optional = true }
 pnet_packet = { version = "0.35", optional = true }
-lazy_static = { version = "1.4", optional = true }
+lazy_static = { version = "1.5", optional = true }
 
 [dev-dependencies]
 gamedig-id-tests = { path = "../id-tests", default-features = false }
