@@ -29,7 +29,7 @@ jobs:
       cli: ${{ steps.filter.outputs.cli }}
       lib: ${{ steps.filter.outputs.lib }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -72,7 +72,7 @@ jobs:
             build_name: "Just serde"
     name: "Build library ${{ matrix.build_name }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -97,7 +97,7 @@ jobs:
             build_name: "No features"
     name: "Build CLI ${{ matrix.build_name }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -120,7 +120,7 @@ jobs:
       # Act's rust runner has rustup in a different place
       - if: ${{ env.ACT }}
         run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
@@ -143,7 +143,7 @@ jobs:
       # Act's rust runner has rustup in a different place
       - if: ${{ env.ACT }}
         run: mkdir -p /home/runner && ln -s /usr/share/rust/.rustup /home/runner/.rustup
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: ["build_first"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
@@ -187,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: ["build_first"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cargo-deps"
