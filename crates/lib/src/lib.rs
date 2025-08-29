@@ -21,12 +21,8 @@
 #![doc = include_str!("../README.md")]
 // Adds the logo to the documentation.
 #![doc(
-    html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53",
+    html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53"
 )]
-
-// Only included in documentation builds
-#[cfg(doc)]
-pub mod changelog;
 
 // We use macros from log module so if the feature
 // is not enabled, we still need to expose to the crate so
