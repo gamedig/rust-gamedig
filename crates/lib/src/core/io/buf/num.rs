@@ -25,6 +25,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// the current cursor position.
     fn _get_inner_slice<T, const N: usize, F>(&mut self, convert: F) -> Result<T>
     where F: FnOnce([u8; N]) -> T {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<_GET_INNER_SLICE>: [N: {N}]");
+
         self.check_range(.. N, true)?;
 
         let mut x = [0u8; N];
@@ -44,7 +46,11 @@ impl<B: super::Bufferable> super::Buffer<B> {
     ///
     /// Returns an error if fewer than `1` byte is available at the current cursor position.
     #[inline]
-    pub(crate) fn read_u8(&mut self) -> Result<u8> { self._get_inner_slice::<u8, 1, _>(|x| x[0]) }
+    pub(crate) fn read_u8(&mut self) -> Result<u8> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U8>: []");
+
+        self._get_inner_slice::<u8, 1, _>(|x| x[0])
+    }
 
     /// Read signed 8 bit integer (`i8`) from the buffer.
     ///
@@ -55,6 +61,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `1` byte is available at the current cursor position.
     #[inline]
     pub(crate) fn read_i8(&mut self) -> Result<i8> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<READ_I8>: []");
+
         self._get_inner_slice::<i8, 1, _>(|x| x[0] as i8)
     }
 
@@ -67,6 +75,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
     pub(crate) fn read_u16_be(&mut self) -> Result<u16> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U16_BE>: []");
+
         self._get_inner_slice::<u16, 2, _>(u16::from_be_bytes)
     }
 
@@ -79,6 +89,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
     pub(crate) fn read_u16_le(&mut self) -> Result<u16> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U16_LE>: []");
+
         self._get_inner_slice::<u16, 2, _>(u16::from_le_bytes)
     }
 
@@ -91,6 +103,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
     pub(crate) fn read_i16_be(&mut self) -> Result<i16> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I16_BE>: []");
+
         self._get_inner_slice::<i16, 2, _>(i16::from_be_bytes)
     }
 
@@ -103,6 +117,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
     pub(crate) fn read_i16_le(&mut self) -> Result<i16> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I16_LE>: []");
+
         self._get_inner_slice::<i16, 2, _>(i16::from_le_bytes)
     }
 
@@ -115,6 +131,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_u32_be(&mut self) -> Result<u32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U32_BE>: []");
+
         self._get_inner_slice::<u32, 4, _>(u32::from_be_bytes)
     }
 
@@ -127,6 +145,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_u32_le(&mut self) -> Result<u32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U32_LE>: []");
+
         self._get_inner_slice::<u32, 4, _>(u32::from_le_bytes)
     }
 
@@ -139,6 +159,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_i32_be(&mut self) -> Result<i32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I32_BE>: []");
+
         self._get_inner_slice::<i32, 4, _>(i32::from_be_bytes)
     }
 
@@ -151,6 +173,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_i32_le(&mut self) -> Result<i32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I32_LE>: []");
+
         self._get_inner_slice::<i32, 4, _>(i32::from_le_bytes)
     }
 
@@ -163,6 +187,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_u64_be(&mut self) -> Result<u64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U64_BE>: []");
+
         self._get_inner_slice::<u64, 8, _>(u64::from_be_bytes)
     }
 
@@ -175,6 +201,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_u64_le(&mut self) -> Result<u64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U64_LE>: []");
+
         self._get_inner_slice::<u64, 8, _>(u64::from_le_bytes)
     }
 
@@ -187,6 +215,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_i64_be(&mut self) -> Result<i64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I64_BE>: []");
+
         self._get_inner_slice::<i64, 8, _>(i64::from_be_bytes)
     }
 
@@ -199,6 +229,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_i64_le(&mut self) -> Result<i64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I64_LE>: []");
+
         self._get_inner_slice::<i64, 8, _>(i64::from_le_bytes)
     }
 
@@ -211,6 +243,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
     pub(crate) fn read_u128_be(&mut self) -> Result<u128> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U128_BE>: []");
+
         self._get_inner_slice::<u128, 16, _>(u128::from_be_bytes)
     }
 
@@ -223,6 +257,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
     pub(crate) fn read_u128_le(&mut self) -> Result<u128> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U128_LE>: []");
+
         self._get_inner_slice::<u128, 16, _>(u128::from_le_bytes)
     }
 
@@ -235,6 +271,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
     pub(crate) fn read_i128_be(&mut self) -> Result<i128> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I128_BE>: []");
+
         self._get_inner_slice::<i128, 16, _>(i128::from_be_bytes)
     }
 
@@ -247,6 +285,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
     pub(crate) fn read_i128_le(&mut self) -> Result<i128> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_I128_LE>: []");
+
         self._get_inner_slice::<i128, 16, _>(i128::from_le_bytes)
     }
 
@@ -259,6 +299,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_f32_be(&mut self) -> Result<f32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_F32_BE>: []");
+
         self._get_inner_slice::<f32, 4, _>(f32::from_be_bytes)
     }
 
@@ -271,6 +313,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
     pub(crate) fn read_f32_le(&mut self) -> Result<f32> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_F32_LE>: []");
+
         self._get_inner_slice::<f32, 4, _>(f32::from_le_bytes)
     }
 
@@ -283,6 +327,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_f64_be(&mut self) -> Result<f64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_F64_BE>: []");
+
         self._get_inner_slice::<f64, 8, _>(f64::from_be_bytes)
     }
 
@@ -295,6 +341,8 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
     pub(crate) fn read_f64_le(&mut self) -> Result<f64> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_F64_LE>: []");
+
         self._get_inner_slice::<f64, 8, _>(f64::from_le_bytes)
     }
 }

@@ -15,15 +15,22 @@ mod string;
 /// The `Bufferable` trait abstracts types that represent byte storage and provides
 /// a method to retrieve the length of the underlying storage.
 pub(crate) trait Bufferable: Clone + AsRef<[u8]> + Into<Vec<u8>> {
+    /// If the underlying storage has a known size at compile time.
+    const IS_FIXED_SIZE: bool;
+
     /// Returns the number of elements in the underlying byte storage.
     fn len(&self) -> usize;
 }
 
 impl Bufferable for Vec<u8> {
+    const IS_FIXED_SIZE: bool = false;
+
     fn len(&self) -> usize { self.len() }
 }
 
 impl<const N: usize> Bufferable for [u8; N] {
+    const IS_FIXED_SIZE: bool = true;
+
     fn len(&self) -> usize { N }
 }
 
@@ -44,30 +51,53 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// * `inner` - The underlying byte storage.
     #[inline]
-    pub(crate) const fn new(inner: B) -> Self { Self { inner, cursor: 0 } }
+    pub(crate) fn new(inner: B) -> Self {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::<NEW>: [inner: alloc({})]",
+            if B::IS_FIXED_SIZE { "stack" } else { "heap" }
+        );
+
+        Self { inner, cursor: 0 }
+    }
 
     /// Returns the current position in the buffer
     ///
     /// The position is zero based and increments as you read or move through the buffer.
     #[inline]
-    pub(crate) const fn pos(&self) -> usize { self.cursor }
+    pub(crate) fn pos(&self) -> usize {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<POS>: []");
+
+        self.cursor
+    }
 
     /// Returns the number of elements in the underlying byte storage.
     #[inline]
-    pub(crate) fn len(&self) -> usize { self.inner.len() }
+    pub(crate) fn len(&self) -> usize {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<LEN>: []");
+
+        self.inner.len()
+    }
 
     /// Returns the number of elements remaining from the current position to the end of the byte storage.
     ///
     /// This gives you how many more bytes can be read without going out of bounds.
     #[inline]
-    pub(crate) fn remaining(&self) -> usize { self.len() - self.pos() }
+    pub(crate) fn remaining(&self) -> usize {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<REMAINING>: []");
+
+        self.len() - self.pos()
+    }
 
     /// Consumes the `Buffer` and returns the underlying byte storage.
     ///
     /// This conversion moves the underlying byte storage out of the `Buffer`,
     /// effectively discarding the `Buffer` wrapper.
     #[inline]
-    pub(crate) fn unpack(self) -> B { self.inner }
+    pub(crate) fn unpack(self) -> B {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<UNPACK>: []");
+
+        self.inner
+    }
 
     /// Moves the buffer’s current position by the specified amount.
     ///
@@ -84,8 +114,12 @@ impl<B: Bufferable> Buffer<B> {
     /// * The resulting position would be out of bounds.
     /// * Addition overflows or underflows `isize` (Note: We should not encounter isize::MAX under normal circumstances).
     pub(crate) fn move_pos(&mut self, off: isize) -> Result<()> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<MOVE_POS>: [off: {off}]");
+
         // just in case someone tries to move 0
         if off == 0 {
+            dev_warn!("GAMEDIG::CORE::IO::BUF::<MOVE_POS>: No movement (off = 0)");
+
             return Ok(());
         }
 
@@ -142,6 +176,8 @@ impl<B: Bufferable> Buffer<B> {
     /// * The range is invalid (e.g., start > end).
     /// * The range extends beyond the length of the buffer.
     fn check_range(&self, range: impl RangeBounds<usize>, pos_ctx: bool) -> Result<()> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<CHECK_RANGE>: [range: {range:?}, pos_ctx: {pos_ctx}]");
+
         let len = self.len();
         let pos = if pos_ctx { self.pos() } else { 0 };
 
@@ -211,6 +247,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an `Err` if the requested number of bytes (`cnt`) is not available from the current position.
     pub(crate) fn peek(&self, cnt: usize) -> Result<&[u8]> {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<PEEK>: [cnt: {cnt}]");
+
         self.check_range(.. cnt, true)?;
 
         let pos = self.pos();

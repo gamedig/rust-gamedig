@@ -28,6 +28,11 @@ impl<B: super::Bufferable> super::Buffer<B> {
         delimiter: Option<u8>,
         strict: bool,
     ) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_UTF8>: [delimiter: {delimiter:?}, \
+             strict: {strict}]"
+        );
+
         self.check_range(.., true)?;
 
         let start = self.pos();
@@ -86,6 +91,10 @@ impl<B: super::Bufferable> super::Buffer<B> {
     /// - The requested range is out of bounds.
     /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
     pub(crate) fn read_string_utf8_len_prefixed(&mut self, strict: bool) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_UTF8_LEN_PREFIXED>: [strict: {strict}]"
+        );
+
         self.check_range(.. 1, true)?;
 
         let pos = self.pos();
@@ -119,6 +128,11 @@ impl<B: super::Bufferable> super::Buffer<B> {
     where
         F: Fn(&mut Self) -> Result<u16>,
     {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<_READ_STRING_UTF16>: [delimiter: {delimiter:?}, \
+             strict: {strict}]"
+        );
+
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
         self.check_range(.., true)?;
@@ -180,6 +194,12 @@ impl<B: super::Bufferable> super::Buffer<B> {
         delimiter: Option<[u8; 2]>,
         strict: bool,
     ) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_UTF16_BE>: [delimiter: {:?}, strict: {}]",
+            delimiter,
+            strict
+        );
+
         self._read_string_utf16(delimiter, |b| b.read_u16_be(), strict)
     }
 
@@ -208,6 +228,12 @@ impl<B: super::Bufferable> super::Buffer<B> {
         delimiter: Option<[u8; 2]>,
         strict: bool,
     ) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_UTF16_LE>: [delimiter: {:?}, strict: {}]",
+            delimiter,
+            strict
+        );
+
         self._read_string_utf16(delimiter, |b| b.read_u16_le(), strict)
     }
 
@@ -239,6 +265,12 @@ impl<B: super::Bufferable> super::Buffer<B> {
         delimiter: Option<[u8; 2]>,
         strict: bool,
     ) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_UCS2>: [delimiter: {:?}, strict: {}]",
+            delimiter,
+            strict
+        );
+
         self.read_string_utf16_le(delimiter, strict)
     }
 
@@ -270,6 +302,11 @@ impl<B: super::Bufferable> super::Buffer<B> {
         delimiter: Option<[u8; 1]>,
         strict: bool,
     ) -> Result<String> {
+        dev_trace!(
+            "GAMEDIG::CORE::IO::BUF::STRING::<READ_STRING_LATIN1>: [delimiter: {delimiter:?}, \
+             strict: {strict}]"
+        );
+
         let delimiter = delimiter.unwrap_or([0x00]);
 
         self.check_range(.., true)?;
