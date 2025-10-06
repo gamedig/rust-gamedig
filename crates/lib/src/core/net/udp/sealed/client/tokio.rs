@@ -3,7 +3,7 @@ use {
         NetworkError,
         Report,
         Result,
-        diagnostic::{FailureReason, Recommendation},
+        diagnostic::{CrateInfo, FailureReason, Recommendation, SystemInfo},
     },
     std::{
         net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
@@ -75,10 +75,13 @@ impl super::AbstractUdp for TokioUdpClient {
                             .attach_printable(Recommendation::new(
                                 "Ensure the server is running and that no firewall or network \
                                  restrictions are blocking the connection.",
-                            )));
+                            ))
+                            .attach_printable(SystemInfo::new())
+                            .attach_printable(CrateInfo::new()));
                     }
                 }
             }
+            
 
             // Bind error
             Err(e) => {
