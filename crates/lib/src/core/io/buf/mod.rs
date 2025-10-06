@@ -88,6 +88,20 @@ impl<B: Bufferable> Buffer<B> {
         self.len() - self.pos()
     }
 
+    /// Checks if there are no remaining bytes to read from the current position.
+    pub(crate) fn is_empty(&self) -> bool {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<IS_EMPTY>: []");
+
+        self.remaining() == 0
+    }
+
+    /// Returns a slice of the remaining unread bytes.
+    pub(crate) fn remaining_slice(&self) -> &[u8] {
+        dev_trace!("GAMEDIG::CORE::IO::BUF::<REMAINING_SLICE>: []");
+
+        &self.inner.as_ref()[self.pos().min(self.len()) ..]
+    }
+
     /// Consumes the `Buffer` and returns the underlying byte storage.
     ///
     /// This conversion moves the underlying byte storage out of the `Buffer`,

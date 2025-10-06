@@ -21,72 +21,13 @@ impl ServerType {
     /// - `b'd'` or `b'D'` &rarr; [`ServerType::Dedicated`]
     /// - `b'l'` or `b'L'` &rarr; [`ServerType::NonDedicated`]
     /// - `b'p'` or `b'P'` &rarr; [`ServerType::SourceTV`]
-    ///
-    /// Returns `None` if the value does not match any known server type.
     #[inline]
-    pub const fn from_u8(value: u8) -> Option<Self> {
+    pub const fn from_u8(value: u8) -> Self {
         match value {
-            b'd' | b'D' => Some(Self::Dedicated),
-            b'l' | b'L' => Some(Self::NonDedicated),
-            b'p' | b'P' => Some(Self::SourceTV),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum ServerResponseType {
-    /// The server responded with a single packet.
-    Single,
-
-    /// The server responded with multiple packets.
-    Multi,
-}
-
-impl ServerResponseType {
-    /// Converts an `i32` value into a [`ServerResponseType`].
-    ///
-    /// The conversion uses the following mappings:
-    ///
-    /// - `-1` &rarr; [`ServerResponseType::Single`]
-    /// - `-2` &rarr; [`ServerResponseType::Multi`]
-    ///
-    /// Returns `None` if the value does not match any known response type.
-    #[inline]
-    pub const fn from_i32(value: i32) -> Option<Self> {
-        match value {
-            -1 => Some(Self::Single),
-            -2 => Some(Self::Multi),
-            _ => None,
-        }
-    }
-}
-
-/// Specifies the type of payload used in the server response.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ServerResponsePayloadType {
-    /// The server is using the modern protocol payload.
-    Modern,
-
-    /// The server is using the obsolete protocol payload.
-    Obsolete,
-}
-
-impl ServerResponsePayloadType {
-    /// Converts a `u8` value into a [`ServerResponsePayloadType`].
-    ///
-    /// The conversion uses the following mappings:
-    ///
-    /// - `b'I'` &rarr; [`ServerResponsePayloadType::Modern`]
-    /// - `b'm'` &rarr; [`ServerResponsePayloadType::Obsolete`]
-    ///
-    /// Returns `None` if the value does not match any known response type.
-    #[inline]
-    pub const fn from_u8(value: u8) -> Option<Self> {
-        match value {
-            b'I' => Some(Self::Modern),
-            b'm' => Some(Self::Obsolete),
-            _ => None,
+            b'd' | b'D' => Self::Dedicated,
+            b'l' | b'L' => Self::NonDedicated,
+            b'p' | b'P' => Self::SourceTV,
+            _ => unreachable!(),
         }
     }
 }
@@ -115,12 +56,12 @@ impl ServerEnvironment {
     ///
     /// Returns `None` if the byte does not correspond to any supported environment.
     #[inline]
-    pub const fn from_u8(value: u8) -> Option<Self> {
+    pub const fn from_u8(value: u8) -> Self {
         match value {
-            b'l' | b'L' => Some(Self::Linux),
-            b'w' | b'W' => Some(Self::Windows),
-            b'm' | b'M' | b'o' | b'O' => Some(Self::Mac),
-            _ => None,
+            b'l' | b'L' => Self::Linux,
+            b'w' | b'W' => Self::Windows,
+            b'm' | b'M' | b'o' | b'O' => Self::Mac,
+            _ => unreachable!(),
         }
     }
 }
@@ -407,22 +348,6 @@ pub struct Response {
     /// Protocol version used by the server.
     pub protocol_version: u8,
 
-    /// The response type of the information query (single or multi packet).
-    pub protocol_info_response_type: ServerResponseType,
-
-    /// The response type of the rules query (single or multi packet).
-    ///
-    /// Only present when rules information is requested.
-    pub protocol_rules_response_type: Option<ServerResponseType>,
-
-    /// The response type of the players query (single or multi packet).
-    ///
-    /// Only present when player information is requested.
-    pub protocol_players_response_type: Option<ServerResponseType>,
-
-    /// Server response payload type (modern or obsolete).
-    pub protocol_response_payload_type: ServerResponsePayloadType,
-
     // -
     // Game-Specific Information
     // -
@@ -449,56 +374,6 @@ pub struct Response {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_server_type_from_u8() {
-        assert_eq!(ServerType::from_u8(b'd'), Some(ServerType::Dedicated));
-        assert_eq!(ServerType::from_u8(b'D'), Some(ServerType::Dedicated));
-        assert_eq!(ServerType::from_u8(b'l'), Some(ServerType::NonDedicated));
-        assert_eq!(ServerType::from_u8(b'L'), Some(ServerType::NonDedicated));
-        assert_eq!(ServerType::from_u8(b'p'), Some(ServerType::SourceTV));
-        assert_eq!(ServerType::from_u8(b'P'), Some(ServerType::SourceTV));
-
-        assert_eq!(ServerType::from_u8(b'x'), None);
-    }
-
-    #[test]
-    fn test_server_environment_from_u8() {
-        assert_eq!(
-            ServerEnvironment::from_u8(b'l'),
-            Some(ServerEnvironment::Linux)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'L'),
-            Some(ServerEnvironment::Linux)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'w'),
-            Some(ServerEnvironment::Windows)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'W'),
-            Some(ServerEnvironment::Windows)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'm'),
-            Some(ServerEnvironment::Mac)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'M'),
-            Some(ServerEnvironment::Mac)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'o'),
-            Some(ServerEnvironment::Mac)
-        );
-        assert_eq!(
-            ServerEnvironment::from_u8(b'O'),
-            Some(ServerEnvironment::Mac)
-        );
-
-        assert_eq!(ServerEnvironment::from_u8(b'x'), None);
-    }
 
     #[test]
     fn test_extra_data_flag_contains() {
