@@ -96,3 +96,5 @@ pub mod converters;
 /// a generic client from a identifier.
 #[cfg(feature = "attribute_dict")]
 pub mod dict;
+
+pub mod config;

@@ -11,11 +11,14 @@ use {
         TheShip,
         TheShipMode,
     },
+
     crate::{
+        config::NetConfig,
         core::{Buffer, UdpClient},
         error::Result,
     },
-    std::{collections::HashMap, net::SocketAddr, time::Duration},
+
+    std::collections::HashMap,
 };
 
 /// A client for querying Valve game servers using the Valve Query Protocol.
@@ -26,13 +29,9 @@ pub struct ValveQueryClient {
 
 #[maybe_async::maybe_async]
 impl ValveQueryClient {
-    pub async fn new(
-        address: SocketAddr,
-        read_timeout: Option<Duration>,
-        write_timeout: Option<Duration>,
-    ) -> Result<Self> {
+    pub async fn new(net: NetConfig<true>) -> Result<Self> {
         Ok(Self {
-            net: UdpClient::new(address, read_timeout, write_timeout).await?,
+            net: UdpClient::new(net.address(), net.read_timeout(), net.write_timeout()).await?,
         })
     }
 
