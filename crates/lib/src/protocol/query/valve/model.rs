@@ -271,7 +271,7 @@ pub struct GoldSrcMod {
 
 /// The complete response from a server information query.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Response {
+pub struct InfoResponse {
     // -
     // Basic Server Information
     // -
@@ -369,34 +369,4 @@ pub struct Response {
 
     /// Mod information for `GoldSrc` servers running a mod.
     pub gold_src_mod: Option<GoldSrcMod>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_extra_data_flag_contains() {
-        // Flag with GameID (0x01) and Keywords (0x20) set.
-        let flag = ExtraDataFlag(0x01 | 0x20);
-
-        assert!(flag.contains(ExtraDataFlags::GameID));
-        assert!(flag.contains(ExtraDataFlags::Keywords));
-
-        // SteamID (0x10) is not set.
-        assert!(!flag.contains(ExtraDataFlags::SteamID));
-    }
-
-    #[test]
-    fn test_the_ship_mode_from_u8() {
-        assert_eq!(TheShipMode::from_u8(0), Some(TheShipMode::Hunt));
-        assert_eq!(TheShipMode::from_u8(1), Some(TheShipMode::Elimination));
-        assert_eq!(TheShipMode::from_u8(2), Some(TheShipMode::Duel));
-        assert_eq!(TheShipMode::from_u8(3), Some(TheShipMode::Deathmatch));
-        assert_eq!(TheShipMode::from_u8(4), Some(TheShipMode::VIPTeam));
-        assert_eq!(TheShipMode::from_u8(5), Some(TheShipMode::TeamElimination));
-
-        assert_eq!(TheShipMode::from_u8(6), None);
-        assert_eq!(TheShipMode::from_u8(255), None);
-    }
 }

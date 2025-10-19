@@ -1,20 +1,21 @@
-use std::{collections::HashMap, net::SocketAddr, time::Duration};
-
-use crate::{
-    core::{Buffer, UdpClient},
-    error::Result,
-    protocol::query::valve::model::{
+use {
+    super::model::{
         ExtraData,
         ExtraDataFlag,
         ExtraDataFlags,
+        InfoResponse,
         Player,
-        Response,
         ServerEnvironment,
         ServerType,
         SourceTV,
         TheShip,
         TheShipMode,
     },
+    crate::{
+        core::{Buffer, UdpClient},
+        error::Result,
+    },
+    std::{collections::HashMap, net::SocketAddr, time::Duration},
 };
 
 /// A client for querying Valve game servers using the Valve Query Protocol.
@@ -55,7 +56,7 @@ impl ValveQueryClient {
         }
     }
 
-    pub async fn get_info(&mut self) -> Result<Response> {
+    pub async fn get_info(&mut self) -> Result<InfoResponse> {
         const INFO_REQUEST_PAYLOAD: &[u8; 25] = b"\xFF\xFF\xFF\xFFTSource Engine Query\0";
 
         let mut datagram_payload = self.net_send(INFO_REQUEST_PAYLOAD).await?;
@@ -68,7 +69,7 @@ impl ValveQueryClient {
                     let mut challenge_payload = [0u8; 29];
                     challenge_payload[.. 25].copy_from_slice(INFO_REQUEST_PAYLOAD);
                     // Remaining slice is the challenge
-                    // This way avoids range check and the unnecessary conversion to i32 and back
+                    // This way avoids the unnecessary conversion to i32 and back
                     challenge_payload[25 ..].copy_from_slice(datagram_payload.remaining_slice());
 
                     datagram_payload = self.net_send(&challenge_payload).await?;
@@ -144,7 +145,7 @@ impl ValveQueryClient {
                         None
                     };
 
-                    return Ok(Response {
+                    return Ok(InfoResponse {
                         protocol_version,
                         server_name,
                         map_name,
@@ -187,7 +188,19 @@ impl ValveQueryClient {
         todo!();
     }
 
-    pub async fn get_all(&self) -> Result<Response> {
-        todo!();
+    pub async fn get_all(&mut self) -> Result<InfoResponse> {
+        let mut response = self.get_info().await?;
+
+        response.players = match self.get_players().await {
+            Ok(p) => Some(p),
+            Err(_) => None,
+        };
+
+        response.rules = match self.get_rules().await {
+            Ok(r) => Some(r),
+            Err(_) => None,
+        };
+
+        Ok(response)
     }
 }
