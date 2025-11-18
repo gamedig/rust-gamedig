@@ -77,12 +77,6 @@ pub mod game;
 /// protocols used within the library.
 pub mod protocol;
 
-/// Service implementations.
-///
-/// The service module handles the logic and structures related to
-/// external services and APIs.
-pub mod service;
-
 /// Convertors for transforming structures into common formats.
 ///
 /// This feature gated module defines generic traits that facilitate
@@ -96,5 +90,3 @@ pub mod converters;
 /// a generic client from a identifier.
 #[cfg(feature = "attribute_dict")]
 pub mod dict;
-
-pub mod config;
