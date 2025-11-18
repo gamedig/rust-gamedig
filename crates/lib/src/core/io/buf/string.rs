@@ -54,7 +54,7 @@ impl<B: super::Bufferable> super::Buffer<B> {
                 Err(e) => {
                     return Err(Report::from(e)
                         .change_context(IoError::BufferStringConversionError {}.into())
-                        .attach_printable(FailureReason::new(
+                        .attach(FailureReason::new(
                             "Invalid UTF-8 sequence found during string read.",
                         )));
                 }
@@ -106,7 +106,7 @@ impl<B: super::Bufferable> super::Buffer<B> {
             String::from_utf8(self.inner.as_ref()[pos + 1 .. end_pos].to_vec()).map_err(|e| {
                 Report::from(e)
                     .change_context(IoError::BufferStringConversionError {}.into())
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Invalid UTF 8 sequence found during string read.",
                     ))
             })?
@@ -155,7 +155,7 @@ impl<B: super::Bufferable> super::Buffer<B> {
             String::from_utf16(&vec).map_err(|e| {
                 Report::from(e)
                     .change_context(IoError::BufferStringConversionError {}.into())
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Invalid UTF 16 sequence found during string read.",
                     ))
             })?

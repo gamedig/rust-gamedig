@@ -142,10 +142,10 @@ impl<B: Bufferable> Buffer<B> {
                 return Err(Report::new(ErrorKind::from(
                     IoError::BufferPositionArithmeticError {},
                 ))
-                .attach_printable(FailureReason::new(
+                .attach(FailureReason::new(
                     "Movement of the buffer position resulted in an arithmetic error.",
                 ))
-                .attach_printable(OpenGitHubIssue()));
+                .attach(OpenGitHubIssue()));
             }
 
             Some(n) if n < 0 || n as usize > self.len() => {
@@ -155,10 +155,10 @@ impl<B: Bufferable> Buffer<B> {
                         position: self.pos(),
                         available: self.len(),
                     }))
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Attempted to move the buffer position out of bounds.",
                     ))
-                    .attach_printable(OpenGitHubIssue()),
+                    .attach(OpenGitHubIssue()),
                 );
             }
 
@@ -198,10 +198,10 @@ impl<B: Bufferable> Buffer<B> {
         let check_overflow = |res: Option<usize>| {
             res.ok_or_else(|| {
                 Report::new(ErrorKind::from(IoError::BufferRangeOverflowError {}))
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Attempted to read a range that overflows usize.",
                     ))
-                    .attach_printable(OpenGitHubIssue())
+                    .attach(OpenGitHubIssue())
             })
         };
 
@@ -223,11 +223,11 @@ impl<B: Bufferable> Buffer<B> {
                     start,
                     end,
                 }))
-                .attach_printable(FailureReason::new(
+                .attach(FailureReason::new(
                     "Invalid range provided to buffer read operation.",
                 ))
-                .attach_printable(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
-                .attach_printable(OpenGitHubIssue()),
+                .attach(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
+                .attach(OpenGitHubIssue()),
             );
         }
 
@@ -237,11 +237,11 @@ impl<B: Bufferable> Buffer<B> {
                     attempted: end - start,
                     available: len - start,
                 }))
-                .attach_printable(FailureReason::new(
+                .attach(FailureReason::new(
                     "Attempted to access out of bounds range in the buffer.",
                 ))
-                .attach_printable(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
-                .attach_printable(OpenGitHubIssue()),
+                .attach(HexDump::new("Buffer", self.inner.clone().into(), Some(pos)))
+                .attach(OpenGitHubIssue()),
             );
         }
 

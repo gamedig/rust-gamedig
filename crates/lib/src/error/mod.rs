@@ -1,5 +1,5 @@
 pub(crate) use error_stack::Report;
-pub(crate) type Result<T> = error_stack::Result<T, ErrorKind>;
+pub(crate) type Result<T> = std::result::Result<T, Report<ErrorKind>>;
 
 pub(crate) mod diagnostic;
 

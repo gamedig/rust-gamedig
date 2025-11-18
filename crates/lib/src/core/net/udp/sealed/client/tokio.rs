@@ -68,16 +68,16 @@ impl super::AbstractUdp for TokioUdpClient {
                             .change_context(
                                 NetworkError::UdpConnectionError { peer_addr: addr }.into(),
                             )
-                            .attach_printable(FailureReason::new(
+                            .attach(FailureReason::new(
                                 "Failed to establish a UDP connection due to an underlying I/O \
                                  error.",
                             ))
-                            .attach_printable(Recommendation::new(
+                            .attach(Recommendation::new(
                                 "Ensure the server is running and that no firewall or network \
                                  restrictions are blocking the connection.",
                             ))
-                            .attach_printable(SystemInfo::new())
-                            .attach_printable(CrateInfo::new()));
+                            .attach(SystemInfo::new())
+                            .attach(CrateInfo::new()));
                     }
                 }
             }
@@ -87,7 +87,7 @@ impl super::AbstractUdp for TokioUdpClient {
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(NetworkError::UdpBindError {}.into())
-                    .attach_printable(FailureReason::new("Failed to bind to the UDP socket.")));
+                    .attach(FailureReason::new("Failed to bind to the UDP socket.")));
             }
         }
     }
@@ -112,7 +112,7 @@ impl super::AbstractUdp for TokioUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Failed to send data over the UDP socket.",
                     )));
             }
@@ -126,10 +126,10 @@ impl super::AbstractUdp for TokioUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "The send operation exceeded the specified timeout duration.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check the server's status for high traffic or downtime, and consider \
                          increasing the timeout duration for distant or busy servers.",
                     )));
@@ -157,10 +157,10 @@ impl super::AbstractUdp for TokioUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying I/O error occurred during the socket read operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Ensure the socket connection is stable and there are no issues with the \
                          network or server.",
                     )));
@@ -175,10 +175,10 @@ impl super::AbstractUdp for TokioUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "The read operation exceeded the specified timeout duration.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check for network latency issues and consider increasing the timeout \
                          duration if the server response is expected to be slow.",
                     )));
