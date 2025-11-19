@@ -25,21 +25,22 @@ maybe-async = "0.2.10"
 error-stack = { version = "0.6.0", features = ["spantrace"] }
 
 # Optional Dependencies
+url = { version = "2.5.7", optional = true }
 log = { version = "0.4.28", optional = true }
 hashify = { version = "0.2.6", optional = true }
-#serde_json = { version = "1.0.141", optional = true }
+serde_json = { version = "1.0.145", optional = true }
 encoding_rs = { version = "0.8.35", optional = true }
 async-trait = { version = "0.1.89", optional = true }
 tokio = { version = "1.48.0", features = ["full"], optional = true }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
-#ureq = { version = "3.0.12", default-features = false, features = [
-#    "json",
-#    "rustls",
-#], optional = true }
-#reqwest = { version = "0.12.22", default-features = false, features = [
-#    "json",
-#    "rustls-tls",
-#], optional = true }
+ureq = { version = "3.1.4", default-features = false, features = [
+    "json",
+    "rustls",
+], optional = true }
+reqwest = { version = "0.12.24", default-features = false, features = [
+    "json",
+    "rustls-tls",
+], optional = true }
 
 [features]
 default = ["default_client_tokio"]
@@ -50,7 +51,7 @@ _BUFFER = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
-#_HTTPS = ["dep:serde_json"]
+_HTTPS = ["dep:serde_json", "dep:serde", "dep:url"]
 _TCP = ["_BUFFER"]
 _UDP = ["_BUFFER"]
 
@@ -82,8 +83,8 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 #
 # - Only 1 HTTPS client type can be enabled at a time.
 # - If using socket client also insure to match the runtime.
-#https_std = ["maybe-async/is_sync", "dep:ureq"]
-#https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
+https_std = ["maybe-async/is_sync", "dep:ureq"]
+https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
 
 # Library Features
 ## Attributes (Prefix: attribute_)
