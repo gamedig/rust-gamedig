@@ -1,6 +1,6 @@
 use {
     super::super::super::{Headers, Payload, Query},
-    crate::error::{Result, ResultExt},
+    crate::error::{NetworkError, Report, Result},
     reqwest::Client,
     serde::de::DeserializeOwned,
     std::time::Duration,
@@ -13,10 +13,9 @@ pub struct TokioHttpClient {
 #[maybe_async::async_impl]
 impl super::AbstractHttp for TokioHttpClient {
     async fn new(timeout: Duration) -> Result<Self> {
-        let client = Client::builder()
-            .timeout(timeout)
-            .build()
-            .change_context(todo!())?;
+        let client = Client::builder().timeout(timeout).build().map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpReqwestClientError {}.into())
+        })?;
 
         Ok(Self { client })
     }
@@ -39,13 +38,17 @@ impl super::AbstractHttp for TokioHttpClient {
             }
         }
 
-        let resp = req.send().await.change_context(todo!())?;
+        let resp = req.send().await.map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpReqwestClientError {}.into())
+        })?;
 
         if !resp.status().is_success() {
             todo!()
         }
 
-        let value = resp.json::<T>().await.change_context(todo!())?;
+        let value = resp.json::<T>().await.map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpReqwestClientError {}.into())
+        })?;
 
         Ok(value)
     }
@@ -80,14 +83,19 @@ impl super::AbstractHttp for TokioHttpClient {
             }
         }
 
-        let resp = req.send().await.change_context(todo!())?;
+        let resp = req.send().await.map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpReqwestClientError {}.into())
+        })?;
 
         if !resp.status().is_success() {
             todo!()
         }
 
-        let value = resp.json::<T>().await.change_context(todo!())?;
+        let value = resp.json::<T>().await.map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpReqwestClientError {}.into())
+        })?;
 
         Ok(value)
     }
 }
+

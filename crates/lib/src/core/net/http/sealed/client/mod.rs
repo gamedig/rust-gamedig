@@ -34,7 +34,26 @@ pub(crate) trait AbstractHttp {
 
 pub(crate) struct Inner {
     #[cfg(feature = "http_std")]
-    pub inner: std::StdHttpClient,
+    pub(crate) inner: std::StdHttpClient,
     #[cfg(feature = "http_tokio")]
-    pub inner: tokio::TokioHttpClient,
+    pub(crate) inner: tokio::TokioHttpClient,
+}
+
+#[maybe_async::maybe_async]
+impl Inner {
+    pub(crate) async fn new(timeout: Duration) -> Result<Self> {
+        #[cfg(feature = "http_std")]
+        {
+            Ok(Self {
+                inner: std::StdHttpClient::new(timeout).await?,
+            })
+        }
+
+        #[cfg(feature = "http_tokio")]
+        {
+            Ok(Self {
+                inner: tokio::TokioHttpClient::new(timeout).await?,
+            })
+        }
+    }
 }

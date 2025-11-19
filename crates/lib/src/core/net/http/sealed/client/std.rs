@@ -1,6 +1,6 @@
 use {
     super::super::super::{Headers, Payload, Query},
-    crate::error::{Result, ResultExt},
+    crate::error::{NetworkError, Report, Result},
     serde::de::DeserializeOwned,
     std::time::Duration,
     ureq::Agent,
@@ -42,9 +42,13 @@ impl super::AbstractHttp for StdHttpClient {
             }
         }
 
-        let mut resp = req.call().change_context(todo!())?;
+        let mut resp = req.call().map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+        })?;
 
-        let value = resp.body_mut().read_json::<T>().change_context(todo!())?;
+        let value = resp.body_mut().read_json::<T>().map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+        })?;
 
         Ok(value)
     }
@@ -71,12 +75,26 @@ impl super::AbstractHttp for StdHttpClient {
         }
 
         let mut resp = match payload {
-            None => req.send_empty().change_context(todo!())?,
-            Some(Payload::Json(j)) => req.send_json(j).change_context(todo!())?,
-            Some(Payload::Form(f)) => req.send_form(f).change_context(todo!())?,
+            None => {
+                req.send_empty().map_err(|e| {
+                    Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+                })?
+            }
+            Some(Payload::Json(j)) => {
+                req.send_json(j).map_err(|e| {
+                    Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+                })?
+            }
+            Some(Payload::Form(f)) => {
+                req.send_form(f).map_err(|e| {
+                    Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+                })?
+            }
         };
 
-        let value = resp.body_mut().read_json::<T>().change_context(todo!())?;
+        let value = resp.body_mut().read_json::<T>().map_err(|e| {
+            Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
+        })?;
 
         Ok(value)
     }

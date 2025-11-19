@@ -184,6 +184,22 @@ define_error_kind! {
     ///
     /// This set of errors are related to network operations.
     NetworkError, {
+        //todo: expand error with more context info as needed
+        /// HTTP ureq Client Error
+        #[cfg(all(feature = "_HTTP", feature = "http_std"))]
+        HttpUreqClientError {
+        }(
+            "[GameDig]::[HTTP::UreqClientError]: An error occurred while making an HTTP request"
+        ),
+
+        //todo: expand error with more context info as needed
+        /// HTTP Reqwest Client Error
+        #[cfg(all(feature = "_HTTP", feature = "http_tokio"))]
+        HttpReqwestClientError {
+        }(
+            "[GameDig]::[HTTP::ReqwestClientError]: An error occurred while making an HTTP request"
+        ),
+
         /// TCP Connection Error
         ///
         /// This error occurs when a TCP connection cannot be established.
