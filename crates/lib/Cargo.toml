@@ -25,7 +25,6 @@ maybe-async = "0.2.10"
 error-stack = { version = "0.6.0", features = ["spantrace"] }
 
 # Optional Dependencies
-url = { version = "2.5.7", optional = true }
 log = { version = "0.4.28", optional = true }
 hashify = { version = "0.2.6", optional = true }
 serde_json = { version = "1.0.145", optional = true }
@@ -51,7 +50,7 @@ _BUFFER = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
-_HTTPS = ["dep:serde_json", "dep:serde", "dep:url"]
+_HTTP = ["dep:serde_json", "dep:serde"]
 _TCP = ["_BUFFER"]
 _UDP = ["_BUFFER"]
 
@@ -64,8 +63,8 @@ _DEV_LOG = ["attribute_log"]
 # without having to specify each feature individually
 #
 # - Only 1 can be enabled at a time as it enables rt features
-default_client_std = ["socket_std", "all"]
-default_client_tokio = ["socket_tokio", "all"]
+default_client_std = ["socket_std", "http_std", "all"]
+default_client_tokio = ["socket_tokio", "http_tokio", "all"]
 
 # Socket Client (Prefix: socket_<RUNTIME>)
 #
@@ -75,16 +74,16 @@ default_client_tokio = ["socket_tokio", "all"]
 socket_std = ["maybe-async/is_sync"]
 socket_tokio = ["dep:async-trait", "dep:tokio"]
 
-# HTTPS Client (Prefix: https_<RUNTIME>)
+# HTTP Client (Prefix: http_<RUNTIME>)
 #
-# Does what it says on the tin, enables HTTPS client support.
+# Does what it says on the tin, enables HTTP client support.
 #
 # TLS is provided by rustls so that there is no need for OpenSSL.
 #
-# - Only 1 HTTPS client type can be enabled at a time.
+# - Only 1 HTTP client type can be enabled at a time.
 # - If using socket client also insure to match the runtime.
-https_std = ["maybe-async/is_sync", "dep:ureq"]
-https_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
+http_std = ["maybe-async/is_sync", "dep:ureq"]
+http_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
 
 # Library Features
 ## Attributes (Prefix: attribute_)
