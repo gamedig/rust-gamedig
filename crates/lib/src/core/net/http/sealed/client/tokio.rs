@@ -88,6 +88,7 @@ impl super::AbstractHttp for TokioHttpClient {
         })?;
 
         if !resp.status().is_success() {
+            //todo: unlike ureq, 4xx and 5xx do not produce errors automatically
             todo!()
         }
 

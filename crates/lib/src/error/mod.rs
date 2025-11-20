@@ -1,3 +1,5 @@
+#[allow(unused)]
+//todo: switch Errors from map_err to use ResultExt
 pub(crate) use error_stack::{Report, ResultExt};
 pub(crate) type Result<T> = std::result::Result<T, Report<ErrorKind>>;
 

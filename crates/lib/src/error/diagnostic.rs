@@ -265,6 +265,13 @@ pub(crate) struct CrateInfo {
     /// Indicates if the socket Tokio client is included in the build.
     socket_tokio: bool,
 
+    /// Indicates if HTTP is included in the build.
+    http_enabled: bool,
+    /// Indicates if the HTTP Std client is included in the build.
+    http_std: bool,
+    /// Indicates if the HTTP Tokio client is included in the build.
+    http_tokio: bool,
+
     /// Indicates if logging is included in the build.
     log: bool,
     /// Indicates if development logging is included in the build.
@@ -295,6 +302,10 @@ impl CrateInfo {
             socket_std: cfg!(feature = "socket_std"),
             socket_tokio: cfg!(feature = "socket_tokio"),
 
+            http_enabled: cfg!(feature = "_HTTP"),
+            http_std: cfg!(feature = "http_std"),
+            http_tokio: cfg!(feature = "http_tokio"),
+
             log: cfg!(feature = "attribute_log"),
             dev_log: cfg!(feature = "_DEV_LOG"),
             dict: cfg!(feature = "attribute_dict"),
@@ -318,6 +329,11 @@ impl fmt::Display for CrateInfo {
         writeln!(f, "\x1B[1m  Socket RT     : \x1B[0m")?;
         writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.socket_std)?;
         writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.socket_tokio)?;
+        writeln!(f, "\x1B[1m  HTTP(S)       : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Enabled     : \x1B[0m{}", self.http_enabled)?;
+        writeln!(f, "\x1B[1m  HTTP(S) RT    : \x1B[0m")?;
+        writeln!(f, "\x1B[1m    Std         : \x1B[0m{}", self.http_std)?;
+        writeln!(f, "\x1B[1m    Tokio       : \x1B[0m{}", self.http_tokio)?;
         writeln!(f, "\x1B[1m  Library       : \x1B[0m")?;
         writeln!(f, "\x1B[1m    Log         : \x1B[0m{}", self.log)?;
         writeln!(f, "\x1B[1m    Dev Log     : \x1B[0m{}", self.dev_log)?;
@@ -590,28 +606,28 @@ mod tests {
         );
 
         assert!(
-            output.contains("HTTPS"),
-            "Missing HTTPS section header in CrateInfo output"
+            output.contains("HTTP(S)"),
+            "Missing HTTP(S) section header in CrateInfo output"
         );
 
         assert!(
             output.contains("Enabled"),
-            "Missing HTTPS Enabled info in CrateInfo output"
+            "Missing HTTP(S) Enabled info in CrateInfo output"
         );
 
         assert!(
-            output.contains("HTTPS RT"),
-            "Missing HTTPS RT section in CrateInfo output"
+            output.contains("HTTP(S) RT"),
+            "Missing HTTP(S) RT section in CrateInfo output"
         );
 
         assert!(
             output.contains("Std"),
-            "Missing HTTPS Std client info in CrateInfo output"
+            "Missing HTTP(S) Std client info in CrateInfo output"
         );
 
         assert!(
             output.contains("Tokio"),
-            "Missing HTTPS Tokio client info in CrateInfo output"
+            "Missing HTTP(S) Tokio client info in CrateInfo output"
         );
 
         assert!(
@@ -660,8 +676,8 @@ mod tests {
         );
 
         assert!(
-            output.contains("Adapters"),
-            "Missing Adapters info in Library section of CrateInfo output"
+            output.contains("Converters"),
+            "Missing Converters info in Library section of CrateInfo output"
         );
 
         assert!(
