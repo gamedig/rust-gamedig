@@ -43,11 +43,11 @@ impl super::AbstractUdp for StdUdpClient {
                             .change_context(
                                 NetworkError::UdpConnectionError { peer_addr: addr }.into(),
                             )
-                            .attach_printable(FailureReason::new(
+                            .attach(FailureReason::new(
                                 "Failed to establish a UDP connection due to an underlying I/O \
                                  error.",
                             ))
-                            .attach_printable(Recommendation::new(
+                            .attach(Recommendation::new(
                                 "Ensure the server is running and that no firewall or network \
                                  restrictions are blocking the connection.",
                             )));
@@ -59,7 +59,7 @@ impl super::AbstractUdp for StdUdpClient {
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(NetworkError::UdpBindError {}.into())
-                    .attach_printable(FailureReason::new("Failed to bind to the UDP socket.")));
+                    .attach(FailureReason::new("Failed to bind to the UDP socket.")));
             }
         }
     }
@@ -79,7 +79,7 @@ impl super::AbstractUdp for StdUdpClient {
                             }
                             .into(),
                         )
-                        .attach_printable(FailureReason::new(
+                        .attach(FailureReason::new(
                             "Failed to set the read timeout for the TCP stream",
                         )));
                 }
@@ -96,7 +96,7 @@ impl super::AbstractUdp for StdUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Failed to write data to the UDP socket.",
                     )));
             }
@@ -118,7 +118,7 @@ impl super::AbstractUdp for StdUdpClient {
                             }
                             .into(),
                         )
-                        .attach_printable(FailureReason::new(
+                        .attach(FailureReason::new(
                             "Failed to set the recv timeout for the UDP socket.",
                         )));
                 }
@@ -136,7 +136,7 @@ impl super::AbstractUdp for StdUdpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Failed to read data from the UDP socket.",
                     )));
             }
