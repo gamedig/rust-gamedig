@@ -1,9 +1,13 @@
-pub(crate) mod io;
-pub(crate) mod net;
+mod io;
+mod net;
 
 #[allow(unused_imports)]
 #[cfg(feature = "_BUFFER")]
 pub(crate) use io::buf::Buffer;
+
+#[allow(unused_imports)]
+#[cfg(feature = "_HTTP")]
+pub(crate) use net::http::HttpClient;
 
 #[allow(unused_imports)]
 #[cfg(feature = "_TCP")]
