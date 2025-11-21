@@ -44,7 +44,7 @@ gamedig = { version = "0.8.0", default-features = false, features = [
 serde = { version = "1", optional = true, default-features = false }
 
 # BSON
-bson = { version = "2.15", optional = true, default-features = false }
+bson = { version = "3.1", optional = true, default-features = false }
 base64 = { version = "0.22", optional = true, default-features = false, features = ["std"] }
 hex = { version = "0.4.3", optional = true, default-features = false }
 
