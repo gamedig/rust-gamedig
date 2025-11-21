@@ -9,7 +9,7 @@ repository    = "https://github.com/gamedig/rust-gamedig"
 documentation = "https://docs.rs/gamedig/latest/gamedig"
 authors       = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
 keywords      = ["game", "protocol", "query", "service", "status"]
-description   = "Query game servers and not only."
+description   = "A fast, async capable Rust library for querying game servers across multiple protocols."
 categories    = ["asynchronous", "encoding", "network-programming", "parser-implementations", "parsing"]
 
 
@@ -17,17 +17,14 @@ categories    = ["asynchronous", "encoding", "network-programming", "parser-impl
 default = ["default_client_tokio"]
 
 # Internal Features (Prefix: _<CAPS>)
-## I/O
+# DO NOT ENABLE THESE FEATURES DIRECTLY 
+# UNLESS YOU KNOW WHAT YOU ARE DOING
 _BUFFER              = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
-
-## Net
-_HTTP = ["dep:serde", "dep:serde_json"]
-_TCP  = ["_BUFFER"]
-_UDP  = ["_BUFFER"]
-
-## Misc
-_DEV_LOG = ["attribute_log"]
+_HTTP                = ["dep:serde", "dep:serde_json"]
+_TCP                 = ["_BUFFER"]
+_UDP                 = ["_BUFFER"]
+_DEV_LOG             = ["attribute_log"]
 
 # Default Features (Prefix: default_)
 #
@@ -57,14 +54,6 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 http_std   = ["dep:ureq", "maybe-async/is_sync"]
 http_tokio = ["dep:async-trait", "dep:reqwest", "dep:tokio"]
 
-# Library Features
-## Attributes (Prefix: attribute_)
-attribute_log             = ["dep:log"]
-attribute_dict            = ["dep:hashify"]
-attribute_serde           = ["dep:serde"]
-attribute_converters      = []
-attribute_extended_derive = []
-
 ## Games (Prefix: game_)
 
 ## Protocols (Prefix: protocol_)
@@ -79,12 +68,20 @@ protocol_valve_goldsrc = ["_UDP"]
 protocol_valve_rcon    = ["_TCP"]
 protocol_valve_source  = ["_UDP"]
 
+# Library Features
+## Attributes (Prefix: attribute_)
+attribute_log             = ["dep:log"]
+attribute_dict            = ["dep:hashify"]
+attribute_serde           = ["dep:serde"]
+attribute_converters      = []
+attribute_extended_derive = []
+
 
 ## Index
-all            = ["all_attributes", "all_games", "all_protocols"]
-all_attributes = ["attribute_converters", "attribute_dict", "attribute_extended_derive", "attribute_log", "attribute_serde"]
+all            = ["all_games", "all_protocols", "all_attributes"]
 all_games      = []
 all_protocols  = ["protocol_epic_api", "protocol_gamespy_1", "protocol_gamespy_2", "protocol_gamespy_3", "protocol_quake_1", "protocol_quake_2", "protocol_quake_3", "protocol_valve_goldsrc", "protocol_valve_rcon", "protocol_valve_source"]
+all_attributes = ["attribute_converters", "attribute_dict", "attribute_extended_derive", "attribute_log", "attribute_serde"]
 
 
 [dependencies]
