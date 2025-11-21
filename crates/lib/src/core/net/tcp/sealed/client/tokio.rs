@@ -52,28 +52,28 @@ impl super::AbstractTcp for TokioTcpClient {
             Ok(Err(e)) => {
                 return Err(Report::from(e)
                     .change_context(NetworkError::TcpConnectionError { peer_addr: addr }.into())
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying RT or OS I/O \
                          error.",
                     ))
-                    .attach_printable(Recommendation::new(format!(
+                    .attach(Recommendation::new(format!(
                         "Verify the server address ({addr}) is reachable, ensure the server is \
                          running, and that no firewall or network restrictions are blocking the \
                          connection."
                     )))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()));
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()));
             }
 
             // Connection attempt timed out
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(NetworkError::TcpTimeoutElapsedError { peer_addr: addr }.into())
-                    .attach_printable(FailureReason::new(format!(
+                    .attach(FailureReason::new(format!(
                         "The TCP connection attempt exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check the server's status for high traffic or downtime, and consider \
                          increasing the timeout duration for distant or busy servers.",
                     )));
@@ -131,15 +131,15 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying RT or OS I/O error occurred during TCP read operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Ensure the connection is stable and there are no issues with the network \
                          or server.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()));
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()));
             }
 
             // Read operation timed out
@@ -151,11 +151,11 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(format!(
+                    .attach(FailureReason::new(format!(
                         "The TCP read operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check for network latency issues and consider increasing the timeout \
                          duration if the server response is expected to be slow.",
                     )));
@@ -208,15 +208,15 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying RT or OS I/O error occurred during TCP read operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Ensure the socket connection is stable and there are no issues with the \
                          network or server.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()));
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()));
             }
 
             // Read operation timed out
@@ -228,11 +228,11 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(format!(
+                    .attach(FailureReason::new(format!(
                         "The TCP read operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check for network latency issues and consider increasing the timeout \
                          duration if the server response is expected to be slow.",
                     )));
@@ -284,15 +284,15 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying RT or OS I/O error occurred during TCP write operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check if the server is accepting data correctly and there are no issues \
                          with network stability.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()));
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()));
             }
 
             // Write operation timed out
@@ -304,11 +304,11 @@ impl super::AbstractTcp for TokioTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(format!(
+                    .attach(FailureReason::new(format!(
                         "The TCP write operation exceeded the specified timeout duration of \
                          {timeout:?}."
                     )))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Consider increasing the timeout duration or check for network congestion.",
                     )));
             }
