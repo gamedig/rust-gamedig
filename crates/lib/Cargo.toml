@@ -1,58 +1,30 @@
 [package]
-name = "gamedig"
-version = "1.0.0-alpha"
-edition = "2024"
-license = "MIT"
-readme = "README.md"
-homepage = "https://gamedig.github.io/"
-repository = "https://github.com/gamedig/rust-gamedig"
+name          = "gamedig"
+version       = "1.0.0-alpha"
+edition       = "2024"
+license       = "MIT"
+readme        = "README.md"
+homepage      = "https://gamedig.github.io/"
+repository    = "https://github.com/gamedig/rust-gamedig"
 documentation = "https://docs.rs/gamedig/latest/gamedig"
-authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
-keywords = ["status", "query", "game", "protocol", "service"]
-description = "Query game servers and not only."
-categories = [
-    "parsing",
-    "encoding",
-    "asynchronous",
-    "network-programming",
-    "parser-implementations",
-]
+authors       = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+keywords      = ["game", "protocol", "query", "service", "status"]
+description   = "Query game servers and not only."
+categories    = ["asynchronous", "encoding", "network-programming", "parser-implementations", "parsing"]
 
-[dependencies]
-# Required Dependencies
-thiserror = "2.0.12"
-maybe-async = "0.2.10"
-error-stack = { version = "0.6.0", features = ["spantrace"] }
-
-# Optional Dependencies
-log = { version = "0.4.28", optional = true }
-hashify = { version = "0.2.6", optional = true }
-serde_json = { version = "1.0.145", optional = true }
-encoding_rs = { version = "0.8.35", optional = true }
-async-trait = { version = "0.1.89", optional = true }
-tokio = { version = "1.48.0", features = ["full"], optional = true }
-serde = { version = "1.0.228", features = ["derive"], optional = true }
-ureq = { version = "3.1.4", default-features = false, features = [
-    "json",
-    "rustls",
-], optional = true }
-reqwest = { version = "0.12.24", default-features = false, features = [
-    "json",
-    "rustls-tls",
-], optional = true }
 
 [features]
 default = ["default_client_tokio"]
 
 # Internal Features (Prefix: _<CAPS>)
 ## I/O
-_BUFFER = []
+_BUFFER              = []
 _BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
 
 ## Net
-_HTTP = ["dep:serde_json", "dep:serde"]
-_TCP = ["_BUFFER"]
-_UDP = ["_BUFFER"]
+_HTTP = ["dep:serde", "dep:serde_json"]
+_TCP  = ["_BUFFER"]
+_UDP  = ["_BUFFER"]
 
 ## Misc
 _DEV_LOG = ["attribute_log"]
@@ -63,15 +35,15 @@ _DEV_LOG = ["attribute_log"]
 # without having to specify each feature individually
 #
 # - Only 1 can be enabled at a time as it enables rt features
-default_client_std = ["socket_std", "http_std", "all"]
-default_client_tokio = ["socket_tokio", "http_tokio", "all"]
+default_client_std   = ["all", "http_std", "socket_std"]
+default_client_tokio = ["all", "http_tokio", "socket_tokio"]
 
 # Socket Client (Prefix: socket_<RUNTIME>)
 #
 # A socket client is required to establish TCP/UDP connections
 #
 # - Only 1 socket client type can be enabled at a time
-socket_std = ["maybe-async/is_sync"]
+socket_std   = ["maybe-async/is_sync"]
 socket_tokio = ["dep:async-trait", "dep:tokio"]
 
 # HTTP Client (Prefix: http_<RUNTIME>)
@@ -82,50 +54,52 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 #
 # - Only 1 HTTP client type can be enabled at a time.
 # - If using socket client also insure to match the runtime.
-http_std = ["maybe-async/is_sync", "dep:ureq"]
-http_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
+http_std   = ["dep:ureq", "maybe-async/is_sync"]
+http_tokio = ["dep:async-trait", "dep:reqwest", "dep:tokio"]
 
 # Library Features
 ## Attributes (Prefix: attribute_)
-attribute_log = ["dep:log"]
-attribute_dict = ["dep:hashify"]
-attribute_serde = ["dep:serde"]
-attribute_converters = []
+attribute_log             = ["dep:log"]
+attribute_dict            = ["dep:hashify"]
+attribute_serde           = ["dep:serde"]
+attribute_converters      = []
 attribute_extended_derive = []
 
-## Games
+## Games (Prefix: game_)
 
-## Protocols
-### Query (Prefix: query_)
-query_valve = ["_UDP"]
-
-### RCON (Prefix: rcon_)
-
-
-## Services (Prefix: service_)
+## Protocols (Prefix: protocol_)
+protocol_epic_api      = ["_HTTP"]
+protocol_gamespy_1     = ["_UDP"]
+protocol_gamespy_2     = ["_UDP"]
+protocol_gamespy_3     = ["_UDP"]
+protocol_quake_1       = ["_UDP"]
+protocol_quake_2       = ["_UDP"]
+protocol_quake_3       = ["_UDP"]
+protocol_valve_goldsrc = ["_UDP"]
+protocol_valve_rcon    = ["_TCP"]
+protocol_valve_source  = ["_UDP"]
 
 
 ## Index
-all = [
-    "all_attributes",
-    "all_games",
-    "all_query_protocols",
-    "all_rcon_protocols",
-    "all_services",
-]
+all            = ["all_attributes", "all_games", "all_protocols"]
+all_attributes = ["attribute_converters", "attribute_dict", "attribute_extended_derive", "attribute_log", "attribute_serde"]
+all_games      = []
+all_protocols  = ["protocol_epic_api", "protocol_gamespy_1", "protocol_gamespy_2", "protocol_gamespy_3", "protocol_quake_1", "protocol_quake_2", "protocol_quake_3", "protocol_valve_goldsrc", "protocol_valve_rcon", "protocol_valve_source"]
 
-all_attributes = [
-    "attribute_log",
-    "attribute_dict",
-    "attribute_serde",
-    "attribute_converters",
-    "attribute_extended_derive",
-]
 
-all_games = []
+[dependencies]
+# Dependencies
+maybe-async = {version = "0.2.10", default-features = false}
+thiserror   = {version = "2.0.12", default-features = false, features = ["std"]}
+error-stack = {version = "0.6.0", default-features = false, features = ["backtrace", "spantrace", "std"]}
 
-all_query_protocols = ["query_valve"]
-
-all_rcon_protocols = []
-
-all_services = []
+# Optional Dependencies
+hashify     = {version = "0.2.6", optional = true, default-features = false}
+tokio       = {version = "1.48.0", optional = true, default-features = false}
+async-trait = {version = "0.1.89", optional = true, default-features = false}
+log         = {version = "0.4.28", optional = true, default-features = false, features = ["std"]}
+serde_json  = {version = "1.0.145", optional = true, default-features = false, features = ["std"]}
+encoding_rs = {version = "0.8.35", optional = true, default-features = false, features = ["alloc"]}
+ureq        = {version = "3.1.4", optional = true, default-features = false, features = ["json", "rustls"]}
+serde       = {version = "1.0.228", optional = true, default-features = false, features = ["derive", "std"]}
+reqwest     = {version = "0.12.24", optional = true, default-features = false, features = ["json", "rustls-tls"]}
