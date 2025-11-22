@@ -1,21 +1,15 @@
 [workspace]
-members = [
-    "crates/cli",
-    "crates/ffi/udl",
-    "crates/lib",
-    "crates/tools/id_gen",
-    "crates/tools/net_replay",
-]
+members = ["crates/cli", "crates/ffi/udl", "crates/lib", "crates/tools/id_gen", "crates/tools/net_replay"]
 
 # Edition 2021, uses resolver = 2
 resolver = "2"
 
 # Default Release Profile
 [profile.release]
-opt-level = 3
-debug = false
-rpath = true
-lto = 'fat'
+opt-level     = 3
+debug         = false
+rpath         = true
+lto           = 'fat'
 codegen-units = 1
 
 [profile.release.package."*"]

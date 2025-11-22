@@ -1,5 +1,5 @@
 [package]
-name = "gamedig_id_gen"
+name    = "gamedig_id_gen"
 authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
 version = "0.1.0"
 edition = "2024"

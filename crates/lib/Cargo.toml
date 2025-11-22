@@ -8,8 +8,8 @@ homepage      = "https://gamedig.github.io/"
 repository    = "https://github.com/gamedig/rust-gamedig"
 documentation = "https://docs.rs/gamedig/latest/gamedig"
 authors       = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
-keywords      = ["game", "protocol", "query", "service", "status"]
-description   = "A fast, async capable Rust library for querying game servers across multiple protocols."
+keywords      = ["game", "server", "protocol", "query", "status"]
+description   = "A async capable library for querying game servers across multiple protocols."
 categories    = ["asynchronous", "encoding", "network-programming", "parser-implementations", "parsing"]
 
 
@@ -78,25 +78,42 @@ attribute_extended_derive = []
 
 
 ## Index
-all            = ["all_games", "all_protocols", "all_attributes"]
-all_games      = []
-all_protocols  = ["protocol_epic_api", "protocol_gamespy_1", "protocol_gamespy_2", "protocol_gamespy_3", "protocol_quake_1", "protocol_quake_2", "protocol_quake_3", "protocol_valve_goldsrc", "protocol_valve_rcon", "protocol_valve_source"]
-all_attributes = ["attribute_converters", "attribute_dict", "attribute_extended_derive", "attribute_log", "attribute_serde"]
+all = ["all_games", "all_protocols", "all_attributes"]
+all_games = []
+all_protocols = [
+    "protocol_epic_api",
+    "protocol_gamespy_1",
+    "protocol_gamespy_2",
+    "protocol_gamespy_3",
+    "protocol_quake_1",
+    "protocol_quake_2",
+    "protocol_quake_3",
+    "protocol_valve_goldsrc",
+    "protocol_valve_rcon",
+    "protocol_valve_source",
+]
+all_attributes = [
+    "attribute_converters",
+    "attribute_dict",
+    "attribute_extended_derive",
+    "attribute_log",
+    "attribute_serde",
+]
 
 
 [dependencies]
 # Dependencies
-maybe-async = {version = "0.2.10", default-features = false}
-thiserror   = {version = "2.0.12", default-features = false, features = ["std"]}
-error-stack = {version = "0.6.0", default-features = false, features = ["backtrace", "spantrace", "std"]}
+maybe-async = { version = "0.2.10", default-features = false }
+thiserror   = { version = "2.0.12", default-features = false, features = ["std"] }
+error-stack = { version = "0.6.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
 
 # Optional Dependencies
-hashify     = {version = "0.2.6", optional = true, default-features = false}
-tokio       = {version = "1.48.0", optional = true, default-features = false}
-async-trait = {version = "0.1.89", optional = true, default-features = false}
-log         = {version = "0.4.28", optional = true, default-features = false, features = ["std"]}
-serde_json  = {version = "1.0.145", optional = true, default-features = false, features = ["std"]}
-encoding_rs = {version = "0.8.35", optional = true, default-features = false, features = ["alloc"]}
-ureq        = {version = "3.1.4", optional = true, default-features = false, features = ["json", "rustls"]}
-serde       = {version = "1.0.228", optional = true, default-features = false, features = ["derive", "std"]}
-reqwest     = {version = "0.12.24", optional = true, default-features = false, features = ["json", "rustls-tls"]}
+hashify     = { version = "0.2.6", optional = true, default-features = false }
+tokio       = { version = "1.48.0", optional = true, default-features = false }
+async-trait = { version = "0.1.89", optional = true, default-features = false }
+log         = { version = "0.4.28", optional = true, default-features = false, features = ["std"] }
+serde_json  = { version = "1.0.145", optional = true, default-features = false, features = ["std"] }
+encoding_rs = { version = "0.8.35", optional = true, default-features = false, features = ["alloc"] }
+ureq        = { version = "3.1.4", optional = true, default-features = false, features = ["json", "rustls"] }
+serde       = { version = "1.0.228", optional = true, default-features = false, features = ["derive", "std"] }
+reqwest     = { version = "0.12.24", optional = true, default-features = false, features = ["json", "rustls-tls"] }
