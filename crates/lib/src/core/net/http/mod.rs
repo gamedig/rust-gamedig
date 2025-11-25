@@ -1,7 +1,6 @@
 use crate::error::Result;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::collections::HashMap;
 use std::time::Duration;
 
 mod sealed;
@@ -9,16 +8,16 @@ mod sealed;
 use sealed::client::AbstractHttp;
 
 // todo: figure out what types are best for these
-pub type Headers = HashMap<String, String>;
-pub type Query<'a> = HashMap<&'a str, &'a str>;
-pub type Form<'a> = HashMap<&'a str, &'a str>;
+pub type Headers<'a> = &'a [(&'static str, &'a str)];
+pub type Query<'a> = &'a [(&'static str, &'a str)];
+pub type Form<'a> = &'a [(&'static str, &'a str)];
 
 pub enum Payload<'a> {
     Json(&'a Value),
-    Form(&'a Form<'a>),
+    Form(Form<'a>),
 }
 
-//todo: docs
+// todo: docs
 // Supports both HTTPS and HTTP
 pub(crate) struct HttpClient {
     client: sealed::client::Inner,
@@ -32,21 +31,21 @@ impl HttpClient {
         })
     }
 
-    pub(crate) async fn get<T: DeserializeOwned>(
+    pub(crate) async fn get<'a, T: DeserializeOwned>(
         &self,
-        url: &str,
-        query: Option<&Query<'_>>,
-        headers: Option<&Headers>,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
     ) -> Result<T> {
         self.client.inner.get(url, query, headers).await
     }
 
-    pub(crate) async fn post<T: DeserializeOwned>(
+    pub(crate) async fn post<'a, T: DeserializeOwned>(
         &self,
-        url: &str,
-        query: Option<&Query<'_>>,
-        headers: Option<&Headers>,
-        payload: Option<Payload<'_>>,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
+        payload: Option<Payload<'a>>,
     ) -> Result<T> {
         self.client.inner.post(url, query, headers, payload).await
     }

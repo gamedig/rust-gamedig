@@ -20,11 +20,11 @@ impl super::AbstractHttp for TokioHttpClient {
         Ok(Self { client })
     }
 
-    async fn get<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
+    async fn get<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
     ) -> Result<T> {
         let mut req = self.client.get(url);
 
@@ -33,7 +33,7 @@ impl super::AbstractHttp for TokioHttpClient {
         }
 
         if let Some(headers) = headers {
-            for (k, v) in headers {
+            for &(k, v) in headers {
                 req = req.header(k, v);
             }
         }
@@ -53,12 +53,12 @@ impl super::AbstractHttp for TokioHttpClient {
         Ok(value)
     }
 
-    async fn post<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
-        payload: Option<Payload<'_>>,
+    async fn post<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
+        payload: Option<Payload<'a>>,
     ) -> Result<T> {
         let mut req = self.client.post(url);
 
@@ -67,7 +67,7 @@ impl super::AbstractHttp for TokioHttpClient {
         }
 
         if let Some(headers) = headers {
-            for (k, v) in headers {
+            for &(k, v) in headers {
                 req = req.header(k, v);
             }
         }
@@ -88,7 +88,6 @@ impl super::AbstractHttp for TokioHttpClient {
         })?;
 
         if !resp.status().is_success() {
-            //todo: unlike ureq, 4xx and 5xx do not produce errors automatically
             todo!()
         }
 
@@ -99,4 +98,3 @@ impl super::AbstractHttp for TokioHttpClient {
         Ok(value)
     }
 }
-

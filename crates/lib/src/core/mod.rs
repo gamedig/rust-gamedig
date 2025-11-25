@@ -7,7 +7,7 @@ pub(crate) use io::buf::Buffer;
 
 #[allow(unused_imports)]
 #[cfg(feature = "_HTTP")]
-pub(crate) use net::http::HttpClient;
+pub(crate) use net::http::{Form, Headers, HttpClient, Payload, Query};
 
 #[allow(unused_imports)]
 #[cfg(feature = "_TCP")]

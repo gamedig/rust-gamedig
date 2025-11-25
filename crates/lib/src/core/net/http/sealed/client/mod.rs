@@ -16,19 +16,19 @@ pub(crate) trait AbstractHttp {
     async fn new(timeout: Duration) -> Result<Self>
     where Self: Sized;
 
-    async fn get<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
+    async fn get<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
     ) -> Result<T>;
 
-    async fn post<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
-        payload: Option<Payload<'_>>,
+    async fn post<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
+        payload: Option<Payload<'a>>,
     ) -> Result<T>;
 }
 

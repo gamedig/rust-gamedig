@@ -22,22 +22,22 @@ impl super::AbstractHttp for StdHttpClient {
         })
     }
 
-    fn get<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
+    fn get<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
     ) -> Result<T> {
         let mut req = self.agent.get(url);
 
         if let Some(query) = query {
-            for (k, v) in query {
+            for &(k, v) in query {
                 req = req.query(k, v);
             }
         }
 
         if let Some(headers) = headers {
-            for (k, v) in headers {
+            for &(k, v) in headers {
                 req = req.header(k, v);
             }
         }
@@ -53,23 +53,23 @@ impl super::AbstractHttp for StdHttpClient {
         Ok(value)
     }
 
-    fn post<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        query: Option<&Query>,
-        headers: Option<&Headers>,
-        payload: Option<Payload>,
+    fn post<'a, T: DeserializeOwned>(
+        &'a self,
+        url: &'a str,
+        query: Option<Query<'a>>,
+        headers: Option<Headers<'a>>,
+        payload: Option<Payload<'a>>,
     ) -> Result<T> {
         let mut req = self.agent.post(url);
 
         if let Some(query) = query {
-            for (k, v) in query {
+            for &(k, v) in query {
                 req = req.query(k, v);
             }
         }
 
         if let Some(headers) = headers {
-            for (k, v) in headers {
+            for &(k, v) in headers {
                 req = req.header(k, v);
             }
         }
@@ -86,7 +86,7 @@ impl super::AbstractHttp for StdHttpClient {
                 })?
             }
             Some(Payload::Form(f)) => {
-                req.send_form(f).map_err(|e| {
+                req.send_form(f.iter().copied()).map_err(|e| {
                     Report::from(e).change_context(NetworkError::HttpUreqClientError {}.into())
                 })?
             }
