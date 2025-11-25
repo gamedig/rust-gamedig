@@ -54,20 +54,6 @@ socket_tokio = ["dep:async-trait", "dep:tokio"]
 http_std   = ["dep:ureq", "maybe-async/is_sync"]
 http_tokio = ["dep:async-trait", "dep:reqwest", "dep:tokio"]
 
-## Games (Prefix: game_)
-
-## Protocols (Prefix: protocol_)
-protocol_epic_api      = ["_HTTP"]
-protocol_gamespy_1     = ["_UDP"]
-protocol_gamespy_2     = ["_UDP"]
-protocol_gamespy_3     = ["_UDP"]
-protocol_quake_1       = ["_UDP"]
-protocol_quake_2       = ["_UDP"]
-protocol_quake_3       = ["_UDP"]
-protocol_valve_goldsrc = ["_UDP"]
-protocol_valve_rcon    = ["_TCP"]
-protocol_valve_source  = ["_UDP"]
-
 # Library Features
 ## Attributes (Prefix: attribute_)
 attribute_log             = ["dep:log"]
@@ -76,11 +62,117 @@ attribute_serde           = ["dep:serde"]
 attribute_converters      = []
 attribute_extended_derive = []
 
+## Protocols (Prefix: protocol_)
+protocol_epic_api      = ["_HTTP", "dep:base64"]
+protocol_gamespy_1     = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_gamespy_2     = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_gamespy_3     = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_quake_1       = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_quake_2       = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_quake_3       = ["_UDP", "_BUFFER_READ_LATIN_1"]
+protocol_valve_goldsrc = ["_UDP"]
+protocol_valve_rcon    = ["_TCP"]
+protocol_valve_source  = ["_UDP", "dep:bzip2", "dep:crc32fast"]
+
+## Games (Prefix: game_)
+game_abiotic_factor                    = ["protocol_valve_source"]
+game_age_of_chivalry                   = ["protocol_valve_source"]
+game_alien_swarm                       = ["protocol_valve_source"]
+game_alien_swarm_reactive_drop         = ["protocol_valve_source"]
+game_aliens_vs_predator_2010           = ["protocol_valve_source"]
+game_americas_army_proving_grounds     = ["protocol_valve_source"]
+game_ark_survival_ascended             = ["protocol_epic_api"]
+game_ark_survival_evolved              = ["protocol_valve_source"]
+game_arma_2_operation_arrowhead        = ["protocol_valve_source"]
+game_arma_3                            = ["protocol_valve_source"]
+game_arma_reforger                     = ["protocol_valve_source"]
+game_atlas                             = ["protocol_valve_source"]
+game_avorion                           = ["protocol_valve_source"]
+game_ballistic_overkill                = ["protocol_valve_source"]
+game_barotrauma                        = ["protocol_valve_source"]
+game_base_defense                      = ["protocol_valve_source"]
+game_battalion_1944                    = ["protocol_valve_source"]
+game_battlefield_1942                  = ["protocol_gamespy_1"]
+game_black_mesa                        = ["protocol_valve_source"]
+game_brainbread_2                      = ["protocol_valve_source"]
+game_call_of_duty_black_ops_3          = ["protocol_valve_source"]
+game_codename_cure                     = ["protocol_valve_source"]
+game_colony_survival                   = ["protocol_valve_source"]
+game_conan_exiles                      = ["protocol_valve_source"]
+game_counter_strike                    = ["protocol_valve_goldsrc"]
+game_counter_strike_2                  = ["protocol_valve_source"]
+game_counter_strike_condition_zero     = ["protocol_valve_goldsrc"]
+game_counter_strike_global_offensive   = ["protocol_valve_source"]
+game_counter_strike_source             = ["protocol_valve_source"]
+game_creativerse                       = ["protocol_valve_source"]
+game_crysis_wars                       = ["protocol_gamespy_3"]
+game_day_of_defeat                     = ["protocol_valve_goldsrc"]
+game_day_of_defeat_source              = ["protocol_valve_source"]
+game_day_of_infamy                     = ["protocol_valve_source"]
+game_dont_starve_together              = ["protocol_valve_source"]
+game_double_action_boogaloo            = ["protocol_valve_source"]
+game_eco                               = ["_HTTP"]
+game_enshrouded                        = ["protocol_valve_source"]
+game_garrys_mod                        = ["protocol_valve_source"]
+game_half_life_2_deathmatch            = ["protocol_valve_source"]
+game_half_life_deathmatch_source       = ["protocol_valve_source"]
+game_halo_combat_evolved               = ["protocol_gamespy_2"]
+game_hell_let_loose                    = ["protocol_valve_source"]
+game_insurgency                        = ["protocol_valve_source"]
+game_insurgency_modern_infantry_combat = ["protocol_valve_source"]
+game_insurgency_sandstorm              = ["protocol_valve_source"]
+game_left_4_dead                       = ["protocol_valve_source"]
+game_left_4_dead_2                     = ["protocol_valve_source"]
+game_minecraft_bedrock                 = ["_UDP"]
+game_minecraft_java                    = ["_TCP"]
+game_minecraft_java_v_1_4              = ["_TCP"]
+game_minecraft_java_v_1_6              = ["_TCP"]
+game_minecraft_java_v_1_8_beta         = ["_TCP"]
+game_mordhau                           = ["protocol_valve_source"]
+game_myth_of_empires                   = ["protocol_valve_source"]
+game_nova_life_amboise                 = ["protocol_valve_source"]
+game_onset                             = ["protocol_valve_source"]
+game_operation_harsh_doorstop          = ["protocol_valve_source"]
+game_pirates_vikings_and_knights_ii    = ["protocol_valve_source"]
+game_pixark                            = ["protocol_valve_source"]
+game_post_scriptum                     = ["protocol_valve_source"]
+game_project_zomboid                   = ["protocol_valve_source"]
+game_quake_1                           = ["protocol_quake_1"]
+game_quake_2                           = ["protocol_quake_2"]
+game_quake_3_arena                     = ["protocol_quake_3"]
+game_rising_world                      = ["protocol_valve_source"]
+game_risk_of_rain_2                    = ["protocol_valve_source"]
+game_rust                              = ["protocol_valve_source"]
+game_savage_2                          = ["_UDP"]
+game_serious_sam                       = ["protocol_gamespy_1"]
+game_seven_days_to_die                 = ["protocol_valve_source"]
+game_soldier_of_fortune_2              = ["protocol_quake_3"]
+game_soulmask                          = ["protocol_valve_source"]
+game_squad                             = ["protocol_valve_source"]
+game_starbound                         = ["protocol_valve_source"]
+game_sven_co_op                        = ["protocol_valve_goldsrc"]
+game_team_fortress_2                   = ["protocol_valve_source"]
+game_team_fortress_classic             = ["protocol_valve_goldsrc"]
+game_the_forest                        = ["protocol_valve_source"]
+game_the_front                         = ["protocol_valve_source"]
+game_the_ship                          = ["protocol_valve_source"]
+game_unreal_tournament                 = ["protocol_gamespy_1"]
+game_unturned                          = ["protocol_valve_source"]
+game_v_rising                          = ["protocol_valve_source"]
+game_valheim                           = ["protocol_valve_source"]
+game_warsow                            = ["protocol_quake_3"]
+game_zombie_panic_source               = ["protocol_valve_source"]
 
 ## Index
-all = ["all_games", "all_protocols", "all_attributes"]
+all = ["all_attributes", "all_protocols", "all_games"]
 
-all_games = []
+all_attributes = [
+    "attribute_log",
+    "attribute_dict",
+    "attribute_serde",
+    "attribute_converters",
+    "attribute_extended_derive",
+]
 
 all_protocols = [
     "protocol_epic_api",
@@ -95,12 +187,94 @@ all_protocols = [
     "protocol_valve_source",
 ]
 
-all_attributes = [
-    "attribute_log",
-    "attribute_dict",
-    "attribute_serde",
-    "attribute_converters",
-    "attribute_extended_derive",
+all_games = [
+    "game_abiotic_factor",
+    "game_age_of_chivalry",
+    "game_alien_swarm",
+    "game_alien_swarm_reactive_drop",
+    "game_aliens_vs_predator_2010",
+    "game_americas_army_proving_grounds",
+    "game_ark_survival_ascended",
+    "game_ark_survival_evolved",
+    "game_arma_2_operation_arrowhead",
+    "game_arma_3",
+    "game_arma_reforger",
+    "game_atlas",
+    "game_avorion",
+    "game_ballistic_overkill",
+    "game_barotrauma",
+    "game_base_defense",
+    "game_battalion_1944",
+    "game_battlefield_1942",
+    "game_black_mesa",
+    "game_brainbread_2",
+    "game_call_of_duty_black_ops_3",
+    "game_codename_cure",
+    "game_colony_survival",
+    "game_conan_exiles",
+    "game_counter_strike",
+    "game_counter_strike_2",
+    "game_counter_strike_condition_zero",
+    "game_counter_strike_global_offensive",
+    "game_counter_strike_source",
+    "game_creativerse",
+    "game_crysis_wars",
+    "game_day_of_defeat",
+    "game_day_of_defeat_source",
+    "game_day_of_infamy",
+    "game_dont_starve_together",
+    "game_double_action_boogaloo",
+    "game_eco",
+    "game_enshrouded",
+    "game_garrys_mod",
+    "game_half_life_2_deathmatch",
+    "game_half_life_deathmatch_source",
+    "game_halo_combat_evolved",
+    "game_hell_let_loose",
+    "game_insurgency",
+    "game_insurgency_modern_infantry_combat",
+    "game_insurgency_sandstorm",
+    "game_left_4_dead",
+    "game_left_4_dead_2",
+    "game_minecraft_bedrock",
+    "game_minecraft_java",
+    "game_minecraft_java_v_1_4",
+    "game_minecraft_java_v_1_6",
+    "game_minecraft_java_v_1_8_beta",
+    "game_mordhau",
+    "game_myth_of_empires",
+    "game_nova_life_amboise",
+    "game_onset",
+    "game_operation_harsh_doorstop",
+    "game_pirates_vikings_and_knights_ii",
+    "game_pixark",
+    "game_post_scriptum",
+    "game_project_zomboid",
+    "game_quake_1",
+    "game_quake_2",
+    "game_quake_3_arena",
+    "game_rising_world",
+    "game_risk_of_rain_2",
+    "game_rust",
+    "game_savage_2",
+    "game_serious_sam",
+    "game_seven_days_to_die",
+    "game_soldier_of_fortune_2",
+    "game_soulmask",
+    "game_squad",
+    "game_starbound",
+    "game_sven_co_op",
+    "game_team_fortress_2",
+    "game_team_fortress_classic",
+    "game_the_forest",
+    "game_the_front",
+    "game_the_ship",
+    "game_unreal_tournament",
+    "game_unturned",
+    "game_v_rising",
+    "game_valheim",
+    "game_warsow",
+    "game_zombie_panic_source",
 ]
 
 
