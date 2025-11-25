@@ -79,7 +79,9 @@ attribute_extended_derive = []
 
 ## Index
 all = ["all_games", "all_protocols", "all_attributes"]
+
 all_games = []
+
 all_protocols = [
     "protocol_epic_api",
     "protocol_gamespy_1",
@@ -92,25 +94,29 @@ all_protocols = [
     "protocol_valve_rcon",
     "protocol_valve_source",
 ]
+
 all_attributes = [
-    "attribute_converters",
-    "attribute_dict",
-    "attribute_extended_derive",
     "attribute_log",
+    "attribute_dict",
     "attribute_serde",
+    "attribute_converters",
+    "attribute_extended_derive",
 ]
 
 
 [dependencies]
 # Dependencies
 maybe-async = { version = "0.2.10", default-features = false }
-thiserror   = { version = "2.0.12", default-features = false, features = ["std"] }
+thiserror   = { version = "2.0.17", default-features = false, features = ["std"] }
 error-stack = { version = "0.6.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
 
 # Optional Dependencies
-hashify     = { version = "0.2.6", optional = true, default-features = false }
+bzip2       = { version = "0.6.1", optional = true }
+hashify     = { version = "0.2.7", optional = true, default-features = false }
 tokio       = { version = "1.48.0", optional = true, default-features = false }
 async-trait = { version = "0.1.89", optional = true, default-features = false }
+crc32fast   = { version = "1.5.0", optional = true, default-features = false, features = ["std"] }
+base64      = { version = "0.22.1", optional = true, default-features = false, features = ["std"] }
 log         = { version = "0.4.28", optional = true, default-features = false, features = ["std"] }
 serde_json  = { version = "1.0.145", optional = true, default-features = false, features = ["std"] }
 encoding_rs = { version = "0.8.35", optional = true, default-features = false, features = ["alloc"] }
