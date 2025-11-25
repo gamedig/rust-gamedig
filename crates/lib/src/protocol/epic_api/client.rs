@@ -85,29 +85,21 @@ impl EpicApiClient {
             self.authentication.as_ref().unwrap().access_token.as_str()
         );
 
-        // Old `query_raw` body, but using `json!`
-        let body = json!({
-            "criteria": [
-                {
-                    "key": "attributes.ADDRESS_s",
-                    "op": "EQUAL",
-                    "value": addr.ip().to_string(),
-                }
-            ]
-        });
-
-        // Call Epic API and get filtered sessions
-        let filtered: FilteredServers = self
+        let filtered = self
             .net
             .post::<FilteredServers>(
                 &url,
                 None,
-                Some(&[
-                    ("Authorization", &auth_token),
-                    ("Content-Type", "application/json"),
-                    ("Accept", "application/json"),
-                ]),
-                Some(Payload::Json(&body)),
+                Some(&[("Authorization", &auth_token)]),
+                Some(Payload::Json(&json!({
+                    "criteria": [
+                        {
+                            "key": "attributes.ADDRESS_s",
+                            "op": "EQUAL",
+                            "value": addr.ip().to_string(),
+                        }
+                    ]
+                }))),
             )
             .await?;
 
