@@ -5,6 +5,7 @@ use {
         error::Result,
     },
     base64::{Engine, prelude::BASE64_STANDARD},
+    serde::de::DeserializeOwned,
     serde_json::json,
     std::{net::SocketAddr, time::Duration},
 };
@@ -67,7 +68,7 @@ impl EpicApiClient {
         Ok(())
     }
 
-    pub async fn query(&mut self, addr: &SocketAddr) -> Result<FilteredServers> {
+    pub(crate) async fn query_as<T: DeserializeOwned>(&mut self, addr: &SocketAddr) -> Result<T> {
         self.authenticate().await?;
 
         let url = format!(
@@ -87,7 +88,7 @@ impl EpicApiClient {
 
         let filtered = self
             .net
-            .post::<FilteredServers>(
+            .post::<T>(
                 &url,
                 None,
                 Some(&[("Authorization", &auth_token)]),
@@ -104,5 +105,9 @@ impl EpicApiClient {
             .await?;
 
         Ok(filtered)
+    }
+
+    pub async fn query(&mut self, addr: &SocketAddr) -> Result<FilteredServers> {
+        Ok(self.query_as::<FilteredServers>(addr).await?)
     }
 }
