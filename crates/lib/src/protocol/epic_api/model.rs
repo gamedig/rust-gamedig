@@ -19,13 +19,12 @@ pub struct Credentials {
 #[derive(Deserialize)]
 pub(crate) struct OAuthToken {
     pub(crate) access_token: String,
-    pub(crate) expires_at: DateTime<Utc>,
+    expires_at: DateTime<Utc>,
 }
 
 impl OAuthToken {
     pub(crate) fn is_valid(&self) -> bool { self.expires_at > Utc::now() + TimeDelta::seconds(30) }
 }
 
-// todo: define more
 #[derive(Deserialize)]
 pub struct FilteredServers(pub Value);

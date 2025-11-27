@@ -55,7 +55,7 @@ impl EpicApiClient {
                 .post::<OAuthToken>(
                     "https://api.epicgames.dev/auth/v1/oauth/token",
                     None,
-                    Some(&[("Authorization", auth_header_value.as_str())]),
+                    Some(&[("Authorization", &auth_header_value)]),
                     Some(Payload::Form(&[
                         ("grant_type", "client_credentials"),
                         ("deployment_id", &self.credentials.deployment),
@@ -81,8 +81,8 @@ impl EpicApiClient {
 
         let auth_token = format!(
             "Bearer {}",
-            // safe because we just authenticated above
-            self.authentication.as_ref().unwrap().access_token.as_str()
+            // safe unwrap because we just authenticated above
+            self.authentication.as_ref().unwrap().access_token
         );
 
         let filtered = self
@@ -94,16 +94,15 @@ impl EpicApiClient {
                 Some(Payload::Json(&json!({
                     "criteria": [
                         {
-                            "key": "attributes.ADDRESS_s",
+                            "key": "attributes.ADDRESSBOUND_s",
                             "op": "EQUAL",
-                            "value": addr.ip().to_string(),
+                            "value": addr.to_string(),
                         }
                     ]
                 }))),
             )
             .await?;
 
-        // todo: parse filtered into Server structs
         Ok(filtered)
     }
 }
