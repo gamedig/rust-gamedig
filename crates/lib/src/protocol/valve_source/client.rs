@@ -61,9 +61,10 @@ impl ValveSourceClient {
             -2 => {
                 let id = datagram.read_u32_le()?;
                 let compression = (id & 0x8000_0000) != 0;
-
                 let total = datagram.read_u8()?;
-                let number = datagram.read_u8()?;
+
+                // skip number we know is 0
+                datagram.move_pos(1)?;
 
                 // skip size
                 if !self.legacy_split_packet {
@@ -86,8 +87,7 @@ impl ValveSourceClient {
                 let mut payload = datagram.unpack();
                 payload.drain(0 .. pos);
 
-                let mut fragments = Vec::with_capacity(total as usize);
-                fragments.push(Fragment { number, payload });
+                let mut fragments = Vec::with_capacity((total - 1) as usize);
 
                 for _ in 1 .. total {
                     let mut fragment = Vec::with_capacity(1400);
@@ -123,15 +123,14 @@ impl ValveSourceClient {
 
                 fragments.sort_by_key(|f| f.number);
 
-                let mut final_payload =
-                    Vec::with_capacity(fragments.iter().map(|f| f.payload.len()).sum());
+                payload.reserve(fragments.iter().map(|f| f.payload.len()).sum());
 
                 for fragment in fragments {
-                    final_payload.extend_from_slice(&fragment.payload);
+                    payload.extend(fragment.payload);
                 }
 
                 if compression {
-                    let mut decoder = BzDecoder::new(&*final_payload);
+                    let mut decoder = BzDecoder::new(&*payload);
                     let mut decompressed_payload =
                         Vec::with_capacity(decompressed_size.unwrap() as usize);
 
@@ -143,10 +142,10 @@ impl ValveSourceClient {
                         todo!()
                     }
 
-                    final_payload = decompressed_payload;
+                    payload = decompressed_payload;
                 }
 
-                Ok(Buffer::new(final_payload))
+                Ok(Buffer::new(payload))
             }
 
             // Invalid response
