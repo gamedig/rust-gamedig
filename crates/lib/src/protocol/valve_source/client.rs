@@ -86,7 +86,7 @@ impl ValveSourceClient {
                 let mut payload = datagram.unpack();
                 payload.drain(0 .. pos);
 
-                let mut fragments: Vec<Fragment> = Vec::with_capacity(total as usize);
+                let mut fragments = Vec::with_capacity(total as usize);
                 fragments.push(Fragment { number, payload });
 
                 for _ in 1 .. total {
