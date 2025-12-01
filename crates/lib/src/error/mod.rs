@@ -1,8 +1,7 @@
-#[allow(unused)]
-//todo: switch Errors from map_err to use ResultExt
-pub(crate) use error_stack::{Report, ResultExt};
+pub(crate) use error_stack::Report;
 pub(crate) type Result<T> = std::result::Result<T, Report<ErrorKind>>;
 
+mod compile;
 pub(crate) mod diagnostic;
 
 macro_rules! define_error {
