@@ -52,17 +52,17 @@ impl super::AbstractTcp for StdTcpClient {
             Err(e) => {
                 Err(Report::from(e)
                     .change_context(NetworkError::TcpConnectionError { peer_addr: addr }.into())
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "Failed to establish a TCP connection due to an underlying OS I/O error.",
                     ))
-                    .attach_printable(Recommendation::new(format!(
+                    .attach(Recommendation::new(format!(
                         "Verify the server address ({addr}) is reachable, ensure the server is \
                          running, and that no firewall or network restrictions are blocking the \
                          connection. Also consider increasing the timeout duration ({timeout:?}) \
                          for distant or busy servers."
                     )))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()))
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()))
             }
         }
     }
@@ -112,12 +112,12 @@ impl super::AbstractTcp for StdTcpClient {
                             }
                             .into(),
                         )
-                        .attach_printable(FailureReason::new(format!(
+                        .attach(FailureReason::new(format!(
                             "An underlying OS I/O error occurred while setting the read timeout \
                              to {timeout:?} for the TCP stream."
                         )))
-                        .attach_printable(SystemInfo::new())
-                        .attach_printable(CrateInfo::new()));
+                        .attach(SystemInfo::new())
+                        .attach(CrateInfo::new()));
                 }
             }
         }
@@ -149,15 +149,15 @@ impl super::AbstractTcp for StdTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying I/O error occurred during the socket read operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Ensure the socket connection is stable and there are no issues with the \
                          network or server.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()))
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()))
             }
         }
     }
@@ -196,12 +196,12 @@ impl super::AbstractTcp for StdTcpClient {
                             }
                             .into(),
                         )
-                        .attach_printable(FailureReason::new(format!(
+                        .attach(FailureReason::new(format!(
                             "An underlying OS I/O error occurred while setting the read timeout \
                              to {timeout:?} for the TCP stream."
                         )))
-                        .attach_printable(SystemInfo::new())
-                        .attach_printable(CrateInfo::new()));
+                        .attach(SystemInfo::new())
+                        .attach(CrateInfo::new()));
                 }
             }
         }
@@ -234,15 +234,15 @@ impl super::AbstractTcp for StdTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying I/O error occurred during the socket read operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Ensure the socket connection is stable and there are no issues with the \
                          network or server.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()))
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()))
             }
         }
     }
@@ -280,12 +280,12 @@ impl super::AbstractTcp for StdTcpClient {
                             }
                             .into(),
                         )
-                        .attach_printable(FailureReason::new(format!(
+                        .attach(FailureReason::new(format!(
                             "An underlying OS I/O error occurred while setting the write timeout \
                              to {timeout:?} for the TCP stream."
                         )))
-                        .attach_printable(SystemInfo::new())
-                        .attach_printable(CrateInfo::new()));
+                        .attach(SystemInfo::new())
+                        .attach(CrateInfo::new()));
                 }
             }
         }
@@ -315,15 +315,15 @@ impl super::AbstractTcp for StdTcpClient {
                         }
                         .into(),
                     )
-                    .attach_printable(FailureReason::new(
+                    .attach(FailureReason::new(
                         "An underlying RT or OS I/O error occurred during TCP write operation.",
                     ))
-                    .attach_printable(Recommendation::new(
+                    .attach(Recommendation::new(
                         "Check if the server is accepting data correctly and ensure network \
                          stability.",
                     ))
-                    .attach_printable(SystemInfo::new())
-                    .attach_printable(CrateInfo::new()))
+                    .attach(SystemInfo::new())
+                    .attach(CrateInfo::new()))
             }
         }
     }
