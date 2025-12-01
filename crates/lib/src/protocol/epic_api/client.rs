@@ -59,7 +59,7 @@ impl EpicApiClient {
                     Some(&[("Authorization", &auth_header_value)]),
                     Some(Payload::Form(&[
                         ("grant_type", "client_credentials"),
-                        ("deployment_id", &self.credentials.deployment),
+                        ("deployment_id", self.credentials.deployment),
                     ])),
                 )
                 .await?,
@@ -68,7 +68,7 @@ impl EpicApiClient {
         Ok(())
     }
 
-    pub(crate) async fn query_as<T: DeserializeOwned>(&mut self, addr: &SocketAddr) -> Result<T> {
+    pub async fn query_as<T: DeserializeOwned>(&mut self, addr: &SocketAddr) -> Result<T> {
         self.authenticate().await?;
 
         let url = format!(
@@ -86,7 +86,7 @@ impl EpicApiClient {
             self.authentication.as_ref().unwrap().access_token
         );
 
-        let filtered = self
+        Ok(self
             .net
             .post::<T>(
                 &url,
@@ -102,12 +102,10 @@ impl EpicApiClient {
                     ]
                 }))),
             )
-            .await?;
-
-        Ok(filtered)
+            .await?)
     }
 
     pub async fn query(&mut self, addr: &SocketAddr) -> Result<FilteredServers> {
-        Ok(self.query_as::<FilteredServers>(addr).await?)
+        self.query_as::<FilteredServers>(addr).await
     }
 }
