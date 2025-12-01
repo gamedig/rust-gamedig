@@ -5,7 +5,8 @@ use {
         error::Result,
     },
     bzip2::read::BzDecoder,
-    std::{io::Read, net::SocketAddr, time::Duration},
+    reqwest::header,
+    std::{collections::HashMap, io::Read, net::SocketAddr, time::Duration},
 };
 
 pub struct ValveSourceClient {
@@ -189,5 +190,50 @@ impl ValveSourceClient {
                 todo!()
             }
         }
+    }
+
+    pub async fn rules(&mut self) -> Result<HashMap<String, String>> {
+        const RULES_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x56];
+
+        let mut response = self.net_send(&RULES_PAYLOAD).await?;
+
+        let header = response.read_u8()?;
+
+        response = match header {
+            b'E' => response,
+            b'A' => {
+                let challenge = response.read_i32_le()?;
+
+                let mut challenge_payload = [0u8; 9];
+                challenge_payload[.. 5].copy_from_slice(&RULES_PAYLOAD);
+                challenge_payload[5 ..].copy_from_slice(&challenge.to_le_bytes());
+
+                let mut post_challenge_response = self.net_send(&challenge_payload).await?;
+                let post_challenge_header = post_challenge_response.read_u8()?;
+
+                if post_challenge_header != b'E' {
+                    // Unexpected rules response header after challenge
+                    todo!()
+                }
+
+                post_challenge_response
+            }
+            _ => {
+                // Unexpected header for rules query
+                todo!()
+            }
+        };
+
+        let total = response.read_u16_le()?;
+        let mut rules = HashMap::with_capacity(total as usize);
+
+        for _ in 0 .. total {
+            let key = response.read_string_utf8(None, true)?;
+            let value = response.read_string_utf8(None, true)?;
+            
+            rules.insert(key, value);
+        }
+
+        Ok(rules)
     }
 }
