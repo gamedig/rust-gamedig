@@ -1,6 +1,7 @@
 use std::{net::SocketAddr, time::Duration};
 
 use bzip2::read::BzDecoder;
+use serde::de;
 use std::io::Read;
 
 use crate::{
@@ -155,15 +156,27 @@ impl ValveSourceClient {
                 }
 
                 if compression {
-                    let mut decoder = BzDecoder::new(&*payload);
-                    let mut decompressed_payload =
-                        Vec::with_capacity(decompressed_size.unwrap() as usize);
+                    // safe unwraps as we are guaranteed to have these if compression is true
+                    let decompressed_size = decompressed_size.unwrap();
+                    let crc32 = crc32.unwrap();
 
-                    if decoder.read_to_end(&mut decompressed_payload).is_err() {
+                    let mut decompressed_payload = Vec::with_capacity(decompressed_size as usize);
+
+                    if BzDecoder::new(&*payload)
+                        .read_to_end(&mut decompressed_payload)
+                        // map this error to a report later
+                        .is_err()
+                    {
                         todo!()
                     }
 
-                    if crc32fast::hash(&decompressed_payload) != crc32.unwrap() {
+                    if decompressed_payload.len() != decompressed_size as usize {
+                        // decompressed size mismatch
+                        todo!()
+                    }
+
+                    if crc32fast::hash(&decompressed_payload) != crc32 {
+                        // crc32 mismatch
                         todo!()
                     }
 
