@@ -1,15 +1,12 @@
-use std::{net::SocketAddr, time::Duration};
-
-use bzip2::read::BzDecoder;
-use serde::de;
-use std::io::Read;
-
-use crate::{
-    core::{Buffer, UdpClient},
-    error::Result,
+use {
+    super::model::Fragment,
+    crate::{
+        core::{Buffer, UdpClient},
+        error::Result,
+    },
+    bzip2::read::BzDecoder,
+    std::{io::Read, net::SocketAddr, time::Duration},
 };
-
-use super::model::Fragment;
 
 pub struct ValveSourceClient {
     net: UdpClient,
