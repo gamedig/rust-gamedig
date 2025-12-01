@@ -21,6 +21,11 @@ pub struct ValveSourceClient {
     ///
     /// `[215, 240, 17550, 17700]` when protocol = `7`.
     pub legacy_split_packet: bool,
+
+    /// Maximum payload size for receiving packets.
+    ///
+    /// Defaults to `1400`.
+    pub max_payload_size: usize,
 }
 
 #[maybe_async::maybe_async]
@@ -30,6 +35,7 @@ impl ValveSourceClient {
             net: UdpClient::new(addr, None, None).await?,
 
             legacy_split_packet: false,
+            max_payload_size: 1400,
         })
     }
 
@@ -42,6 +48,7 @@ impl ValveSourceClient {
             net: UdpClient::new(addr, read_timeout, write_timeout).await?,
 
             legacy_split_packet: false,
+            max_payload_size: 1400,
         })
     }
 
@@ -61,15 +68,28 @@ impl ValveSourceClient {
             -2 => {
                 let id = datagram.read_u32_le()?;
                 let compression = (id & 0x8000_0000) != 0;
+
                 let total = datagram.read_u8()?;
+                if total > 32 {
+                    // too many fragments
+                    todo!();
+                }
 
-                // skip number we know is 0
-                datagram.move_pos(1)?;
+                let number = datagram.read_u8()?;
+                if number != 0 {
+                    // first fragment must be 0
+                    todo!();
+                }
 
-                // skip size
-                if !self.legacy_split_packet {
-                    datagram.move_pos(2)?;
+                let size = if self.legacy_split_packet {
+                    1248
+                } else {
+                    datagram.read_u16_le()?
                 };
+                if size as usize > self.max_payload_size {
+                    // fragment size exceeds allowed limit
+                    todo!();
+                }
 
                 let decompressed_size = if compression {
                     Some(datagram.read_u32_le()?)
@@ -106,10 +126,15 @@ impl ValveSourceClient {
 
                     let fragment_number = fragment.read_u8()?;
 
-                    // skip size
-                    if !self.legacy_split_packet {
-                        fragment.move_pos(2)?;
+                    let fragment_size = if self.legacy_split_packet {
+                        1248
+                    } else {
+                        fragment.read_u16_le()?
                     };
+                    if fragment_size as usize > self.max_payload_size {
+                        // fragment size exceeds allowed limit
+                        todo!();
+                    }
 
                     let fragment_pos = fragment.pos();
                     let mut fragment_payload = fragment.unpack();
