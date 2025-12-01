@@ -81,7 +81,6 @@ impl super::AbstractUdp for TokioUdpClient {
                     }
                 }
             }
-            
 
             // Bind error
             Err(e) => {
