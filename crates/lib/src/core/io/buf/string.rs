@@ -323,10 +323,9 @@ impl<B: super::Bufferable> super::Buffer<B> {
 
         if had_errors && strict {
             return Err(
-                Report::new(ErrorKind::from(IoError::BufferStringConversionError {}))
-                    .attach_printable(FailureReason::new(
-                        "Invalid Latin 1 sequence found during string read.",
-                    )),
+                Report::new(IoError::BufferStringConversionError {}.into()).attach(
+                    FailureReason::new("Invalid Latin 1 sequence found during string read."),
+                ),
             );
         }
 
