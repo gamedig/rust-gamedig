@@ -161,18 +161,15 @@ pub struct ExtraData {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TheShipPlayer {
     /// Number of times the player has died.
-    pub deaths: u32,
+    pub deaths: i32,
 
     /// The amount of in game money the player has.
-    pub money: u32,
+    pub money: i32,
 }
 
 /// Represents an individual player in the server.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
-    /// Index of the player in the response (starting from 0).
-    pub index: u8,
-
     /// Player’s display name.
     pub name: String,
 

@@ -1,5 +1,5 @@
 use {
-    super::model::Fragment,
+    super::model::{Fragment, Player, TheShipPlayer},
     crate::{
         core::{Buffer, UdpClient},
         error::Result,
@@ -20,6 +20,11 @@ pub struct ValveSourceClient {
     /// `[215, 240, 17550, 17700]` when protocol = `7`.
     pub legacy_split_packet: bool,
 
+    /// Whether to use "The Ship" server query format.
+    ///
+    /// Defaults to `false`.
+    pub the_ship: bool,
+
     /// Maximum payload size for receiving packets.
     ///
     /// Defaults to `1400`.
@@ -33,6 +38,7 @@ impl ValveSourceClient {
             net: UdpClient::new(addr, None, None).await?,
 
             legacy_split_packet: false,
+            the_ship: false,
             max_payload_size: 1400,
         })
     }
@@ -46,6 +52,7 @@ impl ValveSourceClient {
             net: UdpClient::new(addr, read_timeout, write_timeout).await?,
 
             legacy_split_packet: false,
+            the_ship: false,
             max_payload_size: 1400,
         })
     }
@@ -244,5 +251,56 @@ impl ValveSourceClient {
         }
 
         Ok(rules)
+    }
+
+    pub async fn players(&mut self) -> Result<Vec<Player>> {
+        const PLAYERS_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x55];
+
+        let mut response = self.net_send(&PLAYERS_PAYLOAD).await?;
+
+        response = match response.read_u8()? {
+            b'D' => response,
+            b'A' => {
+                const CHALLENGE_LEN: usize = PLAYERS_PAYLOAD.len() + 4;
+
+                self.challenge::<CHALLENGE_LEN>(&mut response, &PLAYERS_PAYLOAD, b'D')
+                    .await?
+            }
+
+            _ => {
+                // Unexpected header for players query
+                todo!()
+            }
+        };
+
+        let total = response.read_u8()?;
+        let mut players = Vec::with_capacity(total as usize);
+
+        for _ in 0 .. total {
+            // skip index
+            response.move_pos(1)?;
+
+            let name = response.read_string_utf8(None, true)?;
+            let score = response.read_i32_le()?;
+            let duration = response.read_f32_le()?;
+
+            let the_ship = if self.the_ship {
+                let deaths = response.read_i32_le()?;
+                let money = response.read_i32_le()?;
+
+                Some(TheShipPlayer { deaths, money })
+            } else {
+                None
+            };
+
+            players.push(Player {
+                name,
+                score,
+                duration,
+                the_ship,
+            });
+        }
+
+        Ok(players)
     }
 }
