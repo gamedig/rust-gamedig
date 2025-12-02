@@ -5,7 +5,6 @@ use {
         error::Result,
     },
     bzip2::read::BzDecoder,
-    reqwest::header,
     std::{collections::HashMap, io::Read, net::SocketAddr, time::Duration},
 };
 
@@ -192,32 +191,42 @@ impl ValveSourceClient {
         }
     }
 
+    async fn challenge<const L: usize>(
+        &mut self,
+        buf: &mut Buffer<Vec<u8>>,
+        payload: &[u8],
+        expected_header: u8,
+    ) -> Result<Buffer<Vec<u8>>> {
+        let challenge = buf.read_i32_le()?;
+
+        let mut challenge_payload = [0u8; L];
+        challenge_payload.copy_from_slice(&payload);
+        challenge_payload.copy_from_slice(&challenge.to_le_bytes());
+
+        let mut response = self.net_send(&challenge_payload).await?;
+
+        if response.read_u8()? != expected_header {
+            // Unexpected response header after challenge
+            todo!()
+        }
+
+        Ok(response)
+    }
+
     pub async fn rules(&mut self) -> Result<HashMap<String, String>> {
         const RULES_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x56];
 
         let mut response = self.net_send(&RULES_PAYLOAD).await?;
 
-        let header = response.read_u8()?;
-
-        response = match header {
+        response = match response.read_u8()? {
             b'E' => response,
             b'A' => {
-                let challenge = response.read_i32_le()?;
+                const CHALLENGE_LEN: usize = RULES_PAYLOAD.len() + 4;
 
-                let mut challenge_payload = [0u8; 9];
-                challenge_payload[.. 5].copy_from_slice(&RULES_PAYLOAD);
-                challenge_payload[5 ..].copy_from_slice(&challenge.to_le_bytes());
-
-                let mut post_challenge_response = self.net_send(&challenge_payload).await?;
-                let post_challenge_header = post_challenge_response.read_u8()?;
-
-                if post_challenge_header != b'E' {
-                    // Unexpected rules response header after challenge
-                    todo!()
-                }
-
-                post_challenge_response
+                self.challenge::<CHALLENGE_LEN>(&mut response, &RULES_PAYLOAD, b'E')
+                    .await?
             }
+
             _ => {
                 // Unexpected header for rules query
                 todo!()
@@ -230,7 +239,7 @@ impl ValveSourceClient {
         for _ in 0 .. total {
             let key = response.read_string_utf8(None, true)?;
             let value = response.read_string_utf8(None, true)?;
-            
+
             rules.insert(key, value);
         }
 
