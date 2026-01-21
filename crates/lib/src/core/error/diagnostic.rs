@@ -3,6 +3,29 @@ use std::{
     fmt,
 };
 
+// a struct to hold anything that is displayable in an error stack
+#[derive(Debug)]
+pub(crate) struct ContextComponent<T: fmt::Display> {
+    name: &'static str,
+    inner: T,
+}
+
+impl<T: fmt::Display> ContextComponent<T> {
+    pub(crate) fn new(name: &'static str, inner: T) -> Self { Self { name, inner } }
+}
+
+impl<T: fmt::Display> fmt::Display for ContextComponent<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "\x1B[36mContext:\x1B[0m\nName   : {}\nType   : {}\nValue  : {}",
+            self.name,
+            std::any::type_name::<T>(),
+            self.inner,
+        )
+    }
+}
+
 /// A struct representing a failure reason.
 ///
 /// This struct is used to describe a specific reason for a failure. It is used
@@ -128,15 +151,15 @@ impl fmt::Display for OpenGitHubIssue {
 /// purposes. It is used as a printable component in an error stack to provide
 /// detailed information about the binary data being processed, aiding in
 /// troubleshooting.
-#[allow(dead_code)]
+#[cfg(feature = "_BUFFER")]
 #[derive(Debug)]
-pub(crate) struct HexDump {
-    name: String,
-    inner: Vec<u8>,
+pub(crate) struct HexDump<B: super::super::buffer::Bufferable> {
+    name: &'static str,
+    inner: B,
     position: Option<usize>,
 }
 
-impl HexDump {
+impl<B: super::super::buffer::Bufferable> HexDump<B> {
     /// Number of bytes per line
     const WIDTH: u8 = 16;
 
@@ -166,33 +189,29 @@ impl HexDump {
     /// * `inner` - The binary data to be displayed as a hex dump.
     /// * `position` - The position of the data when within a buffer.
     #[allow(dead_code)]
-    pub(crate) fn new<T: Into<String>>(name: T, inner: Vec<u8>, position: Option<usize>) -> Self {
+    pub(crate) fn new(name: &'static str, inner: B, position: Option<usize>) -> Self {
         Self {
-            name: name.into(),
+            name,
             inner,
             position,
         }
     }
 }
 
-impl fmt::Display for HexDump {
+impl<B: super::super::buffer::Bufferable> fmt::Display for HexDump<B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\x1B[93mHex Dump:\x1B[0m")?;
         writeln!(f, "Name    :   {}", self.name)?;
 
-        let data = &self.inner;
+        let data: &[u8] = self.inner.as_ref();
         let len = data.len();
+
         writeln!(f, "Length  :   {len} (0x{len:x}) bytes")?;
         writeln!(
             f,
             "Position:   {}",
-            if self.position.is_some() {
-                self.position.unwrap().to_string()
-            } else {
-                "None".to_string()
-            }
+            self.position.map_or("None".to_string(), |p| p.to_string())
         )?;
-
         writeln!(f)?;
 
         if data.is_empty() {
@@ -203,7 +222,7 @@ impl fmt::Display for HexDump {
             let address = line_num * Self::WIDTH as usize;
             write!(f, "{address:08x}:   ")?;
 
-            let mut hex_len = 0;
+            let mut hex_len: u8 = 0;
             for (i, &byte) in line.iter().enumerate() {
                 if i > 0 {
                     if i % Self::GROUP_SIZE as usize == 0 {
@@ -344,6 +363,8 @@ impl fmt::Display for CrateInfo {
     }
 }
 
+pub(crate) const CRATE_INFO: CrateInfo = CrateInfo::new();
+
 /// A struct representing system information.
 ///
 /// This struct is used to provide information about the system on which the
@@ -384,6 +405,8 @@ impl fmt::Display for SystemInfo {
         writeln!(f, "\x1B[1mArchitecture     : \x1B[0m{}", self.architecture)
     }
 }
+
+pub(crate) const SYSTEM_INFO: SystemInfo = SystemInfo::new();
 
 #[cfg(test)]
 mod tests {

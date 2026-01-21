@@ -52,12 +52,6 @@ pub mod log;
 #[allow(dead_code)]
 pub(crate) mod core;
 
-/// Error handling utilities.
-///
-/// This module provides a comprehensive set of enums for managing and handling
-/// errors that may occur during the library's operation.
-pub mod error;
-
 /// Common imports for easier usage of the library.
 ///
 /// The prelude module is designed to include frequently used types and
