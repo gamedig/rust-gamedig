@@ -1,13 +1,15 @@
-use super::data::GenericDataHashMap;
+use super::data::GenericDataMap;
 
 /// Represents a generic player with a name and associated arbitrary data.
 #[derive(Debug, Clone)]
 pub struct GenericPlayer {
     pub name: String,
-    pub data: Option<GenericDataHashMap>,
+    pub data: Option<GenericDataMap>,
 }
 
-/// A trait for converting player structs into a [`GenericPlayer`].
-pub trait IntoGenericPlayer: Sized {
-    fn into_generic_player(&self) -> GenericPlayer;
+/// Extension trait for types that can be represented as a [`GenericPlayer`].
+pub trait GenericPlayerExt {
+    /// Returns a [`GenericPlayer`] representation of `self`.
+    #[must_use]
+    fn as_generic_player(&self) -> GenericPlayer;
 }
