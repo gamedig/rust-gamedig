@@ -136,6 +136,21 @@ pub(crate) mod macros {
         )};
     }
 
+    /// Emit a `trace` level event to the `development` logging target.
+    /// 
+    /// This macro supports formatted output using a closure.
+    /// 
+    /// Only compiled if the `_DEV_LOG` feature is enabled.
+    macro_rules! dev_trace_fmt {
+    ($fmt:literal, |$f:ident| $body:block) => {
+        #[cfg(feature = "_DEV_LOG")]
+        log::trace!(
+            target: crate::log::EventTarget::GAMEDIG_DEV,
+            $fmt,
+            std::fmt::from_fn(|$f| $body)
+        )};
+    }
+
     /// Emit a `debug` level event to the `development` logging target.
     ///
     /// Only compiled if the `_DEV_LOG` feature is enabled.
