@@ -1,18 +1,6 @@
-mod io;
-mod net;
+pub(crate) mod error;
+pub(crate) mod http;
+pub(crate) mod tcp;
+pub(crate) mod udp;
 
-#[allow(unused_imports)]
-#[cfg(feature = "_BUFFER")]
-pub(crate) use io::buf::Buffer;
-
-#[allow(unused_imports)]
-#[cfg(feature = "_HTTP")]
-pub(crate) use net::http::{Form, Headers, HttpClient, Payload, Query};
-
-#[allow(unused_imports)]
-#[cfg(feature = "_TCP")]
-pub(crate) use net::tcp::TcpClient;
-
-#[allow(unused_imports)]
-#[cfg(feature = "_UDP")]
-pub(crate) use net::udp::UdpClient;
+pub(crate) mod buffer;

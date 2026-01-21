@@ -1,13 +1,12 @@
 use {
-    crate::error::Result,
-    sealed::client::AbstractUdp,
+    client::AbstractUdp,
     std::{net::SocketAddr, time::Duration},
 };
 
-mod sealed;
+mod client;
 
 pub(crate) struct UdpClient {
-    client: sealed::client::Inner,
+    client: client::Inner,
     read_timeout: Duration,
     write_timeout: Duration,
 }
@@ -37,7 +36,7 @@ impl UdpClient {
         });
 
         Ok(Self {
-            client: sealed::client::Inner::new(addr).await?,
+            client: client::Inner::new(addr).await?,
             read_timeout: valid_read_timeout,
             write_timeout: valid_write_timeout,
         })
