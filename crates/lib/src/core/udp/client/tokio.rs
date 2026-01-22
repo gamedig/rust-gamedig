@@ -1,9 +1,7 @@
 use {
-    crate::error::{
-        NetworkError,
+    crate::core::error::{
         Report,
-        Result,
-        diagnostic::{CrateInfo, FailureReason, Recommendation, SystemInfo},
+        diagnostic::{CRATE_INFO, FailureReason, SYSTEM_INFO},
     },
     std::{
         net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
@@ -12,72 +10,55 @@ use {
     tokio::{net::UdpSocket, time::timeout as timer},
 };
 
+#[derive(Debug, thiserror::Error)]
+pub enum TokioUdpClientError {
+    #[error("[GameDig]::[UDP::TOKIO::BIND]: Failed to bind the UDP socket")]
+    Bind,
+    #[error("[GameDig]::[UDP::TOKIO::CONNECT]: Failed to connect the UDP socket")]
+    Connect,
+    #[error("[GameDig]::[UDP::TOKIO::SEND]: Failed to send data over UDP socket")]
+    Send,
+    #[error("[GameDig]::[UDP::TOKIO::SEND_TIMEOUT]: Sending data over UDP socket timed out")]
+    SendTimeout,
+    #[error("[GameDig]::[UDP::TOKIO::RECV]: Failed to receive data from UDP socket")]
+    Recv,
+    #[error("[GameDig]::[UDP::TOKIO::RECV_TIMEOUT]: Receiving data from UDP socket timed out")]
+    RecvTimeout,
+}
+
 pub(crate) struct TokioUdpClient {
-    peer_addr: SocketAddr,
     socket: UdpSocket,
 }
 
 #[maybe_async::async_impl]
 impl super::AbstractUdp for TokioUdpClient {
-    async fn new(addr: SocketAddr) -> Result<Self> {
-        dev_trace!("GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: [addr: {addr:?}]");
+    type Error = Report<TokioUdpClientError>;
+
+    async fn new(addr: SocketAddr) -> Result<Self, Self::Error> {
+        dev_trace_fmt!("GAMEDIG::CORE::UDP::CLIENT::TOKIO::<NEW>: {:?}", |f| {
+            f.debug_struct("Args").field("addr", &addr).finish()
+        });
 
         match UdpSocket::bind(match addr {
-            SocketAddr::V4(_) => {
-                dev_debug!(
-                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Attempting to bind to \
-                     IPV4 ephemeral port"
-                );
-
-                SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0))
-            }
-
-            SocketAddr::V6(_) => {
-                dev_debug!(
-                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Attempting to bind to \
-                     IPV6 ephemeral port"
-                );
-
-                SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0))
-            }
+            SocketAddr::V4(_) => SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0)),
+            SocketAddr::V6(_) => SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0)),
         })
         .await
         {
             Ok(socket) => {
-                dev_debug!(
-                    "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Successfully bound to \
-                     the ephemeral port, Attempting to set the peer address"
-                );
-
                 match socket.connect(addr).await {
-                    Ok(_) => {
-                        dev_debug!(
-                            "GAMEDIG::CORE::NET::UDP::SEALED::CLIENT::TOKIO::<NEW>: Successfully \
-                             set peer address, socket is ready"
-                        );
-
-                        Ok(Self {
-                            peer_addr: addr,
-                            socket,
-                        })
-                    }
+                    Ok(_) => Ok(Self { socket }),
 
                     // Connection error
                     Err(e) => {
                         return Err(Report::from(e)
-                            .change_context(
-                                NetworkError::UdpConnectionError { peer_addr: addr }.into(),
-                            )
+                            .change_context(TokioUdpClientError::Connect)
                             .attach(FailureReason::new(
                                 "Failed to establish a UDP connection due to an underlying I/O \
                                  error.",
                             ))
-                            .attach(Recommendation::new(
-                                "Ensure the server is running and that no firewall or network \
-                                 restrictions are blocking the connection.",
-                            ))
-                            .attach(SystemInfo::new())
-                            .attach(CrateInfo::new()));
+                            .attach(SYSTEM_INFO)
+                            .attach(CRATE_INFO));
                     }
                 }
             }
@@ -85,19 +66,21 @@ impl super::AbstractUdp for TokioUdpClient {
             // Bind error
             Err(e) => {
                 return Err(Report::from(e)
-                    .change_context(NetworkError::UdpBindError {}.into())
-                    .attach(FailureReason::new("Failed to bind to the UDP socket.")));
+                    .change_context(TokioUdpClientError::Bind)
+                    .attach(FailureReason::new("Failed to bind to the UDP socket."))
+                    .attach(SYSTEM_INFO)
+                    .attach(CRATE_INFO));
             }
         }
     }
 
-    async fn send(&mut self, data: &[u8], timeout: Duration) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "UDP::<Tokio>::Send: Sending data to {}",
-            &self.peer_addr
-        );
+    async fn send(&mut self, data: &[u8], timeout: Duration) -> Result<(), Self::Error> {
+        dev_trace_fmt!("GAMEDIG::CORE::UDP::CLIENT::TOKIO::<SEND>: {:?}", |f| {
+            f.debug_struct("Args")
+                .field("data", format_args!("len({})", data.len()))
+                .field("timeout", &timeout)
+                .finish()
+        });
 
         match timer(timeout, self.socket.send(data)).await {
             Ok(Ok(_)) => Ok(()),
@@ -105,44 +88,34 @@ impl super::AbstractUdp for TokioUdpClient {
             // Error during the send operation
             Ok(Err(e)) => {
                 return Err(Report::from(e)
-                    .change_context(
-                        NetworkError::UdpSendError {
-                            peer_addr: self.peer_addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(TokioUdpClientError::Send)
                     .attach(FailureReason::new(
                         "Failed to send data over the UDP socket.",
-                    )));
+                    ))
+                    .attach(SYSTEM_INFO)
+                    .attach(CRATE_INFO));
             }
 
             // Send operation timed out
             Err(e) => {
                 return Err(Report::from(e)
-                    .change_context(
-                        NetworkError::UdpTimeoutElapsedError {
-                            peer_addr: self.peer_addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(TokioUdpClientError::SendTimeout)
                     .attach(FailureReason::new(
                         "The send operation exceeded the specified timeout duration.",
                     ))
-                    .attach(Recommendation::new(
-                        "Check the server's status for high traffic or downtime, and consider \
-                         increasing the timeout duration for distant or busy servers.",
-                    )));
+                    .attach(SYSTEM_INFO)
+                    .attach(CRATE_INFO));
             }
         }
     }
 
-    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<()> {
-        #[cfg(feature = "_DEV_LOG")]
-        log::trace!(
-            target: crate::log::EventTarget::GAMEDIG_DEV,
-            "UDP::<Tokio>::Recv: Receiving data from {}",
-            &self.peer_addr
-        );
+    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<(), Self::Error> {
+        dev_trace_fmt!("GAMEDIG::CORE::UDP::CLIENT::TOKIO::<RECV>: {:?}", |f| {
+            f.debug_struct("Args")
+                .field("buf", format_args!("len({})", buf.len()))
+                .field("timeout", &timeout)
+                .finish()
+        });
 
         match timer(timeout, self.socket.recv(buf)).await {
             Ok(Ok(_)) => Ok(()),
@@ -150,37 +123,23 @@ impl super::AbstractUdp for TokioUdpClient {
             // Error during the read operation
             Ok(Err(e)) => {
                 return Err(Report::from(e)
-                    .change_context(
-                        NetworkError::UdpRecvError {
-                            peer_addr: self.peer_addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(TokioUdpClientError::Recv)
                     .attach(FailureReason::new(
                         "An underlying I/O error occurred during the socket read operation.",
                     ))
-                    .attach(Recommendation::new(
-                        "Ensure the socket connection is stable and there are no issues with the \
-                         network or server.",
-                    )));
+                    .attach(SYSTEM_INFO)
+                    .attach(CRATE_INFO));
             }
 
             // Read operation timed out
             Err(e) => {
                 return Err(Report::from(e)
-                    .change_context(
-                        NetworkError::UdpTimeoutElapsedError {
-                            peer_addr: self.peer_addr,
-                        }
-                        .into(),
-                    )
+                    .change_context(TokioUdpClientError::RecvTimeout)
                     .attach(FailureReason::new(
                         "The read operation exceeded the specified timeout duration.",
                     ))
-                    .attach(Recommendation::new(
-                        "Check for network latency issues and consider increasing the timeout \
-                         duration if the server response is expected to be slow.",
-                    )));
+                    .attach(SYSTEM_INFO)
+                    .attach(CRATE_INFO));
             }
         }
     }

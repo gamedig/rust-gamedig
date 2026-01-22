@@ -9,6 +9,12 @@ mod std;
 #[cfg(feature = "socket_tokio")]
 mod tokio;
 
+#[cfg(feature = "socket_std")]
+pub(crate) type InnerUdpClient = std::StdUdpClient;
+
+#[cfg(feature = "socket_tokio")]
+pub(crate) type InnerUdpClient = tokio::TokioUdpClient;
+
 #[maybe_async::maybe_async]
 pub(crate) trait AbstractUdp {
     type Error;
