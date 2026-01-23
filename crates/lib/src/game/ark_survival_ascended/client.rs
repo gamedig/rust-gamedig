@@ -1,5 +1,5 @@
 use {
-    super::model::Matchmaking,
+    super::model::{Matchmaking, MatchmakingSession},
     crate::{
         core::error::{Report, ResultExt},
         protocol::epic_api::{
@@ -55,11 +55,12 @@ impl ArkSurvivalAscendedClient {
     pub async fn query(
         &mut self,
         addr: &SocketAddr,
-    ) -> Result<Matchmaking, Report<ArkSurvivalAscendedClientError>> {
+    ) -> Result<MatchmakingSession, Report<ArkSurvivalAscendedClientError>> {
         Ok(self
             .protocol
             .query_as::<Matchmaking>(addr)
             .await
-            .change_context(ArkSurvivalAscendedClientError::MatchmakingSession)?)
+            .change_context(ArkSurvivalAscendedClientError::MatchmakingSession)?
+            .session)
     }
 }
