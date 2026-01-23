@@ -1,14 +1,27 @@
 use {
-    super::model::{Credentials, FilteredServers, OAuthToken, RoutingScope},
-    crate::{
-        core::{HttpClient, Payload},
-        error::Result,
+    super::model::{Credentials, OAuthToken, RoutingScope},
+    crate::core::{
+        HttpClient,
+        Payload,
+        error::{Report, ResultExt},
     },
     base64::{Engine, prelude::BASE64_STANDARD},
     serde::de::DeserializeOwned,
     serde_json::json,
     std::{net::SocketAddr, time::Duration},
 };
+
+#[derive(Debug, thiserror::Error)]
+pub enum EpicApiClientError {
+    #[error("[GameDig]::[EpicAPI::HTTP_CLIENT_INIT]: Failed to initialize HTTP client")]
+    HttpClientInit,
+
+    #[error("[GameDig]::[EpicAPI::OAUTH_TOKEN_REQUEST]: Failed to request OAuth token")]
+    OAuthTokenRequest,
+
+    #[error("[GameDig]::[EpicAPI::MATCHMAKING_REQUEST]: Failed to request matchmaking")]
+    MatchmakingRequest,
+}
 
 pub struct EpicApiClient {
     net: HttpClient,
@@ -18,23 +31,32 @@ pub struct EpicApiClient {
 
 #[maybe_async::maybe_async]
 impl EpicApiClient {
-    pub async fn new(credentials: Credentials) -> Result<Self> {
+    pub async fn new(credentials: Credentials) -> Result<Self, Report<EpicApiClientError>> {
         Ok(Self {
-            net: HttpClient::new(Duration::from_secs(10)).await?,
+            net: HttpClient::new(None)
+                .await
+                .change_context(EpicApiClientError::HttpClientInit)?,
+
             credentials,
             authentication: None,
         })
     }
 
-    pub async fn new_with_timeout(credentials: Credentials, timeout: Duration) -> Result<Self> {
+    pub async fn new_with_timeout(
+        credentials: Credentials,
+        timeout: Duration,
+    ) -> Result<Self, Report<EpicApiClientError>> {
         Ok(Self {
-            net: HttpClient::new(timeout).await?,
+            net: HttpClient::new(Some(timeout))
+                .await
+                .change_context(EpicApiClientError::HttpClientInit)?,
+
             credentials,
             authentication: None,
         })
     }
 
-    async fn authenticate(&mut self) -> Result<()> {
+    async fn authenticate(&mut self) -> Result<(), Report<EpicApiClientError>> {
         if self
             .authentication
             .as_ref()
@@ -62,13 +84,17 @@ impl EpicApiClient {
                         ("deployment_id", self.credentials.deployment),
                     ])),
                 )
-                .await?,
+                .await
+                .change_context(EpicApiClientError::OAuthTokenRequest)?,
         );
 
         Ok(())
     }
 
-    pub async fn query_as<T: DeserializeOwned>(&mut self, addr: &SocketAddr) -> Result<T> {
+    pub async fn query_as<T: DeserializeOwned>(
+        &mut self,
+        addr: &SocketAddr,
+    ) -> Result<T, Report<EpicApiClientError>> {
         self.authenticate().await?;
 
         let url = format!(
@@ -102,10 +128,7 @@ impl EpicApiClient {
                     ]
                 }))),
             )
-            .await?)
-    }
-
-    pub async fn query(&mut self, addr: &SocketAddr) -> Result<FilteredServers> {
-        self.query_as::<FilteredServers>(addr).await
+            .await
+            .change_context(EpicApiClientError::MatchmakingRequest)?)
     }
 }

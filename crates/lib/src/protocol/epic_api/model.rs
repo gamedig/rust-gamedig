@@ -1,7 +1,6 @@
 use {
     chrono::{DateTime, TimeDelta, Utc},
     serde::Deserialize,
-    serde_json::Value,
 };
 
 pub enum RoutingScope {
@@ -25,6 +24,3 @@ pub(crate) struct OAuthToken {
 impl OAuthToken {
     pub(crate) fn is_valid(&self) -> bool { self.expires_at > Utc::now() + TimeDelta::seconds(30) }
 }
-
-#[derive(Deserialize)]
-pub struct FilteredServers(pub Value);
