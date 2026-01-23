@@ -135,85 +135,63 @@ pub struct MatchmakingSessionAttributes {
 mod serde_derive_ext {
     use {
         super::MatchmakingSession,
-        serde::{
-            de::Error as _,
-            {Deserialize, Deserializer},
+        serde::{Deserialize, Deserializer, de::Error as _},
+        std::{
+            borrow::Cow,
+            net::{IpAddr, SocketAddr},
         },
-        std::net::{IpAddr, SocketAddr},
     };
 
     pub fn de_single_matchmaking_session<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<MatchmakingSession, D::Error> {
         let mut sessions = Vec::<MatchmakingSession>::deserialize(deserializer)?;
+        let len = sessions.len();
 
-        match sessions.len() {
-            1 => Ok(sessions.remove(0)),
-            0 => {
-                Err(serde::de::Error::custom(
-                    "Expected exactly one matchmaking session, got zero",
-                ))
-            }
-            num => {
-                Err(serde::de::Error::custom(format!(
-                    "Expected exactly one matchmaking session, got {num}"
-                )))
-            }
+        if len == 1 {
+            Ok(sessions.pop().unwrap())
+        } else if len == 0 {
+            Err(D::Error::custom(
+                "Expected exactly 1 matchmaking session, got 0",
+            ))
+        } else {
+            Err(D::Error::custom(format!(
+                "Expected exactly 1 matchmaking session, got {len}"
+            )))
         }
     }
 
     pub fn de_string_to_ip_addr<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<IpAddr, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        s.parse::<IpAddr>().map_err(serde::de::Error::custom)
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
+        s.parse::<IpAddr>().map_err(D::Error::custom)
     }
 
     pub fn de_string_to_socket_addr<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<SocketAddr, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        s.parse::<SocketAddr>().map_err(serde::de::Error::custom)
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
+        s.parse::<SocketAddr>().map_err(D::Error::custom)
     }
 
     pub fn de_string_to_u16<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u16, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        s.parse::<u16>().map_err(serde::de::Error::custom)
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
+        s.parse::<u16>().map_err(D::Error::custom)
     }
 
     pub fn de_string_to_u32<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u32, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        s.parse::<u32>().map_err(serde::de::Error::custom)
-    }
-
-    pub fn de_comma_num_string_to_vec_u32<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Vec<u32>, D::Error> {
-        let s = String::deserialize(deserializer)?;
-
-        if s.trim().is_empty() {
-            return Ok(Vec::new());
-        }
-
-        s.split(',')
-            .map(|v| v.trim())
-            .filter(|v| !v.is_empty())
-            .map(|v| {
-                v.parse::<u32>().map_err(|e| {
-                    D::Error::custom(format!("Invalid number in comma separated list: {e}"))
-                })
-            })
-            .collect()
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
+        s.parse::<u32>().map_err(D::Error::custom)
     }
 
     pub fn de_num_to_bool<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
         match u8::deserialize(deserializer)? {
             0 => Ok(false),
             1 => Ok(true),
-
             other => {
                 Err(D::Error::custom(format!(
-                    "Invalid boolean (expected 0 or 1, got {other})"
+                    "Invalid boolean flag (expected 0 or 1, got {other})"
                 )))
             }
         }
@@ -222,15 +200,44 @@ mod serde_derive_ext {
     pub fn de_plus_string_to_vec_string<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<Vec<String>, D::Error> {
-        let s = String::deserialize(deserializer)?;
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
 
-        if s.trim().is_empty() {
+        if s.is_empty() {
             return Ok(Vec::new());
         }
 
-        Ok(s.split('+')
-            .map(|v| v.trim().to_owned())
-            .filter(|v| !v.is_empty())
-            .collect())
+        let plus_count = s.as_bytes().iter().filter(|&&b| b == b'+').count();
+        let mut out = Vec::with_capacity(plus_count + 1);
+
+        for part in s.split_terminator('+') {
+            if !part.is_empty() {
+                out.push(part.to_owned());
+            }
+        }
+
+        Ok(out)
+    }
+
+    pub fn de_comma_num_string_to_vec_u32<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Vec<u32>, D::Error> {
+        let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
+
+        if s.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let comma_count = s.as_bytes().iter().filter(|&&b| b == b',').count();
+        let mut out = Vec::with_capacity(comma_count + 1);
+
+        for part in s.split_terminator(',') {
+            if part.is_empty() {
+                continue;
+            }
+
+            out.push(part.parse::<u32>().map_err(D::Error::custom)?);
+        }
+
+        Ok(out)
     }
 }
