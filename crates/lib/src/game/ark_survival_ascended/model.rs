@@ -202,10 +202,6 @@ mod serde_derive_ext {
     ) -> Result<Vec<String>, D::Error> {
         let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
 
-        if s.is_empty() {
-            return Ok(Vec::new());
-        }
-
         let plus_count = s.as_bytes().iter().filter(|&&b| b == b'+').count();
         let mut out = Vec::with_capacity(plus_count + 1);
 
@@ -222,10 +218,6 @@ mod serde_derive_ext {
         deserializer: D,
     ) -> Result<Vec<u32>, D::Error> {
         let s: Cow<'de, str> = Cow::deserialize(deserializer)?;
-
-        if s.is_empty() {
-            return Ok(Vec::new());
-        }
 
         let comma_count = s.as_bytes().iter().filter(|&&b| b == b',').count();
         let mut out = Vec::with_capacity(comma_count + 1);
