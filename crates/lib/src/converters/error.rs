@@ -7,6 +7,9 @@ use crate::core::error::Report;
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ErrorCategory {
+    /// Errors related to protocol initialization or handshake failures.
+    Init,
+
     /// Errors caused by client side logic, invariants, or sanity checks.
     Client,
 
