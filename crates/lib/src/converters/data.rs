@@ -1,4 +1,8 @@
-use std::{collections::HashMap, net::SocketAddr, time::Duration};
+use std::{
+    collections::HashMap,
+    net::{IpAddr, SocketAddr},
+    time::Duration,
+};
 
 /// A dynamically typed value for attaching arbitrary metadata.
 ///
@@ -28,7 +32,11 @@ pub enum GenericDataValue {
     Bool(bool),
 
     String(Box<String>),
+    StringList(Box<Vec<String>>),
+
     Duration(Box<Duration>),
+
+    IpAddr(Box<IpAddr>),
     SocketAddr(Box<SocketAddr>),
 }
 
@@ -100,8 +108,32 @@ impl From<&str> for GenericDataValue {
     fn from(s: &str) -> Self { Self::String(Box::new(s.to_owned())) }
 }
 
+impl From<Vec<String>> for GenericDataValue {
+    fn from(v: Vec<String>) -> Self { Self::StringList(Box::new(v)) }
+}
+
+impl From<&[String]> for GenericDataValue {
+    fn from(v: &[String]) -> Self { Self::StringList(Box::new(v.to_vec())) }
+}
+
+impl From<Vec<&str>> for GenericDataValue {
+    fn from(v: Vec<&str>) -> Self {
+        Self::StringList(Box::new(v.into_iter().map(String::from).collect()))
+    }
+}
+
+impl From<&[&str]> for GenericDataValue {
+    fn from(v: &[&str]) -> Self {
+        Self::StringList(Box::new(v.iter().map(|s| (*s).to_owned()).collect()))
+    }
+}
+
 impl From<Duration> for GenericDataValue {
     fn from(d: Duration) -> Self { Self::Duration(Box::new(d)) }
+}
+
+impl From<IpAddr> for GenericDataValue {
+    fn from(ip: IpAddr) -> Self { Self::IpAddr(Box::new(ip)) }
 }
 
 impl From<SocketAddr> for GenericDataValue {
