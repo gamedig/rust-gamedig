@@ -141,4 +141,4 @@ impl From<SocketAddr> for GenericDataValue {
 }
 
 /// A map of arbitrary, optionally present metadata values.
-pub type GenericDataMap = HashMap<String, Option<GenericDataValue>>;
+pub type GenericDataMap = HashMap<String, GenericDataValue>;
