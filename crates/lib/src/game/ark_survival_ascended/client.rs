@@ -1,5 +1,5 @@
 use {
-    super::model::{Matchmaking, MatchmakingSession},
+    super::{ArkSurvivalAscendedClientError, Matchmaking, MatchmakingSession},
     crate::{
         core::error::{Report, ResultExt},
         protocol::epic_api::{
@@ -9,17 +9,6 @@ use {
     },
     std::{net::SocketAddr, time::Duration},
 };
-
-#[derive(Debug, thiserror::Error)]
-pub enum ArkSurvivalAscendedClientError {
-    #[error("[GameDig]::[ArkSurvivalAscended::ProtocolInit]: Failed to initialize protocol client")]
-    ProtocolInit,
-
-    #[error(
-        "[GameDig]::[ArkSurvivalAscended::MatchmakingSession]: Failed to query matchmaking session"
-    )]
-    MatchmakingSession,
-}
 
 pub struct ArkSurvivalAscendedClient {
     protocol: EpicApiClient,
@@ -38,7 +27,7 @@ impl ArkSurvivalAscendedClient {
         Ok(Self {
             protocol: EpicApiClient::new(Self::CREDENTIALS)
                 .await
-                .change_context(ArkSurvivalAscendedClientError::ProtocolInit)?,
+                .change_context(ArkSurvivalAscendedClientError::Init)?,
         })
     }
 
@@ -48,7 +37,7 @@ impl ArkSurvivalAscendedClient {
         Ok(Self {
             protocol: EpicApiClient::new_with_timeout(Self::CREDENTIALS, timeout)
                 .await
-                .change_context(ArkSurvivalAscendedClientError::ProtocolInit)?,
+                .change_context(ArkSurvivalAscendedClientError::Init)?,
         })
     }
 
