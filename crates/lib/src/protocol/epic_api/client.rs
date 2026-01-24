@@ -112,8 +112,7 @@ impl EpicApiClient {
             self.authentication.as_ref().unwrap().access_token
         );
 
-        Ok(self
-            .net
+        self.net
             .post::<T>(
                 &url,
                 None,
@@ -129,6 +128,6 @@ impl EpicApiClient {
                 }))),
             )
             .await
-            .change_context(EpicApiClientError::MatchmakingRequest)?)
+            .change_context(EpicApiClientError::MatchmakingRequest)
     }
 }

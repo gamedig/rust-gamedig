@@ -199,7 +199,7 @@ impl<B: Bufferable> Buffer<B> {
 
         match (self.pos() as isize).checked_add(off) {
             None => {
-                return Err(Report::new(BufferError::NotRepresentable)
+                Err(Report::new(BufferError::NotRepresentable)
                     .attach(FailureReason::new(
                         "The buffer cursor could not be repositioned because adding the requested \
                          offset to the current position produced a value that is not \
@@ -214,11 +214,11 @@ impl<B: Bufferable> Buffer<B> {
                         Some(self.pos()),
                     ))
                     .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
 
             Some(n) if n < 0 || n as usize > self.len() => {
-                return Err(Report::new(BufferError::OutOfRange)
+                Err(Report::new(BufferError::OutOfRange)
                     .attach(FailureReason::new(
                         "The buffer cursor could not be repositioned because the computed target \
                          index falls outside the valid range of the underlying data. The \
@@ -234,7 +234,7 @@ impl<B: Bufferable> Buffer<B> {
                         Some(self.pos()),
                     ))
                     .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
 
             Some(n) => {
@@ -1025,7 +1025,6 @@ impl<B: Bufferable> Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-
     pub(crate) fn read_string_utf16_be(
         &mut self,
         delimiter: Option<[u8; 2]>,

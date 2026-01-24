@@ -213,9 +213,9 @@ impl super::AbstractTcp for TokioTcpClient {
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(TokioTcpClientError::WriteTimeout)
-                    .attach(FailureReason::new(format!(
-                        "The operation exceeded the specified timeout duration."
-                    )))
+                    .attach(FailureReason::new(
+                        "The operation exceeded the specified timeout duration.",
+                    ))
                     .attach(SYSTEM_INFO)
                     .attach(CRATE_INFO));
             }
