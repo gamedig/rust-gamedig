@@ -24,7 +24,7 @@ impl ErrorCategoryExt for ArkSurvivalAscendedClientError {
 }
 
 impl GenericServerExt for MatchmakingSession {
-    fn as_generic_server(self) -> GenericServer {
+    fn into_generic_server(self) -> GenericServer {
         GenericServer {
             players: None,
             data: Some(GenericDataMap::from_iter([

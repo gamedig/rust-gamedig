@@ -9,5 +9,5 @@ pub struct GenericPlayer {
 pub trait GenericPlayerExt {
     /// Returns a [`GenericPlayer`] representation of `self`.
     #[must_use]
-    fn as_generic_player(self) -> GenericPlayer;
+    fn into_generic_player(self) -> GenericPlayer;
 }
