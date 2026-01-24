@@ -77,10 +77,3 @@ pub mod protocol;
 /// conversion of custom structures into widely used formats.
 #[cfg(feature = "attribute_converters")]
 pub mod converters;
-
-/// Dictionary.
-///
-/// This feature gated module provides a dictionary that can be used to get
-/// a generic client from a identifier.
-#[cfg(feature = "attribute_dict")]
-pub mod dict;
