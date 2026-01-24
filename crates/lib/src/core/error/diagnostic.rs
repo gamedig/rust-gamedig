@@ -295,8 +295,6 @@ pub(crate) struct CrateInfo {
     log: bool,
     /// Indicates if development logging is included in the build.
     dev_log: bool,
-    /// Indicates if dictionary support is included in the build.
-    dict: bool,
     /// Indicates if Serde support is included in the build.
     serde: bool,
     /// Indicates if converters are included in the build.
@@ -327,7 +325,6 @@ impl CrateInfo {
 
             log: cfg!(feature = "attribute_log"),
             dev_log: cfg!(feature = "_DEV_LOG"),
-            dict: cfg!(feature = "attribute_dict"),
             serde: cfg!(feature = "attribute_serde"),
             converters: cfg!(feature = "attribute_converters"),
             extended_derive: cfg!(feature = "attribute_extended_derive"),
@@ -356,7 +353,6 @@ impl fmt::Display for CrateInfo {
         writeln!(f, "\x1B[1m  Library       : \x1B[0m")?;
         writeln!(f, "\x1B[1m    Log         : \x1B[0m{}", self.log)?;
         writeln!(f, "\x1B[1m    Dev Log     : \x1B[0m{}", self.dev_log)?;
-        writeln!(f, "\x1B[1m    Dict        : \x1B[0m{}", self.dict)?;
         writeln!(f, "\x1B[1m    Serde       : \x1B[0m{}", self.serde)?;
         writeln!(f, "\x1B[1m    Converters  : \x1B[0m{}", self.converters)?;
         writeln!(f, "\x1B[1m    Ext Derive  : \x1B[0m{}", self.extended_derive)
