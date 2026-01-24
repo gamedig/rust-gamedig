@@ -9,5 +9,5 @@ pub struct GenericServer {
 pub trait GenericServerExt {
     /// Returns a [`GenericServer`] representation of `self`.
     #[must_use]
-    fn as_generic_server(&self) -> GenericServer;
+    fn as_generic_server(self) -> GenericServer;
 }
