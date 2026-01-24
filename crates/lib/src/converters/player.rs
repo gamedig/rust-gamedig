@@ -1,10 +1,8 @@
-use super::data::GenericDataMap;
-
 /// Represents a generic player with a name and associated arbitrary data.
 #[derive(Debug, Clone)]
 pub struct GenericPlayer {
     pub name: String,
-    pub data: Option<GenericDataMap>,
+    pub data: Option<super::GenericDataMap>,
 }
 
 /// Extension trait for types that can be represented as a [`GenericPlayer`].
