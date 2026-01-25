@@ -1,6 +1,6 @@
 use {
-    super::client::EpicApiClientError,
-    crate::converters::error::{ErrorCategory, ErrorCategoryExt},
+    super::EpicApiClientError,
+    crate::converters::{ErrorCategory, ErrorCategoryExt},
 };
 
 impl ErrorCategoryExt for EpicApiClientError {

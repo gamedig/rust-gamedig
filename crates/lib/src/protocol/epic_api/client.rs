@@ -1,5 +1,5 @@
 use {
-    super::model::{Credentials, OAuthToken, RoutingScope},
+    super::{Credentials, Criteria, EpicApiClientError, OAuthToken, RoutingScope},
     crate::core::{
         HttpClient,
         Payload,
@@ -8,20 +8,8 @@ use {
     base64::{Engine, prelude::BASE64_STANDARD},
     serde::de::DeserializeOwned,
     serde_json::json,
-    std::{net::SocketAddr, time::Duration},
+    std::time::Duration,
 };
-
-#[derive(Debug, thiserror::Error)]
-pub enum EpicApiClientError {
-    #[error("[GameDig]::[EpicAPI::HTTP_CLIENT_INIT]: Failed to initialize HTTP client")]
-    HttpClientInit,
-
-    #[error("[GameDig]::[EpicAPI::OAUTH_TOKEN_REQUEST]: Failed to request OAuth token")]
-    OAuthTokenRequest,
-
-    #[error("[GameDig]::[EpicAPI::MATCHMAKING_REQUEST]: Failed to request matchmaking")]
-    MatchmakingRequest,
-}
 
 pub struct EpicApiClient {
     net: HttpClient,
@@ -93,7 +81,7 @@ impl EpicApiClient {
 
     pub async fn query_as<T: DeserializeOwned>(
         &mut self,
-        addr: &SocketAddr,
+        criteria: Criteria,
     ) -> Result<T, Report<EpicApiClientError>> {
         self.authenticate().await?;
 
@@ -117,15 +105,7 @@ impl EpicApiClient {
                 &url,
                 None,
                 Some(&[("Authorization", &auth_token)]),
-                Some(Payload::Json(&json!({
-                    "criteria": [
-                        {
-                            "key": "attributes.ADDRESSBOUND_s",
-                            "op": "EQUAL",
-                            "value": addr.to_string(),
-                        }
-                    ]
-                }))),
+                Some(Payload::Json(&json!(criteria))),
             )
             .await
             .change_context(EpicApiClientError::MatchmakingRequest)

@@ -3,8 +3,13 @@ use {
     crate::{
         core::error::{Report, ResultExt},
         protocol::epic_api::{
-            client::EpicApiClient,
-            model::{Credentials, RoutingScope},
+            Credentials,
+            Criteria,
+            CriteriaOp,
+            Criterion,
+            CriterionKey,
+            EpicApiClient,
+            RoutingScope,
         },
     },
     std::{net::SocketAddr, time::Duration},
@@ -47,7 +52,19 @@ impl ArkSurvivalAscendedClient {
     ) -> Result<MatchmakingSession, Report<ArkSurvivalAscendedClientError>> {
         Ok(self
             .protocol
-            .query_as::<Matchmaking>(addr)
+            .query_as::<Matchmaking>(Criteria {
+                criteria: {
+                    let mut v = Vec::with_capacity(1);
+
+                    v.push(Criterion {
+                        key: CriterionKey::AddressBound,
+                        op: CriteriaOp::Equal,
+                        value: addr.to_string().into(),
+                    });
+                    
+                    v
+                },
+            })
             .await
             .change_context(ArkSurvivalAscendedClientError::MatchmakingSession)?
             .session)

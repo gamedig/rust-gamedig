@@ -4,7 +4,7 @@ use {
 };
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Matchmaking {
+pub(crate) struct Matchmaking {
     #[serde(
         rename = "sessions",
         deserialize_with = "serde_derive_ext::de_single_matchmaking_session"
