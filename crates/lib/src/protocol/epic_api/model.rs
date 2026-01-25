@@ -30,7 +30,6 @@ pub struct Criteria {
     pub criteria: Vec<Criterion>,
 }
 
-/// A single server query criterion.
 #[derive(Debug, Clone, Serialize)]
 pub struct Criterion {
     pub key: CriterionKey,
@@ -38,7 +37,6 @@ pub struct Criterion {
     pub value: CriteriaValue,
 }
 
-/// Operation to apply when querying.
 #[derive(Debug, Clone, Serialize)]
 pub enum CriteriaOp {
     #[serde(rename = "EQUAL")]
@@ -49,7 +47,6 @@ pub enum CriteriaOp {
     Contains,
 }
 
-/// Value used in a criterion (string | u32 | bool).
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum CriteriaValue {
