@@ -109,7 +109,7 @@ impl super::AbstractUdp for TokioUdpClient {
         }
     }
 
-    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<(), Self::Error> {
+    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize, Self::Error> {
         dev_trace_fmt!("GAMEDIG::CORE::UDP::CLIENT::TOKIO::<RECV>: {:?}", |f| {
             f.debug_struct("Args")
                 .field("buf", format_args!("len({})", buf.len()))
@@ -118,7 +118,7 @@ impl super::AbstractUdp for TokioUdpClient {
         });
 
         match timer(timeout, self.socket.recv(buf)).await {
-            Ok(Ok(_)) => Ok(()),
+            Ok(Ok(size)) => Ok(size),
 
             // Error during the read operation
             Ok(Err(e)) => {

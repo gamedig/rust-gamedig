@@ -84,7 +84,7 @@ impl UdpClient {
     /// * `buf` - A mutable slice of bytes to be filled with the received data.
     ///
     /// **Note**: If a message is too long to fit in the supplied buffer, excess bytes may be discarded.
-    pub(crate) async fn recv(&mut self, buf: &mut [u8]) -> Result<(), Report<UdpClientError>> {
+    pub(crate) async fn recv(&mut self, buf: &mut [u8]) -> Result<usize, Report<UdpClientError>> {
         // If the caller passed a Vec, the slice (buf) length will be 0.
         // The original type is erased at this point, so the capacity meta is unknown here.
         dev_trace_fmt!("GAMEDIG::CORE::NET::UDP::<RECV>: {:?}", |f| {

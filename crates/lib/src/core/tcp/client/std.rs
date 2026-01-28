@@ -118,7 +118,7 @@ impl super::AbstractTcp for StdTcpClient {
         }
     }
 
-    fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Duration) -> Result<(), Self::Error> {
+    fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Duration) -> Result<usize, Self::Error> {
         dev_trace_fmt!(
             "GAMEDIG::CORE::TCP::CLIENT::STD::<READ_TO_END>: {:?}",
             |f| {
@@ -150,7 +150,7 @@ impl super::AbstractTcp for StdTcpClient {
 
         match self.stream.read_to_end(buf) {
             // Data read successfully
-            Ok(_) => Ok(()),
+            Ok(size) => Ok(size),
 
             // Error during the read operation
             Err(e) => {

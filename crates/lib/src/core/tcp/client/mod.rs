@@ -32,7 +32,7 @@ pub(crate) trait AbstractTcp {
         &mut self,
         buf: &mut Vec<u8>,
         timeout: Duration,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<usize, Self::Error>;
 
     async fn write(&mut self, data: &[u8], timeout: Duration) -> Result<(), Self::Error>;
 }

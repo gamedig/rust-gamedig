@@ -101,7 +101,7 @@ impl TcpClient {
     pub(crate) async fn read_to_end(
         &mut self,
         buf: &mut Vec<u8>,
-    ) -> Result<(), Report<TcpClientError>> {
+    ) -> Result<usize, Report<TcpClientError>> {
         dev_trace_fmt!("GAMEDIG::CORE::TCP::<READ_TO_END>: {:?}", |f| {
             f.debug_struct("Args")
                 .field("buf", format_args!("cap({})", buf.capacity()))

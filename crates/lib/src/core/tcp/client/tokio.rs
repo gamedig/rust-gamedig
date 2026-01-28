@@ -139,7 +139,7 @@ impl super::AbstractTcp for TokioTcpClient {
         &mut self,
         buf: &mut Vec<u8>,
         timeout: Duration,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<usize, Self::Error> {
         dev_trace_fmt!(
             "GAMEDIG::CORE::TCP::CLIENT::TOKIO::<READ_TO_END>: {:?}",
             |f| {
@@ -156,7 +156,7 @@ impl super::AbstractTcp for TokioTcpClient {
 
         match timer(timeout, orh.read_to_end(buf)).await {
             // Data read successfully
-            Ok(Ok(_)) => Ok(()),
+            Ok(Ok(size)) => Ok(size),
 
             // Error during the read operation
             Ok(Err(e)) => {

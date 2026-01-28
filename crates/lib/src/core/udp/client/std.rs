@@ -122,7 +122,7 @@ impl super::AbstractUdp for StdUdpClient {
         }
     }
 
-    fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<(), Self::Error> {
+    fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize, Self::Error> {
         dev_trace_fmt!("GAMEDIG::CORE::UDP::CLIENT::STD::<RECV>: {:?}", |f| {
             f.debug_struct("Args")
                 .field("buf", format_args!("len({})", buf.len()))
@@ -149,7 +149,7 @@ impl super::AbstractUdp for StdUdpClient {
         }
 
         match self.socket.recv(buf) {
-            Ok(_) => Ok(()),
+            Ok(size) => Ok(size),
 
             Err(e) => {
                 return Err(Report::from(e)

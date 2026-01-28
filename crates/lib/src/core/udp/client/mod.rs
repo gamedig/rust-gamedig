@@ -24,5 +24,5 @@ pub(crate) trait AbstractUdp {
 
     async fn send(&mut self, data: &[u8], timeout: Duration) -> Result<(), Self::Error>;
 
-    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<(), Self::Error>;
+    async fn recv(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize, Self::Error>;
 }
