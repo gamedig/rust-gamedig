@@ -8,9 +8,12 @@ use {
             GenericQueryExt,
             GenericServer,
             GenericServerExt,
+            GenericTimeoutExt,
+            HttpMarker,
         },
         core::error::Report,
     },
+
     std::net::SocketAddr,
 };
 
@@ -110,9 +113,20 @@ impl GenericServerExt for MatchmakingSession {
 #[maybe_async::maybe_async]
 impl GenericQueryExt for ArkSurvivalAscendedClient {
     type Response = MatchmakingSession;
-    type Error = Report<ArkSurvivalAscendedClientError>;
+    type Error = ArkSurvivalAscendedClientError;
+    type Timeout = HttpMarker;
 
-    async fn query_addr(addr: &SocketAddr) -> Result<Self::Response, Self::Error> {
+    async fn query_addr(addr: &SocketAddr) -> Result<Self::Response, Report<Self::Error>> {
         ArkSurvivalAscendedClient::new().await?.query(addr).await
+    }
+
+    async fn query_addr_with_timeout(
+        addr: &SocketAddr,
+        timeout: impl GenericTimeoutExt<Self::Timeout>,
+    ) -> Result<Self::Response, Report<Self::Error>> {
+        ArkSurvivalAscendedClient::new_with_timeout(timeout.into_marker())
+            .await?
+            .query(addr)
+            .await
     }
 }

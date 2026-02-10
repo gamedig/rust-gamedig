@@ -32,10 +32,10 @@ impl EpicApiClient {
 
     pub async fn new_with_timeout(
         credentials: Credentials,
-        timeout: Duration,
+        timeout: Option<Duration>,
     ) -> Result<Self, Report<EpicApiClientError>> {
         Ok(Self {
-            net: HttpClient::new(Some(timeout))
+            net: HttpClient::new(timeout)
                 .await
                 .change_context(EpicApiClientError::HttpClientInit)?,
 

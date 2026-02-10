@@ -37,7 +37,7 @@ impl ArkSurvivalAscendedClient {
     }
 
     pub async fn new_with_timeout(
-        timeout: Duration,
+        timeout: Option<Duration>,
     ) -> Result<Self, Report<ArkSurvivalAscendedClientError>> {
         Ok(Self {
             protocol: EpicApiClient::new_with_timeout(Self::CREDENTIALS, timeout)
@@ -61,7 +61,7 @@ impl ArkSurvivalAscendedClient {
                         op: CriteriaOp::Equal,
                         value: addr.to_string().into(),
                     });
-                    
+
                     v
                 },
             })
