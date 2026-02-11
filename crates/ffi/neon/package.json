@@ -1,0 +1,15 @@
+{
+  "name": "gamedig_ffi_neon",
+  "version": "0.1.0",
+  "description": "Node.js bindings for Rust GameDig using Neon",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "cargo-cp-artifact -nc ./target/index.node -- cargo build -p gamedig_ffi_neon --release --message-format=json-render-diagnostics"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "cargo-cp-artifact": "^0.1.9"
+  }
+}

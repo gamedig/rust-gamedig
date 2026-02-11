@@ -1,0 +1,14 @@
+[package]
+name    = "gamedig_ffi_neon"
+authors = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+neon = "1.1.1"
+gamedig = { path = "../../lib" }
