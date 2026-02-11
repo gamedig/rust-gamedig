@@ -2,7 +2,8 @@
 #[derive(Debug, Clone)]
 pub struct GenericPlayer {
     pub name: String,
-    pub data: Option<super::GenericDataMap>,
+    
+    pub additional_data: Option<super::GenericDataMap>,
 }
 
 /// Extension trait for types that can be represented as a [`GenericPlayer`].
