@@ -159,6 +159,7 @@ pub(crate) struct HexDump<B: super::super::buffer::Bufferable> {
     position: Option<usize>,
 }
 
+#[cfg(feature = "_BUFFER")]
 impl<B: super::super::buffer::Bufferable> HexDump<B> {
     /// Number of bytes per line
     const WIDTH: u8 = 16;
@@ -198,6 +199,7 @@ impl<B: super::super::buffer::Bufferable> HexDump<B> {
     }
 }
 
+#[cfg(feature = "_BUFFER")]
 impl<B: super::super::buffer::Bufferable> fmt::Display for HexDump<B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\x1B[93mHex Dump:\x1B[0m")?;
@@ -500,6 +502,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "_BUFFER")]
     #[test]
     fn test_hex_dump_empty() {
         let hd = HexDump::new("Empty", Vec::new(), None);
@@ -521,6 +524,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "_BUFFER")]
     #[test]
     fn test_hex_dump_full_line() {
         let data: Vec<u8> = (0 .. 16).collect();
@@ -545,6 +549,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "_BUFFER")]
     #[test]
     fn test_hex_dump_partial_line() {
         // ASCII "ABCDE"
@@ -566,6 +571,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "_BUFFER")]
     #[test]
     fn test_hex_dump_non_ascii() {
         // non-graphic bytes replaced with '.'.
@@ -583,6 +589,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "_BUFFER")]
     #[test]
     fn test_hex_dump_multiple_lines() {
         let data: Vec<u8> = (0 .. 40).collect();
