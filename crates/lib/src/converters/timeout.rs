@@ -7,6 +7,8 @@ pub(crate) mod marker {
     pub enum UdpMarker {}
     pub enum HttpMarker {}
 
+    pub enum DictMarker {}
+
     pub trait TimeoutShape {
         type Out;
     }
@@ -25,9 +27,14 @@ pub(crate) mod marker {
         // Global
         type Out = Option<Duration>;
     }
+
+    impl TimeoutShape for DictMarker {
+        // Full config
+        type Out = super::TimeoutConfig;
+    }
 }
 
-pub trait GenericTimeoutExt<K: marker::TimeoutShape> {
+pub trait GenericTimeoutExt<K: marker::TimeoutShape>: Send + Sync {
     #[must_use]
     fn into_marker(&self) -> K::Out;
 }
@@ -91,6 +98,12 @@ impl GenericTimeoutExt<marker::HttpMarker> for TimeoutConfig {
     }
 }
 
-impl<K: marker::TimeoutShape, T: GenericTimeoutExt<K> + ?Sized> GenericTimeoutExt<K> for &T {
+impl GenericTimeoutExt<marker::DictMarker> for TimeoutConfig {
+    fn into_marker(&self) -> <marker::DictMarker as marker::TimeoutShape>::Out { *self }
+}
+
+impl<K: marker::TimeoutShape, T: GenericTimeoutExt<K> + ?Sized + Send + Sync> GenericTimeoutExt<K>
+    for &T
+{
     fn into_marker(&self) -> K::Out { (**self).into_marker() }
 }

@@ -16,4 +16,4 @@ pub use {
 };
 
 // Private
-pub(crate) use timeout::marker::{HttpMarker, TcpMarker, TimeoutShape, UdpMarker};
+pub(crate) use timeout::marker::{DictMarker, HttpMarker, TcpMarker, TimeoutShape, UdpMarker};

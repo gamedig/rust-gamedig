@@ -52,12 +52,7 @@ pub mod log;
 #[allow(dead_code)]
 pub(crate) mod core;
 
-/// Common imports for easier usage of the library.
-///
-/// The prelude module is designed to include frequently used types and
-/// functions, making it easier to use the library without importing
-/// multiple items manually.
-pub mod prelude;
+
 
 /// Implementations for specific games.
 ///
@@ -71,9 +66,22 @@ pub mod game;
 /// protocols used within the library.
 pub mod protocol;
 
+/// Common imports for easier usage of the library.
+///
+/// The prelude module is designed to include frequently used types and
+/// functions, making it easier to use the library without importing
+/// multiple items manually.
+pub mod prelude;
+
 /// Convertors for transforming structures into common formats.
 ///
 /// This feature gated module defines generic traits that facilitate
 /// conversion of custom structures into widely used formats.
 #[cfg(feature = "attribute_converters")]
 pub mod converters;
+
+/// Dictionary for querying game servers by identifier.
+///
+/// This module provides a way to query game servers using a string identifier.
+#[cfg(feature = "attribute_dict")]
+pub mod dict;
