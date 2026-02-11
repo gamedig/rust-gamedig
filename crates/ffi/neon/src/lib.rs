@@ -5,7 +5,7 @@
 // *  | |_| | (_| | | | | | |  __/ |_| | | (_| | |  _| |  _|  | |    *
 // *   \____|\__,_|_| |_| |_|\___|____/|_|\__, | |_|   |_|   |___|   *
 // *                                      |___/                      *
-// *                 Copyright (c) 2022 - 2025                       *
+// *                 Copyright (c) 2022 - 2026                       *
 // *            GameDig Organization & Contributors                  *
 // *                                                                 *
 // *               Licensed under the MIT License                    *
@@ -202,7 +202,6 @@ impl JsServer {
     fn from_rust<'a>(cx: &mut impl Context<'a>, s: &GenericServer) -> JsResult<'a, JsObject> {
         let obj = cx.empty_object();
 
-        // FIX: avoid double-borrow: create value first, then set
         let name = cx.string(&s.name);
         obj.set(cx, "name", name)?;
 

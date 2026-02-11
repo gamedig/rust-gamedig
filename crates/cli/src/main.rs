@@ -5,7 +5,7 @@
 // *  | |_| | (_| | | | | | |  __/ |_| | | (_| | | |___| |___ | |    *
 // *   \____|\__,_|_| |_| |_|\___|____/|_|\__, |  \____|_____|___|   *
 // *                                      |___/                      *
-// *                 Copyright (c) 2022 - 2025                       *
+// *                 Copyright (c) 2022 - 2026                       *
 // *            GameDig Organization & Contributors                  *
 // *                                                                 *
 // *               Licensed under the MIT License                    *
