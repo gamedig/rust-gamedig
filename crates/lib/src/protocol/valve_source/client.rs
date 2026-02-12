@@ -1,15 +1,55 @@
 use {
     super::model::{Fragment, Player, TheShipPlayer},
-    crate::{
-        core::{Buffer, UdpClient},
-        error::Result,
+    crate::core::{
+        Buffer,
+        UdpClient,
+        error::{
+            Report,
+            ResultExt,
+            diagnostic::{ContextComponent, FailureReason},
+        },
     },
     bzip2::read::BzDecoder,
     std::{collections::HashMap, io::Read, net::SocketAddr, time::Duration},
 };
 
-pub struct ValveSourceClient {
+#[derive(Debug, thiserror::Error)]
+
+pub enum ValveSourceClientError {
+    #[error(
+        "[GameDig]::[ValveSource::UDP_CLIENT_INIT]: An error occurred while initializing UDP \
+         client"
+    )]
+    UdpClientInit,
+
+    #[error(
+        "[GameDig]::[ValveSource::UDP_REQUEST]: An error occurred while performing a UDP request"
+    )]
+    UdpRequest,
+
+    #[error("[GameDig]::[ValveSource::PARSE]: Failed to parse {section}::{field}")]
+    Parse {
+        section: &'static str,
+        field: &'static str,
+    },
+
+    #[error("[GameDig]::[ValveSource::BZIP2_DECOMPRESS]: Failed to decompress bzip2 payload")]
+    Bzip2Decompress,
+
+    #[error("[GameDig]::[ValveSource::SANITY_CHECK]: Sanity check failed for {name}")]
+    SanityCheck { name: &'static str },
+}
+
+pub struct ValveSourceClient<
+    const MAX_PACKET_SIZE_PLUS_ONE: usize = 1401,
+    const MAX_TOTAL_FRAGMENTS: u8 = 35,
+> {
     net: UdpClient,
+
+    /// Whether to use "The Ship" server query format.
+    ///
+    /// Defaults to `false`.
+    pub the_ship: bool,
 
     /// Set as `false` by default.
     ///
@@ -19,27 +59,20 @@ pub struct ValveSourceClient {
     ///
     /// `[215, 240, 17550, 17700]` when protocol = `7`.
     pub legacy_split_packet: bool,
-
-    /// Whether to use "The Ship" server query format.
-    ///
-    /// Defaults to `false`.
-    pub the_ship: bool,
-
-    /// Maximum payload size for receiving packets.
-    ///
-    /// Defaults to `1400`.
-    pub max_payload_size: usize,
 }
 
 #[maybe_async::maybe_async]
-impl ValveSourceClient {
-    pub async fn new(addr: SocketAddr) -> Result<Self> {
+impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
+    ValveSourceClient<MAX_PACKET_SIZE_PLUS_ONE, MAX_TOTAL_FRAGMENTS>
+{
+    pub async fn new(addr: SocketAddr) -> Result<Self, Report<ValveSourceClientError>> {
         Ok(Self {
-            net: UdpClient::new(addr, None, None).await?,
+            net: UdpClient::new(addr, None, None)
+                .await
+                .change_context(ValveSourceClientError::UdpClientInit)?,
 
-            legacy_split_packet: false,
             the_ship: false,
-            max_payload_size: 1400,
+            legacy_split_packet: false,
         })
     }
 
@@ -47,66 +80,146 @@ impl ValveSourceClient {
         addr: SocketAddr,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
-    ) -> Result<Self> {
+    ) -> Result<Self, Report<ValveSourceClientError>> {
         Ok(Self {
-            net: UdpClient::new(addr, read_timeout, write_timeout).await?,
+            net: UdpClient::new(addr, read_timeout, write_timeout)
+                .await
+                .change_context(ValveSourceClientError::UdpClientInit)?,
 
-            legacy_split_packet: false,
             the_ship: false,
-            max_payload_size: 1400,
+            legacy_split_packet: false,
         })
     }
 
-    async fn net_send(&mut self, payload: &[u8]) -> Result<Buffer<Vec<u8>>> {
-        self.net.send(payload).await?;
+    async fn request(
+        &mut self,
+        payload: &[u8],
+    ) -> Result<Buffer<Vec<u8>>, Report<ValveSourceClientError>> {
+        self.net
+            .send(payload)
+            .await
+            .change_context(ValveSourceClientError::UdpRequest)?;
 
-        let mut datagram = Vec::with_capacity(1400);
-        self.net.recv(&mut datagram).await?;
+        let mut datagram = [0u8; MAX_PACKET_SIZE_PLUS_ONE];
+        let datagram_len = self
+            .net
+            .recv(&mut datagram)
+            .await
+            .change_context(ValveSourceClientError::UdpRequest)?;
 
-        let mut datagram = Buffer::new(datagram);
+        if datagram_len == MAX_PACKET_SIZE_PLUS_ONE {
+            return Err(Report::new(ValveSourceClientError::SanityCheck {
+                name: "datagram length",
+            })
+            .attach(FailureReason::new(
+                "Received a datagram at the maximum allowed size. This strongly suggests \
+                 truncation, so the datagram cannot be parsed",
+            ))
+            .attach(ContextComponent::new(
+                "Maximum datagram size",
+                MAX_PACKET_SIZE_PLUS_ONE - 1,
+            ))
+            .attach(ContextComponent::new(
+                "Received datagram size (which may be truncated)",
+                datagram_len,
+            )));
+        }
 
-        match datagram.read_i32_le()? {
+        let mut datagram = Buffer::new(datagram[.. datagram_len].to_vec());
+
+        let datagram_header =
+            datagram
+                .read_i32_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "datagram",
+                    field: "header",
+                })?;
+
+        match datagram_header {
             // Single
             -1 => Ok(datagram),
 
             // Fragmented
             -2 => {
-                let id = datagram.read_u32_le()?;
+                let id = datagram
+                    .read_u32_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "datagram",
+                        field: "id",
+                    })?;
+
                 let compression = (id & 0x8000_0000) != 0;
 
-                let total = datagram.read_u8()?;
-                if total > 32 {
-                    // too many fragments
-                    todo!();
+                let total = datagram
+                    .read_u8()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "datagram",
+                        field: "total",
+                    })?;
+
+                if total > MAX_TOTAL_FRAGMENTS {
+                    return Err(Report::new(ValveSourceClientError::SanityCheck {
+                        name: "total fragments",
+                    })
+                    .attach(FailureReason::new(
+                        "Total fragments exceeded the maximum allowed",
+                    ))
+                    .attach(ContextComponent::new(
+                        "Maximum total fragments",
+                        MAX_TOTAL_FRAGMENTS,
+                    ))
+                    .attach(ContextComponent::new("Received total fragments", total)));
                 }
 
-                let number = datagram.read_u8()?;
+                let number = datagram
+                    .read_u8()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "datagram",
+                        field: "number",
+                    })?;
+
                 if number != 0 {
-                    // first fragment must be 0
-                    todo!();
+                    return Err(Report::new(ValveSourceClientError::SanityCheck {
+                        name: "first fragment number",
+                    })
+                    .attach(FailureReason::new(
+                        "First fragment number was expected to be 0",
+                    ))
+                    .attach(ContextComponent::new("Received", number)));
                 }
 
-                let size = if self.legacy_split_packet {
-                    1248
-                } else {
-                    datagram.read_u16_le()?
-                };
-                if size as usize > self.max_payload_size {
-                    // fragment size exceeds allowed limit
-                    todo!();
-                }
-
-                let decompressed_size = if compression {
-                    Some(datagram.read_u32_le()?)
-                } else {
-                    None
+                if !self.legacy_split_packet {
+                    datagram
+                        .move_pos(2)
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "datagram",
+                            field: "size",
+                        })?
                 };
 
-                let crc32 = if compression {
-                    Some(datagram.read_u32_le()?)
-                } else {
-                    None
-                };
+                let decompressed_size =
+                    if compression {
+                        Some(datagram.read_u32_le().change_context(
+                            ValveSourceClientError::Parse {
+                                section: "datagram",
+                                field: "decompressed_size",
+                            },
+                        )?)
+                    } else {
+                        None
+                    };
+
+                let crc32 =
+                    if compression {
+                        Some(datagram.read_u32_le().change_context(
+                            ValveSourceClientError::Parse {
+                                section: "datagram",
+                                field: "crc32",
+                            },
+                        )?)
+                    } else {
+                        None
+                    };
 
                 let pos = datagram.pos();
                 let mut payload = datagram.unpack();
@@ -115,31 +228,76 @@ impl ValveSourceClient {
                 let mut fragments = Vec::with_capacity((total - 1) as usize);
 
                 for _ in 1 .. total {
-                    let mut fragment = Vec::with_capacity(1400);
-                    self.net.recv(&mut fragment).await?;
+                    let mut fragment = [0u8; MAX_PACKET_SIZE_PLUS_ONE];
+                    let fragment_len = self
+                        .net
+                        .recv(&mut fragment)
+                        .await
+                        .change_context(ValveSourceClientError::UdpRequest)?;
 
-                    let mut fragment = Buffer::new(fragment);
+                    if fragment_len == MAX_PACKET_SIZE_PLUS_ONE {
+                        return Err(Report::new(ValveSourceClientError::SanityCheck {
+                            name: "fragment length",
+                        })
+                        .attach(FailureReason::new(
+                            "Received a fragment at the maximum allowed size. This strongly \
+                             suggests truncation, so the fragment cannot be parsed",
+                        ))
+                        .attach(ContextComponent::new(
+                            "Maximum fragment size",
+                            MAX_PACKET_SIZE_PLUS_ONE - 1,
+                        ))
+                        .attach(ContextComponent::new(
+                            "Received fragment size (which may be truncated)",
+                            fragment_len,
+                        )));
+                    }
 
-                    // skip header
-                    fragment.move_pos(4)?;
+                    let mut fragment = Buffer::new(fragment[.. fragment_len].to_vec());
 
-                    let fragment_id = fragment.read_u32_le()?;
+                    fragment
+                        .move_pos(4)
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "fragment",
+                            field: "header",
+                        })?;
+
+                    let fragment_id =
+                        fragment
+                            .read_u32_le()
+                            .change_context(ValveSourceClientError::Parse {
+                                section: "fragment",
+                                field: "id",
+                            })?;
+
                     if fragment_id != id {
-                        // Fragment ID mismatch
-                        todo!()
+                        return Err(Report::new(ValveSourceClientError::SanityCheck {
+                            name: "fragment ID",
+                        })
+                        .attach(FailureReason::new(
+                            "Received a fragment with a mismatching ID compared to the initial \
+                             fragment",
+                        ))
+                        .attach(ContextComponent::new("Expected fragment ID", id))
+                        .attach(ContextComponent::new("Received fragment ID", fragment_id)));
                     }
 
-                    let fragment_number = fragment.read_u8()?;
+                    let fragment_number =
+                        fragment
+                            .read_u8()
+                            .change_context(ValveSourceClientError::Parse {
+                                section: "fragment",
+                                field: "number",
+                            })?;
 
-                    let fragment_size = if self.legacy_split_packet {
-                        1248
-                    } else {
-                        fragment.read_u16_le()?
+                    if !self.legacy_split_packet {
+                        fragment
+                            .move_pos(2)
+                            .change_context(ValveSourceClientError::Parse {
+                                section: "fragment",
+                                field: "size",
+                            })?
                     };
-                    if fragment_size as usize > self.max_payload_size {
-                        // fragment size exceeds allowed limit
-                        todo!();
-                    }
 
                     let fragment_pos = fragment.pos();
                     let mut fragment_payload = fragment.unpack();
@@ -153,7 +311,41 @@ impl ValveSourceClient {
 
                 fragments.sort_by_key(|f| f.number);
 
-                payload.reserve(fragments.iter().map(|f| f.payload.len()).sum());
+                let remaining_fragments_size = fragments.iter().try_fold(0usize, |acc, f| {
+                    acc.checked_add(f.payload.len()).ok_or_else(|| {
+                        Report::new(ValveSourceClientError::SanityCheck {
+                            name: "reassembled payload size overflow",
+                        })
+                        .attach(FailureReason::new(
+                            "The total size of the reassembled payload exceeded usize::MAX",
+                        ))
+                        .attach(ContextComponent::new("Current accumulated size", acc))
+                        .attach(ContextComponent::new(
+                            "Next fragment payload size",
+                            f.payload.len(),
+                        ))
+                        .attach(ContextComponent::new("Fragment index", f.number))
+                        .attach(ContextComponent::new("Total fragment count", total))
+                    })
+                })?;
+
+                payload
+                    .try_reserve_exact(remaining_fragments_size)
+                    .change_context(ValveSourceClientError::SanityCheck {
+                        name: "fragment reassembly capacity reservation",
+                    })
+                    .attach(FailureReason::new(
+                        "Unable to reserve sufficient capacity to reassemble the remaining \
+                         fragments",
+                    ))
+                    .attach(ContextComponent::new(
+                        "Current payload capacity",
+                        payload.capacity(),
+                    ))
+                    .attach(ContextComponent::new(
+                        "Requested additional capacity",
+                        remaining_fragments_size,
+                    ))?;
 
                 for fragment in fragments {
                     payload.extend(fragment.payload);
@@ -166,22 +358,40 @@ impl ValveSourceClient {
 
                     let mut decompressed_payload = Vec::with_capacity(decompressed_size as usize);
 
-                    if BzDecoder::new(&*payload)
+                    BzDecoder::new(&*payload)
                         .read_to_end(&mut decompressed_payload)
-                        // map this error to a report later
-                        .is_err()
-                    {
-                        todo!()
+                        .change_context(ValveSourceClientError::Bzip2Decompress)?;
+
+                    let decompresed_playload_len = decompressed_payload.len();
+                    if decompresed_playload_len != decompressed_size as usize {
+                        return Err(Report::new(ValveSourceClientError::SanityCheck {
+                            name: "decompressed size",
+                        })
+                        .attach(FailureReason::new(
+                            "Decompressed payload size did not match the expected decompressed \
+                             size",
+                        ))
+                        .attach(ContextComponent::new(
+                            "Expected decompressed size",
+                            decompressed_size,
+                        ))
+                        .attach(ContextComponent::new(
+                            "Actual decompressed size",
+                            decompresed_playload_len,
+                        )));
                     }
 
-                    if decompressed_payload.len() != decompressed_size as usize {
-                        // decompressed size mismatch
-                        todo!()
-                    }
-
-                    if crc32fast::hash(&decompressed_payload) != crc32 {
-                        // crc32 mismatch
-                        todo!()
+                    let payload_crc32 = crc32fast::hash(&decompressed_payload);
+                    if payload_crc32 != crc32 {
+                        return Err(Report::new(ValveSourceClientError::SanityCheck {
+                            name: "crc32 checksum",
+                        })
+                        .attach(FailureReason::new(
+                            "CRC32 checksum of the decompressed payload did not match the \
+                             expected CRC32 checksum",
+                        ))
+                        .attach(ContextComponent::new("Expected CRC32", crc32))
+                        .attach(ContextComponent::new("Actual CRC32", payload_crc32)));
                     }
 
                     payload = decompressed_payload;
@@ -190,10 +400,18 @@ impl ValveSourceClient {
                 Ok(Buffer::new(payload))
             }
 
-            // Invalid response
             _ => {
-                // Unexpected header value
-                todo!()
+                return Err(Report::new(ValveSourceClientError::SanityCheck {
+                    name: "datagram header",
+                })
+                .attach(FailureReason::new(
+                    "Received an unexpected datagram header value that does not indicate either a \
+                     single packet or the start of a fragmented packet sequence",
+                ))
+                .attach(ContextComponent::new(
+                    "Received datagram header",
+                    datagram_header,
+                )));
             }
         }
     }
@@ -203,29 +421,62 @@ impl ValveSourceClient {
         buf: &mut Buffer<Vec<u8>>,
         payload: &[u8],
         expected_header: u8,
-    ) -> Result<Buffer<Vec<u8>>> {
-        let challenge = buf.read_i32_le()?;
+    ) -> Result<Buffer<Vec<u8>>, Report<ValveSourceClientError>> {
+        let challenge = buf
+            .read_i32_le()
+            .change_context(ValveSourceClientError::Parse {
+                section: "challenge",
+                field: "value",
+            })?;
 
         let mut challenge_payload = [0u8; L];
         challenge_payload.copy_from_slice(&payload);
         challenge_payload.copy_from_slice(&challenge.to_le_bytes());
 
-        let mut response = self.net_send(&challenge_payload).await?;
+        let mut response = self.request(&challenge_payload).await?;
 
-        if response.read_u8()? != expected_header {
-            // Unexpected response header after challenge
-            todo!()
+        let response_header = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "challenge response",
+                field: "header",
+            })?;
+
+        if response_header != expected_header {
+            return Err(Report::new(ValveSourceClientError::SanityCheck {
+                name: "post challenge response header",
+            })
+            .attach(FailureReason::new(
+                "Received an unexpected response header after a challenge",
+            ))
+            .attach(ContextComponent::new(
+                "Expected response header",
+                expected_header,
+            ))
+            .attach(ContextComponent::new(
+                "Actual response header",
+                response_header,
+            )));
         }
 
         Ok(response)
     }
 
-    pub async fn rules(&mut self) -> Result<HashMap<String, String>> {
+    pub async fn rules(
+        &mut self,
+    ) -> Result<HashMap<String, String>, Report<ValveSourceClientError>> {
         const RULES_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x56];
 
-        let mut response = self.net_send(&RULES_PAYLOAD).await?;
+        let mut response = self.request(&RULES_PAYLOAD).await?;
 
-        response = match response.read_u8()? {
+        let response_header = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "rules",
+                field: "header",
+            })?;
+
+        response = match response_header {
             b'E' => response,
             b'A' => {
                 const CHALLENGE_LEN: usize = RULES_PAYLOAD.len() + 4;
@@ -235,17 +486,48 @@ impl ValveSourceClient {
             }
 
             _ => {
-                // Unexpected header for rules query
-                todo!()
+                return Err(Report::new(ValveSourceClientError::SanityCheck {
+                    name: "rules response header",
+                })
+                .attach(FailureReason::new(
+                    "Received an unexpected response header for rules query",
+                ))
+                .attach(ContextComponent::new(
+                    "Expected response headers",
+                    "'E' (0x45) or 'A' (0x41)",
+                ))
+                .attach(ContextComponent::new(
+                    "Actual response header",
+                    response_header,
+                )));
             }
         };
 
-        let total = response.read_u16_le()?;
+        let total = response
+            .read_u16_le()
+            .change_context(ValveSourceClientError::Parse {
+                section: "rules",
+                field: "total",
+            })?;
+
         let mut rules = HashMap::with_capacity(total as usize);
 
-        for _ in 0 .. total {
-            let key = response.read_string_utf8(None, true)?;
-            let value = response.read_string_utf8(None, true)?;
+        for num in 0 .. total {
+            let key = response
+                .read_string_utf8(None, true)
+                .change_context(ValveSourceClientError::Parse {
+                    section: "rules",
+                    field: "key",
+                })
+                .attach(ContextComponent::new("Index", num))?;
+
+            let value = response
+                .read_string_utf8(None, true)
+                .change_context(ValveSourceClientError::Parse {
+                    section: "rules",
+                    field: "value",
+                })
+                .attach(ContextComponent::new("Index", num))?;
 
             rules.insert(key, value);
         }
@@ -253,12 +535,19 @@ impl ValveSourceClient {
         Ok(rules)
     }
 
-    pub async fn players(&mut self) -> Result<Vec<Player>> {
+    pub async fn players(&mut self) -> Result<Vec<Player>, Report<ValveSourceClientError>> {
         const PLAYERS_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x55];
 
-        let mut response = self.net_send(&PLAYERS_PAYLOAD).await?;
+        let mut response = self.request(&PLAYERS_PAYLOAD).await?;
 
-        response = match response.read_u8()? {
+        let response_header = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "players",
+                field: "header",
+            })?;
+
+        response = match response_header {
             b'D' => response,
             b'A' => {
                 const CHALLENGE_LEN: usize = PLAYERS_PAYLOAD.len() + 4;
@@ -268,25 +557,74 @@ impl ValveSourceClient {
             }
 
             _ => {
-                // Unexpected header for players query
-                todo!()
+                return Err(Report::new(ValveSourceClientError::SanityCheck {
+                    name: "players response header",
+                })
+                .attach(FailureReason::new(
+                    "Received an unexpected response header for players query",
+                ))
+                .attach(ContextComponent::new(
+                    "Expected response headers",
+                    "'D' (0x44) or 'A' (0x41)",
+                ))
+                .attach(ContextComponent::new(
+                    "Actual response header",
+                    response_header,
+                )));
             }
         };
 
-        let total = response.read_u8()?;
+        let total = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "players",
+                field: "total",
+            })?;
         let mut players = Vec::with_capacity(total as usize);
 
         for _ in 0 .. total {
-            // skip index
-            response.move_pos(1)?;
+            response
+                .move_pos(1)
+                .change_context(ValveSourceClientError::Parse {
+                    section: "players",
+                    field: "index",
+                })?;
 
-            let name = response.read_string_utf8(None, true)?;
-            let score = response.read_i32_le()?;
-            let duration = response.read_f32_le()?;
+            let name = response.read_string_utf8(None, true).change_context(
+                ValveSourceClientError::Parse {
+                    section: "players",
+                    field: "name",
+                },
+            )?;
+            let score = response
+                .read_i32_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "players",
+                    field: "score",
+                })?;
+            let duration =
+                response
+                    .read_f32_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "players",
+                        field: "duration",
+                    })?;
 
             let the_ship = if self.the_ship {
-                let deaths = response.read_i32_le()?;
-                let money = response.read_i32_le()?;
+                let deaths =
+                    response
+                        .read_i32_le()
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "players",
+                            field: "deaths",
+                        })?;
+                let money =
+                    response
+                        .read_i32_le()
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "players",
+                            field: "money",
+                        })?;
 
                 Some(TheShipPlayer { deaths, money })
             } else {
