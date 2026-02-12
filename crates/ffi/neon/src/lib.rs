@@ -27,7 +27,7 @@ use {
         dict::Dict,
     },
     neon::prelude::*,
-    std::{net::SocketAddr, str::FromStr, thread, time::Duration},
+    std::{net::SocketAddr, str::FromStr, time::Duration},
 };
 
 struct QueryArgs {
@@ -60,26 +60,18 @@ impl QueryArgs {
     }
 
     fn schedule(self, mut cx: FunctionContext) -> JsResult<JsPromise> {
-        let channel = cx.channel();
         let (deferred, promise) = cx.promise();
 
-        thread::spawn(move || {
-            let result = self.run();
-
-            channel.send(move |mut cx| {
-                match result {
-                    Ok(server) => {
-                        let js = JsServer::from_rust(&mut cx, &server)?;
-                        deferred.resolve(&mut cx, js);
-                    }
-                    Err(msg) => {
-                        let err = cx.error(msg)?;
-                        deferred.reject(&mut cx, err);
-                    }
-                }
-                Ok(())
-            });
-        });
+        match self.run() {
+            Ok(server) => {
+                let js = JsServer::from_rust(&mut cx, &server)?;
+                deferred.resolve(&mut cx, js);
+            }
+            Err(msg) => {
+                let err = cx.error(msg)?;
+                deferred.reject(&mut cx, err);
+            }
+        }
 
         Ok(promise)
     }
