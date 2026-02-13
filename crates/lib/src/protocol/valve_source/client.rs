@@ -1,5 +1,19 @@
 use {
-    super::model::{Fragment, Player, TheShipPlayer},
+    super::model::{
+        ExtraData,
+        ExtraDataFlag,
+        ExtraDataFlags,
+        Fragment,
+        Info,
+        Player,
+        Server,
+        ServerEnvironment,
+        ServerType,
+        SourceTV,
+        TheShip,
+        TheShipMode,
+        TheShipPlayer,
+    },
     crate::core::{
         Buffer,
         UdpClient,
@@ -640,5 +654,333 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         }
 
         Ok(players)
+    }
+
+    pub async fn info(&mut self) -> Result<Info, Report<ValveSourceClientError>> {
+        const INFO_PAYLOAD: [u8; 25] = [
+            0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E,
+            0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
+        ];
+
+        let mut response = self.request(&INFO_PAYLOAD).await?;
+
+        let response_header = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "header",
+            })?;
+
+        response = match response_header {
+            b'I' => response,
+            b'A' => {
+                const CHALLENGE_LEN: usize = INFO_PAYLOAD.len() + 4;
+
+                self.challenge::<CHALLENGE_LEN>(&mut response, &INFO_PAYLOAD, b'I')
+                    .await?
+            }
+
+            _ => {
+                return Err(Report::new(ValveSourceClientError::SanityCheck {
+                    name: "info response header",
+                })
+                .attach(FailureReason::new(
+                    "Received an unexpected response header for info query",
+                ))
+                .attach(ContextComponent::new(
+                    "Expected response headers",
+                    "'I' (0x49) or 'A' (0x41)",
+                ))
+                .attach(ContextComponent::new(
+                    "Actual response header",
+                    response_header,
+                )));
+            }
+        };
+
+        let protocol = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "protocol",
+            })?;
+
+        let name = response.read_string_utf8(None, true).change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "name",
+            },
+        )?;
+
+        let map = response.read_string_utf8(None, true).change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "map",
+            },
+        )?;
+
+        let folder = response.read_string_utf8(None, true).change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "folder",
+            },
+        )?;
+
+        let game = response.read_string_utf8(None, true).change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "game",
+            },
+        )?;
+
+        let app_id = response
+            .read_u16_le()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "app_id",
+            })?;
+
+        let players = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "players",
+            })?;
+
+        let max_players = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "max_players",
+            })?;
+
+        let bots = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "bots",
+            })?;
+
+        let raw_server_type = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "server_type",
+            })?;
+
+        let server_type = ServerType::from_u8(raw_server_type).ok_or_else(|| {
+            Report::new(ValveSourceClientError::SanityCheck {
+                name: "server type",
+            })
+            .attach(FailureReason::new(
+                "Received an unrecognized server type value that does not match any known server \
+                 types",
+            ))
+            .attach(ContextComponent::new(
+                "Received server type value",
+                raw_server_type,
+            ))
+        })?;
+
+        let raw_environment = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "environment",
+            })?;
+
+        let environment = ServerEnvironment::from_u8(raw_environment).ok_or_else(|| {
+            Report::new(ValveSourceClientError::SanityCheck {
+                name: "server environment",
+            })
+            .attach(FailureReason::new(
+                "Received an unrecognized server environment value that does not match any known \
+                 environments",
+            ))
+            .attach(ContextComponent::new(
+                "Received server environment value",
+                raw_environment,
+            ))
+        })?;
+
+        let password_protected =
+            response
+                .read_u8()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "password_protected",
+                })?
+                != 0;
+
+        let vac_enabled = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "vac_enabled",
+            })?
+            != 0;
+
+        let mut the_ship = None;
+
+        if self.the_ship {
+            let raw_mode = response
+                .read_u8()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "the_ship_mode",
+                })?;
+
+            let mode = TheShipMode::from_u8(raw_mode).ok_or_else(|| {
+                Report::new(ValveSourceClientError::SanityCheck {
+                    name: "The Ship game mode",
+                })
+                .attach(FailureReason::new(
+                    "Received an unrecognized The Ship game mode value that does not match any \
+                     known game modes",
+                ))
+                .attach(ContextComponent::new(
+                    "Received The Ship game mode value",
+                    raw_mode,
+                ))
+            })?;
+
+            let witnesses = response
+                .read_u8()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "the_ship_witnesses",
+                })?;
+
+            let duration = response
+                .read_u8()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "the_ship_duration",
+                })?;
+
+            the_ship = Some(TheShip {
+                mode,
+                witnesses,
+                duration,
+            });
+        }
+
+        let version = response.read_string_utf8(None, true).change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "version",
+            },
+        )?;
+
+        let edf = ExtraDataFlag(response.read_u8().change_context(
+            ValveSourceClientError::Parse {
+                section: "info",
+                field: "edf",
+            },
+        )?);
+
+        let mut extra_data = ExtraData {
+            port: None,
+            server_steam_id: None,
+            source_tv: None,
+            keywords: None,
+            app_id_64: None,
+        };
+
+        if edf.contains(ExtraDataFlags::Port) {
+            let port = response
+                .read_u16_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "port",
+                })?;
+
+            extra_data.port = Some(port);
+        }
+
+        if edf.contains(ExtraDataFlags::SteamID) {
+            let server_steam_id =
+                response
+                    .read_u64_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "info",
+                        field: "server_steam_id",
+                    })?;
+
+            extra_data.server_steam_id = Some(server_steam_id);
+        }
+
+        if edf.contains(ExtraDataFlags::SourceTV) {
+            let source_tv_port =
+                response
+                    .read_u16_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "info",
+                        field: "source_tv_port",
+                    })?;
+
+            let source_tv_name = response.read_string_utf8(None, true).change_context(
+                ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "source_tv_name",
+                },
+            )?;
+
+            extra_data.source_tv = Some(SourceTV {
+                port: source_tv_port,
+                name: source_tv_name,
+            });
+        }
+
+        if edf.contains(ExtraDataFlags::Keywords) {
+            let keywords = response.read_string_utf8(None, true).change_context(
+                ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "keywords",
+                },
+            )?;
+
+            extra_data.keywords = Some(keywords);
+        }
+
+        if edf.contains(ExtraDataFlags::GameID) {
+            let app_id_64 =
+                response
+                    .read_u64_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "info",
+                        field: "app_id_64",
+                    })?;
+
+            extra_data.app_id_64 = Some(app_id_64);
+        }
+
+        Ok(Info {
+            protocol,
+            name,
+            map,
+            folder,
+            game,
+            app_id,
+            players,
+            max_players,
+            bots,
+            server_type,
+            environment,
+            password_protected,
+            vac_enabled,
+            the_ship,
+            version,
+            edf,
+            extra_data,
+        })
+    }
+
+    pub async fn query(&mut self) -> Result<Server, Report<ValveSourceClientError>> {
+        Ok(Server {
+            info: self.info().await?,
+            players: self.players().await?,
+            rules: self.rules().await?,
+        })
     }
 }
