@@ -44,7 +44,7 @@ crc32fast = "1.5"
 base64 = "0.22.0"
 
 encoding_rs = "0.8"
-ureq = { version = "2.12", default-features = false, features = ["gzip", "json"] }
+ureq = { version = "3.1", default-features = false, features = ["gzip", "json"] }
 url = "2"
 
 serde = { version = "1.0", features = ["derive"] }
