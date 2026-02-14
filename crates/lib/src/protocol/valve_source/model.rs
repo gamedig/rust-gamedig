@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub(crate) struct Fragment {
     pub(crate) number: u8,
     pub(crate) payload: Vec<u8>,
@@ -12,7 +14,7 @@ pub enum ServerType {
     /// A non dedicated (listen) server.
     NonDedicated,
 
-    /// A SourceTV server (HLTV will be identified as this type as there is no way to distinguish them).
+    /// A SourceTV server.
     SourceTV,
 }
 
@@ -25,12 +27,12 @@ impl ServerType {
     /// - `b'l'` or `b'L'` &rarr; [`ServerType::NonDedicated`]
     /// - `b'p'` or `b'P'` &rarr; [`ServerType::SourceTV`]
     #[inline]
-    pub const fn from_u8(value: u8) -> Self {
+    pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
-            b'd' | b'D' => Self::Dedicated,
-            b'l' | b'L' => Self::NonDedicated,
-            b'p' | b'P' => Self::SourceTV,
-            _ => unreachable!(),
+            b'd' | b'D' => Some(Self::Dedicated),
+            b'l' | b'L' => Some(Self::NonDedicated),
+            b'p' | b'P' => Some(Self::SourceTV),
+            _ => None,
         }
     }
 }
@@ -59,12 +61,12 @@ impl ServerEnvironment {
     ///
     /// Returns `None` if the byte does not correspond to any supported environment.
     #[inline]
-    pub const fn from_u8(value: u8) -> Self {
+    pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
-            b'l' | b'L' => Self::Linux,
-            b'w' | b'W' => Self::Windows,
-            b'm' | b'M' | b'o' | b'O' => Self::Mac,
-            _ => unreachable!(),
+            b'l' | b'L' => Some(Self::Linux),
+            b'w' | b'W' => Some(Self::Windows),
+            b'm' | b'M' | b'o' | b'O' => Some(Self::Mac),
+            _ => None,
         }
     }
 }
@@ -132,7 +134,7 @@ pub struct ExtraData {
     /// The server's 64-bit GameID. This value is more precise than the low 24-bit AppID.
     ///
     /// Present if [`ExtraDataFlags::GameID`] is set.
-    pub game_app_id_64: Option<u64>,
+    pub app_id_64: Option<u64>,
 
     /// The server's SteamID.
     ///
@@ -238,11 +240,68 @@ impl TheShipMode {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TheShip {
     /// The game mode used by the server.
-    pub mode: Option<TheShipMode>,
+    pub mode: TheShipMode,
 
     /// The number of witnesses required for a player to be arrested.
     pub witnesses: u8,
 
     /// Time (in seconds) before a player is arrested once witnessed.
     pub duration: u8,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Info {
+    /// The protocol version used by the server.
+    pub protocol: u8,
+
+    /// The server's name.
+    pub name: String,
+    /// The map currently being played on the server.
+    pub map: String,
+    /// The folder name of the game installed on the server.
+    pub folder: String,
+    /// The full name of the game being played on the server.
+    pub game: String,
+    /// The server's application ID (AppID) for the game being played.
+    pub app_id: u16,
+    /// The number of players currently connected to the server.
+    pub players: u8,
+    /// The maximum number of players allowed on the server.
+    pub max_players: u8,
+    /// The number of bots currently on the server.
+    pub bots: u8,
+    /// The type of server (dedicated, non-dedicated, SourceTV).
+    pub server_type: ServerType,
+    /// The operating system environment of the server (Linux, Windows, macOS).
+    pub environment: ServerEnvironment,
+    /// Whether the server is password protected.
+    pub password_protected: bool,
+    /// Whether the server uses Valve Anti Cheat (VAC).
+    pub vac_enabled: bool,
+    /// Optional additional information for servers running `The Ship`.
+    pub the_ship: Option<TheShip>,
+    /// The version of the game installed on the server.
+    pub version: String,
+
+    /// Flags indicating which optional extra fields are included in the server response.
+    ///
+    /// Each flag corresponds to an optional field in the [`ExtraData`] struct.
+    pub edf: ExtraDataFlag,
+    /// Optional extra information provided by the server response.
+    ///
+    /// The presence of each field is determined by the bits set in the
+    /// [`Info::edf`] (Extra Data Flag).
+    pub extra_data: ExtraData,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Server {
+    /// Information about the server.
+    pub info: Info,
+
+    /// List of players currently connected to the server.
+    pub players: Option<Vec<Player>>,
+
+    /// A key/value map of server rules and their corresponding values.
+    pub rules: Option<HashMap<String, String>>,
 }

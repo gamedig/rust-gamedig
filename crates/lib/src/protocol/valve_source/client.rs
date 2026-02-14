@@ -980,9 +980,15 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
 
     pub async fn query(&mut self) -> Result<Server, Report<ValveSourceClientError>> {
         Ok(Server {
-            info: self.info().await?,
-            players: self.players().await?,
-            rules: self.rules().await?,
+            info: self
+                .query_info()
+                .await
+                .change_context(ValveSourceClientError::SanityCheck {
+                    name: "info was expected to succeed",
+                })?,
+
+            players: self.query_players().await.ok(),
+            rules: self.query_rules().await.ok(),
         })
     }
 }
