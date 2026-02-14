@@ -444,8 +444,10 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
             })?;
 
         let mut challenge_payload = [0u8; L];
-        challenge_payload.copy_from_slice(&payload);
-        challenge_payload.copy_from_slice(&challenge.to_le_bytes());
+        let payload_len = payload.len();
+
+        challenge_payload[.. payload_len].copy_from_slice(payload);
+        challenge_payload[payload_len .. payload_len + 4].copy_from_slice(&challenge.to_le_bytes());
 
         let mut response = self.request(&challenge_payload).await?;
 
