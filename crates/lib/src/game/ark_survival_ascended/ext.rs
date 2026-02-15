@@ -49,8 +49,8 @@ impl GenericServerExt for MatchmakingSession {
                 None
             },
             has_password: Some(self.attributes.server_password),
-            max_players: self.settings.max_public_players,
-            current_players: self.total_players,
+            max_players: self.settings.max_public_players as u16,
+            current_players: self.total_players as u16,
             players: None,
             additional_data: Some(GenericDataMap::from_iter([
                 ("allow_invites".into(), self.settings.allow_invites.into()),
