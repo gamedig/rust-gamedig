@@ -10,8 +10,8 @@ pub struct GenericServer {
     pub anti_cheat: Option<String>,
     pub has_password: Option<bool>,
     
-    pub max_players: u32,
-    pub current_players: u32,
+    pub max_players: u16,
+    pub current_players: u16,
     pub players: Option<Vec<super::GenericPlayer>>,
 
     pub additional_data: Option<super::GenericDataMap>,
