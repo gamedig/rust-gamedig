@@ -10,7 +10,7 @@ pub trait GenericQueryExt {
     type Response: super::GenericServerExt;
 
     /// Error type returned by the query.
-    type Error: super::ErrorCategoryExt + Error;
+    type Error: Error;
 
     /// Type of timeout configuration accepted by the query.
     type Timeout: super::TimeoutShape;

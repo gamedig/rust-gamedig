@@ -1,5 +1,3 @@
-mod data;
-mod error;
 mod player;
 mod query;
 mod server;
@@ -7,9 +5,7 @@ mod timeout;
 
 // Public
 pub use {
-    data::{GenericDataMap, GenericDataValue},
-    error::{ErrorCategory, ErrorCategoryExt},
-    player::{GenericPlayer, GenericPlayerExt},
+    player::{GenericPlayer, GenericPlayerExt, GenericPlayerWithAdditionalData},
     query::GenericQueryExt,
     server::{GenericServer, GenericServerExt},
     timeout::{GenericTimeoutExt, HttpTimeout, TcpTimeout, TimeoutConfig, UdpTimeout},
