@@ -42,13 +42,13 @@ pub struct GenericPlayer {
     derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)
 )]
 pub struct GenericPlayerWithAdditionalData<P> {
-    /// Unique identifier for the player within the server context.
+    /// Identifier for the player within the current server query.
     ///
-    /// In most cases this represents:
-    /// - the player’s index in the server player list, or
-    /// - a protocol specific player identifier.
+    /// This represents the player’s index in the server player list.
     ///
-    /// This field should be treated as the canonical identity of the player.
+    /// This value is not guaranteed to be stable and may change
+    /// between queries as players join, leave, or the server
+    /// reorders its internal player list.
     pub id: u16,
 
     /// The player’s display name, if available.
