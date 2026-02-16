@@ -7,7 +7,7 @@ mod timeout;
 pub use {
     player::{GenericPlayer, GenericPlayerExt, GenericPlayerWithAdditionalData},
     query::GenericQueryExt,
-    server::{GenericServer, GenericServerExt},
+    server::{GenericServer, GenericServerExt, GenericServerWithAdditionalData},
     timeout::{GenericTimeoutExt, HttpTimeout, TcpTimeout, TimeoutConfig, UdpTimeout},
 };
 
