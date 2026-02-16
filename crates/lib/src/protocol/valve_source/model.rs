@@ -172,6 +172,9 @@ pub struct TheShipPlayer {
 /// Represents an individual player in the server.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
+    /// The player's index on the server.
+    pub index: u8,
+
     /// Player’s display name.
     pub name: String,
 
