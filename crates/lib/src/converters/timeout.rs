@@ -194,7 +194,7 @@ impl GenericTimeoutExt<marker::HttpMarker> for TimeoutConfig {
 }
 
 impl GenericTimeoutExt<marker::DictMarker> for TimeoutConfig {
-    /// Returns the full configuration as-is.
+    /// Returns the full configuration as is.
     fn into_marker(&self) -> <marker::DictMarker as marker::TimeoutShape>::Out { *self }
 }
 
