@@ -58,7 +58,7 @@ http_tokio = ["dep:async-trait", "dep:reqwest", "dep:tokio"]
 ## Attributes (Prefix: attribute_)
 attribute_log             = ["dep:log"]
 attribute_dict            = ["attribute_converters", "dep:hashify", "dep:phf"]
-attribute_serde           = ["dep:serde"]
+attribute_serde           = ["dep:serde", "dep:serde_json"]
 attribute_converters      = []
 attribute_extended_derive = []
 
