@@ -1,6 +1,5 @@
 mod client;
 mod error;
-mod ext;
 mod model;
 
 // Public
