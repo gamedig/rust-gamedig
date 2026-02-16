@@ -1,5 +1,5 @@
 use {
-    super::model::{
+    super::{
         ExtraData,
         ExtraDataFlag,
         ExtraDataFlags,
@@ -13,6 +13,7 @@ use {
         TheShip,
         TheShipMode,
         TheShipPlayer,
+        ValveSourceClientError,
     },
     crate::core::{
         Buffer,
@@ -26,33 +27,6 @@ use {
     bzip2::read::BzDecoder,
     std::{collections::HashMap, io::Read, net::SocketAddr, time::Duration},
 };
-
-#[derive(Debug, thiserror::Error)]
-
-pub enum ValveSourceClientError {
-    #[error(
-        "[GameDig]::[ValveSource::UDP_CLIENT_INIT]: An error occurred while initializing UDP \
-         client"
-    )]
-    UdpClientInit,
-
-    #[error(
-        "[GameDig]::[ValveSource::UDP_REQUEST]: An error occurred while performing a UDP request"
-    )]
-    UdpRequest,
-
-    #[error("[GameDig]::[ValveSource::PARSE]: Failed to parse {section}::{field}")]
-    Parse {
-        section: &'static str,
-        field: &'static str,
-    },
-
-    #[error("[GameDig]::[ValveSource::BZIP2_DECOMPRESS]: Failed to decompress bzip2 payload")]
-    Bzip2Decompress,
-
-    #[error("[GameDig]::[ValveSource::SANITY_CHECK]: Sanity check failed for {name}")]
-    SanityCheck { name: &'static str },
-}
 
 pub struct ValveSourceClient<
     const MAX_PACKET_SIZE_PLUS_ONE: usize = 1401,
@@ -79,7 +53,7 @@ pub struct ValveSourceClient<
 impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
     ValveSourceClient<MAX_PACKET_SIZE_PLUS_ONE, MAX_TOTAL_FRAGMENTS>
 {
-    pub async fn new(addr: SocketAddr) -> Result<Self, Report<ValveSourceClientError>> {
+    pub async fn new(addr: &SocketAddr) -> Result<Self, Report<ValveSourceClientError>> {
         Ok(Self {
             net: UdpClient::new(addr, None, None)
                 .await
@@ -91,7 +65,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
     }
 
     pub async fn new_with_timeout(
-        addr: SocketAddr,
+        addr: &SocketAddr,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
     ) -> Result<Self, Report<ValveSourceClientError>> {
@@ -478,7 +452,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         Ok(response)
     }
 
-    pub async fn rules(
+    pub async fn query_rules(
         &mut self,
     ) -> Result<HashMap<String, String>, Report<ValveSourceClientError>> {
         const RULES_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x56];
@@ -551,7 +525,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         Ok(rules)
     }
 
-    pub async fn players(&mut self) -> Result<Vec<Player>, Report<ValveSourceClientError>> {
+    pub async fn query_players(&mut self) -> Result<Vec<Player>, Report<ValveSourceClientError>> {
         const PLAYERS_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x55];
 
         let mut response = self.request(&PLAYERS_PAYLOAD).await?;
@@ -599,8 +573,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         let mut players = Vec::with_capacity(total as usize);
 
         for _ in 0 .. total {
-            response
-                .move_pos(1)
+            let index = response
+                .read_u8()
                 .change_context(ValveSourceClientError::Parse {
                     section: "players",
                     field: "index",
@@ -648,6 +622,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
             };
 
             players.push(Player {
+                index,
                 name,
                 score,
                 duration,
@@ -658,7 +633,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         Ok(players)
     }
 
-    pub async fn info(&mut self) -> Result<Info, Report<ValveSourceClientError>> {
+    pub async fn query_info(&mut self) -> Result<Info, Report<ValveSourceClientError>> {
         const INFO_PAYLOAD: [u8; 25] = [
             0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E,
             0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
@@ -980,13 +955,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
 
     pub async fn query(&mut self) -> Result<Server, Report<ValveSourceClientError>> {
         Ok(Server {
-            info: self
-                .query_info()
-                .await
-                .change_context(ValveSourceClientError::SanityCheck {
-                    name: "info was expected to succeed",
-                })?,
-
+            info: self.query_info().await?,
             players: self.query_players().await.ok(),
             rules: self.query_rules().await.ok(),
         })
