@@ -1,7 +1,9 @@
 mod client;
 mod error;
-mod ext;
 mod model;
+
+#[cfg(feature = "attribute_converters")]
+mod ext;
 
 // Public
 pub use {
