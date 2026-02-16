@@ -2,33 +2,61 @@ use {
     super::{ArkSurvivalAscendedClient, ArkSurvivalAscendedClientError, MatchmakingSession},
     crate::{
         converters::{
-            ErrorCategory,
-            ErrorCategoryExt,
-            GenericDataMap,
+            GenericPlayerExt,
+            GenericPlayerWithAdditionalData,
             GenericQueryExt,
-            GenericServer,
             GenericServerExt,
+            GenericServerWithAdditionalData,
             GenericTimeoutExt,
             HttpMarker,
         },
         core::error::Report,
     },
-
-    std::net::SocketAddr,
+    std::net::{IpAddr, SocketAddr},
 };
 
-impl ErrorCategoryExt for ArkSurvivalAscendedClientError {
-    fn category(&self) -> ErrorCategory {
-        match self {
-            ArkSurvivalAscendedClientError::Init => ErrorCategory::Init,
-            ArkSurvivalAscendedClientError::MatchmakingSession => ErrorCategory::Networking,
+pub struct NonePlayer;
+
+// impl to satisfy trait but never used
+impl GenericPlayerExt for NonePlayer {
+    type AdditionalPlayerData = ();
+
+    fn into_generic_player_with_additional_data(
+        self,
+    ) -> GenericPlayerWithAdditionalData<Self::AdditionalPlayerData> {
+        GenericPlayerWithAdditionalData {
+            id: 0,
+            name: None,
+            additional_data: (),
         }
     }
 }
 
+pub struct AdditionalServerData {
+    pub allow_invites: bool,
+    pub allow_join_in_progress: bool,
+    pub allow_join_via_presence: bool,
+    pub address: IpAddr,
+    pub address_bound: SocketAddr,
+    pub session_name: String,
+    pub day_time: u32,
+    pub enabled_mods: Vec<u32>,
+    pub sotf_match_started: bool,
+    pub allow_download_chars: bool,
+    pub allow_download_dinos: bool,
+    pub allow_download_items: bool,
+    pub server_platform_type: Vec<String>,
+    pub eos_server_ping: u16,
+}
+
 impl GenericServerExt for MatchmakingSession {
-    fn into_generic_server(self) -> GenericServer {
-        GenericServer {
+    type AdditionalServerData = AdditionalServerData;
+    type Player = NonePlayer;
+
+    fn into_generic_server_with_additional_data(
+        self,
+    ) -> GenericServerWithAdditionalData<Self::AdditionalServerData, Self::Player> {
+        GenericServerWithAdditionalData {
             name: self.attributes.server_name,
             description: None,
             map: Some(self.attributes.map_name),
@@ -43,64 +71,27 @@ impl GenericServerExt for MatchmakingSession {
                 "v{}.{}",
                 self.attributes.build_id_major, self.attributes.build_id_minor,
             )),
-            anti_cheat: if self.attributes.server_uses_battleye {
-                Some("BattleEye".into())
-            } else {
-                None
-            },
+            anti_cheat: Some(self.attributes.server_uses_battleye),
             has_password: Some(self.attributes.server_password),
             max_players: self.settings.max_public_players as u16,
             current_players: self.total_players as u16,
             players: None,
-            additional_data: Some(GenericDataMap::from_iter([
-                ("allow_invites".into(), self.settings.allow_invites.into()),
-                (
-                    "allow_join_in_progress".into(),
-                    self.settings.allow_join_in_progress.into(),
-                ),
-                (
-                    "allow_join_via_presence".into(),
-                    self.settings.allow_join_via_presence.into(),
-                ),
-                ("address".into(), self.attributes.address.into()),
-                ("address_bound".into(), self.attributes.address_bound.into()),
-                ("session_name".into(), self.attributes.session_name.into()),
-                ("day_time".into(), self.attributes.day_time.into()),
-                // enabled_mods => StringList (u32 => String)
-                (
-                    "enabled_mods".into(),
-                    self.attributes
-                        .enabled_mods
-                        .iter()
-                        .map(|id| id.to_string())
-                        .collect::<Vec<String>>()
-                        .into(),
-                ),
-                (
-                    "sotf_match_started".into(),
-                    self.attributes.sotf_match_started.into(),
-                ),
-                (
-                    "allow_download_chars".into(),
-                    self.attributes.allow_download_chars.into(),
-                ),
-                (
-                    "allow_download_dinos".into(),
-                    self.attributes.allow_download_dinos.into(),
-                ),
-                (
-                    "allow_download_items".into(),
-                    self.attributes.allow_download_items.into(),
-                ),
-                (
-                    "server_platform_type".into(),
-                    self.attributes.server_platform_type.into(),
-                ),
-                (
-                    "eos_server_ping".into(),
-                    self.attributes.eos_server_ping.into(),
-                ),
-            ])),
+            additional_data: AdditionalServerData {
+                allow_invites: self.settings.allow_invites,
+                allow_join_in_progress: self.settings.allow_join_in_progress,
+                allow_join_via_presence: self.settings.allow_join_via_presence,
+                address: self.attributes.address,
+                address_bound: self.attributes.address_bound,
+                session_name: self.attributes.session_name,
+                day_time: self.attributes.day_time,
+                enabled_mods: self.attributes.enabled_mods,
+                sotf_match_started: self.attributes.sotf_match_started,
+                allow_download_chars: self.attributes.allow_download_chars,
+                allow_download_dinos: self.attributes.allow_download_dinos,
+                allow_download_items: self.attributes.allow_download_items,
+                server_platform_type: self.attributes.server_platform_type,
+                eos_server_ping: self.attributes.eos_server_ping,
+            },
         }
     }
 }
