@@ -64,8 +64,7 @@ attribute_extended_derive = []
 
 ## Protocols (Prefix: protocol_)
 protocol_epic_api     = ["_HTTP", "dep:base64", "dep:chrono"]
-# WIP
-_protocol_valve_source = ["_UDP", "dep:bzip2", "dep:crc32fast"]
+protocol_valve_source = ["_UDP", "dep:bzip2", "dep:crc32fast"]
 
 ## Games (Prefix: game_)
 game_ark_survival_ascended = ["protocol_epic_api"]
@@ -81,7 +80,7 @@ all_attributes = [
     "attribute_extended_derive",
 ]
 
-all_protocols = ["protocol_epic_api"]
+all_protocols = ["protocol_epic_api", "protocol_valve_source"]
 
 all_games = ["game_ark_survival_ascended"]
 
