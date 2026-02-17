@@ -1,6 +1,9 @@
 use {
     super::error::{Report, ResultExt},
-    std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    std::{
+        fmt::Debug,
+        net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    },
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -27,7 +30,7 @@ pub enum ToSocketAddrError {
 /// If the input resolves to multiple address records, implementations
 /// apply a deterministic selection by returning the first resolved address.
 #[maybe_async::maybe_async]
-pub trait ToSocketAddr {
+pub trait ToSocketAddr: Debug {
     async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>>;
 }
 
