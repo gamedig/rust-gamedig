@@ -1,7 +1,10 @@
 use {
     super::{ArkSurvivalAscendedClientError, Matchmaking, MatchmakingSession},
     crate::{
-        core::error::{Report, ResultExt},
+        core::{
+            ToSocketAddr,
+            error::{Report, ResultExt},
+        },
         protocol::epic_api::{
             Credentials,
             Criteria,
@@ -12,7 +15,7 @@ use {
             RoutingScope,
         },
     },
-    std::{net::SocketAddr, time::Duration},
+    std::time::Duration,
 };
 
 pub struct ArkSurvivalAscendedClient {
@@ -46,10 +49,15 @@ impl ArkSurvivalAscendedClient {
         })
     }
 
-    pub async fn query(
+    pub async fn query<A: ToSocketAddr>(
         &mut self,
-        addr: &SocketAddr,
+        addr: A,
     ) -> Result<MatchmakingSession, Report<ArkSurvivalAscendedClientError>> {
+        let addr = addr
+            .to_socket_addr()
+            .await
+            .change_context(ArkSurvivalAscendedClientError::MatchmakingSession)?;
+
         Ok(self
             .protocol
             .query_as::<Matchmaking>(Criteria {

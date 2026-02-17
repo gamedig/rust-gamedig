@@ -1,7 +1,7 @@
 use {
     super::{GenericServerExt, GenericTimeoutExt, TimeoutShape},
-    crate::core::error::Report,
-    std::{error::Error, net::SocketAddr},
+    crate::core::{ToSocketAddr, error::Report},
+    std::error::Error,
 };
 
 /// Extension trait for types that can perform a generic address based query.
@@ -31,7 +31,7 @@ pub trait GenericQueryExt {
     ///
     /// Implementations should use their default timeout configuration.
     #[must_use]
-    async fn query_addr(addr: &SocketAddr) -> Result<Self::Response, Report<Self::Error>>;
+    async fn query_addr<A: ToSocketAddr>(addr: A) -> Result<Self::Response, Report<Self::Error>>;
 
     /// Performs a one off query against the given socket address with the provided timeout configuration.
     ///
@@ -39,8 +39,8 @@ pub trait GenericQueryExt {
     /// multiple timeout configuration types to be passed in and
     /// normalized into the marker shape `Self::Timeout`.
     #[must_use]
-    async fn query_addr_with_timeout(
-        addr: &SocketAddr,
+    async fn query_addr_with_timeout<A: ToSocketAddr>(
+        addr: A,
         timeout: impl GenericTimeoutExt<Self::Timeout>,
     ) -> Result<Self::Response, Report<Self::Error>>;
 }

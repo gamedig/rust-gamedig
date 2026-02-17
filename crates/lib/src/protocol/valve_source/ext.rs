@@ -21,9 +21,9 @@ use {
             GenericTimeoutExt,
             UdpMarker,
         },
-        core::error::Report,
+        core::{ToSocketAddr, error::Report},
     },
-    std::{collections::HashMap, net::SocketAddr},
+    std::collections::HashMap,
 };
 
 pub struct AdditionalPlayerData {
@@ -110,14 +110,14 @@ impl GenericQueryExt for ValveSourceClient {
     type Error = ValveSourceClientError;
     type Timeout = UdpMarker;
 
-    async fn query_addr(addr: &SocketAddr) -> Result<Self::Response, Report<Self::Error>> {
+    async fn query_addr<A: ToSocketAddr>(addr: A) -> Result<Self::Response, Report<Self::Error>> {
         let mut client: ValveSourceClient = ValveSourceClient::new(addr).await?;
 
         client.query().await
     }
 
-    async fn query_addr_with_timeout(
-        addr: &SocketAddr,
+    async fn query_addr_with_timeout<A: ToSocketAddr>(
+        addr: A,
         timeout: impl GenericTimeoutExt<Self::Timeout>,
     ) -> Result<Self::Response, Report<Self::Error>> {
         let (read_timeout, write_timeout) = timeout.into_marker();

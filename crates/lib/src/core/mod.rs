@@ -21,3 +21,6 @@ pub(crate) use udp::UdpClient;
 mod buffer;
 #[cfg(feature = "_BUFFER")]
 pub(crate) use buffer::Buffer;
+
+mod dns;
+pub(crate) use dns::ToSocketAddr;

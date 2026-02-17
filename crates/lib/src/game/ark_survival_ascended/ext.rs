@@ -10,7 +10,7 @@ use {
             GenericTimeoutExt,
             HttpMarker,
         },
-        core::error::Report,
+        core::{error::Report, ToSocketAddr},
     },
     std::net::{IpAddr, SocketAddr},
 };
@@ -102,12 +102,12 @@ impl GenericQueryExt for ArkSurvivalAscendedClient {
     type Error = ArkSurvivalAscendedClientError;
     type Timeout = HttpMarker;
 
-    async fn query_addr(addr: &SocketAddr) -> Result<Self::Response, Report<Self::Error>> {
+    async fn query_addr<A: ToSocketAddr>(addr: A) -> Result<Self::Response, Report<Self::Error>> {
         ArkSurvivalAscendedClient::new().await?.query(addr).await
     }
 
-    async fn query_addr_with_timeout(
-        addr: &SocketAddr,
+    async fn query_addr_with_timeout<A: ToSocketAddr>(
+        addr: A,
         timeout: impl GenericTimeoutExt<Self::Timeout>,
     ) -> Result<Self::Response, Report<Self::Error>> {
         ArkSurvivalAscendedClient::new_with_timeout(timeout.into_marker())

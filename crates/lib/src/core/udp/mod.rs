@@ -1,7 +1,10 @@
 use {
-    crate::core::error::{Report, ResultExt},
+    super::{
+        ToSocketAddr,
+        error::{Report, ResultExt},
+    },
     client::{AbstractUdp, InnerUdpClient},
-    std::{net::SocketAddr, time::Duration},
+    std::time::Duration,
 };
 
 mod client;
@@ -28,11 +31,11 @@ impl UdpClient {
     ///
     /// # Arguments
     ///
-    /// * `addr` - The `SocketAddr` of the server to connect to.
+    /// * `addr` - The socket address of the server to connect to.
     /// * `read_timeout` - Optional timeout for reading from the socket.
     /// * `write_timeout` - Optional timeout for writing to the socket.
-    pub(crate) async fn new(
-        addr: SocketAddr,
+    pub(crate) async fn new<A: ToSocketAddr>(
+        addr: A,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
     ) -> Result<Self, Report<UdpClientError>> {
@@ -43,6 +46,11 @@ impl UdpClient {
                 .field("write_timeout", &write_timeout)
                 .finish()
         });
+
+        let addr = addr
+            .to_socket_addr()
+            .await
+            .change_context(UdpClientError::Init)?;
 
         let [valid_read_timeout, valid_write_timeout] = [read_timeout, write_timeout].map(|opt| {
             opt.filter(|d| !d.is_zero())

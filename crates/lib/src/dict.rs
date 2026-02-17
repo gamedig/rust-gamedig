@@ -1,25 +1,19 @@
-use {
-    crate::{
-        converters::{
-            DictMarker,
-            GenericQueryExt,
-            GenericServer,
-            GenericServerExt,
-            GenericTimeoutExt,
-        },
-        core::error::{Report, ResultExt},
-        game::ark_survival_ascended::ArkSurvivalAscendedClient,
+use crate::{
+    converters::{DictMarker, GenericQueryExt, GenericServer, GenericServerExt, GenericTimeoutExt},
+    core::{
+        ToSocketAddr,
+        error::{Report, ResultExt},
     },
-    std::net::SocketAddr,
+    game::ark_survival_ascended::ArkSurvivalAscendedClient,
 };
 
 #[derive(Debug, thiserror::Error)]
 pub enum DictError {
-    #[error("[GameDig]::[Dict::QUERY]: Failed to query game server")]
+    #[error("[GameDig]::[DICT::QUERY]: Failed to query game server")]
     Query,
-    #[error("[GameDig]::[Dict::UNKNOWN_IDENTIFIER]: Unknown game identifier provided")]
+    #[error("[GameDig]::[DICT::UNKNOWN_IDENTIFIER]: Unknown game identifier provided")]
     UnknownGameIdentifier { game_id: String },
-    #[error("[GameDig]::[Dict::UNKNOWN_STEAM_ID]: Unknown steam id provided")]
+    #[error("[GameDig]::[DICT::UNKNOWN_STEAM_ID]: Unknown steam id provided")]
     UnknownSteamId { steam_id: u32 },
 }
 
@@ -57,9 +51,9 @@ impl Dict {
         STEAM_IDS.get(&steam_id).copied()
     }
 
-    async fn query_game(
+    async fn query_game<A: ToSocketAddr>(
         game: SupportedGame,
-        addr: &SocketAddr,
+        addr: A,
         timeout: Option<impl GenericTimeoutExt<DictMarker> + Default>,
     ) -> Result<GenericServer, Report<DictError>> {
         let timeout = timeout.unwrap_or_default().into_marker();
@@ -77,9 +71,9 @@ impl Dict {
         }
     }
 
-    pub async fn query_by_game_id(
+    pub async fn query_by_game_id<A: ToSocketAddr>(
         game_id: &str,
-        addr: &SocketAddr,
+        addr: A,
         timeout: Option<impl GenericTimeoutExt<DictMarker> + Default>,
     ) -> Result<GenericServer, Report<DictError>> {
         Self::query_game(
@@ -94,9 +88,9 @@ impl Dict {
         .await
     }
 
-    pub async fn query_by_steam_id(
+    pub async fn query_by_steam_id<A: ToSocketAddr>(
         steam_id: u32,
-        addr: &SocketAddr,
+        addr: A,
         timeout: Option<impl GenericTimeoutExt<DictMarker> + Default>,
     ) -> Result<GenericServer, Report<DictError>> {
         Self::query_game(
@@ -108,5 +102,5 @@ impl Dict {
         .await
     }
 
-    //todo: protocols
+    // todo: protocols
 }

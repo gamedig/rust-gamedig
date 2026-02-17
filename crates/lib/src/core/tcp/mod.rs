@@ -1,7 +1,10 @@
 use {
-    crate::core::error::{Report, ResultExt},
+    super::{
+        ToSocketAddr,
+        error::{Report, ResultExt},
+    },
     client::{AbstractTcp, InnerTcpClient},
-    std::{net::SocketAddr, time::Duration},
+    std::time::Duration,
 };
 
 mod client;
@@ -34,12 +37,12 @@ impl TcpClient {
     ///
     /// # Arguments
     ///
-    /// * `addr` - The `SocketAddr` of the server to connect to.
+    /// * `addr` - The socket address of the server to connect to.
     /// * `connect_timeout` - Optional timeout for establishing the connection.
     /// * `read_timeout` - Optional timeout for reading from the stream.
     /// * `write_timeout` - Optional timeout for writing to the stream.
-    pub(crate) async fn new(
-        addr: SocketAddr,
+    pub(crate) async fn new<A: ToSocketAddr>(
+        addr: A,
         connect_timeout: Option<Duration>,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
@@ -52,6 +55,11 @@ impl TcpClient {
                 .field("write_timeout", &write_timeout)
                 .finish()
         });
+
+        let addr = addr
+            .to_socket_addr()
+            .await
+            .change_context(TcpClientError::Init)?;
 
         let [
             valid_connect_timeout,

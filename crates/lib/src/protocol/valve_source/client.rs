@@ -17,6 +17,7 @@ use {
     },
     crate::core::{
         Buffer,
+        ToSocketAddr,
         UdpClient,
         error::{
             Report,
@@ -25,7 +26,7 @@ use {
         },
     },
     bzip2::read::BzDecoder,
-    std::{collections::HashMap, io::Read, net::SocketAddr, time::Duration},
+    std::{collections::HashMap, io::Read, time::Duration},
 };
 
 pub struct ValveSourceClient<
@@ -53,7 +54,7 @@ pub struct ValveSourceClient<
 impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
     ValveSourceClient<MAX_PACKET_SIZE_PLUS_ONE, MAX_TOTAL_FRAGMENTS>
 {
-    pub async fn new(addr: &SocketAddr) -> Result<Self, Report<ValveSourceClientError>> {
+    pub async fn new<A: ToSocketAddr>(addr: A) -> Result<Self, Report<ValveSourceClientError>> {
         Ok(Self {
             net: UdpClient::new(addr, None, None)
                 .await
@@ -64,8 +65,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         })
     }
 
-    pub async fn new_with_timeout(
-        addr: &SocketAddr,
+    pub async fn new_with_timeout<A: ToSocketAddr>(
+        addr: A,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
     ) -> Result<Self, Report<ValveSourceClientError>> {

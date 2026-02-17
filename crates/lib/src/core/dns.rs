@@ -30,7 +30,7 @@ pub enum ToSocketAddrError {
 /// If the input resolves to multiple address records, implementations
 /// apply a deterministic selection by returning the first resolved address.
 #[maybe_async::maybe_async]
-pub trait ToSocketAddr: Debug {
+pub trait ToSocketAddr: Debug + Send {
     async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>>;
 }
 
