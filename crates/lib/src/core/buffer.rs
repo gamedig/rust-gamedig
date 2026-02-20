@@ -856,7 +856,7 @@ impl<B: Bufferable> Buffer<B> {
         let slice = &buf[.. end_pos];
 
         let s = if STRICT {
-            std::str::from_utf8(slice)
+            str::from_utf8(slice)
                 .map(str::to_owned)
                 .change_context(BufferError::InvalidUTF8String)
                 .attach(FailureReason::new(
