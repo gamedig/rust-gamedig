@@ -245,7 +245,7 @@ impl<B: Bufferable> Buffer<B> {
         }
     }
 
-    /// Checks if a given range is valid within the buffer, optionally relative to the current position.
+    /// Checks if a given range is valid within the buffer, relative to the current position.
     ///
     /// This internal helper function ensures that range bounds are correctly within the buffer’s size,
     /// and that no overflow occurs when calculating start/end positions. It is used to prevent out-of-bounds
@@ -255,8 +255,6 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// * `range` - The `RangeBounds` object specifying the range to check. Supports `..`, `..end`,
     ///   `start..`, and `start..end` forms, with `Included` and `Excluded` variants.
-    /// * `pos_ctx` - If `true`, the range is interpreted relative to the current buffer position.
-    ///   If `false`, it is interpreted as absolute indices into the buffer.
     ///
     /// # Errors
     ///
@@ -267,17 +265,15 @@ impl<B: Bufferable> Buffer<B> {
     fn check_range(
         &self,
         range: impl RangeBounds<usize> + Debug,
-        pos_ctx: bool,
     ) -> Result<(), Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<CHECK_RANGE>: {:?}", |f| {
             f.debug_struct("Args")
                 .field("range", &format_args!("{range:?}"))
-                .field("pos_ctx", &pos_ctx)
                 .finish()
         });
 
         let len = self.len();
-        let pos = if pos_ctx { self.pos() } else { 0 };
+        let pos = self.pos();
 
         let start = match range.start_bound() {
             Bound::Included(&n) => {
@@ -291,8 +287,7 @@ impl<B: Bufferable> Buffer<B> {
                                  bound to the base position overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
-                            .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                            .attach(ContextComponent::new("Base Position", pos))
+                            .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("Start Bound", n))
                             .attach(ContextComponent::new("Start Bound Kind", "Included"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
@@ -314,8 +309,7 @@ impl<B: Bufferable> Buffer<B> {
                                  arithmetic overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
-                            .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                            .attach(ContextComponent::new("Base Position", pos))
+                            .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("Start Bound", n))
                             .attach(ContextComponent::new("Start Bound Kind", "Excluded"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
@@ -340,8 +334,7 @@ impl<B: Bufferable> Buffer<B> {
                                  bound requires adding 1, and the resulting arithmetic overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
-                            .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                            .attach(ContextComponent::new("Base Position", pos))
+                            .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("End Bound", n))
                             .attach(ContextComponent::new("End Bound Kind", "Included"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
@@ -362,8 +355,7 @@ impl<B: Bufferable> Buffer<B> {
                                  base position overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
-                            .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                            .attach(ContextComponent::new("Base Position", pos))
+                            .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("End Bound", n))
                             .attach(ContextComponent::new("End Bound Kind", "Excluded"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
@@ -383,8 +375,7 @@ impl<B: Bufferable> Buffer<B> {
                      than the computed end index.",
                 ))
                 .attach(OpenGitHubIssue())
-                .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                .attach(ContextComponent::new("Base Position", pos))
+                .attach(ContextComponent::new("Position", pos))
                 .attach(ContextComponent::new("Computed Start", start))
                 .attach(ContextComponent::new("Computed End", end))
                 .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
@@ -399,8 +390,7 @@ impl<B: Bufferable> Buffer<B> {
                      start or end index exceeds the buffer length.",
                 ))
                 .attach(OpenGitHubIssue())
-                .attach(ContextComponent::new("pos_ctx", pos_ctx))
-                .attach(ContextComponent::new("Base Position", pos))
+                .attach(ContextComponent::new("Position", pos))
                 .attach(ContextComponent::new("Buffer Length", len))
                 .attach(ContextComponent::new("Computed Start", start))
                 .attach(ContextComponent::new("Computed End", end))
@@ -431,7 +421,7 @@ impl<B: Bufferable> Buffer<B> {
 
         let pos = self.pos();
 
-        self.check_range(.. cnt, true)
+        self.check_range(.. cnt)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The peek operation could not be completed because the range check failed.",
@@ -488,7 +478,7 @@ impl<B: Bufferable> Buffer<B> {
             f.debug_struct("Args").field("N", &N).finish()
         });
 
-        self.check_range(.. N, true)
+        self.check_range(.. N)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The fixed size slice read operation could not be completed because the range \
@@ -852,7 +842,7 @@ impl<B: Bufferable> Buffer<B> {
                 .finish()
         });
 
-        self.check_range(.., true)
+        self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested string could not be read because the range check failed.",
@@ -918,7 +908,7 @@ impl<B: Bufferable> Buffer<B> {
             |f| { f.debug_struct("Args").field("strict", &strict).finish() }
         );
 
-        self.check_range(.. 1, true)
+        self.check_range(.. 1)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested length prefixed string could not be read because the range check \
@@ -928,7 +918,7 @@ impl<B: Bufferable> Buffer<B> {
         let pos = self.pos();
         let s_len = self.inner.as_ref()[pos] as usize;
         let end_pos = pos + s_len;
-        self.check_range(.. end_pos, true)
+        self.check_range(.. end_pos)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested length prefixed string could not be read because the range check \
@@ -970,7 +960,7 @@ impl<B: Bufferable> Buffer<B> {
 
         let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
-        self.check_range(.., true)
+        self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested UTF-16 string could not be read because the range check failed.",
@@ -1150,7 +1140,7 @@ impl<B: Bufferable> Buffer<B> {
 
         let delimiter = delimiter.unwrap_or([0x00]);
 
-        self.check_range(.., true)
+        self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested Latin 1 string could not be read because the range check failed.",
