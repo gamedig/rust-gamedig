@@ -830,15 +830,13 @@ impl<B: Bufferable> Buffer<B> {
     /// Returns an error if:
     /// - The requested range goes out of bounds.
     /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
-    pub(crate) fn read_string_utf8(
+    pub(crate) fn read_string_utf8<const DELIMITER: u8, const STRICT: bool>(
         &mut self,
-        delimiter: Option<u8>,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF8>: {:?}", |f| {
             f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
+                .field("delimiter", &DELIMITER)
+                .field("strict", &STRICT)
                 .finish()
         });
 
@@ -849,24 +847,25 @@ impl<B: Bufferable> Buffer<B> {
             ))?;
 
         let start = self.pos();
-        let buf = &self.inner.as_ref()[start .. self.len()];
-        let delim = delimiter.unwrap_or(0x00);
+        let buf = self.remaining_slice();
 
-        let (end_pos, found) = match buf.iter().position(|&b| b == delim) {
+        let (end_pos, found) = match memchr::memchr(DELIMITER, buf) {
             Some(i) => (i, true),
             None => (buf.len(), false),
         };
 
         let slice = &buf[.. end_pos];
 
-        let s = if strict {
-            String::from_utf8(slice.to_vec())
+        let s = if STRICT {
+            std::str::from_utf8(slice)
+                .map(str::to_owned)
                 .change_context(BufferError::InvalidUTF8String)
                 .attach(FailureReason::new(
                     "UTF-8 decoding failed while reading a delimited string. The byte sequence \
                      before the delimiter is not valid UTF-8.",
                 ))
                 .attach(ContextComponent::new("Position", start))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(ContextComponent::new("Bytes Read", end_pos))
                 .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
@@ -874,7 +873,7 @@ impl<B: Bufferable> Buffer<B> {
             String::from_utf8_lossy(slice).into_owned()
         };
 
-        self.cursor += end_pos + found as usize;
+        self.cursor += end_pos + (found as usize);
         Ok(s)
     }
 
