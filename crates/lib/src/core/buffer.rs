@@ -812,24 +812,23 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// # Parameters
     ///
-    /// - `delimiter`: An optional byte value (`[u8; 1]`) signifying the end of the string.  
-    ///   If `None` is provided, the default delimiter is `0x00`.
+    /// - `DELIMITER`: A byte value signifying the end of the string.  
     ///
-    /// - `strict`: Determines how invalid `UTF 8` sequences are handled.
+    /// - `STRICT`: Determines how invalid `UTF 8` sequences are handled.
     ///
-    ///   - `true`: Uses `String::from_utf8`. If any invalid `UTF 8` sequence is found,
+    ///   - `true`: Uses `from_utf8`. If any invalid `UTF 8` sequence is found,
     ///     an error is returned.
     ///
-    ///   - `false`: Uses `String::from_utf8_lossy`, replacing invalid sequences with `�`.
+    ///   - `false`: Uses `from_utf8_lossy`, replacing invalid sequences with `�`.
     ///
     /// After reading up to (but not including) the delimiter, the cursor is advanced by the number
-    /// of bytes read plus the length of the delimiter (usually `1` byte).
+    /// of bytes read plus the length of the delimiter.
     ///
     /// # Errors
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
-    /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
+    /// - `STRICT` is `true` and the bytes do not form valid `UTF 8`.
     pub(crate) fn read_string_utf8<const DELIMITER: u8, const STRICT: bool>(
         &mut self,
     ) -> Result<String, Report<BufferError>> {
