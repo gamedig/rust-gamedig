@@ -883,11 +883,11 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// # Parameters
     ///
-    /// - `strict`: Determines how invalid `UTF 8` sequences are handled.
+    /// - `STRICT`: Determines how invalid `UTF 8` sequences are handled.
     ///
-    ///   - `true`: Uses `String::from_utf8`. Any invalid `UTF 8` sequence causes an error.
+    ///   - `true`: Uses `from_utf8`. Any invalid `UTF 8` sequence causes an error.
     ///
-    ///   - `false`: Uses `String::from_utf8_lossy`, replacing invalid sequences with `�`.
+    ///   - `false`: Uses `from_utf8_lossy`, replacing invalid sequences with `�`.
     ///
     /// After reading the length byte and the string data, the cursor advances by `1` byte for the length
     /// plus the number of bytes read for the string.
@@ -896,46 +896,65 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if:
     /// - The requested range is out of bounds.
-    /// - `strict` is `true` and the bytes do not form valid `UTF 8`.
-    pub(crate) fn read_string_utf8_len_prefixed(
+    /// - `STRICT` is `true` and the bytes do not form valid `UTF 8`.
+    pub(crate) fn read_string_utf8_len_prefixed<const STRICT: bool>(
         &mut self,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!(
             "GAMEDIG::CORE::BUFFER::<READ_STRING_UTF8_LEN_PREFIXED>: {:?}",
-            |f| { f.debug_struct("Args").field("strict", &strict).finish() }
+            |f| { f.debug_struct("Args").field("strict", &STRICT).finish() }
         );
 
-        self.check_range(.. 1)
+        let len_byte = self
+            .peek(1)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested length prefixed string could not be read because the range check \
                  for the length byte failed.",
-            ))?;
+            ))?[0];
 
-        let pos = self.pos();
-        let s_len = self.inner.as_ref()[pos] as usize;
-        let end_pos = pos + s_len;
-        self.check_range(.. end_pos)
+        let s_len = len_byte as usize;
+
+        let total = 1usize.checked_add(s_len).ok_or_else(|| {
+            Report::new(BufferError::RangeBoundsOverflow)
+                .attach(FailureReason::new(
+                    "The requested length prefixed string could not be read because the computed \
+                     total length is not representable in usize.",
+                ))
+                .attach(ContextComponent::new("String Length", s_len))
+                .attach(ContextComponent::new("Position", self.pos()))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO)
+        })?;
+
+        let block = self
+            .peek(total)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested length prefixed string could not be read because the range check \
                  for the string data failed.",
-            ))?;
+            ))
+            .attach(ContextComponent::new("String Length", s_len))
+            .attach(ContextComponent::new("Position", self.pos()))?;
 
-        let s = if strict {
-            String::from_utf8(self.inner.as_ref()[pos + 1 .. end_pos].to_vec())
+        let bytes = &block[1 ..];
+
+        let s = if STRICT {
+            str::from_utf8(bytes)
+                .map(str::to_owned)
                 .change_context(BufferError::InvalidUTF8String)
                 .attach(FailureReason::new(
-                    "Invalid UTF 8 sequence found during string read.",
+                    "Invalid UTF-8 sequence found during string read.",
                 ))
+                .attach(ContextComponent::new("String Length", s_len))
+                .attach(ContextComponent::new("Position", self.pos()))
                 .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
-            String::from_utf8_lossy(&self.inner.as_ref()[pos + 1 .. end_pos]).into_owned()
+            String::from_utf8_lossy(bytes).into_owned()
         };
 
-        self.cursor = end_pos;
+        self.cursor += total;
 
         Ok(s)
     }
