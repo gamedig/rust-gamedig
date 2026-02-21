@@ -52,6 +52,12 @@ pub enum BufferError {
     #[error("[GameDig]::[BUF::RANGE_CHECK_FAILED]: buffer range check operation failed")]
     RangeCheckFailed,
 
+    #[error(
+        "[GameDig]::[BUF::DELIMITER_NOT_FOUND]: expected string delimiter was not found before \
+         end of buffer"
+    )]
+    DelimiterNotFound,
+
     #[error("[GameDig]::[BUF::INVALID_UTF8_STRING]: buffer contains invalid UTF 8 string data")]
     InvalidUTF8String,
 
@@ -828,6 +834,7 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
+    /// - The delimiter is not found before the end of the buffer.
     /// - `STRICT` is `true` and the bytes do not form valid `UTF 8`.
     pub(crate) fn read_string_utf8<const DELIMITER: u8, const STRICT: bool>(
         &mut self,
@@ -848,10 +855,21 @@ impl<B: Bufferable> Buffer<B> {
         let start = self.pos();
         let buf = self.remaining_slice();
 
-        let (end_pos, found) = match memchr::memchr(DELIMITER, buf) {
-            Some(i) => (i, true),
-            None => (buf.len(), false),
-        };
+        let end_pos = memchr::memchr(DELIMITER, buf).ok_or_else(|| {
+            Report::new(BufferError::DelimiterNotFound)
+                .attach(FailureReason::new(
+                    "The requested string could not be read because the delimiter was not found \
+                     before the end of the buffer.",
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(HexDump::new(
+                    "Buffer (Delimiter Not Found)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO)
+        })?;
 
         let slice = &buf[.. end_pos];
 
@@ -863,16 +881,21 @@ impl<B: Bufferable> Buffer<B> {
                     "UTF-8 decoding failed while reading a delimited string. The byte sequence \
                      before the delimiter is not valid UTF-8.",
                 ))
-                .attach(ContextComponent::new("Position", start))
                 .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(ContextComponent::new("Bytes Read", end_pos))
+                .attach(HexDump::new(
+                    "Buffer (Invalid UTF-8)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
                 .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
             String::from_utf8_lossy(slice).into_owned()
         };
 
-        self.cursor += end_pos + (found as usize);
+        self.cursor += end_pos + 1;
+
         Ok(s)
     }
 
