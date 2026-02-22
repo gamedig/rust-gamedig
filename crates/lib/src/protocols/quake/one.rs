@@ -26,11 +26,11 @@ pub struct Player {
 }
 
 impl QuakePlayerType for Player {
-    fn version(response: &Response<Self>) -> super::VersionedResponse { super::VersionedResponse::One(response) }
+    fn version(response: &Response<Self>) -> super::VersionedResponse<'_> { super::VersionedResponse::One(response) }
 }
 
 impl CommonPlayer for Player {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::QuakeOne(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::QuakeOne(self) }
 
     fn name(&self) -> &str { &self.name }
     fn score(&self) -> Option<i32> { Some(self.score.into()) }

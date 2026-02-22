@@ -64,7 +64,7 @@ impl GameMode {
 }
 
 impl CommonResponse for ServerData {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Mindustry(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Mindustry(self) }
 
     fn players_online(&self) -> u32 { self.players.try_into().unwrap_or(0) }
     fn players_maximum(&self) -> u32 { self.player_limit.try_into().unwrap_or(0) }

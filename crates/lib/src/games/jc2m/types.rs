@@ -12,7 +12,7 @@ pub struct Player {
 }
 
 impl CommonPlayer for Player {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::JCMP2(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::JCMP2(self) }
 
     fn name(&self) -> &str { &self.name }
 }
@@ -30,7 +30,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::JC2M(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::JC2M(self) }
 
     fn game_version(&self) -> Option<&str> { Some(&self.game_version) }
     fn description(&self) -> Option<&str> { Some(&self.description) }

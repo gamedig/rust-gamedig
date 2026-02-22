@@ -244,7 +244,7 @@ pub struct GameNameParsed<'a> {
     year: Option<u16>,
 }
 
-pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed {
+pub fn extract_game_parts_from_name(game: &str) -> GameNameParsed<'_> {
     // Separate game name into words
     // NOTE: we have to leave "-" in to prevent hyphenated prefixes being parsed as
     // numerals

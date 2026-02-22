@@ -20,7 +20,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Savage2(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Savage2(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn game_mode(&self) -> Option<&str> { Some(&self.game_mode) }

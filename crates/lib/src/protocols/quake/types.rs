@@ -28,11 +28,11 @@ pub struct Response<P> {
 }
 
 pub trait QuakePlayerType: Sized + CommonPlayer {
-    fn version(response: &Response<Self>) -> VersionedResponse;
+    fn version(response: &Response<Self>) -> VersionedResponse<'_>;
 }
 
 impl<P: QuakePlayerType> CommonResponse for Response<P> {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Quake(P::version(self)) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Quake(P::version(self)) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn game_version(&self) -> Option<&str> { self.game_version.as_deref() }

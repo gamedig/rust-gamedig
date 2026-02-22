@@ -49,7 +49,7 @@ pub struct Player {
 }
 
 impl CommonPlayer for Player {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::Minecraft(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::Minecraft(self) }
 
     fn name(&self) -> &str { &self.name }
 }
@@ -134,7 +134,7 @@ impl From<ExtraRequestSettings> for RequestSettings {
 }
 
 impl CommonResponse for JavaResponse {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Minecraft(VersionedResponse::Java(self)) }
 
     fn description(&self) -> Option<&str> { Some(&self.description) }
     fn players_maximum(&self) -> u32 { self.players_maximum }
@@ -175,7 +175,7 @@ pub struct BedrockResponse {
 }
 
 impl CommonResponse for BedrockResponse {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Minecraft(VersionedResponse::Bedrock(self)) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Minecraft(VersionedResponse::Bedrock(self)) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { self.map.as_deref() }

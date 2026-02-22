@@ -98,7 +98,7 @@ pub struct Player {
 }
 
 impl CommonPlayer for Player {
-    fn as_original(&self) -> crate::protocols::types::GenericPlayer {
+    fn as_original(&self) -> crate::protocols::types::GenericPlayer<'_> {
         crate::protocols::types::GenericPlayer::Eco(self)
     }
 
@@ -201,7 +201,7 @@ impl From<Root> for Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> crate::protocols::GenericResponse { crate::protocols::GenericResponse::Eco(self) }
+    fn as_original(&self) -> crate::protocols::GenericResponse<'_> { crate::protocols::GenericResponse::Eco(self) }
 
     fn players_online(&self) -> u32 { self.players_online }
 

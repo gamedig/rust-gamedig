@@ -25,7 +25,7 @@ pub struct Player {
 }
 
 impl CommonPlayer for Player {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::Gamespy(VersionedPlayer::One(self)) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::Gamespy(VersionedPlayer::One(self)) }
 
     fn name(&self) -> &str { &self.name }
     fn score(&self) -> Option<i32> { Some(self.score) }
@@ -52,7 +52,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::GameSpy(VersionedResponse::One(self)) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::GameSpy(VersionedResponse::One(self)) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }

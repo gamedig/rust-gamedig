@@ -167,7 +167,7 @@ impl CommonPlayer for Player {
 
     fn score(&self) -> Option<i32> { Some(self.score) }
 
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::Unreal2(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::Unreal2(self) }
 }
 
 /// Unreal 2 response.
@@ -180,7 +180,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Unreal2(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Unreal2(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.server_info.name) }
 

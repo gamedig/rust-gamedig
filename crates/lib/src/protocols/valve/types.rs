@@ -58,7 +58,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::Valve(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::Valve(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.info.name) }
     fn game_mode(&self) -> Option<&str> { Some(&self.info.game_mode) }
@@ -135,7 +135,7 @@ pub struct ServerPlayer {
 }
 
 impl CommonPlayer for ServerPlayer {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::Valve(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::Valve(self) }
     fn name(&self) -> &str { &self.name }
     fn score(&self) -> Option<i32> { Some(self.score) }
 }

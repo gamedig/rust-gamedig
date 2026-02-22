@@ -104,10 +104,10 @@ pub enum GenericPlayer<'a> {
 
 pub trait CommonResponse {
     /// Get the original response type
-    fn as_original(&self) -> GenericResponse;
+    fn as_original(&self) -> GenericResponse<'_>;
     /// Get a struct that can be stored as JSON (you don't need to override
     /// this)
-    fn as_json(&self) -> CommonResponseJson {
+    fn as_json(&self) -> CommonResponseJson<'_> {
         CommonResponseJson {
             name: self.name(),
             description: self.description(),
@@ -163,10 +163,10 @@ pub struct CommonResponseJson<'a> {
 
 pub trait CommonPlayer {
     /// Get the original player type
-    fn as_original(&self) -> GenericPlayer;
+    fn as_original(&self) -> GenericPlayer<'_>;
     /// Get a struct that can be stored as JSON (you don't need to override
     /// this)
-    fn as_json(&self) -> CommonPlayerJson {
+    fn as_json(&self) -> CommonPlayerJson<'_> {
         CommonPlayerJson {
             name: self.name(),
             score: self.score(),

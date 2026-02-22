@@ -31,7 +31,7 @@ impl TheShipPlayer {
 }
 
 impl CommonPlayer for TheShipPlayer {
-    fn as_original(&self) -> GenericPlayer { GenericPlayer::TheShip(self) }
+    fn as_original(&self) -> GenericPlayer<'_> { GenericPlayer::TheShip(self) }
 
     fn name(&self) -> &str { &self.name }
     fn score(&self) -> Option<i32> { Some(self.score) }
@@ -64,7 +64,7 @@ pub struct Response {
 }
 
 impl CommonResponse for Response {
-    fn as_original(&self) -> GenericResponse { GenericResponse::TheShip(self) }
+    fn as_original(&self) -> GenericResponse<'_> { GenericResponse::TheShip(self) }
 
     fn name(&self) -> Option<&str> { Some(&self.name) }
     fn map(&self) -> Option<&str> { Some(&self.map) }
