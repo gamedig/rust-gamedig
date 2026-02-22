@@ -970,7 +970,11 @@ impl<B: Bufferable> Buffer<B> {
                     "Invalid UTF-8 sequence found during string read.",
                 ))
                 .attach(ContextComponent::new("String Length", s_len))
-                .attach(ContextComponent::new("Position", self.pos()))
+                .attach(HexDump::new(
+                    "Buffer (Invalid UTF-8 in Length Prefixed String)",
+                    self.inner.clone(),
+                    Some(self.pos()),
+                ))
                 .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
