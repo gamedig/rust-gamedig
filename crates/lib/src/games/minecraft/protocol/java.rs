@@ -11,6 +11,7 @@ use crate::{
 use byteorder::LittleEndian;
 use serde_json::Value;
 use std::net::SocketAddr;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Java {
     socket: TcpSocket,
@@ -83,10 +84,15 @@ impl Java {
     }
 
     fn send_ping_request(&mut self) -> GDResult<()> {
-        self.send(
-            [0x01] // Packet ID (1)
-                .to_vec(),
-        )?;
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as i64;
+
+        let mut payload = [0x01].to_vec(); // Packet ID (1)
+        payload.extend_from_slice(&timestamp.to_be_bytes()); // Timestamp (long, 8 bytes)
+
+        self.send(payload)?;
 
         Ok(())
     }
