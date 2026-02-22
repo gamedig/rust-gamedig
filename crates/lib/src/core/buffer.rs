@@ -1188,71 +1188,83 @@ impl<B: Bufferable> Buffer<B> {
         self.read_string_utf16_le::<DELIMITER, STRICT>()
     }
 
-    /// Reads a `Latin 1` (also known as `ISO 8859 1` or `Windows 1252`) encoded string from the buffer until a delimiter is reached.
-    ///
-    /// This method uses the `encoding_rs` crate to decode the `Latin 1` bytes into a `UTF 8` string.
+    /// Reads a `Latin 1` (`Windows 1252` under the hood) encoded string from the buffer until a delimiter is reached.
     ///
     /// # Parameters
     ///
-    /// - `delimiter`: An optional byte (`[u8; 1]`) that marks the end of the string.  
-    ///   If `None` is provided, `0x00` is used as the delimiter.
+    /// - `DELIMITER`: A byte value marking the end of the string.  
     ///
-    /// - `strict`: Determines how invalid sequences are handled.
+    /// - `STRICT`: Determines how invalid sequences are handled.
     ///
     ///   - `true`: Returns an error if decoding encounters invalid sequences.
     ///
     ///   - `false`: Replaces invalid sequences with `�`.
     ///
-    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (usually `1` byte).
+    /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length.
     ///
     /// # Errors
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
-    /// - `strict` is `true` and invalid `Latin 1` data is encountered.
+    /// - `STRICT` is `true` and invalid `Latin 1` data is encountered.
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
-    pub(crate) fn read_string_latin1(
+    pub(crate) fn read_string_latin1<const DELIMITER: u8, const STRICT: bool>(
         &mut self,
-        delimiter: Option<[u8; 1]>,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_LATIN1>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
-                .finish()
-        });
-
-        let delimiter = delimiter.unwrap_or([0x00]);
-
         self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
                 "The requested Latin 1 string could not be read because the range check failed.",
             ))?;
 
-        let pos = self.pos();
-        let len = self.len();
-        let end_pos = self.inner.as_ref()[pos .. len]
-            .iter()
-            .position(|&b| b == delimiter[0])
-            .unwrap_or(len - pos);
+        let start = self.pos();
+        let buf = self.remaining_slice();
 
-        let (decoded_string, _, had_errors) =
-            encoding_rs::WINDOWS_1252.decode(&self.inner.as_ref()[pos .. pos + end_pos]);
+        let end_pos = memchr::memchr(DELIMITER, buf).ok_or_else(|| {
+            Report::new(BufferError::DelimiterNotFound)
+                .attach(FailureReason::new(
+                    "The requested Latin 1 string could not be read because the delimiter was not \
+                     found before the end of the buffer.",
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(HexDump::new(
+                    "Buffer (Delimiter Not Found)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO)
+        })?;
 
-        if had_errors && strict {
+        let slice = &buf[.. end_pos];
+        let (decoded, _, had_errors) = encoding_rs::WINDOWS_1252.decode(slice);
+
+        if STRICT && had_errors {
             return Err(Report::new(BufferError::InvalidLatin1String)
                 .attach(FailureReason::new(
                     "Invalid Latin 1 sequence found during string read.",
+                ))
+                .attach(HexDump::new(
+                    "Buffer (Invalid Latin 1 Sequence)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(ContextComponent::new("Bytes Read", end_pos))
+                .attach(HexDump::new(
+                    "Buffer (Invalid Latin 1 Sequence)",
+                    self.inner.clone(),
+                    Some(start),
                 ))
                 .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO));
         }
 
-        self.cursor += end_pos + delimiter.len();
+        let out = decoded.into_owned();
 
-        Ok(decoded_string.into_owned())
+        self.cursor += end_pos + 1;
+
+        Ok(out)
     }
 }
 
