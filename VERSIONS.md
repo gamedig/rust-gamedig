@@ -6,6 +6,7 @@ Places to update:
 
 - `Cargo.toml`
 - `README.md`
+- `crates/lib/README.md`
 - `.github/workflows/ci.yml`
 - `.pre-commit-config.yaml`
 
