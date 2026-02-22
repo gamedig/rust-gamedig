@@ -1,19 +1,17 @@
 [package]
-name = "gamedig_cli"
-authors = [
-    "rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]",
-]
-description = "A command line interface for gamedig"
-license = "MIT"
-version = "0.4.0"
-edition = "2021"
-default-run = "gamedig_cli"
-homepage = "https://gamedig.github.io/"
-repository = "https://github.com/gamedig/rust-gamedig"
-readme = "README.md"
-keywords = ["server", "query", "game", "check", "status"]
+name         = "gamedig_cli"
+authors      = ["rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]"]
+description  = "A command line interface for gamedig"
+license      = "MIT"
+version      = "0.4.0"
+edition      = "2021"
+default-run  = "gamedig_cli"
+homepage     = "https://gamedig.github.io/"
+repository   = "https://github.com/gamedig/rust-gamedig"
+readme       = "README.md"
+keywords     = ["server", "query", "game", "check", "status"]
 rust-version = "1.85.1"
-categories = ["command-line-interface"]
+categories   = ["command-line-interface"]
 
 [features]
 default = ["json", "bson", "xml", "browser"]
@@ -24,36 +22,31 @@ packet_capture = ["gamedig/packet_capture"]
 # Output formats
 bson = ["dep:serde", "dep:bson", "dep:hex", "dep:base64", "gamedig/serde"]
 json = ["dep:serde", "dep:serde_json", "gamedig/serde"]
-xml = ["dep:serde", "dep:serde_json", "dep:quick-xml", "gamedig/serde"]
+xml  = ["dep:serde", "dep:serde_json", "dep:quick-xml", "gamedig/serde"]
 
 # Misc
 browser = ["dep:webbrowser"]
 
 [dependencies]
 # Core Dependencies
-thiserror = "2.0.16"
-clap = { version = "4.5", default-features = false, features = ["derive"] }
-gamedig = { version = "0.8.0", default-features = false, features = [
-    "clap",
-    "games",
-    "game_defs",
-] }
+thiserror = "2.0.18"
+clap      = { version = "4.5.60", default-features = false, features = ["derive"] }
+gamedig   = { version = "0.8.0", default-features = false, features = ["clap", "games", "game_defs"] }
 
 # Feature Dependencies
 # Serialization / Deserialization
 serde = { version = "1", optional = true, default-features = false }
 
 # BSON
-bson = { version = "2.15", optional = true, default-features = false }
+bson   = { version = "2.15", optional = true, default-features = false }
 base64 = { version = "0.22", optional = true, default-features = false, features = ["std"] }
-hex = { version = "0.4.3", optional = true, default-features = false }
+hex    = { version = "0.4.3", optional = true, default-features = false }
 
 # JSON
 serde_json = { version = "1", optional = true, default-features = false }
 
 # XML
-quick-xml = { version = "0.38", optional = true, default-features = false }
+quick-xml = { version = "0.39.2", optional = true, default-features = false }
 
 # Browser
-webbrowser = { version = "1.0", optional = true, default-features = false }
-
+webbrowser = { version = "1.1.0", optional = true, default-features = false }
