@@ -1749,7 +1749,7 @@ mod tests {
 
         let mut buf = Buffer::new(data.to_vec());
 
-        let s = buf.read_string_utf8(None, true).unwrap();
+        let s = buf.read_string_utf8::<0, true>().unwrap();
         assert_eq!(s, "Hello");
         assert_eq!(buf.pos(), 6);
     }
@@ -1760,7 +1760,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_utf8(None, true).unwrap();
+        let s = buf.read_string_utf8::<0, true>().unwrap();
         assert_eq!(s, "Hello");
         assert_eq!(buf.pos(), 6);
     }
@@ -1771,7 +1771,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_utf8(None, false).unwrap();
+        let s = buf.read_string_utf8::<0, false>().unwrap();
         assert_eq!(s, "\u{FFFD}");
     }
 
@@ -1781,7 +1781,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_utf8_len_prefixed(true).unwrap();
+        let s = buf.read_string_utf8_len_prefixed::<true>().unwrap();
         assert_eq!(s, "Hello");
         assert_eq!(buf.pos(), 6);
     }
@@ -1792,7 +1792,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_utf16_be(None, true).unwrap();
+        let s = buf.read_string_utf16_be::<0, true>().unwrap();
         assert_eq!(s, "Hi");
         assert_eq!(buf.pos(), 6);
     }
@@ -1803,7 +1803,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_utf16_le(None, true).unwrap();
+        let s = buf.read_string_utf16_le::<0, true>().unwrap();
         assert_eq!(s, "Hi");
         assert_eq!(buf.pos(), 6);
     }
@@ -1814,7 +1814,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_ucs2(None, true).unwrap();
+        let s = buf.read_string_ucs2::<0, true>().unwrap();
         assert_eq!(s, "Hi");
         assert_eq!(buf.pos(), 6);
     }
@@ -1826,7 +1826,7 @@ mod tests {
 
         let mut buf = Buffer::new(data);
 
-        let s = buf.read_string_latin1(None, true).unwrap();
+        let s = buf.read_string_latin1::<0, true>().unwrap();
         assert_eq!(s, "Hëllo");
         assert_eq!(buf.pos(), 6);
     }
