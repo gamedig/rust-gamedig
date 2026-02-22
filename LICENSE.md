@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 - 2025 GameDig Organization & Contributors
+Copyright (c) 2022 - 2026 GameDig Organization & Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
