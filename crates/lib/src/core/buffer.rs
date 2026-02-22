@@ -986,23 +986,16 @@ impl<B: Bufferable> Buffer<B> {
         Ok(s)
     }
 
-    fn read_string_utf16<F>(
+    fn read_string_utf16<const DELIMITER: u16, const STRICT: bool, const LE: bool>(
         &mut self,
-        delimiter: Option<[u8; 2]>,
-        read_u16_e: F,
-        strict: bool,
-    ) -> Result<String, Report<BufferError>>
-    where
-        F: Fn(&mut Self) -> Result<u16, Report<BufferError>>,
-    {
+    ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16>: {:?}", |f| {
             f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
+                .field("delimiter", &DELIMITER)
+                .field("strict", &STRICT)
+                .field("le", &LE)
                 .finish()
         });
-
-        let delimiter = delimiter.unwrap_or([0x00, 0x00]);
 
         self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
@@ -1010,31 +1003,85 @@ impl<B: Bufferable> Buffer<B> {
                 "The requested UTF-16 string could not be read because the range check failed.",
             ))?;
 
-        let pos = self.pos();
-        let len = self.len();
-        let end_pos = self.inner.as_ref()[pos .. len]
-            .chunks_exact(2)
-            .position(|chunk| chunk == delimiter)
-            .map_or(len - pos, |p| p * 2);
+        let start = self.pos();
+        let buf = self.remaining_slice();
 
-        let mut vec = Vec::with_capacity(end_pos / 2);
-        vec.extend(
-            (0 .. end_pos / 2)
-                .map(|_| read_u16_e(self))
-                .collect::<Result<Vec<u16>, Report<BufferError>>>()?,
-        );
-
-        let s = if strict {
-            String::from_utf16(&vec)
-                .change_context(BufferError::InvalidUTF16String)
-                .attach(FailureReason::new(
-                    "Invalid UTF 16 sequence found during string read.",
-                ))?
+        let needle = if LE {
+            DELIMITER.to_le_bytes()
         } else {
-            String::from_utf16_lossy(&vec)
+            DELIMITER.to_be_bytes()
         };
 
-        self.cursor += delimiter.len();
+        let end_pos = memchr::memmem::find(buf, &needle).ok_or_else(|| {
+            Report::new(BufferError::DelimiterNotFound)
+                .attach(FailureReason::new(
+                    "The requested UTF-16 string could not be read because the delimiter was not \
+                     found before the end of the buffer.",
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(HexDump::new(
+                    "Buffer (Delimiter Not Found)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO)
+        })?;
+
+        if (end_pos % 2) != 0 {
+            return Err(Report::new(BufferError::InvalidUTF16String)
+                .attach(FailureReason::new(
+                    "The UTF-16 delimiter was found at an unaligned offset.",
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(ContextComponent::new("Delimiter Offset", end_pos))
+                .attach(HexDump::new(
+                    "Buffer (Unaligned UTF-16 Delimiter)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO));
+        }
+
+        let data = &buf[.. end_pos];
+
+        let unit_count = data.len() / 2;
+        let mut units = Vec::with_capacity(unit_count);
+
+        for i in 0 .. unit_count {
+            let b0 = data[2 * i];
+            let b1 = data[2 * i + 1];
+
+            units.push(
+                if LE {
+                    u16::from_le_bytes([b0, b1])
+                } else {
+                    u16::from_be_bytes([b0, b1])
+                },
+            );
+        }
+
+        let s = if STRICT {
+            String::from_utf16(&units)
+                .change_context(BufferError::InvalidUTF16String)
+                .attach(FailureReason::new(
+                    "Invalid UTF-16 sequence found during string read.",
+                ))
+                .attach(ContextComponent::new("Delimiter", DELIMITER))
+                .attach(ContextComponent::new("Bytes Read", end_pos))
+                .attach(HexDump::new(
+                    "Buffer (Invalid UTF-16 Sequence)",
+                    self.inner.clone(),
+                    Some(start),
+                ))
+                .attach(SYSTEM_INFO)
+                .attach(CRATE_INFO)?
+        } else {
+            String::from_utf16_lossy(&units)
+        };
+
+        self.cursor += end_pos + 2;
 
         Ok(s)
     }
@@ -1043,14 +1090,13 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// # Parameters
     ///
-    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
-    ///   Default is `[0x00, 0x00]` if `None` is provided.
+    /// - `DELIMITER`: A `u16` value marking the end of the string.  
     ///
-    /// - `strict`: Determines how invalid `UTF 16` sequences are handled.
+    /// - `STRICT`: Determines how invalid `UTF 16` sequences are handled.
     ///
-    ///   - `true`: Uses `String::from_utf16`. Any invalid `UTF 16` sequence causes an error.
+    ///   - `true`: Uses `from_utf16`. Any invalid `UTF 16` sequence causes an error.
     ///
-    ///   - `false`: Uses `String::from_utf16_lossy`, replacing invalid sequences with `�`.
+    ///   - `false`: Uses `from_utf16_lossy`, replacing invalid sequences with `�`.
     ///
     /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (2 bytes).
     ///
@@ -1058,34 +1104,32 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
-    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    pub(crate) fn read_string_utf16_be(
+    /// - The UTF-16 isn't properly aligned.
+    /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
+    pub(crate) fn read_string_utf16_be<const DELIMITER: u16, const STRICT: bool>(
         &mut self,
-        delimiter: Option<[u8; 2]>,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16_BE>: {:?}", |f| {
             f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
+                .field("delimiter", &DELIMITER)
+                .field("strict", &STRICT)
                 .finish()
         });
 
-        self.read_string_utf16(delimiter, |b| b.read_u16_be(), strict)
+        self.read_string_utf16::<DELIMITER, STRICT, false>()
     }
 
     /// Reads a `UTF 16` string in little endian (`LE`) order until a `2 byte` delimiter is encountered.
     ///
     /// # Parameters
     ///
-    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
-    ///   Default is `[0x00, 0x00]` if `None` is provided.
+    /// - `DELIMITER`: A `u16` value marking the end of the string.
     ///
-    /// - `strict`: Determines how invalid `UTF 16` sequences are handled.
+    /// - `STRICT`: Determines how invalid `UTF 16` sequences are handled.
     ///
-    ///   - `true`: Uses `String::from_utf16`. Any invalid `UTF 16` sequence causes an error.
+    ///   - `true`: Uses `from_utf16`. Any invalid `UTF 16` sequence causes an error.
     ///
-    ///   - `false`: Uses `String::from_utf16_lossy`, replacing invalid sequences with `�`.
+    ///   - `false`: Uses `from_utf16_lossy`, replacing invalid sequences with `�`.
     ///
     /// After reading up to the delimiter, the cursor advances by the number of bytes read plus the delimiter length (2 bytes).
     ///
@@ -1093,20 +1137,19 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
-    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    pub(crate) fn read_string_utf16_le(
+    /// - The UTF-16 isn't properly aligned.
+    /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
+    pub(crate) fn read_string_utf16_le<const DELIMITER: u16, const STRICT: bool>(
         &mut self,
-        delimiter: Option<[u8; 2]>,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16_LE>: {:?}", |f| {
             f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
+                .field("delimiter", &DELIMITER)
+                .field("strict", &STRICT)
                 .finish()
         });
 
-        self.read_string_utf16(delimiter, |b| b.read_u16_le(), strict)
+        self.read_string_utf16::<DELIMITER, STRICT, true>()
     }
 
     /// Reads a `UCS 2` encoded string from the buffer.
@@ -1116,10 +1159,9 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// # Parameters
     ///
-    /// - `delimiter`: An optional `2 byte` value marking the end of the string.  
-    ///   Default is `[0x00, 0x00]` if `None` is provided.
+    /// - `DELIMITER`: A `u16` value marking the end of the string.
     ///
-    /// - `strict`: Determines how invalid sequences are handled.
+    /// - `STRICT`: Determines how invalid sequences are handled.
     ///
     ///   - `true`: Uses strict `UTF 16` decoding, erroring on invalid data.
     ///
@@ -1131,20 +1173,19 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if:
     /// - The requested range goes out of bounds.
-    /// - `strict` is `true` and invalid `UTF 16` data is encountered.
-    pub(crate) fn read_string_ucs2(
+    /// - The UTF-16 isn't properly aligned.
+    /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
+    pub(crate) fn read_string_ucs2<const DELIMITER: u16, const STRICT: bool>(
         &mut self,
-        delimiter: Option<[u8; 2]>,
-        strict: bool,
     ) -> Result<String, Report<BufferError>> {
         dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UCS2>: {:?}", |f| {
             f.debug_struct("Args")
-                .field("delimiter", &delimiter)
-                .field("strict", &strict)
+                .field("delimiter", &DELIMITER)
+                .field("strict", &STRICT)
                 .finish()
         });
 
-        self.read_string_utf16_le(delimiter, strict)
+        self.read_string_utf16_le::<DELIMITER, STRICT>()
     }
 
     /// Reads a `Latin 1` (also known as `ISO 8859 1` or `Windows 1252`) encoded string from the buffer until a delimiter is reached.
