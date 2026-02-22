@@ -31,53 +31,48 @@ services = []
 serde = []
 
 # Enable clap derivations for our types
-clap = ["dep:clap"]
+clap           = ["dep:clap"]
 packet_capture = ["dep:pcap-file", "dep:pnet_packet", "dep:lazy_static"]
 
 # Enable TLS for HTTP Client
 tls = ["ureq/tls"]
 
 [dependencies]
-byteorder = "1.5"
-bzip2-rs = "0.1"
-crc32fast = "1.5"
-base64 = "0.22.0"
-
-encoding_rs = "0.8"
-ureq = { version = "2.12", default-features = false, features = ["gzip", "json"] }
-url = "2"
-
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
-
-phf = { version = "0.13", optional = true, features = ["macros"] }
-
-clap = { version = "4.5", optional = true, features = ["derive"] }
-
-pcap-file = { version = "2.0", optional = true }
-pnet_packet = { version = "0.35", optional = true }
-lazy_static = { version = "1.5", optional = true }
+url         = "2.5.8"
+byteorder   = "1.5.0"
+bzip2-rs    = "0.1.2"
+crc32fast   = "1.5.0"
+base64      = "0.22.1"
+encoding_rs = "0.8.35"
+serde_json  = { version = "1.0.149" }
+serde       = { version = "1.0.228", features = ["derive"] }
+ureq        = { version = "2.12.1", default-features = false, features = ["gzip", "json"] }
+phf         = { version = "0.13.1", optional = true, features = ["macros"] }
+clap        = { version = "4.5.60", optional = true, features = ["derive"] }
+pcap-file   = { version = "2.0.0", optional = true }
+pnet_packet = { version = "0.35.0", optional = true }
+lazy_static = { version = "1.5.0", optional = true }
 
 [dev-dependencies]
 gamedig-id-tests = { path = "../id-tests", default-features = false }
 
 # Examples
 [[example]]
-name = "minecraft"
+name              = "minecraft"
 required-features = ["games"]
 
 [[example]]
-name = "teamfortress2"
+name              = "teamfortress2"
 required-features = ["games"]
 
 [[example]]
-name = "valve_master_server_query"
+name              = "valve_master_server_query"
 required-features = ["services"]
 
 [[example]]
-name = "test_eco"
+name              = "test_eco"
 required-features = ["games"]
 
 [[example]]
-name = "generic"
+name              = "generic"
 required-features = ["games", "game_defs"]
