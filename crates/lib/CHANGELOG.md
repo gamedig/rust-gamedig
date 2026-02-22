@@ -2,6 +2,21 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
+# 0.9.0 22/02/2026
+
+Breaking:
+
+- MSRV is now `1.85.1` (was `1.82.0`), this is due to deps we rely on requiring a higher version 
+
+Games:
+
+- Fixed minecraft java server side EncoderException error on query (by @paul-hansen).
+
+Crate:
+
+- Some minor clippy fixes
+- Updated some dependencies
+
 # 0.8.0 24/08/2025
 
 Breaking:
