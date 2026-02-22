@@ -43,7 +43,7 @@ repos:
         language: system
         files: '([.]rs|Cargo\.toml)$'
         pass_filenames: false
-        entry: rustup run --install 1.82.0 cargo check -p gamedig
+        entry: rustup run --install 1.85.1 cargo check -p gamedig
 
       - id: docs
         name: Check rustdoc compiles

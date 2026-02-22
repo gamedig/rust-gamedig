@@ -1,6 +1,6 @@
 # MSRV (Minimum Supported Rust Version)
 
-Current: `1.82.0`
+Current: `1.85.1`
 
 Places to update:
 
