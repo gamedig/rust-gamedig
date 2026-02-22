@@ -3,7 +3,7 @@ name         = "gamedig_cli"
 authors      = ["rust-GameDig contributors [https://github.com/gamedig/rust-gamedig/contributors]"]
 description  = "A command line interface for gamedig"
 license      = "MIT"
-version      = "0.4.0"
+version      = "0.5.0"
 edition      = "2021"
 default-run  = "gamedig_cli"
 homepage     = "https://gamedig.github.io/"
@@ -31,7 +31,7 @@ browser = ["dep:webbrowser"]
 # Core Dependencies
 thiserror = "2.0.18"
 clap      = { version = "4.5.60", default-features = false, features = ["derive"] }
-gamedig   = { version = "0.8.0", default-features = false, features = ["clap", "games", "game_defs"] }
+gamedig   = { version = "0.9.0", default-features = false, features = ["clap", "games", "game_defs"] }
 
 # Feature Dependencies
 # Serialization / Deserialization

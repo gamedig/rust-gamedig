@@ -4,6 +4,16 @@ Who knows what the future holds...
 
 Nothing... yet.
 
+# 0.5.0 - 22/02/2026
+
+### Breaking Changes:
+
+- MSRV has been updated to `1.85.1` to match the latest `gamedig` version.
+
+### Changes:
+
+- Updated dependencies
+
 # 0.4.0 - 24/08/2025
 
 ### Breaking Changes:
