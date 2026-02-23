@@ -65,6 +65,8 @@ pub enum GenericResponse<'a> {
     Savage2(&'a crate::games::savage2::Response),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Response),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Response),
     #[cfg(all(
         feature = "services",
         feature = "tls",
@@ -93,6 +95,8 @@ pub enum GenericPlayer<'a> {
     JCMP2(&'a crate::games::jc2m::Player),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Player),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Player),
     #[cfg(all(
         feature = "services",
         feature = "tls",
