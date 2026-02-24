@@ -1,5 +1,11 @@
 //! Currently supported games.
 
+#[cfg(feature = "serde")]
+pub mod palworld;
+
+#[cfg(feature = "serde")]
+pub use palworld::*;
+
 #[cfg(feature = "tls")]
 pub mod epic;
 pub mod gamespy;
