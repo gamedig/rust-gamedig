@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "crates/cli",
-    "crates/ffi/udl",
-    "crates/ffi/neon",
+    "crates/ffi",
+    "crates/ffi_neon",
     "crates/lib",
     "crates/tools/id_gen",
     "crates/tools/net_replay",

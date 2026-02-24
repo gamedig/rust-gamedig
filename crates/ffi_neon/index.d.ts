@@ -1,6 +1,3 @@
-export type IPv4 = `${number}.${number}.${number}.${number}`;
-export type Port = `${number}`;
-export type SocketAddr = `${IPv4}:${Port}`;
 export type TimeoutMs = number;
 
 export interface TcpTimeout {
@@ -24,12 +21,9 @@ export interface Timeout {
   http?: HttpTimeout | null;
 }
 
-export type GenericDataValue = number | boolean | string | string[];
-export type GenericDataMap = Record<string, GenericDataValue>;
-
 export interface GenericPlayer {
-  name: string;
-  additionalData: GenericDataMap | null;
+  id: number;
+  name: string | null;
 }
 
 export interface GenericServer {
@@ -40,18 +34,18 @@ export interface GenericServer {
   map: string | null;
   mode: string | null;
   version: string | null;
-  antiCheat: string | null;
+
+  antiCheat: boolean | null;
   hasPassword: boolean | null;
 
   maxPlayers: number;
   currentPlayers: number;
-  players: GenericPlayer[] | null;
 
-  additionalData: GenericDataMap | null;
+  players: GenericPlayer[] | null;
 }
 
 export default function query(
   gameId: string,
-  addr: SocketAddr,
+  addr: string,
   timeout?: Timeout,
 ): Promise<GenericServer>;
