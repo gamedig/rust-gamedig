@@ -96,7 +96,7 @@ impl GenericTimeoutExt<marker::TcpMarker> for TcpTimeout {
 }
 
 /// UDP timeout configuration.
-/// 
+///
 /// All fields are optional to allow protocol implementations to:
 /// - rely on internal defaults, or
 /// - selectively override specific operations.
@@ -198,9 +198,7 @@ impl GenericTimeoutExt<marker::DictMarker> for TimeoutConfig {
     fn into_marker(&self) -> <marker::DictMarker as marker::TimeoutShape>::Out { *self }
 }
 
-impl<K: marker::TimeoutShape, T: GenericTimeoutExt<K> + ?Sized + Send + Sync> GenericTimeoutExt<K>
-    for &T
-{
+impl<K: marker::TimeoutShape, T: GenericTimeoutExt<K> + ?Sized + Send> GenericTimeoutExt<K> for &T {
     /// Allows passing references to timeout configs wherever a timeout is accepted.
     fn into_marker(&self) -> K::Out { (**self).into_marker() }
 }
