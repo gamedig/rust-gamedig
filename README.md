@@ -19,11 +19,12 @@ A Rust library and CLI tool for querying the status and details of multiplayer g
 
 These are the main crates that users will interact with. They provide the functionality for querying game servers.
 
-| Crate                                 | Path             | Description                                                                | Crates.io       | CI Status       | Coverage        |
-| ------------------------------------- | ---------------- | -------------------------------------------------------------------------- | --------------- | --------------- | --------------- |
-| [`gamedig`](./crates/lib)             | `crates/lib`     | The main crate with all game querying logic.                               | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| [`gamedig_cli`](./crates/cli)         | `crates/cli`     | A command line interface for querying game servers.                        | TODO: Add badge | TODO: Add badge | TODO: Add badge |
-| [`gamedig_ffi_udl`](./crates/ffi/udl) | `crates/ffi/udl` | UDL schemas for generating FFI bindings to integrate with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
+| Crate                                   | Path              | Description                                           | Crates.io       | CI Status       | Coverage        |
+| --------------------------------------- | ----------------- | ----------------------------------------------------- | --------------- | --------------- | --------------- |
+| [`gamedig`](./crates/lib)               | `crates/lib`      | The main crate with all game querying logic.          | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_cli`](./crates/cli)           | `crates/cli`      | A command line interface for querying game servers.   | TODO: Add badge | TODO: Add badge | TODO: Add badge |
+| [`gamedig_ffi`](./crates/ffi)           | `crates/ffi`      | A C FFI library for integrating with other languages. | ❌              | TODO: Add badge | TODO: Add badge |
+| [`gamedig_ffi_neon`](./crates/ffi_neon) | `crates/ffi_neon` | A Neon FFI library for integrating with Node.js.      | ❌              | TODO: Add badge | TODO: Add badge |
 
 ### Internal Crates
 
@@ -42,15 +43,14 @@ These are internal crates used for testing and development purposes. They are no
 | 🟡     | **May work**    | Not tested or maintained. May require additional setup. Use at your own risk. |
 | ⛔     | **Unsupported** | Not expected to work due to missing features or platform limitations.         |
 
-| Platform        | Tier | Notes                                                                                  |
-| --------------- | ---- | -------------------------------------------------------------------------------------- |
-| Windows         | ✅   | TODO: add notes on tested env                                                          |
-| Linux           | ✅   | TODO: add notes on tested env                                                          |
-| macOS           | ✅   | TODO: add notes on tested env                                                          |
-| Android, iOS    | 🟡   | Requires additional setup like SDKs/NDKs and proper linker setup.                      |
-| Embedded        | 🟡   | Targets with `std` may work, but may require additional setup. `no_std` will not work. |
-| WebAssembly     | ⛔   | Will not work due to socket constraints.                                               |
-| UEFI, SGX, etc. | ⛔   | Not designed for those environments.                                                   |
+| Platform     | Tier | Notes                                                                                  |
+| ------------ | ---- | -------------------------------------------------------------------------------------- |
+| Windows      | ✅   | TODO: add notes on tested env                                                          |
+| Linux        | ✅   | TODO: add notes on tested env                                                          |
+| macOS        | ✅   | TODO: add notes on tested env                                                          |
+| Android, iOS | 🟡   | Requires additional setup like SDKs/NDKs and proper linker setup.                      |
+| Embedded     | 🟡   | Targets with `std` may work, but may require additional setup. `no_std` will not work. |
+| WebAssembly  | ⛔   | Will not work due to socket constraints.                                               |
 
 ## Contributing
 
