@@ -34,8 +34,13 @@ impl Dict {
             game_id.as_bytes(),
             #[cfg(feature = "game_ark_survival_ascended")]
             "ark_survival_ascended" => SupportedGame::ArkSurvivalAscended,
-
         }
+        // Node GameDig compatibility mapping
+        .or(hashify::tiny_map! {
+            game_id.as_bytes(),
+            #[cfg(feature = "game_ark_survival_ascended")]
+            "asa" => SupportedGame::ArkSurvivalAscended
+        })
     }
 
     fn game_steam_id_lookup(steam_id: u32) -> Option<SupportedGame> {
@@ -45,7 +50,6 @@ impl Dict {
         static STEAM_IDS: phf::Map<u32, SupportedGame> = phf::phf_map! {
             #[cfg(feature = "game_ark_survival_ascended")]
             2399830 | 2430930 => SupportedGame::ArkSurvivalAscended,
-
         };
 
         STEAM_IDS.get(&steam_id).copied()
@@ -101,6 +105,4 @@ impl Dict {
         )
         .await
     }
-
-    // todo: protocols
 }
