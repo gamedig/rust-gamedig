@@ -505,7 +505,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
 
         for num in 0 .. total {
             let key = response
-                .read_string_utf8(None, true)
+                .read_string_utf8::<0, true>()
                 .change_context(ValveSourceClientError::Parse {
                     section: "rules",
                     field: "key",
@@ -513,7 +513,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 .attach(ContextComponent::new("Index", num))?;
 
             let value = response
-                .read_string_utf8(None, true)
+                .read_string_utf8::<0, true>()
                 .change_context(ValveSourceClientError::Parse {
                     section: "rules",
                     field: "value",
@@ -581,7 +581,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                     field: "index",
                 })?;
 
-            let name = response.read_string_utf8(None, true).change_context(
+            let name = response.read_string_utf8::<0, true>().change_context(
                 ValveSourceClientError::Parse {
                     section: "players",
                     field: "name",
@@ -683,28 +683,28 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 field: "protocol",
             })?;
 
-        let name = response.read_string_utf8(None, true).change_context(
+        let name = response.read_string_utf8::<0, true>().change_context(
             ValveSourceClientError::Parse {
                 section: "info",
                 field: "name",
             },
         )?;
 
-        let map = response.read_string_utf8(None, true).change_context(
+        let map = response.read_string_utf8::<0, true>().change_context(
             ValveSourceClientError::Parse {
                 section: "info",
                 field: "map",
             },
         )?;
 
-        let folder = response.read_string_utf8(None, true).change_context(
+        let folder = response.read_string_utf8::<0, true>().change_context(
             ValveSourceClientError::Parse {
                 section: "info",
                 field: "folder",
             },
         )?;
 
-        let game = response.read_string_utf8(None, true).change_context(
+        let game = response.read_string_utf8::<0, true>().change_context(
             ValveSourceClientError::Parse {
                 section: "info",
                 field: "game",
@@ -843,7 +843,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
             });
         }
 
-        let version = response.read_string_utf8(None, true).change_context(
+        let version = response.read_string_utf8::<0, true>().change_context(
             ValveSourceClientError::Parse {
                 section: "info",
                 field: "version",
@@ -897,7 +897,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                         field: "source_tv_port",
                     })?;
 
-            let source_tv_name = response.read_string_utf8(None, true).change_context(
+            let source_tv_name = response.read_string_utf8::<0, true>().change_context(
                 ValveSourceClientError::Parse {
                     section: "info",
                     field: "source_tv_name",
@@ -911,7 +911,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         }
 
         if edf.contains(ExtraDataFlags::Keywords) {
-            let keywords = response.read_string_utf8(None, true).change_context(
+            let keywords = response.read_string_utf8::<0, true>().change_context(
                 ValveSourceClientError::Parse {
                     section: "info",
                     field: "keywords",
