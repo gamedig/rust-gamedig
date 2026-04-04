@@ -1,4 +1,5 @@
 [workspace]
+resolver = "3"
 members = [
     "crates/cli",
     "crates/ffi",
@@ -8,8 +9,6 @@ members = [
     "crates/tools/net_replay",
 ]
 
-# Edition 2021, uses resolver = 2
-resolver = "2"
 
 # Default Release Profile
 [profile.release]
