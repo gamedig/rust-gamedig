@@ -24,6 +24,10 @@ pub use minetest::*;
 pub mod battalion1944;
 /// Eco
 pub mod eco;
+
+/// FiveM
+pub mod fivem;
+
 /// Frontlines: Fuel of War
 pub mod ffow;
 /// Just Cause 2: Multiplayer
