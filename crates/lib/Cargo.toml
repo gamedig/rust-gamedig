@@ -13,103 +13,154 @@ description   = "A async capable library for querying game servers across multip
 categories    = ["asynchronous", "encoding", "network-programming", "parser-implementations", "parsing"]
 
 
-[features]
-default = ["default_client_tokio"]
-
-# Internal Features (Prefix: _<CAPS>)
-# DO NOT ENABLE THESE FEATURES DIRECTLY 
-# UNLESS YOU KNOW WHAT YOU ARE DOING
-_BUFFER              = ["dep:memchr"]
-_BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
-_HTTP                = ["dep:serde", "dep:serde_json"]
-_TCP                 = ["_BUFFER"]
-_UDP                 = ["_BUFFER"]
-_DEV_LOG             = ["attribute_log"]
-
-# Internal Runtime Features (Prefix: _RT_<CAPS>)
-# DO NOT ENABLE THESE FEATURES DIRECTLY
-_RT_STD   = ["maybe-async/is_sync"]
-_RT_TOKIO = ["dep:async-trait", "dep:tokio"]
-
-
-# Default Features (Prefix: default_)
-#
-# Util features for users to enable all features with a runtime
-# without having to specify each feature individually
-#
-# - Only 1 can be enabled at a time as it enables rt features
-default_client_std   = ["all", "http_std", "socket_std"]
-default_client_tokio = ["all", "http_tokio", "socket_tokio"]
-
-# Socket Client (Prefix: socket_<RUNTIME>)
-#
-# A socket client is required to establish TCP/UDP connections
-#
-# - Only 1 socket client type can be enabled at a time
-socket_std   = ["_RT_STD"]
-socket_tokio = ["_RT_TOKIO"]
-
-# HTTP Client (Prefix: http_<RUNTIME>)
-#
-# Does what it says on the tin, enables HTTP client support.
-#
-# TLS is provided by rustls so that there is no need for OpenSSL.
-#
-# - Only 1 HTTP client type can be enabled at a time.
-# - If using socket client also insure to match the runtime.
-http_std   = ["_RT_STD", "dep:ureq"]
-http_tokio = ["_RT_TOKIO", "dep:reqwest"]
-
-# Library Features
-## Attributes (Prefix: attribute_)
-attribute_log             = ["dep:log"]
-attribute_dict            = ["attribute_converters", "dep:hashify", "dep:phf"]
-attribute_serde           = ["dep:serde", "dep:serde_json"]
-attribute_converters      = []
-attribute_extended_derive = []
-
-## Protocols (Prefix: protocol_)
-protocol_epic_api     = ["_HTTP", "dep:base64", "dep:chrono"]
-protocol_valve_source = ["_UDP", "dep:bzip2", "dep:crc32fast"]
-
-## Games (Prefix: game_)
-game_ark_survival_ascended = ["protocol_epic_api"]
-
-## Index
-all = ["all_attributes", "all_protocols", "all_games"]
-
-all_attributes = [
-    "attribute_log",
-    "attribute_dict",
-    "attribute_serde",
-    "attribute_converters",
-    "attribute_extended_derive",
-]
-
-all_protocols = ["protocol_epic_api", "protocol_valve_source"]
-
-all_games = ["game_ark_survival_ascended"]
-
-
 [dependencies]
 # Dependencies
 maybe-async = { version = "0.2.10", default-features = false }
 thiserror   = { version = "2.0.18", default-features = false, features = ["std"] }
-error-stack = { version = "0.6.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
+error-stack = { version = "0.7.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
 
 # Optional Dependencies
+tracing     = { version = "0.1", optional = true }
 memchr      = { version = "2.8.0", optional = true }
-hashify     = { version = "0.2.7", optional = true }
+hashify     = { version = "0.2.9", optional = true }
 bzip2       = { version = "0.6.1", optional = true }
 phf         = { version = "0.13.1", optional = true, features = ["macros"] }
 async-trait = { version = "0.1.89", optional = true, default-features = false }
-tokio       = { version = "1.49.0", optional = true, default-features = false, features = ["net"] }
 crc32fast   = { version = "1.5.0", optional = true, default-features = false, features = ["std"] }
 base64      = { version = "0.22.1", optional = true, default-features = false, features = ["std"] }
-log         = { version = "0.4.29", optional = true, default-features = false, features = ["std"] }
 serde_json  = { version = "1.0.149", optional = true, default-features = false, features = ["std"] }
 encoding_rs = { version = "0.8.35", optional = true, default-features = false, features = ["alloc"] }
-ureq        = { version = "3.2.0", optional = true, default-features = false, features = ["json", "rustls"] }
+ureq        = { version = "3.3.0", optional = true, default-features = false, features = ["json", "rustls"] }
 serde       = { version = "1.0.228", optional = true, default-features = false, features = ["derive", "std"] }
-chrono      = { version = "0.4.43", optional = true, default-features = false, features = ["std", "clock", "serde"] }
+tokio       = { version = "1.51.1", optional = true, default-features = false, features = ["rt", "net", "macros"] }
+chrono      = { version = "0.4.44", optional = true, default-features = false, features = ["std", "clock", "serde"] }
 reqwest     = { version = "0.13.2", optional = true, default-features = false, features = ["json", "rustls", "query", "form"] }
+
+[features]
+default = ["default_client_std"]
+
+
+# Runtime / Execution Features
+#
+# Prefix: rt_
+#
+# Selects the execution environment used by the client implementation.
+#
+# Some features enable asynchronous runtimes, it also provides a simple
+# synchronous implementation built directly on the Rust standard library.
+#
+# Only ONE runtime feature should be enabled at a time.
+
+## Synchronous implementation using the Rust standard library.
+rt_std = ["maybe-async/is_sync", "dep:ureq"]
+
+## Asynchronous implementation using the Tokio runtime.
+rt_tokio = ["dep:async-trait", "dep:tokio", "dep:reqwest"]
+
+
+# Default Feature Bundles
+#
+# Prefix: default_
+#
+# Convenience features that enable a runtime together with common library extensions.
+#
+# Only ONE default_client feature should be enabled.
+
+## Fully featured client using the Rust standard library.
+default_client_std = ["rt_std", "all"]
+
+## Fully featured client using the Tokio runtime.
+default_client_tokio = ["rt_tokio", "all"]
+
+
+# Library Features
+#
+# Optional features that extend functionality. These features are additive
+# unless explicitly documented otherwise.
+
+
+## Extensions
+##
+## Prefix: ext_
+##
+## Extensions add optional helpers, integrations, or higher level utilities.
+
+### Enables identifier based game query utilities.
+ext_dict = ["ext_converters", "dep:hashify"]
+
+### Adds Steam ID lookup support for the dictionary.
+ext_dict_steamid = ["ext_dict", "dep:phf"]
+
+### Enables serde serialization/deserialization support.
+ext_serde = ["dep:serde", "dep:serde_json"]
+
+### Enables tracing instrumentation within the library.
+ext_tracing = ["dep:tracing"]
+
+### Enables generic conversion traits and helpers.
+ext_converters = []
+
+### Enables additional derive macros for library types, traits and structs.
+ext_derive = []
+
+
+## Protocol Features
+##
+## Prefix: protocol_
+##
+## Protocol features enable support for querying specific server APIs or
+## network protocols. Each protocol may pull in internal transport features
+## and additional dependencies required to parse responses.
+protocol_epic_api     = ["_HTTP", "dep:base64", "dep:chrono"]
+protocol_valve_source = ["_UDP", "dep:bzip2", "dep:crc32fast"]
+
+
+## Game Features
+##
+## Prefix: game_
+##
+## Game features enable support for querying specific games. These features
+## typically depend on a protocol implementations used by that game but may 
+## also pull in additional dependencies for parsing.
+game_ark_survival_ascended = ["protocol_epic_api"]
+
+
+## Feature Index
+##
+## These features group related capabilities so users can easily enable large
+## sets of functionality without listing each feature individually.
+
+### Enables all extension features
+all_ext = ["ext_dict", "ext_dict_steamid", "ext_serde", "ext_tracing", "ext_converters", "ext_derive"]
+
+### Enables all protocol features
+all_protocols = ["protocol_epic_api", "protocol_valve_source"]
+
+### Enables all game features
+all_games = ["game_ark_survival_ascended"]
+
+### Enables all optional library features. 
+all = ["all_ext", "all_protocols", "all_games"]
+
+
+# Internal Features (not intended for users)
+#
+# Prefix: _<CAPS>
+#
+# These features group dependencies and control conditional compilation of
+# lower level modules such as transports and buffer utilities.
+
+## Enables HTTP(S) protocol support
+_HTTP = ["dep:serde", "dep:serde_json"]
+
+## TCP transport layer support
+_TCP = ["_BUFFER"]
+
+## UDP transport layer support
+_UDP = ["_BUFFER"]
+
+## Buffer used by networking transports
+_BUFFER = ["dep:memchr"]
+
+## Enables Latin 1 decoding support
+_BUFFER_READ_LATIN_1 = ["dep:encoding_rs"]
