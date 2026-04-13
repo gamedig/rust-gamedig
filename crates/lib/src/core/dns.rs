@@ -41,41 +41,41 @@ impl ToSocketAddr for SocketAddr {
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for SocketAddrV4 {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        Ok((*self).into())
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { Ok((*self).into()) }
 }
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for SocketAddrV6 {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        Ok((*self).into())
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { Ok((*self).into()) }
 }
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for (IpAddr, u16) {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        Ok((*self).into())
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { Ok((*self).into()) }
 }
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for (Ipv4Addr, u16) {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        Ok((*self).into())
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { Ok((*self).into()) }
 }
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for (Ipv6Addr, u16) {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        Ok((*self).into())
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { Ok((*self).into()) }
 }
 
 #[maybe_async::sync_impl]
 impl ToSocketAddr for str {
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                addr = self,
+            )
+        )
+    )]
     fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
         use std::net::ToSocketAddrs;
 
@@ -86,9 +86,19 @@ impl ToSocketAddr for str {
     }
 }
 
-#[cfg(feature = "_RT_TOKIO")]
+#[cfg(feature = "rt_tokio")]
 #[maybe_async::async_impl]
 impl ToSocketAddr for str {
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                addr = self,
+            )
+        )
+    )]
     async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
         use tokio::net::lookup_host;
 
@@ -102,13 +112,22 @@ impl ToSocketAddr for str {
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for String {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        (&**self).to_socket_addr().await
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { (**self).to_socket_addr().await }
 }
 
 #[maybe_async::sync_impl]
 impl ToSocketAddr for (&str, u16) {
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                addr = self.0,
+                port = self.1,
+            )
+        )
+    )]
     fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
         use std::net::ToSocketAddrs;
 
@@ -119,9 +138,20 @@ impl ToSocketAddr for (&str, u16) {
     }
 }
 
-#[cfg(feature = "_RT_TOKIO")]
+#[cfg(feature = "rt_tokio")]
 #[maybe_async::async_impl]
 impl ToSocketAddr for (&str, u16) {
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                addr = self.0,
+                port = self.1,
+            )
+        )
+    )]
     async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
         use tokio::net::lookup_host;
 
@@ -135,14 +165,10 @@ impl ToSocketAddr for (&str, u16) {
 
 #[maybe_async::maybe_async]
 impl ToSocketAddr for (String, u16) {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        (&*self.0, self.1).to_socket_addr().await
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { (&*self.0, self.1).to_socket_addr().await }
 }
 
 #[maybe_async::maybe_async]
 impl<T: ToSocketAddr + ?Sized + Sync> ToSocketAddr for &T {
-    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> {
-        (**self).to_socket_addr().await
-    }
+    async fn to_socket_addr(&self) -> Result<SocketAddr, Report<ToSocketAddrError>> { (**self).to_socket_addr().await }
 }
