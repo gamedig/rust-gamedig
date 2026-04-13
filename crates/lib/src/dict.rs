@@ -13,6 +13,7 @@ pub enum DictError {
     Query,
     #[error("[GameDig]::[DICT::UNKNOWN_IDENTIFIER]: Unknown game identifier provided")]
     UnknownGameIdentifier { game_id: String },
+    #[cfg(feature = "ext_dict_steamid")]
     #[error("[GameDig]::[DICT::UNKNOWN_STEAM_ID]: Unknown steam id provided")]
     UnknownSteamId { steam_id: u32 },
 }
@@ -43,6 +44,7 @@ impl Dict {
         })
     }
 
+    #[cfg(feature = "ext_dict_steamid")]
     fn game_steam_id_lookup(steam_id: u32) -> Option<SupportedGame> {
         // <steam_id>
         // or
@@ -92,6 +94,7 @@ impl Dict {
         .await
     }
 
+    #[cfg(feature = "ext_dict_steamid")]
     pub async fn query_by_steam_id<A: ToSocketAddr>(
         steam_id: u32,
         addr: A,
