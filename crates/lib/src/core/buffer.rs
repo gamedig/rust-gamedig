@@ -2,14 +2,7 @@ use {
     super::error::{
         Report,
         ResultExt,
-        diagnostic::{
-            CRATE_INFO,
-            ContextComponent,
-            FailureReason,
-            HexDump,
-            OpenGitHubIssue,
-            SYSTEM_INFO,
-        },
+        diagnostic::{CRATE_INFO, ContextComponent, FailureReason, HexDump, OpenGitHubIssue},
     },
 
     std::{
@@ -20,42 +13,27 @@ use {
 
 #[derive(Debug, thiserror::Error)]
 pub enum BufferError {
-    #[error(
-        "[GameDig]::[BUF::OUT_OF_RANGE]: buffer cursor movement is outside the valid buffer range"
-    )]
+    #[error("[GameDig]::[BUF::OUT_OF_RANGE]: buffer cursor movement is outside the valid buffer range")]
     OutOfRange,
 
-    #[error(
-        "[GameDig]::[BUF::NOT_REPRESENTABLE]: buffer cursor movement cannot be represented \
-         numerically"
-    )]
+    #[error("[GameDig]::[BUF::NOT_REPRESENTABLE]: buffer cursor movement cannot be represented numerically")]
     NotRepresentable,
 
-    #[error(
-        "[GameDig]::[BUF::RANGE_BOUNDS_OVERFLOW]: buffer range validation failed due to non \
-         representable bounds"
-    )]
+    #[error("[GameDig]::[BUF::RANGE_BOUNDS_OVERFLOW]: buffer range validation failed due to non representable bounds")]
     RangeBoundsOverflow,
 
-    #[error(
-        "[GameDig]::[BUF::RANGE_BOUNDS_INVALID]: buffer range validation failed due to invalid \
-         bound ordering"
-    )]
+    #[error("[GameDig]::[BUF::RANGE_BOUNDS_INVALID]: buffer range validation failed due to invalid bound ordering")]
     RangeBoundsInvalid,
 
     #[error(
-        "[GameDig]::[BUF::RANGE_BOUNDS_OUT_OF_BOUNDS]: buffer range validation failed because the \
-         range exceeds buffer length"
+        "[GameDig]::[BUF::RANGE_BOUNDS_OUT_OF_BOUNDS]: buffer range validation failed because the range exceeds buffer length"
     )]
     RangeBoundsOutOfBounds,
 
     #[error("[GameDig]::[BUF::RANGE_CHECK_FAILED]: buffer range check operation failed")]
     RangeCheckFailed,
 
-    #[error(
-        "[GameDig]::[BUF::DELIMITER_NOT_FOUND]: expected string delimiter was not found before \
-         end of buffer"
-    )]
+    #[error("[GameDig]::[BUF::DELIMITER_NOT_FOUND]: expected string delimiter was not found before end of buffer")]
     DelimiterNotFound,
 
     #[error("[GameDig]::[BUF::INVALID_UTF8_STRING]: buffer contains invalid UTF 8 string data")]
@@ -71,26 +49,16 @@ pub enum BufferError {
 /// The `Bufferable` trait abstracts types that represent byte storage and provides
 /// a method to retrieve the length of the underlying storage.
 pub(crate) trait Bufferable: Clone + Debug + Send + Sync + 'static + AsRef<[u8]> {
-    /// If the underlying storage has a known size at compile time.
-    #[cfg(feature = "_DEV_LOG")]
-    const IS_FIXED_SIZE: bool;
-
     /// Returns the number of elements in the underlying byte storage.
     fn len(&self) -> usize;
 }
 
 impl Bufferable for Vec<u8> {
-    #[cfg(feature = "_DEV_LOG")]
-    const IS_FIXED_SIZE: bool = false;
-
     #[inline]
     fn len(&self) -> usize { self.len() }
 }
 
 impl<const N: usize> Bufferable for [u8; N] {
-    #[cfg(feature = "_DEV_LOG")]
-    const IS_FIXED_SIZE: bool = true;
-
     #[inline]
     fn len(&self) -> usize { N }
 }
@@ -112,71 +80,54 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// * `inner` - The underlying byte storage.
     #[inline]
-    pub(crate) fn new(inner: B) -> Self {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<NEW>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field(
-                    "inner",
-                    format_args!("alloc({})", if B::IS_FIXED_SIZE { "stack" } else { "heap" }),
-                )
-                .finish()
-        });
-
-        Self { inner, cursor: 0 }
-    }
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(inner),
+            fields(
+                inner = std::any::type_name::<B>(),
+            )
+        )
+    )]
+    pub(crate) fn new(inner: B) -> Self { Self { inner, cursor: 0 } }
 
     /// Returns the current position in the buffer
     ///
     /// The position is zero based and increments as you read or move through the buffer.
     #[inline]
-    pub(crate) fn pos(&self) -> usize {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<POS>");
-
-        self.cursor
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn pos(&self) -> usize { self.cursor }
 
     /// Returns the number of elements in the underlying byte storage.
     #[inline]
-    pub(crate) fn len(&self) -> usize {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<LEN>");
-
-        self.inner.len()
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn len(&self) -> usize { self.inner.len() }
 
     /// Returns the number of elements remaining from the current position to the end of the byte storage.
     ///
     /// This gives you how many more bytes can be read without going out of bounds.
     #[inline]
-    pub(crate) fn remaining(&self) -> usize {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<REMAINING>");
-
-        self.len().saturating_sub(self.pos())
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn remaining(&self) -> usize { self.len().saturating_sub(self.pos()) }
 
     /// Checks if there are no remaining bytes to read from the current position.
-    pub(crate) fn is_empty(&self) -> bool {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<IS_EMPTY>");
-
-        self.remaining() == 0
-    }
+    #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn is_empty(&self) -> bool { self.remaining() == 0 }
 
     /// Returns a slice of the remaining unread bytes.
-    pub(crate) fn remaining_slice(&self) -> &[u8] {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<REMAINING_SLICE>");
-
-        &self.inner.as_ref()[self.pos().min(self.len()) ..]
-    }
+    #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn remaining_slice(&self) -> &[u8] { &self.inner.as_ref()[self.pos().min(self.len()) ..] }
 
     /// Consumes the `Buffer` and returns the underlying byte storage.
     ///
     /// This conversion moves the underlying byte storage out of the `Buffer`,
     /// effectively discarding the `Buffer` wrapper.
     #[inline]
-    pub(crate) fn unpack(self) -> B {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<UNPACK>");
-
-        self.inner
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn unpack(self) -> B { self.inner }
 
     /// Moves the buffer’s current position by the specified amount.
     ///
@@ -192,14 +143,19 @@ impl<B: Bufferable> Buffer<B> {
     /// Returns an `Err` if:
     /// * The resulting position would be out of bounds.
     /// * Addition overflows or underflows `isize` (Note: We should not encounter isize::MAX under normal circumstances).
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                off = off,
+            )
+        )
+    )]
     pub(crate) fn move_pos(&mut self, off: isize) -> Result<(), Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<MOVE_POS>: {:?}", |f| {
-            f.debug_struct("Args").field("off", &off).finish()
-        });
-
         // just in case someone tries to move 0
         if off == 0 {
-            dev_warn!("GAMEDIG::CORE::BUFFER::<MOVE_POS>: No movement (off = 0)");
             return Ok(());
         }
 
@@ -207,10 +163,9 @@ impl<B: Bufferable> Buffer<B> {
             None => {
                 Err(Report::new(BufferError::NotRepresentable)
                     .attach(FailureReason::new(
-                        "The buffer cursor could not be repositioned because adding the requested \
-                         offset to the current position produced a value that is not \
-                         representable. The resulting cursor position exceeds the valid numeric \
-                         range.",
+                        "The buffer cursor could not be repositioned because adding the requested offset to the current \
+                         position produced a value that is not representable. The resulting cursor position exceeds the valid \
+                         numeric range.",
                     ))
                     .attach(OpenGitHubIssue())
                     .attach(ContextComponent::new("Offset", off))
@@ -219,17 +174,15 @@ impl<B: Bufferable> Buffer<B> {
                         self.inner.clone(),
                         Some(self.pos()),
                     ))
-                    .attach(SYSTEM_INFO)
                     .attach(CRATE_INFO))
             }
 
             Some(n) if n < 0 || n as usize > self.len() => {
                 Err(Report::new(BufferError::OutOfRange)
                     .attach(FailureReason::new(
-                        "The buffer cursor could not be repositioned because the computed target \
-                         index falls outside the valid range of the underlying data. The \
-                         requested movement would place the cursor before the start of the buffer \
-                         or beyond its end.",
+                        "The buffer cursor could not be repositioned because the computed target index falls outside the valid \
+                         range of the underlying data. The requested movement would place the cursor before the start of the \
+                         buffer or beyond its end.",
                     ))
                     .attach(OpenGitHubIssue())
                     .attach(ContextComponent::new("Offset", off))
@@ -239,7 +192,6 @@ impl<B: Bufferable> Buffer<B> {
                         self.inner.clone(),
                         Some(self.pos()),
                     ))
-                    .attach(SYSTEM_INFO)
                     .attach(CRATE_INFO))
             }
 
@@ -268,16 +220,17 @@ impl<B: Bufferable> Buffer<B> {
     /// * The range results in arithmetic overflow or underflow.
     /// * The range is invalid (e.g., start > end).
     /// * The range extends beyond the length of the buffer.
-    fn check_range(
-        &self,
-        range: impl RangeBounds<usize> + Debug,
-    ) -> Result<(), Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<CHECK_RANGE>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("range", &format_args!("{range:?}"))
-                .finish()
-        });
-
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                range = ?range,
+            )
+        )
+    )]
+    fn check_range(&self, range: impl RangeBounds<usize> + Debug) -> Result<(), Report<BufferError>> {
         let len = self.len();
         let pos = self.pos();
 
@@ -288,16 +241,14 @@ impl<B: Bufferable> Buffer<B> {
                     None => {
                         return Err(Report::new(BufferError::RangeBoundsOverflow)
                             .attach(FailureReason::new(
-                                "The buffer range could not be validated because the computed \
-                                 start index is not representable in usize. Adding the start \
-                                 bound to the base position overflowed.",
+                                "The buffer range could not be validated because the computed start index is not representable \
+                                 in usize. Adding the start bound to the base position overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
                             .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("Start Bound", n))
                             .attach(ContextComponent::new("Start Bound Kind", "Included"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                            .attach(SYSTEM_INFO)
                             .attach(CRATE_INFO));
                     }
                 }
@@ -309,17 +260,15 @@ impl<B: Bufferable> Buffer<B> {
                     None => {
                         return Err(Report::new(BufferError::RangeBoundsOverflow)
                             .attach(FailureReason::new(
-                                "The buffer range could not be validated because the computed \
-                                 start index is not representable in usize. Converting an \
-                                 excluded start bound requires adding 1, and the resulting \
-                                 arithmetic overflowed.",
+                                "The buffer range could not be validated because the computed start index is not representable \
+                                 in usize. Converting an excluded start bound requires adding 1, and the resulting arithmetic \
+                                 overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
                             .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("Start Bound", n))
                             .attach(ContextComponent::new("Start Bound Kind", "Excluded"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                            .attach(SYSTEM_INFO)
                             .attach(CRATE_INFO));
                     }
                 }
@@ -335,16 +284,15 @@ impl<B: Bufferable> Buffer<B> {
                     None => {
                         return Err(Report::new(BufferError::RangeBoundsOverflow)
                             .attach(FailureReason::new(
-                                "The buffer range could not be validated because the computed end \
-                                 index is not representable in usize. Converting an included end \
-                                 bound requires adding 1, and the resulting arithmetic overflowed.",
+                                "The buffer range could not be validated because the computed end index is not representable in \
+                                 usize. Converting an included end bound requires adding 1, and the resulting arithmetic \
+                                 overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
                             .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("End Bound", n))
                             .attach(ContextComponent::new("End Bound Kind", "Included"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                            .attach(SYSTEM_INFO)
                             .attach(CRATE_INFO));
                     }
                 }
@@ -356,16 +304,14 @@ impl<B: Bufferable> Buffer<B> {
                     None => {
                         return Err(Report::new(BufferError::RangeBoundsOverflow)
                             .attach(FailureReason::new(
-                                "The buffer range could not be validated because the computed end \
-                                 index is not representable in usize. Adding the end bound to the \
-                                 base position overflowed.",
+                                "The buffer range could not be validated because the computed end index is not representable in \
+                                 usize. Adding the end bound to the base position overflowed.",
                             ))
                             .attach(OpenGitHubIssue())
                             .attach(ContextComponent::new("Position", pos))
                             .attach(ContextComponent::new("End Bound", n))
                             .attach(ContextComponent::new("End Bound Kind", "Excluded"))
                             .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                            .attach(SYSTEM_INFO)
                             .attach(CRATE_INFO));
                     }
                 }
@@ -377,23 +323,21 @@ impl<B: Bufferable> Buffer<B> {
         if start > end {
             return Err(Report::new(BufferError::RangeBoundsInvalid)
                 .attach(FailureReason::new(
-                    "The provided range is invalid because the computed start index is greater \
-                     than the computed end index.",
+                    "The provided range is invalid because the computed start index is greater than the computed end index.",
                 ))
                 .attach(OpenGitHubIssue())
                 .attach(ContextComponent::new("Position", pos))
                 .attach(ContextComponent::new("Computed Start", start))
                 .attach(ContextComponent::new("Computed End", end))
                 .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO));
         }
 
         if start > len || end > len {
             return Err(Report::new(BufferError::RangeBoundsOutOfBounds)
                 .attach(FailureReason::new(
-                    "The provided range is out of bounds for the underlying buffer. The computed \
-                     start or end index exceeds the buffer length.",
+                    "The provided range is out of bounds for the underlying buffer. The computed start or end index exceeds the \
+                     buffer length.",
                 ))
                 .attach(OpenGitHubIssue())
                 .attach(ContextComponent::new("Position", pos))
@@ -401,7 +345,6 @@ impl<B: Bufferable> Buffer<B> {
                 .attach(ContextComponent::new("Computed Start", start))
                 .attach(ContextComponent::new("Computed End", end))
                 .attach(ContextComponent::new("Range (Debug)", format!("{range:?}")))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO));
         }
 
@@ -420,11 +363,17 @@ impl<B: Bufferable> Buffer<B> {
     /// # Errors
     ///
     /// Returns an `Err` if the requested number of bytes (`cnt`) is not available from the current position.
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                cnt = cnt,
+            )
+        )
+    )]
     pub(crate) fn peek(&self, cnt: usize) -> Result<&[u8], Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<PEEK>: {:?}", |f| {
-            f.debug_struct("Args").field("cnt", &cnt).finish()
-        });
-
         let pos = self.pos();
 
         self.check_range(.. cnt)
@@ -438,13 +387,12 @@ impl<B: Bufferable> Buffer<B> {
         let end = pos.checked_add(cnt).ok_or_else(|| {
             Report::new(BufferError::RangeBoundsOverflow)
                 .attach(FailureReason::new(
-                    "The peek operation could not compute a valid end index because adding the \
-                     requested count to the current buffer position is not representable in usize.",
+                    "The peek operation could not compute a valid end index because adding the requested count to the current \
+                     buffer position is not representable in usize.",
                 ))
                 .attach(OpenGitHubIssue())
                 .attach(ContextComponent::new("Count", cnt))
                 .attach(ContextComponent::new("Position", pos))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)
         })?;
 
@@ -473,22 +421,23 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if there are not enough bytes remaining to read `N` bytes starting from
     /// the current cursor position.
-    fn get_inner_slice<T, const N: usize, F>(
-        &mut self,
-        convert: F,
-    ) -> Result<T, Report<BufferError>>
-    where
-        F: FnOnce([u8; N]) -> T,
-    {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<GET_INNER_SLICE>: {:?}", |f| {
-            f.debug_struct("Args").field("N", &N).finish()
-        });
-
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self, convert),
+            fields(
+                n = N,
+                target_type = std::any::type_name::<T>(),
+            )
+        )
+    )]
+    fn get_inner_slice<T, const N: usize, F>(&mut self, convert: F) -> Result<T, Report<BufferError>>
+    where F: FnOnce([u8; N]) -> T {
         self.check_range(.. N)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
-                "The fixed size slice read operation could not be completed because the range \
-                 check failed.",
+                "The fixed size slice read operation could not be completed because the range check failed.",
             ))
             .attach(ContextComponent::new("Bytes Requested", N))
             .attach(ContextComponent::new("Position", self.pos()))
@@ -514,11 +463,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `1` byte is available at the current cursor position.
     #[inline]
-    pub(crate) fn read_u8(&mut self) -> Result<u8, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::IO::BUF::NUM::<READ_U8>: []");
-
-        self.get_inner_slice::<u8, 1, _>(|x| x[0])
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn read_u8(&mut self) -> Result<u8, Report<BufferError>> { self.get_inner_slice::<u8, 1, _>(|x| x[0]) }
 
     /// Read signed 8 bit integer (`i8`) from the buffer.
     ///
@@ -528,11 +474,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `1` byte is available at the current cursor position.
     #[inline]
-    pub(crate) fn read_i8(&mut self) -> Result<i8, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I8>");
-
-        self.get_inner_slice::<i8, 1, _>(|x| x[0] as i8)
-    }
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
+    pub(crate) fn read_i8(&mut self) -> Result<i8, Report<BufferError>> { self.get_inner_slice::<i8, 1, _>(|x| x[0] as i8) }
 
     /// Read unsigned 16 bit integer (`u16`) in big endian (`BE`) order.
     ///
@@ -542,9 +485,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u16_be(&mut self) -> Result<u16, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U16_BE>");
-
         self.get_inner_slice::<u16, 2, _>(u16::from_be_bytes)
     }
 
@@ -556,9 +498,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u16_le(&mut self) -> Result<u16, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U16_LE>");
-
         self.get_inner_slice::<u16, 2, _>(u16::from_le_bytes)
     }
 
@@ -570,9 +511,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i16_be(&mut self) -> Result<i16, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I16_BE>");
-
         self.get_inner_slice::<i16, 2, _>(i16::from_be_bytes)
     }
 
@@ -584,9 +524,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `2` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i16_le(&mut self) -> Result<i16, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I16_LE>");
-
         self.get_inner_slice::<i16, 2, _>(i16::from_le_bytes)
     }
 
@@ -598,9 +537,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u32_be(&mut self) -> Result<u32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U32_BE>");
-
         self.get_inner_slice::<u32, 4, _>(u32::from_be_bytes)
     }
 
@@ -612,9 +550,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u32_le(&mut self) -> Result<u32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U32_LE>");
-
         self.get_inner_slice::<u32, 4, _>(u32::from_le_bytes)
     }
 
@@ -626,9 +563,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i32_be(&mut self) -> Result<i32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I32_BE>");
-
         self.get_inner_slice::<i32, 4, _>(i32::from_be_bytes)
     }
 
@@ -640,9 +576,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i32_le(&mut self) -> Result<i32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I32_LE>");
-
         self.get_inner_slice::<i32, 4, _>(i32::from_le_bytes)
     }
 
@@ -654,9 +589,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u64_be(&mut self) -> Result<u64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U64_BE>");
-
         self.get_inner_slice::<u64, 8, _>(u64::from_be_bytes)
     }
 
@@ -668,9 +602,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u64_le(&mut self) -> Result<u64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U64_LE>");
-
         self.get_inner_slice::<u64, 8, _>(u64::from_le_bytes)
     }
 
@@ -682,9 +615,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i64_be(&mut self) -> Result<i64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I64_BE>");
-
         self.get_inner_slice::<i64, 8, _>(i64::from_be_bytes)
     }
 
@@ -696,9 +628,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i64_le(&mut self) -> Result<i64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I64_LE>");
-
         self.get_inner_slice::<i64, 8, _>(i64::from_le_bytes)
     }
 
@@ -710,9 +641,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u128_be(&mut self) -> Result<u128, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U128_BE>");
-
         self.get_inner_slice::<u128, 16, _>(u128::from_be_bytes)
     }
 
@@ -724,9 +654,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_u128_le(&mut self) -> Result<u128, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_U128_LE>");
-
         self.get_inner_slice::<u128, 16, _>(u128::from_le_bytes)
     }
 
@@ -738,9 +667,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i128_be(&mut self) -> Result<i128, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I128_BE>");
-
         self.get_inner_slice::<i128, 16, _>(i128::from_be_bytes)
     }
 
@@ -752,9 +680,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `16` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_i128_le(&mut self) -> Result<i128, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_I128_LE>");
-
         self.get_inner_slice::<i128, 16, _>(i128::from_le_bytes)
     }
 
@@ -766,9 +693,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_f32_be(&mut self) -> Result<f32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_F32_BE>");
-
         self.get_inner_slice::<f32, 4, _>(f32::from_be_bytes)
     }
 
@@ -780,9 +706,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `4` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_f32_le(&mut self) -> Result<f32, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_F32_LE>");
-
         self.get_inner_slice::<f32, 4, _>(f32::from_le_bytes)
     }
 
@@ -794,9 +719,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_f64_be(&mut self) -> Result<f64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_F64_BE>");
-
         self.get_inner_slice::<f64, 8, _>(f64::from_be_bytes)
     }
 
@@ -808,9 +732,8 @@ impl<B: Bufferable> Buffer<B> {
     ///
     /// Returns an error if fewer than `8` bytes are available.
     #[inline]
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self)))]
     pub(crate) fn read_f64_le(&mut self) -> Result<f64, Report<BufferError>> {
-        dev_trace!("GAMEDIG::CORE::BUFFER::<READ_F64_LE>");
-
         self.get_inner_slice::<f64, 8, _>(f64::from_le_bytes)
     }
 
@@ -836,16 +759,18 @@ impl<B: Bufferable> Buffer<B> {
     /// - The requested range goes out of bounds.
     /// - The delimiter is not found before the end of the buffer.
     /// - `STRICT` is `true` and the bytes do not form valid `UTF 8`.
-    pub(crate) fn read_string_utf8<const DELIMITER: u8, const STRICT: bool>(
-        &mut self,
-    ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF8>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &DELIMITER)
-                .field("strict", &STRICT)
-                .finish()
-        });
-
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+            )
+        )
+    )]
+    pub(crate) fn read_string_utf8<const DELIMITER: u8, const STRICT: bool>(&mut self) -> Result<String, Report<BufferError>> {
         self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
@@ -858,8 +783,7 @@ impl<B: Bufferable> Buffer<B> {
         let end_pos = memchr::memchr(DELIMITER, buf).ok_or_else(|| {
             Report::new(BufferError::DelimiterNotFound)
                 .attach(FailureReason::new(
-                    "The requested string could not be read because the delimiter was not found \
-                     before the end of the buffer.",
+                    "The requested string could not be read because the delimiter was not found before the end of the buffer.",
                 ))
                 .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(HexDump::new(
@@ -867,7 +791,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)
         })?;
 
@@ -878,8 +801,8 @@ impl<B: Bufferable> Buffer<B> {
                 .map(str::to_owned)
                 .change_context(BufferError::InvalidUTF8String)
                 .attach(FailureReason::new(
-                    "UTF-8 decoding failed while reading a delimited string. The byte sequence \
-                     before the delimiter is not valid UTF-8.",
+                    "UTF-8 decoding failed while reading a delimited string. The byte sequence before the delimiter is not \
+                     valid UTF-8.",
                 ))
                 .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(ContextComponent::new("Bytes Read", end_pos))
@@ -888,7 +811,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
             String::from_utf8_lossy(slice).into_owned()
@@ -920,20 +842,22 @@ impl<B: Bufferable> Buffer<B> {
     /// Returns an error if:
     /// - The requested range is out of bounds.
     /// - `STRICT` is `true` and the bytes do not form valid `UTF 8`.
-    pub(crate) fn read_string_utf8_len_prefixed<const STRICT: bool>(
-        &mut self,
-    ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!(
-            "GAMEDIG::CORE::BUFFER::<READ_STRING_UTF8_LEN_PREFIXED>: {:?}",
-            |f| { f.debug_struct("Args").field("strict", &STRICT).finish() }
-        );
-
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                strict = STRICT,
+            )
+        )
+    )]
+    pub(crate) fn read_string_utf8_len_prefixed<const STRICT: bool>(&mut self) -> Result<String, Report<BufferError>> {
         let len_byte = self
             .peek(1)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
-                "The requested length prefixed string could not be read because the range check \
-                 for the length byte failed.",
+                "The requested length prefixed string could not be read because the range check for the length byte failed.",
             ))?[0];
 
         let s_len = len_byte as usize;
@@ -941,12 +865,11 @@ impl<B: Bufferable> Buffer<B> {
         let total = 1usize.checked_add(s_len).ok_or_else(|| {
             Report::new(BufferError::RangeBoundsOverflow)
                 .attach(FailureReason::new(
-                    "The requested length prefixed string could not be read because the computed \
-                     total length is not representable in usize.",
+                    "The requested length prefixed string could not be read because the computed total length is not \
+                     representable in usize.",
                 ))
                 .attach(ContextComponent::new("String Length", s_len))
                 .attach(ContextComponent::new("Position", self.pos()))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)
         })?;
 
@@ -954,8 +877,7 @@ impl<B: Bufferable> Buffer<B> {
             .peek(total)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
-                "The requested length prefixed string could not be read because the range check \
-                 for the string data failed.",
+                "The requested length prefixed string could not be read because the range check for the string data failed.",
             ))
             .attach(ContextComponent::new("String Length", s_len))
             .attach(ContextComponent::new("Position", self.pos()))?;
@@ -975,7 +897,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(self.pos()),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
             String::from_utf8_lossy(bytes).into_owned()
@@ -986,17 +907,21 @@ impl<B: Bufferable> Buffer<B> {
         Ok(s)
     }
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+                le = LE,
+            )
+        )
+    )]
     fn read_string_utf16<const DELIMITER: u16, const STRICT: bool, const LE: bool>(
         &mut self,
     ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &DELIMITER)
-                .field("strict", &STRICT)
-                .field("le", &LE)
-                .finish()
-        });
-
         self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
@@ -1015,8 +940,8 @@ impl<B: Bufferable> Buffer<B> {
         let end_pos = memchr::memmem::find(buf, &needle).ok_or_else(|| {
             Report::new(BufferError::DelimiterNotFound)
                 .attach(FailureReason::new(
-                    "The requested UTF-16 string could not be read because the delimiter was not \
-                     found before the end of the buffer.",
+                    "The requested UTF-16 string could not be read because the delimiter was not found before the end of the \
+                     buffer.",
                 ))
                 .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(HexDump::new(
@@ -1024,7 +949,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)
         })?;
 
@@ -1040,7 +964,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO));
         }
 
@@ -1075,7 +998,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?
         } else {
             String::from_utf16_lossy(&units)
@@ -1106,16 +1028,21 @@ impl<B: Bufferable> Buffer<B> {
     /// - The requested range goes out of bounds.
     /// - The UTF-16 isn't properly aligned.
     /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
+    #[inline]
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+            )
+        )
+    )]
     pub(crate) fn read_string_utf16_be<const DELIMITER: u16, const STRICT: bool>(
         &mut self,
     ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16_BE>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &DELIMITER)
-                .field("strict", &STRICT)
-                .finish()
-        });
-
         self.read_string_utf16::<DELIMITER, STRICT, false>()
     }
 
@@ -1139,16 +1066,21 @@ impl<B: Bufferable> Buffer<B> {
     /// - The requested range goes out of bounds.
     /// - The UTF-16 isn't properly aligned.
     /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
+    #[inline]
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+            )
+        )
+    )]
     pub(crate) fn read_string_utf16_le<const DELIMITER: u16, const STRICT: bool>(
         &mut self,
     ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UTF16_LE>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &DELIMITER)
-                .field("strict", &STRICT)
-                .finish()
-        });
-
         self.read_string_utf16::<DELIMITER, STRICT, true>()
     }
 
@@ -1175,16 +1107,19 @@ impl<B: Bufferable> Buffer<B> {
     /// - The requested range goes out of bounds.
     /// - The UTF-16 isn't properly aligned.
     /// - `STRICT` is `true` and invalid `UTF 16` data is encountered.
-    pub(crate) fn read_string_ucs2<const DELIMITER: u16, const STRICT: bool>(
-        &mut self,
-    ) -> Result<String, Report<BufferError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::BUFFER::<READ_STRING_UCS2>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("delimiter", &DELIMITER)
-                .field("strict", &STRICT)
-                .finish()
-        });
-
+    #[inline]
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+            )
+        )
+    )]
+    pub(crate) fn read_string_ucs2<const DELIMITER: u16, const STRICT: bool>(&mut self) -> Result<String, Report<BufferError>> {
         self.read_string_utf16_le::<DELIMITER, STRICT>()
     }
 
@@ -1208,9 +1143,18 @@ impl<B: Bufferable> Buffer<B> {
     /// - The requested range goes out of bounds.
     /// - `STRICT` is `true` and invalid `Latin 1` data is encountered.
     #[cfg(feature = "_BUFFER_READ_LATIN_1")]
-    pub(crate) fn read_string_latin1<const DELIMITER: u8, const STRICT: bool>(
-        &mut self,
-    ) -> Result<String, Report<BufferError>> {
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                delimiter = DELIMITER,
+                strict = STRICT,
+            )
+        )
+    )]
+    pub(crate) fn read_string_latin1<const DELIMITER: u8, const STRICT: bool>(&mut self) -> Result<String, Report<BufferError>> {
         self.check_range(..)
             .change_context(BufferError::RangeCheckFailed)
             .attach(FailureReason::new(
@@ -1223,8 +1167,8 @@ impl<B: Bufferable> Buffer<B> {
         let end_pos = memchr::memchr(DELIMITER, buf).ok_or_else(|| {
             Report::new(BufferError::DelimiterNotFound)
                 .attach(FailureReason::new(
-                    "The requested Latin 1 string could not be read because the delimiter was not \
-                     found before the end of the buffer.",
+                    "The requested Latin 1 string could not be read because the delimiter was not found before the end of the \
+                     buffer.",
                 ))
                 .attach(ContextComponent::new("Delimiter", DELIMITER))
                 .attach(HexDump::new(
@@ -1232,7 +1176,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)
         })?;
 
@@ -1256,7 +1199,6 @@ impl<B: Bufferable> Buffer<B> {
                     self.inner.clone(),
                     Some(start),
                 ))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO));
         }
 
@@ -1592,8 +1534,7 @@ mod tests {
     #[test]
     fn test_read_u128_be_ok() {
         let mut buffer = Buffer::new(vec![
-            0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
-            0xDE, 0xF0,
+            0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0,
         ]);
 
         assert_eq!(buffer.len(), 16);
@@ -1615,8 +1556,7 @@ mod tests {
     #[test]
     fn test_read_u128_le_ok() {
         let mut buffer = Buffer::new(vec![
-            0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12, 0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56,
-            0x34, 0x12,
+            0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12, 0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
         ]);
 
         assert_eq!(buffer.len(), 16);
@@ -1638,8 +1578,7 @@ mod tests {
     #[test]
     fn test_read_i128_be_ok() {
         let mut buffer = Buffer::new(vec![
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFE,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE,
         ]);
 
         assert_eq!(buffer.len(), 16);
@@ -1658,8 +1597,7 @@ mod tests {
     #[test]
     fn test_read_i128_le_ok() {
         let mut buffer = Buffer::new(vec![
-            0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF,
+            0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
         ]);
 
         assert_eq!(buffer.len(), 16);
