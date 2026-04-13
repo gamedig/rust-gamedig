@@ -20,29 +20,7 @@
 // Adds the README file at the beginning of the documentation.
 #![doc = include_str!("../README.md")]
 // Adds the logo to the documentation.
-#![doc(
-    html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53"
-)]
-
-// We use macros from log module so if the feature
-// is not enabled, we still need to expose to the crate so
-// that the macros are no ops.
-//
-// Another note with log macros is that we need to keep the log
-// module above consuming modules, otherwise modules that are above log
-// will not be able to use the macros as they must be in scope before used.
-// https://rustc-dev-guide.rust-lang.org/macro-expansion.html#name-resolution
-#[macro_use]
-#[cfg(not(feature = "attribute_log"))]
-pub(crate) mod log;
-
-/// Logging utilities.
-///
-/// This feature gated module provides logging targets that can be used
-/// with the `log` crate for logging events within the library.
-#[macro_use]
-#[cfg(feature = "attribute_log")]
-pub mod log;
+#![doc(html_logo_url = "https://github.com/user-attachments/assets/179d72f8-0c1f-4034-9852-b725254ece53")]
 
 /// Core functionalities essential for the library.
 ///
@@ -52,7 +30,12 @@ pub mod log;
 #[allow(dead_code)]
 pub(crate) mod core;
 
-
+/// Convertors for transforming structures into common formats.
+///
+/// This feature gated module defines generic traits that facilitate
+/// conversion of custom structures into widely used formats.
+#[cfg(feature = "ext_converters")]
+pub mod converters;
 
 /// Implementations for specific games.
 ///
@@ -66,22 +49,15 @@ pub mod game;
 /// protocols used within the library.
 pub mod protocol;
 
+/// Dictionary for querying game servers by identifier.
+///
+/// This module provides a way to query game servers using a string identifier.
+#[cfg(feature = "ext_dict")]
+pub mod dict;
+
 /// Common imports for easier usage of the library.
 ///
 /// The prelude module is designed to include frequently used types and
 /// functions, making it easier to use the library without importing
 /// multiple items manually.
 pub mod prelude;
-
-/// Convertors for transforming structures into common formats.
-///
-/// This feature gated module defines generic traits that facilitate
-/// conversion of custom structures into widely used formats.
-#[cfg(feature = "attribute_converters")]
-pub mod converters;
-
-/// Dictionary for querying game servers by identifier.
-///
-/// This module provides a way to query game servers using a string identifier.
-#[cfg(feature = "attribute_dict")]
-pub mod dict;
