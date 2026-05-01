@@ -5,6 +5,7 @@ members = [
     "crates/ffi",
     "crates/ffi_neon",
     "crates/lib",
+    "crates/macros",
     "crates/tools/id_gen",
     "crates/tools/net_replay",
 ]
