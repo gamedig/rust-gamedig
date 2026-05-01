@@ -1,7 +1,7 @@
 use {
     crate::core::error::{
         Report,
-        diagnostic::{CRATE_INFO, FailureReason, SYSTEM_INFO},
+        diagnostic::{CRATE_INFO, FailureReason},
     },
     std::{net::SocketAddr, time::Duration},
     tokio::{
@@ -17,30 +17,29 @@ use {
 
 #[derive(Debug, thiserror::Error)]
 pub enum TokioTcpClientError {
-    #[error("[GameDig]::[TCP::TOKIO::CONNECTION]: Failed to establish connection")]
+    #[error("[GameDig]::[TCP::TOKIO::CONNECTION]: Failed to establish TCP connection")]
     Connection,
-    #[error("[GameDig]::[TCP::TOKIO::CONNECTION_TIMEOUT]: Connection attempt timed out")]
+    #[error("[GameDig]::[TCP::TOKIO::CONNECTION_TIMEOUT]: TCP connection attempt timed out")]
     ConnectionTimeout,
 
-    #[error("[GameDig]::[TCP::TOKIO::READ_EXACT]: Failed to read exact bytes from stream")]
+    #[error("[GameDig]::[TCP::TOKIO::READ_EXACT]: Failed to read required bytes from TCP stream")]
     ReadExact,
-    #[error("[GameDig]::[TCP::TOKIO::READ_EXACT_TIMEOUT]: Operation timed out")]
+    #[error("[GameDig]::[TCP::TOKIO::READ_EXACT_TIMEOUT]: Timed out while reading required bytes from TCP stream")]
     ReadExactTimeout,
 
-    #[error("[GameDig]::[TCP::TOKIO::READ_TO_END]: Failed to read all bytes from stream")]
+    #[error("[GameDig]::[TCP::TOKIO::READ_TO_END]: Failed to read remaining data from TCP stream")]
     ReadToEnd,
-    #[error("[GameDig]::[TCP::TOKIO::READ_TO_END_TIMEOUT]: Operation timed out")]
+    #[error("[GameDig]::[TCP::TOKIO::READ_TO_END_TIMEOUT]: Timed out while reading remaining data from TCP stream")]
     ReadToEndTimeout,
 
-    #[error("[GameDig]::[TCP::TOKIO::WRITE]: Failed to write bytes to stream")]
+    #[error("[GameDig]::[TCP::TOKIO::WRITE]: Failed to write data to TCP stream")]
     Write,
-    #[error("[GameDig]::[TCP::TOKIO::WRITE_TIMEOUT]: Operation timed out")]
+    #[error("[GameDig]::[TCP::TOKIO::WRITE_TIMEOUT]: Timed out while writing data to TCP stream")]
     WriteTimeout,
 }
 
 #[derive(Debug)]
 pub(crate) struct TokioTcpClient {
-    peer_addr: SocketAddr,
     read_stream: Mutex<OwnedReadHalf>,
     write_stream: Mutex<OwnedWriteHalf>,
 }
@@ -49,175 +48,167 @@ pub(crate) struct TokioTcpClient {
 impl super::AbstractTcp for TokioTcpClient {
     type Error = Report<TokioTcpClientError>;
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            fields(
+                addr = %addr,
+                timeout = ?timeout,
+            )
+        )
+    )]
     async fn new(addr: SocketAddr, timeout: Duration) -> Result<Self, Self::Error> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::CLIENT::TOKIO::<NEW>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("addr", &addr)
-                .field("timeout", &timeout)
-                .finish()
-        });
-
         let (orh, owh) = match timer(timeout, TcpStream::connect(addr)).await {
-            // Connection established successfully
             Ok(Ok(stream)) => stream.into_split(),
 
-            // Error during the connection attempt
             Ok(Err(e)) => {
                 return Err(Report::from(e)
                     .change_context(TokioTcpClientError::Connection)
                     .attach(FailureReason::new(
-                        "Failed to establish a TCP connection due to an underlying RT or OS I/O \
-                         error.",
+                        "Failed to establish a TCP connection due to an I/O error.",
                     ))
-                    .attach(SYSTEM_INFO)
                     .attach(CRATE_INFO));
             }
 
-            // Connection attempt timed out
             Err(e) => {
                 return Err(Report::from(e)
                     .change_context(TokioTcpClientError::ConnectionTimeout)
-                    .attach(FailureReason::new(
-                        "The connection attempt exceeded the specified timeout duration.",
-                    ))
-                    .attach(SYSTEM_INFO)
+                    .attach(FailureReason::new("TCP connection attempt timed out."))
                     .attach(CRATE_INFO));
             }
         };
 
         Ok(TokioTcpClient {
-            peer_addr: addr,
             read_stream: Mutex::new(orh),
             write_stream: Mutex::new(owh),
         })
     }
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self, buf),
+            fields(
+                buf_len = buf.len(),
+                timeout = ?timeout,
+            )
+        )
+    )]
     async fn read_exact(&mut self, buf: &mut [u8], timeout: Duration) -> Result<(), Self::Error> {
-        dev_trace_fmt!(
-            "GAMEDIG::CORE::TCP::CLIENT::TOKIO::<READ_EXACT>: {:?}",
-            |f| {
-                f.debug_struct("Args")
-                    .field("buf", format_args!("len({})", buf.len()))
-                    .field("timeout", &timeout)
-                    .finish()
-            }
-        );
+        match timer(timeout, async {
+            let mut guard = self.read_stream.lock().await;
 
-        // Await the read stream lock
-        let mut orh_mg = self.read_stream.lock().await;
-        let orh = &mut *orh_mg;
-
-        match timer(timeout, orh.read_exact(buf)).await {
-            // Data read successfully
+            guard.read_exact(buf).await
+        })
+        .await
+        {
             Ok(Ok(_)) => Ok(()),
 
-            // Error during the read operation
             Ok(Err(e)) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::ReadExact)
                     .attach(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during TCP read operation.",
+                        "Failed to read the requested number of bytes from the TCP stream due to an I/O error.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
 
-            // Read operation timed out
             Err(e) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::ReadExactTimeout)
                     .attach(FailureReason::new(
-                        "The operation exceeded the specified timeout duration.",
+                        "Timed out before reading the requested number of bytes from the TCP stream.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
         }
     }
 
-    async fn read_to_end(
-        &mut self,
-        buf: &mut Vec<u8>,
-        timeout: Duration,
-    ) -> Result<usize, Self::Error> {
-        dev_trace_fmt!(
-            "GAMEDIG::CORE::TCP::CLIENT::TOKIO::<READ_TO_END>: {:?}",
-            |f| {
-                f.debug_struct("Args")
-                    .field("buf", format_args!("cap({})", buf.capacity()))
-                    .field("timeout", &timeout)
-                    .finish()
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self, buf),
+            fields(
+                buf_cap = buf.capacity(),
+                timeout = ?timeout,
+            )
+        )
+    )]
+    async fn read_to_end(&mut self, buf: &mut Vec<u8>, timeout: Duration) -> Result<usize, Self::Error> {
+        match timer(timeout, async {
+            let mut guard = self.read_stream.lock().await;
+
+            guard.read_to_end(buf).await
+        })
+        .await
+        {
+            Ok(Ok(size)) => {
+                #[cfg(feature = "ext_tracing")]
+                tracing::debug!(bytes_read = size, "read_to_end completed");
+
+                Ok(size)
             }
-        );
 
-        // Await the read stream lock
-        let mut orh_mg = self.read_stream.lock().await;
-        let orh = &mut *orh_mg;
-
-        match timer(timeout, orh.read_to_end(buf)).await {
-            // Data read successfully
-            Ok(Ok(size)) => Ok(size),
-
-            // Error during the read operation
             Ok(Err(e)) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::ReadToEnd)
                     .attach(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during TCP read operation.",
+                        "Failed to read all remaining data from the TCP stream due to an I/O error.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
 
-            // Read operation timed out
             Err(e) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::ReadToEndTimeout)
                     .attach(FailureReason::new(
-                        "The operation exceeded the specified timeout duration.",
+                        "Timed out before reading all remaining data from the TCP stream.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
         }
     }
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                data = ?data,
+                timeout = ?timeout,
+            )
+        )
+    )]
     async fn write(&mut self, data: &[u8], timeout: Duration) -> Result<(), Self::Error> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::CLIENT::TOKIO::<WRITE>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("data", format_args!("len({})", data.len()))
-                .field("timeout", &timeout)
-                .finish()
-        });
+        match timer(timeout, async {
+            let mut guard = self.write_stream.lock().await;
 
-        // Await the write stream lock
-        let mut owh_mg = self.write_stream.lock().await;
-        let owh = &mut *owh_mg;
+            guard.write_all(data).await
+        })
+        .await
+        {
+            Ok(Ok(())) => Ok(()),
 
-        match timer(timeout, owh.write_all(data)).await {
-            // Data written successfully
-            Ok(Ok(_)) => Ok(()),
-
-            // Error during the write operation
             Ok(Err(e)) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::Write)
                     .attach(FailureReason::new(
-                        "An underlying RT or OS I/O error occurred during TCP write operation.",
+                        "Failed to write all provided data to the TCP stream due to an I/O error.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
 
-            // Write operation timed out
             Err(e) => {
-                return Err(Report::from(e)
+                Err(Report::from(e)
                     .change_context(TokioTcpClientError::WriteTimeout)
                     .attach(FailureReason::new(
-                        "The operation exceeded the specified timeout duration.",
+                        "Timed out before writing all provided data to the TCP stream.",
                     ))
-                    .attach(SYSTEM_INFO)
-                    .attach(CRATE_INFO));
+                    .attach(CRATE_INFO))
             }
         }
     }

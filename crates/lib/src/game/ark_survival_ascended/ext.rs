@@ -10,7 +10,7 @@ use {
             GenericTimeoutExt,
             HttpMarker,
         },
-        core::{error::Report, ToSocketAddr},
+        core::{ToSocketAddr, error::Report},
     },
     std::net::{IpAddr, SocketAddr},
 };

@@ -3,14 +3,8 @@
 /// This type contains only the normalized fields that can be shared
 /// across different game protocols and implementations.
 #[derive(Debug)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct GenericPlayer {
     /// Identifier for the player within the current server query.
     ///
@@ -33,14 +27,8 @@ pub struct GenericPlayer {
 ///
 /// Use this type when preserving full player metadata is required.
 #[derive(Debug)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct GenericPlayerWithAdditionalData<P> {
     /// Identifier for the player within the current server query.
     ///
@@ -99,17 +87,13 @@ pub trait GenericPlayerExt {
     /// Converts `self` into a [`GenericPlayerWithAdditionalData`],
     /// preserving player specific metadata.
     #[must_use]
-    fn into_generic_player_with_additional_data(
-        self,
-    ) -> GenericPlayerWithAdditionalData<Self::AdditionalPlayerData>;
+    fn into_generic_player_with_additional_data(self) -> GenericPlayerWithAdditionalData<Self::AdditionalPlayerData>;
 
     /// Converts `self` into a [`GenericPlayerWithAdditionalData`] where the additional
     /// data is stored as a [`serde_json::Value`].
-    #[cfg(feature = "attribute_serde")]
+    #[cfg(feature = "ext_serde")]
     #[must_use]
-    fn into_generic_player_with_additional_data_as_json(
-        self,
-    ) -> GenericPlayerWithAdditionalData<serde_json::Value>
+    fn into_generic_player_with_additional_data_as_json(self) -> GenericPlayerWithAdditionalData<serde_json::Value>
     where
         Self: Sized,
         Self::AdditionalPlayerData: serde::Serialize, {

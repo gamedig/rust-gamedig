@@ -3,7 +3,7 @@ use {
     crate::core::error::{
         Report,
         ResultExt,
-        diagnostic::{CRATE_INFO, ContextComponent, FailureReason, SYSTEM_INFO},
+        diagnostic::{CRATE_INFO, ContextComponent, FailureReason},
     },
     reqwest::Client,
     serde::de::DeserializeOwned,
@@ -33,11 +33,16 @@ pub(crate) struct TokioHttpClient {
 impl super::AbstractHttp for TokioHttpClient {
     type Error = Report<TokioHttpError>;
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            fields(
+                timeout = ?timeout,
+            )
+        )
+    )]
     async fn new(timeout: Duration) -> Result<Self, Self::Error> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::CLIENT::TOKIO::<NEW>: {:?}", |f| {
-            f.debug_struct("Args").field("timeout", &timeout).finish()
-        });
-
         Ok(Self {
             client: Client::builder()
                 .timeout(timeout)
@@ -45,25 +50,29 @@ impl super::AbstractHttp for TokioHttpClient {
                 .build()
                 .change_context(TokioHttpError::Init)
                 .attach(FailureReason::new("Failed to build reqwest client"))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO)?,
         })
     }
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                url = %url,
+                query = ?query,
+                headers = ?headers,
+                response_type = std::any::type_name::<T>(),
+            )
+        )
+    )]
     async fn get<'a, T: DeserializeOwned>(
         &'a self,
         url: &'a str,
         query: Option<Query<'a>>,
         headers: Option<Headers<'a>>,
     ) -> Result<T, Self::Error> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::CLIENT::TOKIO::<GET>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("url", &url)
-                .field("query", &query)
-                .field("headers", &headers)
-                .finish()
-        });
-
         let mut req = self.client.get(url);
 
         if let Some(q) = query {
@@ -83,7 +92,6 @@ impl super::AbstractHttp for TokioHttpClient {
             .attach(FailureReason::new(
                 "An error occurred while sending the request",
             ))
-            .attach(SYSTEM_INFO)
             .attach(CRATE_INFO)?;
 
         let status = resp.status();
@@ -91,7 +99,6 @@ impl super::AbstractHttp for TokioHttpClient {
             return Err(Report::new(TokioHttpError::Status))
                 .attach(FailureReason::new("Response returned a non success status"))
                 .attach(ContextComponent::new("Status code", status.as_u16()))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO);
         }
 
@@ -102,10 +109,23 @@ impl super::AbstractHttp for TokioHttpClient {
             .attach(FailureReason::new(
                 "An error occurred while deserializing the response body",
             ))
-            .attach(SYSTEM_INFO)
             .attach(CRATE_INFO)?)
     }
 
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                url = %url,
+                query = ?query,
+                headers = ?headers,
+                payload = ?payload,
+                response_type = std::any::type_name::<T>(),
+            )
+        )
+    )]
     async fn post<'a, T: DeserializeOwned>(
         &'a self,
         url: &'a str,
@@ -113,15 +133,6 @@ impl super::AbstractHttp for TokioHttpClient {
         headers: Option<Headers<'a>>,
         payload: Option<Payload<'a>>,
     ) -> Result<T, Self::Error> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::CLIENT::TOKIO::<POST>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("url", &url)
-                .field("query", &query)
-                .field("headers", &headers)
-                .field("payload", &format_args!("{:?}", payload))
-                .finish()
-        });
-
         let mut req = self.client.post(url);
 
         if let Some(query) = query {
@@ -153,7 +164,6 @@ impl super::AbstractHttp for TokioHttpClient {
             .attach(FailureReason::new(
                 "An error occurred while sending the request",
             ))
-            .attach(SYSTEM_INFO)
             .attach(CRATE_INFO)?;
 
         let status = resp.status();
@@ -161,7 +171,6 @@ impl super::AbstractHttp for TokioHttpClient {
             return Err(Report::new(TokioHttpError::Status))
                 .attach(FailureReason::new("Response returned a non success status"))
                 .attach(ContextComponent::new("Status code", status.as_u16()))
-                .attach(SYSTEM_INFO)
                 .attach(CRATE_INFO);
         }
 
@@ -172,7 +181,6 @@ impl super::AbstractHttp for TokioHttpClient {
             .attach(FailureReason::new(
                 "An error occurred while deserializing the response body",
             ))
-            .attach(SYSTEM_INFO)
             .attach(CRATE_INFO)?)
     }
 }

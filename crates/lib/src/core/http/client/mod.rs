@@ -4,15 +4,15 @@ use {
     serde::de::DeserializeOwned,
 };
 
-#[cfg(feature = "http_std")]
+#[cfg(feature = "rt_std")]
 mod std;
-#[cfg(feature = "http_tokio")]
+#[cfg(feature = "rt_tokio")]
 mod tokio;
 
-#[cfg(feature = "http_std")]
+#[cfg(feature = "rt_std")]
 pub(crate) type InnerHttpClient = std::StdHttpClient;
 
-#[cfg(feature = "http_tokio")]
+#[cfg(feature = "rt_tokio")]
 pub(crate) type InnerHttpClient = tokio::TokioHttpClient;
 
 #[maybe_async::maybe_async]

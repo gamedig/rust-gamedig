@@ -73,7 +73,7 @@ pub(crate) type Query<'a> = &'a [(&'static str, &'a str)];
 ///
 /// This shares the same representation as [`Query`], but is separated as a
 /// distinct alias to make call sites more descriptive.
-/// 
+///
 /// # Example
 /// ```ignore
 /// let form: Form<'_> = &[("username", "user"), ("password", "pass")];
@@ -87,6 +87,7 @@ pub(crate) type Form<'a> = &'a [(&'static str, &'a str)];
 ///
 /// - [`Payload::Json`] sends JSON using a borrowed [`serde_json::Value`].
 /// - [`Payload::Form`] sends form data using `application/x-www-form-urlencoded`.
+#[derive(Debug)]
 pub(crate) enum Payload<'a> {
     /// JSON payload (`application/json`), provided as a borrowed [`serde_json::Value`].
     Json(&'a Value),
@@ -115,11 +116,16 @@ impl HttpClient {
     /// # Parameters
     /// - `timeout`: Maximum duration allowed for a request (connect, tls handshake,
     ///   send, wait for response, read response, deserialize).
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            fields(
+                timeout = ?timeout,
+            )
+        )
+    )]
     pub(crate) async fn new(timeout: Option<Duration>) -> Result<Self, Report<HttpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::<NEW>: {:?}", |f| {
-            f.debug_struct("Args").field("timeout", &timeout).finish()
-        });
-
         Ok(Self {
             client: InnerHttpClient::new(timeout.unwrap_or(Duration::from_secs(30)))
                 .await
@@ -136,20 +142,25 @@ impl HttpClient {
     /// - `url`: Absolute URL to request.
     /// - `query`: Optional query string key/value pairs.
     /// - `headers`: Optional headers to attach to the request.
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                url = url,
+                query = ?query,
+                headers = ?headers,
+                response_type = std::any::type_name::<T>(),
+            )
+        )
+    )]
     pub(crate) async fn get<'a, T: DeserializeOwned>(
         &self,
         url: &'a str,
         query: Option<Query<'a>>,
         headers: Option<Headers<'a>>,
     ) -> Result<T, Report<HttpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::<GET>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("url", &url)
-                .field("query", &query)
-                .field("headers", &headers)
-                .finish()
-        });
-
         self.client
             .get(url, query, headers)
             .await
@@ -167,6 +178,20 @@ impl HttpClient {
     /// - `query`: Optional query string key/value pairs.
     /// - `headers`: Optional headers to attach to the request.
     /// - `payload`: Optional request body payload (JSON or form encoded).
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            skip(self),
+            fields(
+                url = url,
+                query = ?query,
+                headers = ?headers,
+                payload = ?payload,
+                response_type = std::any::type_name::<T>(),
+            )
+        )
+    )]
     pub(crate) async fn post<'a, T: DeserializeOwned>(
         &self,
         url: &'a str,
@@ -174,15 +199,6 @@ impl HttpClient {
         headers: Option<Headers<'a>>,
         payload: Option<Payload<'a>>,
     ) -> Result<T, Report<HttpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::HTTP::<POST>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("url", &url)
-                .field("query", &query)
-                .field("headers", &headers)
-                .field("payload", &format_args!("{:?}", payload))
-                .finish()
-        });
-
         self.client
             .post(url, query, headers, payload)
             .await

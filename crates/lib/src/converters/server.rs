@@ -8,12 +8,9 @@ use super::{GenericPlayer, GenericPlayerExt, GenericPlayerWithAdditionalData};
 /// Protocol specific metadata is intentionally excluded. if you need
 /// to preserve it, use [`GenericServerWithAdditionalData`].
 #[derive(Debug)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
+    feature = "ext_derive",
     derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)
 )]
 pub struct GenericServer {
@@ -66,12 +63,9 @@ pub struct GenericServer {
 ///
 /// Use this type when preserving protocol specific metadata is required.
 #[derive(Debug)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
+    feature = "ext_derive",
     derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)
 )]
 pub struct GenericServerWithAdditionalData<S, P> {
@@ -184,7 +178,7 @@ pub trait GenericServerExt {
     ///
     /// This is useful for exposing the full protocol payload to consumers
     /// without requiring them to depend on the concrete protocol types.
-    #[cfg(feature = "attribute_serde")]
+    #[cfg(feature = "ext_serde")]
     #[must_use]
     fn into_generic_server_with_additional_data_as_json(
         self,

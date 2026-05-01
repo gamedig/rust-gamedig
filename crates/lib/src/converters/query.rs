@@ -30,7 +30,6 @@ pub trait GenericQueryExt {
     /// Performs a one off query against the given socket address.
     ///
     /// Implementations should use their default timeout configuration.
-    #[must_use]
     async fn query_addr<A: ToSocketAddr>(addr: A) -> Result<Self::Response, Report<Self::Error>>;
 
     /// Performs a one off query against the given socket address with the provided timeout configuration.
@@ -38,7 +37,6 @@ pub trait GenericQueryExt {
     /// The timeout argument is accepted via [`GenericTimeoutExt`], allowing
     /// multiple timeout configuration types to be passed in and
     /// normalized into the marker shape `Self::Timeout`.
-    #[must_use]
     async fn query_addr_with_timeout<A: ToSocketAddr>(
         addr: A,
         timeout: impl GenericTimeoutExt<Self::Timeout>,

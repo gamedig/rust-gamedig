@@ -11,16 +11,19 @@ mod client;
 
 #[derive(Debug, thiserror::Error)]
 pub enum TcpClientError {
-    #[error("[GameDig]::[TCP::INIT]: Failed to initialize the TCP client")]
+    #[error("[GameDig]::[TCP::DNS]: Failed to resolve socket address")]
+    Dns,
+
+    #[error("[GameDig]::[TCP::INIT]: Underlying client failed during initialization")]
     Init,
 
-    #[error("[GameDig]::[TCP::READ_EXACT]: Failed to read exact number of bytes from TCP stream")]
+    #[error("[GameDig]::[TCP::READ_EXACT]: Underlying client failed while reading exact")]
     ReadExact,
 
-    #[error("[GameDig]::[TCP::READ_TO_END]: Failed to read to end from TCP stream")]
+    #[error("[GameDig]::[TCP::READ_TO_END]: Underlying client failed while reading to end")]
     ReadToEnd,
 
-    #[error("[GameDig]::[TCP::WRITE]: Failed to write data to TCP stream")]
+    #[error("[GameDig]::[TCP::WRITE]: Underlying client failed while writing")]
     Write,
 }
 
@@ -41,42 +44,41 @@ impl TcpClient {
     /// * `connect_timeout` - Optional timeout for establishing the connection.
     /// * `read_timeout` - Optional timeout for reading from the stream.
     /// * `write_timeout` - Optional timeout for writing to the stream.
+    #[cfg_attr(
+        feature = "ext_tracing",
+        tracing::instrument(
+            level = "trace",
+            fields(
+                addr = ?addr,
+                connect_timeout = ?connect_timeout,
+                read_timeout = ?read_timeout,
+                write_timeout = ?write_timeout,
+            )
+        )
+    )]
     pub(crate) async fn new<A: ToSocketAddr>(
         addr: A,
         connect_timeout: Option<Duration>,
         read_timeout: Option<Duration>,
         write_timeout: Option<Duration>,
     ) -> Result<Self, Report<TcpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::<NEW>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("addr", &addr)
-                .field("connect_timeout", &connect_timeout)
-                .field("read_timeout", &read_timeout)
-                .field("write_timeout", &write_timeout)
-                .finish()
-        });
-
-        let addr = addr
-            .to_socket_addr()
-            .await
-            .change_context(TcpClientError::Init)?;
-
-        let [
-            valid_connect_timeout,
-            valid_read_timeout,
-            valid_write_timeout,
-        ] = [connect_timeout, read_timeout, write_timeout].map(|opt| {
+        let [connect_timeout, read_timeout, write_timeout] = [connect_timeout, read_timeout, write_timeout].map(|opt| {
             opt.filter(|d| !d.is_zero())
                 .unwrap_or(Duration::from_secs(5))
         });
 
         Ok(Self {
-            client: InnerTcpClient::new(addr, valid_connect_timeout)
-                .await
-                .change_context(TcpClientError::Init)?,
+            client: InnerTcpClient::new(
+                addr.to_socket_addr()
+                    .await
+                    .change_context(TcpClientError::Dns)?,
+                connect_timeout,
+            )
+            .await
+            .change_context(TcpClientError::Init)?,
 
-            read_timeout: valid_read_timeout,
-            write_timeout: valid_write_timeout,
+            read_timeout,
+            write_timeout,
         })
     }
 
@@ -85,16 +87,8 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `buf` - A mutable slice of bytes to be filled with data read from the TCP stream.
-    pub(crate) async fn read_exact(
-        &mut self,
-        buf: &mut [u8],
-    ) -> Result<(), Report<TcpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::<READ_EXACT>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("buf", format_args!("len({})", buf.len()))
-                .finish()
-        });
-
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self, buf)))]
+    pub(crate) async fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), Report<TcpClientError>> {
         self.client
             .read_exact(buf, self.read_timeout)
             .await
@@ -106,16 +100,8 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `buf` - A mutable vector of bytes to be filled with data read from the TCP stream.
-    pub(crate) async fn read_to_end(
-        &mut self,
-        buf: &mut Vec<u8>,
-    ) -> Result<usize, Report<TcpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::<READ_TO_END>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("buf", format_args!("cap({})", buf.capacity()))
-                .finish()
-        });
-
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self, buf)))]
+    pub(crate) async fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize, Report<TcpClientError>> {
         self.client
             .read_to_end(buf, self.read_timeout)
             .await
@@ -127,13 +113,8 @@ impl TcpClient {
     /// # Arguments
     ///
     /// * `data` - A slice of bytes to be written to the TCP stream.
+    #[cfg_attr(feature = "ext_tracing", tracing::instrument(level = "trace", skip(self, data)))]
     pub(crate) async fn write(&mut self, data: &[u8]) -> Result<(), Report<TcpClientError>> {
-        dev_trace_fmt!("GAMEDIG::CORE::TCP::<WRITE>: {:?}", |f| {
-            f.debug_struct("Args")
-                .field("data", format_args!("len({})", data.len()))
-                .finish()
-        });
-
         self.client
             .write(data, self.write_timeout)
             .await

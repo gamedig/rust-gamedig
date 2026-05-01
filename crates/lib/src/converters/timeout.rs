@@ -69,14 +69,8 @@ pub trait GenericTimeoutExt<K: marker::TimeoutShape>: Send + Sync {
 /// - rely on internal defaults, or
 /// - selectively override specific operations.
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct TcpTimeout {
     /// Timeout for establishing the TCP connection.
     pub connect: Option<Duration>,
@@ -101,14 +95,8 @@ impl GenericTimeoutExt<marker::TcpMarker> for TcpTimeout {
 /// - rely on internal defaults, or
 /// - selectively override specific operations.
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct UdpTimeout {
     /// Timeout for receiving a UDP packet.
     pub read: Option<Duration>,
@@ -130,14 +118,8 @@ impl GenericTimeoutExt<marker::UdpMarker> for UdpTimeout {
 /// - rely on internal defaults, or
 /// - selectively override specific operations.
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct HttpTimeout {
     /// Global timeout applied to the HTTP request.
     pub global: Option<Duration>,
@@ -153,14 +135,8 @@ impl GenericTimeoutExt<marker::HttpMarker> for HttpTimeout {
 /// This is convenient for consumers that want to provide a single config
 /// and let each query type extract what it needs.
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-    feature = "attribute_serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[cfg_attr(
-    feature = "attribute_extended_derive",
-    derive(PartialEq, Eq, PartialOrd, Ord, Hash)
-)]
+#[cfg_attr(feature = "ext_serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "ext_derive", derive(PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub struct TimeoutConfig {
     /// TCP timeout configuration.
     pub tcp: TcpTimeout,

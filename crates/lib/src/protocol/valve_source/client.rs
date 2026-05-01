@@ -29,10 +29,7 @@ use {
     std::{collections::HashMap, io::Read, time::Duration},
 };
 
-pub struct ValveSourceClient<
-    const MAX_PACKET_SIZE_PLUS_ONE: usize = 1401,
-    const MAX_TOTAL_FRAGMENTS: u8 = 35,
-> {
+pub struct ValveSourceClient<const MAX_PACKET_SIZE_PLUS_ONE: usize = 1401, const MAX_TOTAL_FRAGMENTS: u8 = 35> {
     net: UdpClient,
 
     /// Whether to use "The Ship" server query format.
@@ -80,10 +77,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         })
     }
 
-    async fn request(
-        &mut self,
-        payload: &[u8],
-    ) -> Result<Buffer<Vec<u8>>, Report<ValveSourceClientError>> {
+    async fn request(&mut self, payload: &[u8]) -> Result<Buffer<Vec<u8>>, Report<ValveSourceClientError>> {
         self.net
             .send(payload)
             .await
@@ -101,8 +95,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 name: "datagram length",
             })
             .attach(FailureReason::new(
-                "Received a datagram at the maximum allowed size. This strongly suggests \
-                 truncation, so the datagram cannot be parsed",
+                "Received a datagram at the maximum allowed size. This strongly suggests truncation, so the datagram cannot be \
+                 parsed",
             ))
             .attach(ContextComponent::new(
                 "Maximum datagram size",
@@ -116,13 +110,12 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
 
         let mut datagram = Buffer::new(datagram[.. datagram_len].to_vec());
 
-        let datagram_header =
-            datagram
-                .read_i32_le()
-                .change_context(ValveSourceClientError::Parse {
-                    section: "datagram",
-                    field: "header",
-                })?;
+        let datagram_header = datagram
+            .read_i32_le()
+            .change_context(ValveSourceClientError::Parse {
+                section: "datagram",
+                field: "header",
+            })?;
 
         match datagram_header {
             // Single
@@ -186,29 +179,31 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                         })?
                 };
 
-                let decompressed_size =
-                    if compression {
-                        Some(datagram.read_u32_le().change_context(
-                            ValveSourceClientError::Parse {
+                let decompressed_size = if compression {
+                    Some(
+                        datagram
+                            .read_u32_le()
+                            .change_context(ValveSourceClientError::Parse {
                                 section: "datagram",
                                 field: "decompressed_size",
-                            },
-                        )?)
-                    } else {
-                        None
-                    };
+                            })?,
+                    )
+                } else {
+                    None
+                };
 
-                let crc32 =
-                    if compression {
-                        Some(datagram.read_u32_le().change_context(
-                            ValveSourceClientError::Parse {
+                let crc32 = if compression {
+                    Some(
+                        datagram
+                            .read_u32_le()
+                            .change_context(ValveSourceClientError::Parse {
                                 section: "datagram",
                                 field: "crc32",
-                            },
-                        )?)
-                    } else {
-                        None
-                    };
+                            })?,
+                    )
+                } else {
+                    None
+                };
 
                 let pos = datagram.pos();
                 let mut payload = datagram.unpack();
@@ -229,8 +224,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                             name: "fragment length",
                         })
                         .attach(FailureReason::new(
-                            "Received a fragment at the maximum allowed size. This strongly \
-                             suggests truncation, so the fragment cannot be parsed",
+                            "Received a fragment at the maximum allowed size. This strongly suggests truncation, so the \
+                             fragment cannot be parsed",
                         ))
                         .attach(ContextComponent::new(
                             "Maximum fragment size",
@@ -251,33 +246,30 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                             field: "header",
                         })?;
 
-                    let fragment_id =
-                        fragment
-                            .read_u32_le()
-                            .change_context(ValveSourceClientError::Parse {
-                                section: "fragment",
-                                field: "id",
-                            })?;
+                    let fragment_id = fragment
+                        .read_u32_le()
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "fragment",
+                            field: "id",
+                        })?;
 
                     if fragment_id != id {
                         return Err(Report::new(ValveSourceClientError::SanityCheck {
                             name: "fragment ID",
                         })
                         .attach(FailureReason::new(
-                            "Received a fragment with a mismatching ID compared to the initial \
-                             fragment",
+                            "Received a fragment with a mismatching ID compared to the initial fragment",
                         ))
                         .attach(ContextComponent::new("Expected fragment ID", id))
                         .attach(ContextComponent::new("Received fragment ID", fragment_id)));
                     }
 
-                    let fragment_number =
-                        fragment
-                            .read_u8()
-                            .change_context(ValveSourceClientError::Parse {
-                                section: "fragment",
-                                field: "number",
-                            })?;
+                    let fragment_number = fragment
+                        .read_u8()
+                        .change_context(ValveSourceClientError::Parse {
+                            section: "fragment",
+                            field: "number",
+                        })?;
 
                     if !self.legacy_split_packet {
                         fragment
@@ -324,8 +316,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                         name: "fragment reassembly capacity reservation",
                     })
                     .attach(FailureReason::new(
-                        "Unable to reserve sufficient capacity to reassemble the remaining \
-                         fragments",
+                        "Unable to reserve sufficient capacity to reassemble the remaining fragments",
                     ))
                     .attach(ContextComponent::new(
                         "Current payload capacity",
@@ -357,8 +348,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                             name: "decompressed size",
                         })
                         .attach(FailureReason::new(
-                            "Decompressed payload size did not match the expected decompressed \
-                             size",
+                            "Decompressed payload size did not match the expected decompressed size",
                         ))
                         .attach(ContextComponent::new(
                             "Expected decompressed size",
@@ -376,8 +366,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                             name: "crc32 checksum",
                         })
                         .attach(FailureReason::new(
-                            "CRC32 checksum of the decompressed payload did not match the \
-                             expected CRC32 checksum",
+                            "CRC32 checksum of the decompressed payload did not match the expected CRC32 checksum",
                         ))
                         .attach(ContextComponent::new("Expected CRC32", crc32))
                         .attach(ContextComponent::new("Actual CRC32", payload_crc32)));
@@ -394,8 +383,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                     name: "datagram header",
                 })
                 .attach(FailureReason::new(
-                    "Received an unexpected datagram header value that does not indicate either a \
-                     single packet or the start of a fragmented packet sequence",
+                    "Received an unexpected datagram header value that does not indicate either a single packet or the start of \
+                     a fragmented packet sequence",
                 ))
                 .attach(ContextComponent::new(
                     "Received datagram header",
@@ -453,9 +442,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         Ok(response)
     }
 
-    pub async fn query_rules(
-        &mut self,
-    ) -> Result<HashMap<String, String>, Report<ValveSourceClientError>> {
+    pub async fn query_rules(&mut self) -> Result<HashMap<String, String>, Report<ValveSourceClientError>> {
         const RULES_PAYLOAD: [u8; 5] = [0xFF, 0xFF, 0xFF, 0xFF, 0x56];
 
         let mut response = self.request(&RULES_PAYLOAD).await?;
@@ -581,41 +568,38 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                     field: "index",
                 })?;
 
-            let name = response.read_string_utf8::<0, true>().change_context(
-                ValveSourceClientError::Parse {
+            let name = response
+                .read_string_utf8::<0, true>()
+                .change_context(ValveSourceClientError::Parse {
                     section: "players",
                     field: "name",
-                },
-            )?;
+                })?;
             let score = response
                 .read_i32_le()
                 .change_context(ValveSourceClientError::Parse {
                     section: "players",
                     field: "score",
                 })?;
-            let duration =
-                response
-                    .read_f32_le()
-                    .change_context(ValveSourceClientError::Parse {
-                        section: "players",
-                        field: "duration",
-                    })?;
+            let duration = response
+                .read_f32_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "players",
+                    field: "duration",
+                })?;
 
             let the_ship = if self.the_ship {
-                let deaths =
-                    response
-                        .read_i32_le()
-                        .change_context(ValveSourceClientError::Parse {
-                            section: "players",
-                            field: "deaths",
-                        })?;
-                let money =
-                    response
-                        .read_i32_le()
-                        .change_context(ValveSourceClientError::Parse {
-                            section: "players",
-                            field: "money",
-                        })?;
+                let deaths = response
+                    .read_i32_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "players",
+                        field: "deaths",
+                    })?;
+                let money = response
+                    .read_i32_le()
+                    .change_context(ValveSourceClientError::Parse {
+                        section: "players",
+                        field: "money",
+                    })?;
 
                 Some(TheShipPlayer { deaths, money })
             } else {
@@ -636,8 +620,8 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
 
     pub async fn query_info(&mut self) -> Result<Info, Report<ValveSourceClientError>> {
         const INFO_PAYLOAD: [u8; 25] = [
-            0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E,
-            0x67, 0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
+            0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67, 0x69, 0x6E, 0x65, 0x20,
+            0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
         ];
 
         let mut response = self.request(&INFO_PAYLOAD).await?;
@@ -683,33 +667,33 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 field: "protocol",
             })?;
 
-        let name = response.read_string_utf8::<0, true>().change_context(
-            ValveSourceClientError::Parse {
+        let name = response
+            .read_string_utf8::<0, true>()
+            .change_context(ValveSourceClientError::Parse {
                 section: "info",
                 field: "name",
-            },
-        )?;
+            })?;
 
-        let map = response.read_string_utf8::<0, true>().change_context(
-            ValveSourceClientError::Parse {
+        let map = response
+            .read_string_utf8::<0, true>()
+            .change_context(ValveSourceClientError::Parse {
                 section: "info",
                 field: "map",
-            },
-        )?;
+            })?;
 
-        let folder = response.read_string_utf8::<0, true>().change_context(
-            ValveSourceClientError::Parse {
+        let folder = response
+            .read_string_utf8::<0, true>()
+            .change_context(ValveSourceClientError::Parse {
                 section: "info",
                 field: "folder",
-            },
-        )?;
+            })?;
 
-        let game = response.read_string_utf8::<0, true>().change_context(
-            ValveSourceClientError::Parse {
+        let game = response
+            .read_string_utf8::<0, true>()
+            .change_context(ValveSourceClientError::Parse {
                 section: "info",
                 field: "game",
-            },
-        )?;
+            })?;
 
         let app_id = response
             .read_u16_le()
@@ -751,8 +735,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 name: "server type",
             })
             .attach(FailureReason::new(
-                "Received an unrecognized server type value that does not match any known server \
-                 types",
+                "Received an unrecognized server type value that does not match any known server types",
             ))
             .attach(ContextComponent::new(
                 "Received server type value",
@@ -772,8 +755,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                 name: "server environment",
             })
             .attach(FailureReason::new(
-                "Received an unrecognized server environment value that does not match any known \
-                 environments",
+                "Received an unrecognized server environment value that does not match any known environments",
             ))
             .attach(ContextComponent::new(
                 "Received server environment value",
@@ -781,14 +763,13 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
             ))
         })?;
 
-        let password_protected =
-            response
-                .read_u8()
-                .change_context(ValveSourceClientError::Parse {
-                    section: "info",
-                    field: "password_protected",
-                })?
-                != 0;
+        let password_protected = response
+            .read_u8()
+            .change_context(ValveSourceClientError::Parse {
+                section: "info",
+                field: "password_protected",
+            })?
+            != 0;
 
         let vac_enabled = response
             .read_u8()
@@ -813,8 +794,7 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
                     name: "The Ship game mode",
                 })
                 .attach(FailureReason::new(
-                    "Received an unrecognized The Ship game mode value that does not match any \
-                     known game modes",
+                    "Received an unrecognized The Ship game mode value that does not match any known game modes",
                 ))
                 .attach(ContextComponent::new(
                     "Received The Ship game mode value",
@@ -843,19 +823,21 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
             });
         }
 
-        let version = response.read_string_utf8::<0, true>().change_context(
-            ValveSourceClientError::Parse {
+        let version = response
+            .read_string_utf8::<0, true>()
+            .change_context(ValveSourceClientError::Parse {
                 section: "info",
                 field: "version",
-            },
-        )?;
+            })?;
 
-        let edf = ExtraDataFlag(response.read_u8().change_context(
-            ValveSourceClientError::Parse {
-                section: "info",
-                field: "edf",
-            },
-        )?);
+        let edf = ExtraDataFlag(
+            response
+                .read_u8()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "edf",
+                })?,
+        );
 
         let mut extra_data = ExtraData {
             port: None,
@@ -877,32 +859,30 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         }
 
         if edf.contains(ExtraDataFlags::SteamID) {
-            let server_steam_id =
-                response
-                    .read_u64_le()
-                    .change_context(ValveSourceClientError::Parse {
-                        section: "info",
-                        field: "server_steam_id",
-                    })?;
+            let server_steam_id = response
+                .read_u64_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "server_steam_id",
+                })?;
 
             extra_data.server_steam_id = Some(server_steam_id);
         }
 
         if edf.contains(ExtraDataFlags::SourceTV) {
-            let source_tv_port =
-                response
-                    .read_u16_le()
-                    .change_context(ValveSourceClientError::Parse {
-                        section: "info",
-                        field: "source_tv_port",
-                    })?;
+            let source_tv_port = response
+                .read_u16_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "source_tv_port",
+                })?;
 
-            let source_tv_name = response.read_string_utf8::<0, true>().change_context(
-                ValveSourceClientError::Parse {
+            let source_tv_name = response
+                .read_string_utf8::<0, true>()
+                .change_context(ValveSourceClientError::Parse {
                     section: "info",
                     field: "source_tv_name",
-                },
-            )?;
+                })?;
 
             extra_data.source_tv = Some(SourceTV {
                 port: source_tv_port,
@@ -911,24 +891,23 @@ impl<const MAX_PACKET_SIZE_PLUS_ONE: usize, const MAX_TOTAL_FRAGMENTS: u8>
         }
 
         if edf.contains(ExtraDataFlags::Keywords) {
-            let keywords = response.read_string_utf8::<0, true>().change_context(
-                ValveSourceClientError::Parse {
+            let keywords = response
+                .read_string_utf8::<0, true>()
+                .change_context(ValveSourceClientError::Parse {
                     section: "info",
                     field: "keywords",
-                },
-            )?;
+                })?;
 
             extra_data.keywords = Some(keywords);
         }
 
         if edf.contains(ExtraDataFlags::GameID) {
-            let app_id_64 =
-                response
-                    .read_u64_le()
-                    .change_context(ValveSourceClientError::Parse {
-                        section: "info",
-                        field: "app_id_64",
-                    })?;
+            let app_id_64 = response
+                .read_u64_le()
+                .change_context(ValveSourceClientError::Parse {
+                    section: "info",
+                    field: "app_id_64",
+                })?;
 
             extra_data.app_id_64 = Some(app_id_64);
         }

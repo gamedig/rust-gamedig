@@ -1,5 +1,7 @@
 use std::fmt;
 
+pub(crate) use gamedig_macros::wrap;
+
 /// A struct representing displayable information.
 ///
 /// This struct is used to wrap any displayable information that can be attached as context to an error report.
@@ -12,7 +14,7 @@ pub(crate) struct ContextComponent<T: fmt::Display> {
 }
 
 impl<T: fmt::Display> ContextComponent<T> {
-    pub(crate) fn new(name: &'static str, inner: T) -> Self { Self { name, inner } }
+    pub(crate) const fn new(name: &'static str, inner: T) -> Self { Self { name, inner } }
 }
 
 impl<T: fmt::Display> fmt::Display for ContextComponent<T> {
@@ -42,7 +44,7 @@ impl<T: fmt::Display> fmt::Display for ContextComponent<T> {
 /// as a printable component in an error stack, providing additional context for
 /// each error frame within the report.
 #[derive(Debug)]
-pub(crate) struct FailureReason(String);
+pub(crate) struct FailureReason(&'static str);
 
 impl FailureReason {
     /// Creates a new `FailureReason`.
@@ -50,28 +52,7 @@ impl FailureReason {
     /// # Arguments
     ///
     /// * `msg` - A message describing the failure reason.
-    pub(crate) fn new<T: Into<String>>(msg: T) -> Self {
-        FailureReason(
-            Into::<String>::into(msg)
-                .split_whitespace()
-                .fold((String::new(), 0), |(mut acc, len), word| {
-                    if len + word.len() > 80 {
-                        acc.push('\n');
-
-                        (acc + word, word.len())
-                    } else {
-                        if !acc.is_empty() {
-                            acc.push(' ');
-                        }
-
-                        acc.push_str(word);
-
-                        (acc, len + word.len() + 1)
-                    }
-                })
-                .0,
-        )
-    }
+    pub(crate) const fn new(msg: &'static str) -> Self { Self(msg) }
 }
 
 impl fmt::Display for FailureReason {
@@ -334,10 +315,10 @@ mod tests {
 
     #[test]
     fn test_failure_reason_wrapping() {
-        let fr = FailureReason::new(
+        let fr = FailureReason::new(wrap!(
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore \
-             magna aliqua.",
-        );
+             magna aliqua."
+        ));
 
         let output = fr.to_string();
 

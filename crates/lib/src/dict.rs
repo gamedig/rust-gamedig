@@ -11,8 +11,10 @@ use crate::{
 pub enum DictError {
     #[error("[GameDig]::[DICT::QUERY]: Failed to query game server")]
     Query,
+
     #[error("[GameDig]::[DICT::UNKNOWN_IDENTIFIER]: Unknown game identifier provided")]
     UnknownGameIdentifier { game_id: String },
+    
     #[cfg(feature = "ext_dict_steamid")]
     #[error("[GameDig]::[DICT::UNKNOWN_STEAM_ID]: Unknown steam id provided")]
     UnknownSteamId { steam_id: u32 },

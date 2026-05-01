@@ -4,15 +4,15 @@ use {
     ::std::{net::SocketAddr, time::Duration},
 };
 
-#[cfg(feature = "socket_std")]
+#[cfg(feature = "rt_std")]
 mod std;
-#[cfg(feature = "socket_tokio")]
+#[cfg(feature = "rt_tokio")]
 mod tokio;
 
-#[cfg(feature = "socket_std")]
+#[cfg(feature = "rt_std")]
 pub(crate) type InnerTcpClient = std::StdTcpClient;
 
-#[cfg(feature = "socket_tokio")]
+#[cfg(feature = "rt_tokio")]
 pub(crate) type InnerTcpClient = tokio::TokioTcpClient;
 
 /// Abstract layer for TCP operations

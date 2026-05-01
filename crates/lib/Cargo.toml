@@ -15,9 +15,10 @@ categories    = ["asynchronous", "encoding", "network-programming", "parser-impl
 
 [dependencies]
 # Dependencies
-maybe-async = { version = "0.2.10", default-features = false }
-thiserror   = { version = "2.0.18", default-features = false, features = ["std"] }
-error-stack = { version = "0.7.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
+gamedig_macros = { version = "0.1.1" }
+maybe-async    = { version = "0.2.10", default-features = false }
+thiserror      = { version = "2.0.18", default-features = false, features = ["std"] }
+error-stack    = { version = "0.7.0", default-features = false, features = ["backtrace", "spantrace", "std"] }
 
 # Optional Dependencies
 tracing     = { version = "0.1", optional = true }
