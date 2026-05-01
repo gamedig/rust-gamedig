@@ -37,12 +37,7 @@ impl Server {
         Ok(obj)
     }
 
-    fn set_opt_str<'a>(
-        cx: &mut impl Context<'a>,
-        obj: &Handle<'a, JsObject>,
-        key: &str,
-        val: Option<&str>,
-    ) -> NeonResult<()> {
+    fn set_opt_str<'a>(cx: &mut impl Context<'a>, obj: &Handle<'a, JsObject>, key: &str, val: Option<&str>) -> NeonResult<()> {
         let v: Handle<JsValue> = match val {
             Some(s) => cx.string(s).upcast(),
             None => cx.null().upcast(),
@@ -51,12 +46,7 @@ impl Server {
         Ok(())
     }
 
-    fn set_opt_bool<'a>(
-        cx: &mut impl Context<'a>,
-        obj: &Handle<'a, JsObject>,
-        key: &str,
-        val: Option<bool>,
-    ) -> NeonResult<()> {
+    fn set_opt_bool<'a>(cx: &mut impl Context<'a>, obj: &Handle<'a, JsObject>, key: &str, val: Option<bool>) -> NeonResult<()> {
         let v: Handle<JsValue> = match val {
             Some(b) => cx.boolean(b).upcast(),
             None => cx.null().upcast(),

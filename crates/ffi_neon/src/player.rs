@@ -3,10 +3,7 @@ use {gamedig::converters::GenericPlayer, neon::prelude::*};
 pub struct Player;
 
 impl Player {
-    pub fn array<'a>(
-        cx: &mut impl Context<'a>,
-        players: &[GenericPlayer],
-    ) -> JsResult<'a, JsArray> {
+    pub fn array<'a>(cx: &mut impl Context<'a>, players: &[GenericPlayer]) -> JsResult<'a, JsArray> {
         let arr = JsArray::new(cx, players.len());
 
         for (i, p) in players.iter().enumerate() {

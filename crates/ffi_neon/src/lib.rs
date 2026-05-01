@@ -23,8 +23,7 @@ fn query(mut cx: FunctionContext) -> JsResult<JsPromise> {
 
     let promise = cx
         .task(move || {
-            gamedig::dict::Dict::query_by_game_id(&query.game_id, &query.addr, query.timeout)
-                .map_err(|e| e.to_string())
+            gamedig::dict::Dict::query_by_game_id(&query.game_id, &query.addr, query.timeout).map_err(|e| e.to_string())
         })
         .promise(|mut cx, result| {
             match result {

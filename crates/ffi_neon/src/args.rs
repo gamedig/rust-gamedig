@@ -118,11 +118,7 @@ impl Timeout {
         })
     }
 
-    fn ms<'a>(
-        cx: &mut FunctionContext<'a>,
-        v: Handle<'a, JsValue>,
-        name: &str,
-    ) -> NeonResult<Option<Duration>> {
+    fn ms<'a>(cx: &mut FunctionContext<'a>, v: Handle<'a, JsValue>, name: &str) -> NeonResult<Option<Duration>> {
         if v.is_a::<JsNull, _>(cx) || v.is_a::<JsUndefined, _>(cx) {
             return Ok(None);
         }
