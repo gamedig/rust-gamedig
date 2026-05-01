@@ -1,0 +1,16 @@
+[package]
+name        = "gamedig_macros"
+version     = "0.1.1"
+edition     = "2024"
+license     = "MIT"
+authors     = ["GameDig Organization & Contributors [https://github.com/gamedig]"]
+repository  = "https://github.com/gamedig/rust-gamedig"
+description = "Macro implementations used by gamedig"
+
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn   = "2"
+quote = "1"
