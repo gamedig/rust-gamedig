@@ -2,6 +2,10 @@ Who knows what the future holds...
 
 # X.Y.Z - DD/MM/YYYY
 
+Games:
+
+- Added FiveM support (by @dollannn).
+
 # 0.9.0 22/02/2026
 
 Breaking:

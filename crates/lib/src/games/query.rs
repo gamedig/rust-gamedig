@@ -5,7 +5,7 @@ use std::net::{IpAddr, SocketAddr};
 #[cfg(all(feature = "services", feature = "tls", feature = "serde"))]
 use crate::games::minetest;
 use crate::games::types::Game;
-use crate::games::{eco, ffow, jc2m, mindustry, minecraft, savage2, theship};
+use crate::games::{eco, ffow, fivem, jc2m, mindustry, minecraft, savage2, theship};
 use crate::protocols;
 use crate::protocols::gamespy::GameSpyVersion;
 use crate::protocols::quake::QuakeVersion;
@@ -120,6 +120,15 @@ pub fn query_with_timeout_and_extra_settings(
                 }
                 ProprietaryProtocol::Eco => {
                     eco::query_with_timeout_and_extra_settings(
+                        address,
+                        port,
+                        &timeout_settings,
+                        extra_settings.map(ExtraRequestSettings::into),
+                    )
+                    .map(Box::new)?
+                }
+                ProprietaryProtocol::FiveM => {
+                    fivem::query_with_timeout_and_extra_settings(
                         address,
                         port,
                         &timeout_settings,

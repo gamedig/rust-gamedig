@@ -22,6 +22,7 @@ pub enum ProprietaryProtocol {
     JC2M,
     Savage2,
     Eco,
+    FiveM,
     Mindustry,
     #[cfg(all(feature = "services", feature = "tls", feature = "serde"))]
     Minetest,
@@ -65,6 +66,8 @@ pub enum GenericResponse<'a> {
     Savage2(&'a crate::games::savage2::Response),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Response),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Response),
     #[cfg(all(
         feature = "services",
         feature = "tls",
@@ -93,6 +96,8 @@ pub enum GenericPlayer<'a> {
     JCMP2(&'a crate::games::jc2m::Player),
     #[cfg(feature = "games")]
     Eco(&'a crate::games::eco::Player),
+    #[cfg(feature = "games")]
+    FiveM(&'a crate::games::fivem::Player),
     #[cfg(all(
         feature = "services",
         feature = "tls",
@@ -335,6 +340,7 @@ pub struct ExtraRequestSettings {
     /// The server's hostname.
     ///
     /// Used by:
+    /// - [crate::games::fivem::FiveMRequestSettings]
     /// - [minecraft::RequestSettings#structfield.hostname]
     #[cfg_attr(feature = "clap", arg(long))]
     pub hostname: Option<String>,
@@ -347,6 +353,7 @@ pub struct ExtraRequestSettings {
     /// Whether to gather player information
     ///
     /// Used by:
+    /// - [crate::games::fivem::FiveMRequestSettings]
     /// - [valve::GatheringSettings#structfield.players]
     /// - [unreal2::GatheringSettings#structfield.players]
     #[cfg_attr(feature = "clap", arg(long))]
@@ -370,6 +377,7 @@ pub struct ExtraRequestSettings {
 ///
 /// Used by:
 /// - [ExtraRequestSettings]
+/// - [crate::games::fivem::FiveMRequestSettings]
 /// - [valve::GatheringSettings]
 /// - [unreal2::GatheringSettings]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

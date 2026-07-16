@@ -7,7 +7,7 @@
 // TODO: When this is used in more places remove this and refine the interface.
 #![allow(dead_code)]
 
-use crate::GDErrorKind::{HostLookup, InvalidInput, PacketReceive, PacketSend, ProtocolFormat};
+use crate::GDErrorKind::{HostLookup, InvalidInput, PacketOverflow, PacketReceive, PacketSend, ProtocolFormat};
 use crate::{GDResult, TimeoutSettings};
 
 use std::io::Read;
@@ -240,6 +240,18 @@ impl HttpClient {
         self.request_json("GET", path, headers)
     }
 
+    /// Send a HTTP GET request and parse a JSON response no larger than
+    /// `max_response_length` bytes.
+    pub fn get_json_with_max_length<T: DeserializeOwned>(
+        &mut self,
+        path: &str,
+        headers: HttpHeaders,
+        max_response_length: usize,
+    ) -> GDResult<T> {
+        let response = self.request_with_max_length("GET", path, headers, max_response_length)?;
+        serde_json::from_slice(&response).map_err(|error| ProtocolFormat.context(error))
+    }
+
     /// Send a HTTP Post request with JSON data and parse a JSON response.
     pub fn post_json<T: DeserializeOwned, S: Serialize>(
         &mut self,
@@ -283,6 +295,17 @@ impl HttpClient {
     /// Internal request method, makes a request with an arbitrary HTTP method.
     #[inline]
     fn request(&mut self, method: &str, path: &str, headers: HttpHeaders) -> GDResult<Vec<u8>> {
+        self.request_with_max_length(method, path, headers, MAX_RESPONSE_LENGTH)
+    }
+
+    /// Internal request method with an explicit response-size limit.
+    fn request_with_max_length(
+        &mut self,
+        method: &str,
+        path: &str,
+        headers: HttpHeaders,
+        max_response_length: usize,
+    ) -> GDResult<Vec<u8>> {
         // Append the path to the pre-parsed URL and create a request object.
         self.address.set_path(path);
         let request = self.make_request(method, headers);
@@ -291,21 +314,28 @@ impl HttpClient {
         let http_response = request.call().map_err(|e| PacketSend.context(e))?;
 
         let length = if let Some(length) = http_response.header("Content-Length") {
-            length
+            let length = length
                 .parse::<usize>()
-                .map_err(|e| ProtocolFormat.context(e))?
-                .min(MAX_RESPONSE_LENGTH)
+                .map_err(|error| ProtocolFormat.context(error))?;
+            if length > max_response_length {
+                return Err(PacketOverflow.into());
+            }
+            length
         } else {
-            5012 // Sensible default allocation
+            5012.min(max_response_length) // Sensible default allocation
         };
 
         let mut buffer: Vec<u8> = Vec::with_capacity(length);
 
         let _ = http_response
             .into_reader()
-            .take(MAX_RESPONSE_LENGTH as u64)
+            .take(max_response_length.saturating_add(1) as u64)
             .read_to_end(&mut buffer)
-            .map_err(|e| PacketReceive.context(e))?;
+            .map_err(|error| PacketReceive.context(error))?;
+
+        if buffer.len() > max_response_length {
+            return Err(PacketOverflow.into());
+        }
 
         Ok(buffer)
     }

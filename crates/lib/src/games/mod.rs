@@ -26,6 +26,8 @@ pub mod battalion1944;
 pub mod eco;
 /// Frontlines: Fuel of War
 pub mod ffow;
+/// FiveM
+pub mod fivem;
 /// Just Cause 2: Multiplayer
 pub mod jc2m;
 /// Mindustry

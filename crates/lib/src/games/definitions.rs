@@ -91,6 +91,7 @@ pub static GAMES: Map<&'static str, Game> = phf_map! {
     "doi" => game!("Day of Infamy", 27015, Protocol::Valve(Engine::new(447_820))),
     "dst" => game!("Don't Starve Together", 27016, Protocol::Valve(Engine::new(322_320))),
     "enshrouded" => game!("Enshrouded", 15637, Protocol::Valve(Engine::new(1_203_620))),
+    "fivem" => game!("Grand Theft Auto V - FiveM (2013)", crate::games::fivem::DEFAULT_PORT, Protocol::PROPRIETARY(ProprietaryProtocol::FiveM)),
     "ffow" => game!("Frontlines: Fuel of War", 5478, Protocol::PROPRIETARY(ProprietaryProtocol::FFOW)),
     "garrysmod" => game!("Garry's Mod", 27016, Protocol::Valve(Engine::new(4000))),
     "hl2d" => game!("Half-Life 2 Deathmatch", 27015, Protocol::Valve(Engine::new(320))),
