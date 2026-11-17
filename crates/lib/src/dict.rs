@@ -33,17 +33,19 @@ impl Dict {
     fn game_id_lookup(game_id: &str) -> Option<SupportedGame> {
         // Keep id below 50 bytes to ensure fast lookup
         // tiny_map is x4 faster than phf_map here
-        hashify::tiny_map! {
+        hashify::map! {
             game_id.as_bytes(),
+            SupportedGame,
             #[cfg(feature = "game_ark_survival_ascended")]
             "ark_survival_ascended" => SupportedGame::ArkSurvivalAscended,
         }
         // Node GameDig compatibility mapping
-        .or(hashify::tiny_map! {
+        .or(hashify::map! {
             game_id.as_bytes(),
+            SupportedGame,
             #[cfg(feature = "game_ark_survival_ascended")]
             "asa" => SupportedGame::ArkSurvivalAscended
-        })
+        }).copied()
     }
 
     #[cfg(feature = "ext_dict_steamid")]
@@ -53,7 +55,7 @@ impl Dict {
         // <steam_id> | <dedicated_steam_id>
         static STEAM_IDS: phf::Map<u32, SupportedGame> = phf::phf_map! {
             #[cfg(feature = "game_ark_survival_ascended")]
-            2399830 | 2430930 => SupportedGame::ArkSurvivalAscended,
+            2399830u32 | 2430930 => SupportedGame::ArkSurvivalAscended,
         };
 
         STEAM_IDS.get(&steam_id).copied()
